@@ -14,6 +14,7 @@ public class NormalizeMain {
 	/**
 	 * @param args
 	 */
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		  final String INPUT_FILE_NAME = "input.txt";
