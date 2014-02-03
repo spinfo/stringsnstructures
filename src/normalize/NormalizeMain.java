@@ -33,8 +33,8 @@ public class NormalizeMain {
 		  } catch (Exception e) {System.out.println("Exception 1");};
 		    
 		    try {PrintWriter out = new PrintWriter(new FileWriter(OUTPUT_FILE_NAME)); 
-		    	//out.print(text);
-		    	//out.close();
+		    	out.print(text);
+		    	out.close();
 		    } catch (Exception e) {System.out.println("Exception Main normalize");};
 		    System.out.println("NormalizeMain Ende");
 	}

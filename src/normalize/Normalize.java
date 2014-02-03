@@ -27,6 +27,7 @@ public class Normalize {
 	}
 	
 	String normalize(String text){
+		String eol=System.getProperty("line.separator");
 		try {
 		System.out.println("\n\nNormalize.normalize entry");
 		// replace all white chars (blank, newline, tab)
@@ -36,10 +37,8 @@ public class Normalize {
 		// multiple blank by (one) blank
 		text=text.replaceAll("[ ]+", " ");
 		// (blank) full stop (.,!,? ...) (blank) by $
-		text=text.replaceAll("[ ]*[.;!?;:][ ]*", "\\$");
-		for (int i=0;i<text.length();i++) 
-		if (text.charAt(i)=='$') System.out.println('$');
-		else System.out.print(text.charAt(i));
+		text=text.replaceAll("[ ]*[.;!?;:][ ]*", "\\$"+eol);
+		System.out.print(text);
 		}
 		catch (Exception e){System.out.println("Exception normalize");};
 		return text;
