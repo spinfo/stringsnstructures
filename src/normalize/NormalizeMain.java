@@ -52,7 +52,7 @@ public class NormalizeMain {
 		    try {PrintWriter out = new PrintWriter(new FileWriter(PATH_NAME+OUTPUT_FILE_NAME)); 
 		    	out.print(text);
 		    	out.close();
-		    } catch (Exception e) {System.out.println("Exception Main normalize");};
+		    } catch (Exception e) {e.printStackTrace();};
 		    System.out.println("NormalizeMain Ende");
 	}
 
