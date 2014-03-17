@@ -17,26 +17,28 @@ public class NormalizeMain {
 	 * @param args
 	 */
 	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		  final String INPUT_FILE_NAME = "Genesis.txt";
-		  final String OUTPUT_FILE_NAME = "NormalizeOutput.txt";
-		  String PATH_NAME="";
-		  final String ENCODING = "UTF-8";//StandardCharsets.UTF_8;
-		 
-		  String text="";
-		 
-		  Path p = Paths.get( "../" );
-		  System.out.println( p.toAbsolutePath() );
-		  
+	private static String pathName(){
+
+		  Path p = Paths.get( "../" );		 		  
 		  try
 		  {
-			PATH_NAME=p.toRealPath( LinkOption.NOFOLLOW_LINKS ).toString()+"\\";
-		    System.out.println(PATH_NAME);
-		   
+			return p.toRealPath( LinkOption.NOFOLLOW_LINKS ).toString()+"\\";		   		   
 		  }
-		  catch ( IOException e ) { e.printStackTrace(); }
+		  catch (IOException e) { e.printStackTrace(); }
+		  return null;
+	}
+		
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		  final String ENCODING = "UTF-8";//StandardCharsets.UTF_8;
+		  final String INPUT_FILE_NAME = "Genesis.txt";
+		  final String OUTPUT_FILE_NAME = "NormalizeOutput.txt";
+		  String PATH_NAME=pathName();
+		 		 
+		 
 		  
+		  String text="";
 		  System.out.println("NormalizeMain");
 		  try {InputStreamReader reader = 
 				  new InputStreamReader
