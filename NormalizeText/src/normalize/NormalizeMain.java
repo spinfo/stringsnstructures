@@ -31,9 +31,12 @@ public class NormalizeMain {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		//save name to file
+		  final String NAME = "Genesis";
 		  final String ENCODING = "UTF-8";//StandardCharsets.UTF_8;
-		  final String INPUT_FILE_NAME = "Genesis.txt";
-		  final String OUTPUT_FILE_NAME = "NormalizeOutput.txt";
+		  final String TXTEXTENSION=".txt";		 
+		  final String OUTPUT_FILE_NAME = 
+				  NAME+"Normalize"+TXTEXTENSION;
 		  String PATH_NAME=pathName();
 		 		 
 		 
@@ -42,7 +45,7 @@ public class NormalizeMain {
 		  System.out.println("NormalizeMain");
 		  try {InputStreamReader reader = 
 				  new InputStreamReader
-			       (new FileInputStream(PATH_NAME+INPUT_FILE_NAME), 
+			       (new FileInputStream(PATH_NAME+NAME+TXTEXTENSION), 
 			    	ENCODING /*"ISO-8859-1" *//* "UTF-8"*/);
 		  
 		    	Normalize normalize = new Normalize();
@@ -51,9 +54,19 @@ public class NormalizeMain {
 		    	
 		  } catch (Exception e) {e.printStackTrace();};
 		    
+		  // save name of Input text
+		    try {PrintWriter name = 
+		    	new PrintWriter(new FileWriter(PATH_NAME+"Name"+TXTEXTENSION)); 
+		    	name.print(NAME);
+		    	name.close();
+		    	
+		    } catch (Exception e) {e.printStackTrace();};
+		    System.out.println("NormalizeMain Ende");
+	
 		    try {PrintWriter out = new PrintWriter(new FileWriter(PATH_NAME+OUTPUT_FILE_NAME)); 
 		    	out.print(text);
 		    	out.close();
+		    	
 		    } catch (Exception e) {e.printStackTrace();};
 		    System.out.println("NormalizeMain Ende");
 	}
