@@ -32,7 +32,7 @@ public class NormalizeMain {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//save name to file
-		  final String NAME = "Genesis";
+		  String NAME = "";
 		  final String ENCODING = "UTF-8";//StandardCharsets.UTF_8;
 		  final String TXTEXTENSION=".txt";		 
 		  final String OUTPUT_FILE_NAME = 
