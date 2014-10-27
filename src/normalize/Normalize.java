@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 
 public class Normalize {
 	
+	String eol=System.getProperty("line.separator");
+	
 	public String readText(InputStreamReader reader){
 		System.out.println("Normalize.readText entry");
 		StringBuffer textBuffer=new StringBuffer();
@@ -27,7 +29,7 @@ public class Normalize {
 	}
 	
 	String normalize(String text){
-		String eol=System.getProperty("line.separator");
+		
 		try {
 		System.out.println("\n\nNormalize.normalize entry");
 		// replace all white chars (blank, newline, tab)
@@ -42,6 +44,21 @@ public class Normalize {
 		}
 		catch (Exception e){System.out.println("Exception normalize");};
 		return text;
+	}
+	
+	StringBuffer filter(String text,int min,int max){
+		int len;
+		StringBuffer buf=new StringBuffer();
+		String phrases []=text.split(eol);
+		for(int i=0;i<phrases.length;i++)
+		{ 	String words[]=phrases[i].split("[ ]");
+			len=words.length;
+			System.out.println(phrases[i]+ "  " +len);
+			if((len>=min) && (len<=max)){
+				buf.append(phrases[i]+eol);
+			}
+		}
+		return buf;
 	}
 	
 	
