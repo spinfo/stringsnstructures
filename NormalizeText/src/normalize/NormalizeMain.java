@@ -42,6 +42,7 @@ public class NormalizeMain {
 		 
 		  
 		  String text="";
+		  StringBuffer filterBuf=null;
 		  System.out.println("NormalizeMain");
 		  try {InputStreamReader reader = 
 				  new InputStreamReader
@@ -51,6 +52,7 @@ public class NormalizeMain {
 		    	Normalize normalize = new Normalize();
 		    	text=normalize.readText(reader);
 		    	text=normalize.normalize(text);
+		    	filterBuf=normalize.filter(text,3,6);
 		    	
 		  } catch (Exception e) {e.printStackTrace();};
 		    
@@ -59,6 +61,8 @@ public class NormalizeMain {
 		    	new PrintWriter(new FileWriter(PATH_NAME+"Name"+TXTEXTENSION)); 
 		    	name.print(NAME);
 		    	name.close();
+		    	
+		    	System.out.println(filterBuf);
 		    	
 		    } catch (Exception e) {e.printStackTrace();};
 		    System.out.println("NormalizeMain Ende");
