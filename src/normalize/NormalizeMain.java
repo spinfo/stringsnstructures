@@ -1,6 +1,9 @@
 package normalize;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,12 +13,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 
-
 public class NormalizeMain {
 
 	/**
 	 * @param args
 	 */
+	
+	
+	static String INPUT_FILE_NAME="";
+	static String TXTEXTENSION= ".txt";
 	
 	private static String pathName(){
 
@@ -28,22 +34,48 @@ public class NormalizeMain {
 		  return null;
 	}
 		
+	private static TextInfo getTextInfo(String PATH){
+		// reads name of input file from file TextInfo
+		TextInfo textInfo= new TextInfo();
+		
+		try {BufferedReader reader = 
+				new BufferedReader
+				(new FileReader(PATH+"TextInfo"+TXTEXTENSION));
+				textInfo.filename=reader.readLine();
+				System.out.println(textInfo.filename);
+				textInfo.min=Integer.parseInt(reader.readLine());
+				textInfo.max=Integer.parseInt(reader.readLine());
+				System.out.println("TextInfo "+textInfo.filename+ " " +
+				textInfo.min+" " +textInfo.max);
+				
+				return textInfo;
+	
+		} catch (Exception e) {e.printStackTrace();
+		return null;}
+	}
+	
+	
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//save name to file
-		  String NAME = "Genesis";
+		
+		  String PATH_NAME = pathName();
+		  TextInfo textInfo=getTextInfo(PATH_NAME);
+		  String NAME=textInfo.filename;
+		  
+		  
 		  final String ENCODING = "UTF-8";//StandardCharsets.UTF_8;
 		  final String TXTEXTENSION=".txt";		 
 		  final String OUTPUT_FILE_NAME = 
 				  NAME+"Normalize"+TXTEXTENSION;
-		  String PATH_NAME=pathName();
-		 		 
 		 
+		 		 
+		  
 		  
 		  String text="";
 		  StringBuffer filterBuf=null;
-		  System.out.println("NormalizeMain");
+		  System.out.println("NormalizeMain " + PATH_NAME+NAME+TXTEXTENSION);
 		  try {InputStreamReader reader = 
 				  new InputStreamReader
 			       (new FileInputStream(PATH_NAME+NAME+TXTEXTENSION), 
