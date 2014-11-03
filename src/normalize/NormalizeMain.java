@@ -42,7 +42,7 @@ public class NormalizeMain {
 				new BufferedReader
 				(new FileReader(PATH+"TextInfo"+TXTEXTENSION));
 				textInfo.filename=reader.readLine();
-				System.out.println(textInfo.filename);
+				//System.out.println(textInfo.filename);
 				textInfo.min=Integer.parseInt(reader.readLine());
 				textInfo.max=Integer.parseInt(reader.readLine());
 				System.out.println("TextInfo "+textInfo.filename+ " " +
@@ -81,10 +81,12 @@ public class NormalizeMain {
 			       (new FileInputStream(PATH_NAME+NAME+TXTEXTENSION), 
 			    	ENCODING /*"ISO-8859-1" *//* "UTF-8"*/);
 		  
+		  
 		    	Normalize normalize = new Normalize();
 		    	text=normalize.readText(reader);
 		    	text=normalize.normalize(text);
-		    	filterBuf=normalize.filter(text,3,6);
+		    	filterBuf=normalize.filter(text,textInfo.min,
+		    			textInfo.max);
 		    	
 		  } catch (Exception e) {e.printStackTrace();};
 		    
