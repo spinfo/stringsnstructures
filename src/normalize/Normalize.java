@@ -48,14 +48,21 @@ public class Normalize {
 	
 	StringBuffer filter(String text,int min,int max){
 		int len;
-		StringBuffer buf=new StringBuffer();
-		String phrases []=text.split(eol);
-		for(int i=0;i<phrases.length;i++)
-		{ 	String words[]=phrases[i].split("[ ]");
-			len=words.length;
-			System.out.println(phrases[i]+ "  " +len);
-			if((len>=min) && (len<=max)){
-				buf.append(phrases[i]+eol);
+		StringBuffer buf;
+		if ((min==0 ) && (max==0)) {
+			buf = new StringBuffer(text);
+		}
+		else {
+			buf=new StringBuffer();
+		
+			String phrases []=text.split(eol);
+			for(int i=0;i<phrases.length;i++)
+			{ 	String words[]=phrases[i].split("[ ]");
+				len=words.length;
+				System.out.println(phrases[i]+ "  " +len);
+				if((len>=min) && (len<=max)){
+					buf.append(phrases[i]+eol);
+				}
 			}
 		}
 		return buf;

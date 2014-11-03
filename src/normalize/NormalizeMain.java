@@ -102,7 +102,7 @@ public class NormalizeMain {
 		    System.out.println("NormalizeMain Ende");
 	
 		    try {PrintWriter out = new PrintWriter(new FileWriter(PATH_NAME+OUTPUT_FILE_NAME)); 
-		    	out.print(text);
+		    	out.print(filterBuf);
 		    	out.close();
 		    	
 		    } catch (Exception e) {e.printStackTrace();};
