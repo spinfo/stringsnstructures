@@ -99,7 +99,7 @@ public class NormalizeMain {
 		    	System.out.println(filterBuf);
 		    	
 		    } catch (Exception e) {e.printStackTrace();};
-		    System.out.println("NormalizeMain Ende");
+		    
 	
 		    try {PrintWriter out = new PrintWriter(new FileWriter(PATH_NAME+OUTPUT_FILE_NAME)); 
 		    	out.print(filterBuf);
