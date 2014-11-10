@@ -40,8 +40,12 @@ public class NormalizeMain {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(PATH
 					+ "TextInfo" + TXTEXTENSION));
-			reader.read();
-			textInfo.filename = reader.readLine();					
+			
+			
+			textInfo.filename = reader.readLine();		
+			//???dirty first char on laptop version
+			if (!Character.isLetter(textInfo.filename.charAt(0)))
+				textInfo.filename=textInfo.filename.substring(1);
 			System.out.println("textInfo.filename=" + textInfo.filename);
 			// System.out.println(textInfo.filename);
 			textInfo.min = Integer.parseInt(reader.readLine());
