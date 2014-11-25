@@ -12,6 +12,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+
 public class NormalizeMain {
 
 	/**
@@ -44,6 +45,7 @@ public class NormalizeMain {
 			
 			textInfo.filename = reader.readLine();		
 			//???dirty first char on laptop version
+			System.out.println((int)textInfo.filename.charAt(0));
 			if (!Character.isLetter(textInfo.filename.charAt(0)))
 				textInfo.filename=textInfo.filename.substring(1);
 			System.out.println("textInfo.filename=" + textInfo.filename);
