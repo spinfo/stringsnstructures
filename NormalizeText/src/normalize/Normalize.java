@@ -61,12 +61,14 @@ public class Normalize {
 			for (int i = 0; i < phrases.length; i++) {
 				String words[] = phrases[i].split("[ ]");
 				len = words.length;
-				System.out.println(phrases[i] + "  " + len);
+				System.out.println(phrases[i] + " len: " + len+" min: "+min+ " max: "+max);
 				if ((len >= min) && (len <= max)) {
+					System.out.println("Phrase within filter: "+phrases[i] + "  ");
 					buf.append(phrases[i] + eol);
 				}
 			}
 		}
+		System.out.println();
 		return buf;
 	}
 
