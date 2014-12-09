@@ -12,7 +12,7 @@ public class Normalize {
 		StringBuffer textBuffer = new StringBuffer();
 		int ch;
 		try {
-			ch = reader.read();// ??? hier wurde am anfang fragezeichen
+			//ch = reader.read();// ??? hier wurde am anfang fragezeichen
 								// gelesen???
 
 			while ((ch = reader.read()) != -1) {
@@ -33,14 +33,31 @@ public class Normalize {
 
 		try {
 			System.out.println("\n\nNormalize.normalize entry");
+			// replace initial line number
+			text = text.replaceAll("^[0-9]+", "");
 			// replace all white chars (blank, newline, tab)
 			text = text.replaceAll("\\s", " ");
 			// colon, quotation mark by blank
-			text = text.replaceAll("[,\"]", " ");
+			text = text.replaceAll("[,\"\\«\\»]", " ");
+			// parentheses
+			text = text.replaceAll("[\\(][^\\)]*[\\)]", " ");
 			// multiple blank by (one) blank
 			text = text.replaceAll("[ ]+", " ");
-			// (blank) full stop (.,!,? ...) (blank) by $
-			text = text.replaceAll("[ ]*[.;!?;:][ ]*", "\\$" + eol);
+			// date:10.-29., 30.-31,1.-9.month
+			// blank vorher!!
+			String daymonth=
+			"([1-2][0-9]|[3][0-1]|[1-9])([\\.])([1-9]|[1][0-2])([\\.])";
+			text = text.replaceAll(daymonth,"$1&$3&");
+			String day="([1-2][0-9]|[3][0-1]|[1-9])([\\.])";
+			text = text.replaceAll(day,"$1&");
+			// abbreviation bzw., ca. Dr. usw. 
+			String abbrev=
+			"(a|B|bzw|ca|Chr|Dr|Hrg|Hrsg|I|i|Mio|Mrd|O|phil|Prof|s|S|St|u|usf|usw|v|V|z)([\\.])";
+			text = text.replaceAll(abbrev,"$1&");
+			// (blank) full stop (.,!,? ...) (blank) (line number) by $
+			text = text.replaceAll("[ ]*[.;!?;:][ ]*\\d*[ ]*", "\\$" + eol);
+			// undo & for ., s.above for date
+			text = text.replaceAll("[&]","\\.");
 			System.out.print(text);
 		} catch (Exception e) {
 			System.out.println("Exception normalize");
