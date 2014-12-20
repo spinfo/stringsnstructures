@@ -9,7 +9,9 @@ public class Normalize {
 
 	public String readText(InputStreamReader reader) {
 		System.out.println("Normalize.readText entry");
-		StringBuffer textBuffer = new StringBuffer();
+		//new StringBuffer("\n"): must begin with line break for
+		//identification of line number in normalize method
+		StringBuffer textBuffer = new StringBuffer("\n");
 		int ch;
 		try {
 			//ch = reader.read();// ??? hier wurde am anfang fragezeichen
@@ -34,9 +36,13 @@ public class Normalize {
 		try {
 			System.out.println("\n\nNormalize.normalize entry");
 			// replace initial line number
-			text = text.replaceAll("^[0-9]+", "");
+			text = text.replaceAll("\\n[0-9]+", "");
+			//System.out.println("Test1"+"\n"+text);
 			// replace all white chars (blank, newline, tab)
 			text = text.replaceAll("\\s", " ");
+			
+			// 19,3
+			text = text.replaceAll("([0-9])([,])([0-9])","$1#$3");
 			// colon, quotation mark by blank
 			text = text.replaceAll("[,\"\\«\\»]", " ");
 			// parentheses
@@ -45,22 +51,47 @@ public class Normalize {
 			text = text.replaceAll("[ ]+", " ");
 			// date:10.-29., 30.-31,1.-9.month
 			// blank vorher!!
+			
 			String daymonth=
 			"([1-2][0-9]|[3][0-1]|[1-9])([\\.])([1-9]|[1][0-2])([\\.])";
 			text = text.replaceAll(daymonth,"$1&$3&");
+			
 			String day="([1-2][0-9]|[3][0-1]|[1-9])([\\.])";
 			text = text.replaceAll(day,"$1&");
+			
 			// abbreviation bzw., ca. Dr. usw. 
 			String abbrev=
-			"(a|B|bzw|ca|Chr|Dr|Hrg|Hrsg|I|i|Mio|Mrd|O|phil|Prof|s|S|St|u|usf|usw|v|V|z)([\\.])";
+			"(a|B|bzw|ca|Chr|Dr|Fr|Hrg|Hrsg|I|i|Mio|Mr|Mrd|Nr|O|phil|Prof|s|S|St|u|usf|usw|v|V|z)([\\.])";
 			text = text.replaceAll(abbrev,"$1&");
+			
+			// 100'000, 100 000
+			
+			text = text.replaceAll("([0-9]+)([\\'])([0-9]+)",
+					"$1$3");	
+			
+			
+			text = text.replaceAll("([0-9]+)([ ])([0-9]+)",
+					"$1$3");
+			
+			// z.B. 2:0
+			text = text.replaceAll("([0-9])([:])([0-9])","$1|$3");
+			// 10.000
+			text = text.replaceAll("([0-9])([.])([0-9])","$1$3");
+			
+			//System.out.println("Test2 "+"\n"+text);
+			
 			// (blank) full stop (.,!,? ...) (blank) (line number) by $
-			text = text.replaceAll("[ ]*[.;!?;:][ ]*\\d*[ ]*", "\\$" + eol);
+			text = text.replaceAll("[ ]*[.;!?;:][ ]*", "\\$" + eol);
 			// undo & for ., s.above for date
 			text = text.replaceAll("[&]","\\.");
-			System.out.print(text);
+			text = text.replaceAll("[|]","\\:");
+			text = text.replaceAll("[#]","\\,");
+			
+			System.out.println("Test3"+"\n"+text);
+			System.out.println("Exit normalize");
 		} catch (Exception e) {
 			System.out.println("Exception normalize");
+			int i=10/0;
 		}
 		;
 		return text;

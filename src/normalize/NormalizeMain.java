@@ -101,6 +101,7 @@ public class NormalizeMain {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			int i=10/0;
 		}
 		;
 
@@ -115,6 +116,7 @@ public class NormalizeMain {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			int i=10/0;
 		}
 		;
 
@@ -126,8 +128,9 @@ public class NormalizeMain {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			int i=10/0;
 		}
-		;
+		
 		System.out.println("NormalizeMain Ende");
 	}
 
