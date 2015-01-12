@@ -1,4 +1,4 @@
-package normalize;
+package preprocess;
 
 // length of phrases to be processed
 

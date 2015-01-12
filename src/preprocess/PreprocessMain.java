@@ -1,4 +1,4 @@
-package normalize;
+package preprocess;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -101,10 +101,10 @@ public class PreprocessMain {
 					new FileInputStream(new File("Data/"/*PATH_NAME*/ + NAME
 							+ TXTEXTENSION)));
 
-			Normalize normalize = new Normalize();
-			text = normalize.readText(reader);
-			text = normalize.normalize(text);
-			filterBuf = normalize.filter(text, textInfo.min, textInfo.max);
+			Preprocess preprocess = new Preprocess();
+			text = preprocess.readText(reader);
+			text = preprocess.process(text);
+			filterBuf = preprocess.filter(text, textInfo.min, textInfo.max);
 
 		} catch (Exception e) {
 			e.printStackTrace();
