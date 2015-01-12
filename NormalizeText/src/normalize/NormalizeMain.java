@@ -21,17 +21,24 @@ public class NormalizeMain {
 
 	static String INPUT_FILE_NAME = "";
 	static String TXTEXTENSION = ".txt";
+	Path workspacePath;
+	
+	
 
 	private static String pathName() {
 
 		Path p = Paths.get("../");
+		
 		try {
-			return p.toRealPath(LinkOption.NOFOLLOW_LINKS).toString() + "\\";
+			return p.toRealPath(LinkOption.NOFOLLOW_LINKS).toString()
+					+ "\\";
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
+	
+	
 
 	private static TextInfo getTextInfo(String PATH) {
 		// reads name of input file from file TextInfo
@@ -68,7 +75,7 @@ public class NormalizeMain {
 		// save name to file
 
 		String PATH_NAME = pathName();
-		TextInfo textInfo = getTextInfo(PATH_NAME);
+		TextInfo textInfo = getTextInfo("Data/"/*PATH_NAME*/);
 		
 		String NAME = textInfo.filename;
 		
@@ -91,7 +98,7 @@ public class NormalizeMain {
 		try {
 			
 			InputStreamReader reader = new InputStreamReader(
-					new FileInputStream(new File(PATH_NAME + NAME
+					new FileInputStream(new File("Data/"/*PATH_NAME*/ + NAME
 							+ TXTEXTENSION)));
 
 			Normalize normalize = new Normalize();
@@ -101,7 +108,7 @@ public class NormalizeMain {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			int i=10/0;
+			//int i=10/0;
 		}
 		;
 
