@@ -13,12 +13,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 
-public class NormalizeMain {
+public class PreprocessMain {
 
 	/**
 	 * @param args
 	 */
-
+//
 	static String INPUT_FILE_NAME = "";
 	static String TXTEXTENSION = ".txt";
 	Path workspacePath;
