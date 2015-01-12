@@ -37,14 +37,19 @@ public class Normalize {
 			System.out.println("\n\nNormalize.normalize entry");
 			// replace initial line number
 			text = text.replaceAll("\\n[0-9]+", "");
-			//System.out.println("Test1"+"\n"+text);
-			// replace all white chars (blank, newline, tab)
-			text = text.replaceAll("\\s", " ");
+			// colon, quotation mark by blank
+			text = text.replaceAll("[,\"\\«\\»]", " ");
 			
+			//System.out.println("Test1"+"\n"+text);
+			
+			// replace all white chars (blank, newline, tab)
+			text = text.replaceAll("[\\s]+", " ");
+			
+			//System.out.println("Test2 "+"\n"+text);
 			// 19,3
 			text = text.replaceAll("([0-9])([,])([0-9])","$1#$3");
 			// colon, quotation mark by blank
-			text = text.replaceAll("[,\"\\«\\»]", " ");
+			//text = text.replaceAll("[,\"\\«\\»]", " ");
 			// parentheses
 			text = text.replaceAll("[\\(][^\\)]*[\\)]", " ");
 			// multiple blank by (one) blank
@@ -80,20 +85,26 @@ public class Normalize {
 			
 			//System.out.println("Test2 "+"\n"+text);
 			
-			// (blank) full stop (.,!,? ...) (blank) (line number) by $
-			text = text.replaceAll("[ ]*[.;!?;:][ ]*", "\\$" + eol);
+			// (blank) full stop (.,!,? ...) (blank) by $ eol
+			text = text.replaceAll("[ ]*[.;!?;:][\\s]*", "\\$" + eol);
 			// undo & for ., s.above for date
 			text = text.replaceAll("[&]","\\.");
 			text = text.replaceAll("[|]","\\:");
 			text = text.replaceAll("[#]","\\,");
 			
+			// blanks at beginning of text (may occur after deletion of
+			// " for ex.
+			//while (text.charAt(0)==' ') text=text.substring(1);
 			System.out.println("Test3"+"\n"+text);
+			
 			System.out.println("Exit normalize");
 		} catch (Exception e) {
 			System.out.println("Exception normalize");
 			int i=10/0;
 		}
+		
 		;
+		
 		return text;
 	}
 
