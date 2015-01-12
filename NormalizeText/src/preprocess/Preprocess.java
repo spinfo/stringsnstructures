@@ -1,9 +1,9 @@
-package normalize;
+package preprocess;
 
 //import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public class Normalize {
+public class Preprocess {
 
 	String eol = System.getProperty("line.separator");
 
@@ -31,7 +31,7 @@ public class Normalize {
 		return textBuffer.toString();
 	}
 
-	String normalize(String text) {
+	String process(String text) {
 
 		try {
 			System.out.println("\n\nNormalize.normalize entry");
