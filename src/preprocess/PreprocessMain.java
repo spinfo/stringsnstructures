@@ -21,6 +21,7 @@ public class PreprocessMain {
 //
 	static String INPUT_FILE_NAME = "";
 	static String TXTEXTENSION = ".txt";
+	static String fileSeparator = System.getProperty("file.separator");
 	Path workspacePath;
 	
 	
@@ -31,7 +32,7 @@ public class PreprocessMain {
 		
 		try {
 			return p.toRealPath(LinkOption.NOFOLLOW_LINKS).toString()
-					+ "\\";
+					+ fileSeparator;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
