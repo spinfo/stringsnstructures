@@ -66,7 +66,7 @@ public class Preprocess {
 			
 			// abbreviation bzw., ca. Dr. usw. 
 			String abbrev=
-			"(a|B|bzw|ca|Chr|Dr|Fr|Hrg|Hrsg|I|i|Mio|Mr|Mrd|Nr|O|phil|Prof|s|S|St|u|usf|usw|v|V|z)([\\.])";
+			"(a|al|B|bzw|ca|Chr|Dr|Fr|Hrg|Hrsg|I|i|Mill|Mio|Mr|Mrd|Nr|O|phil|Prof|s|S|St|u|usf|usw|v|V|z)([\\.])";
 			text = text.replaceAll(abbrev,"$1&");
 			
 			// 100'000, 100 000
