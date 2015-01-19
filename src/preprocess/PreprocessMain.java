@@ -91,11 +91,11 @@ public class PreprocessMain {
 		
 		final String ENCODING = "UTF-8";// StandardCharsets.UTF_8;
 		final String TXTEXTENSION = ".txt";
-		final String OUTPUT_FILE_NAME = NAME + "Normalize" + TXTEXTENSION;
+		final String OUTPUT_FILE_NAME = NAME + "Preprocess" + TXTEXTENSION;
 
 		String text = "";
 		StringBuffer filterBuf = null;
-		System.out.println("NormalizeMain " + PATH_NAME + NAME + TXTEXTENSION);
+		System.out.println("PreprocessMain " + PATH_NAME + NAME + TXTEXTENSION);
 		try {
 			
 			InputStreamReader reader = new InputStreamReader(
@@ -139,7 +139,7 @@ public class PreprocessMain {
 			int i=10/0;
 		}
 		
-		System.out.println("NormalizeMain Ende");
+		System.out.println("PreprocessMain Ende");
 	}
 
 }

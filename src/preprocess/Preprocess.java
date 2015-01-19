@@ -8,7 +8,7 @@ public class Preprocess {
 	String eol = System.getProperty("line.separator");
 
 	public String readText(InputStreamReader reader) {
-		System.out.println("Normalize.readText entry");
+		System.out.println("Preprocess.readText entry");
 		//new StringBuffer("\n"): must begin with line break for
 		//identification of line number in normalize method
 		StringBuffer textBuffer = new StringBuffer("\n");
@@ -23,7 +23,7 @@ public class Preprocess {
 			}
 
 		} catch (Exception e) {
-			System.out.println("Exception Normalize.readText");
+			System.out.println("Exception Preprocess.readText");
 		}
 		
 
@@ -34,7 +34,7 @@ public class Preprocess {
 	String process(String text) {
 
 		try {
-			System.out.println("\n\nNormalize.normalize entry");
+			System.out.println("\n\nPreprocess.normalize entry");
 			// replace initial line number
 			text = text.replaceAll("\\n[0-9]+", "");
 			// colon, quotation mark by blank
