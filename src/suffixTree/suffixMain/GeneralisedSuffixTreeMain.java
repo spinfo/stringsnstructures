@@ -8,7 +8,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 
 import suffixTree.suffixTree.SuffixTree;
@@ -229,9 +228,7 @@ public class GeneralisedSuffixTreeMain {
 	}
 
 	public static void main(String... args) throws Exception {
-		// LoggerConfigurator.configLogger(GeneralisedSuffixTreeMain.class
-		// .getName());
-		LoggerConfigurator.configGlobal(new ConsoleHandler());
+		LoggerConfigurator.configGlobal();
 
 		LOGGER.info("GeneralisedSuffixTreeMain Start");
 

@@ -43,7 +43,7 @@ public class SimpleSuffixTreeMain {
 	}
 
 	public static void main(String... args) throws Exception {
-		LoggerConfigurator.configLogger(SimpleSuffixTreeMain.class.getName());
+		LoggerConfigurator.configGlobal();
 
 		LOGGER.info("SimpleSuffixTreeMain Start");
 
