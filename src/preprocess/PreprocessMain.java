@@ -12,25 +12,18 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-
 public class PreprocessMain {
 
-	/**
-	 * @param args
-	 * Hallo
-	 */
-//
-	static String INPUT_FILE_NAME = "";
-	static String TXTEXTENSION = ".txt";
-	static String fileSeparator = System.getProperty("file.separator");
-	Path workspacePath;
-	
-	
+	private static String TXTEXTENSION = ".txt";
+	private static String FOLDER_NAME = "data/"; // TODO: use properties for
+													// name of data folder and
+													// name of text file to
+													// process
+	private static String fileSeparator = System.getProperty("file.separator");
 
 	private static String pathName() {
-
 		Path p = Paths.get("../");
-		
+
 		try {
 			return p.toRealPath(LinkOption.NOFOLLOW_LINKS).toString()
 					+ fileSeparator;
@@ -39,26 +32,22 @@ public class PreprocessMain {
 		}
 		return null;
 	}
-	
-	
 
+	/*
+	 * reads name of input file from file TextInfo
+	 */
 	private static TextInfo getTextInfo(String PATH) {
-		// reads name of input file from file TextInfo
-	
 		TextInfo textInfo = new TextInfo();
 
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(PATH
-					+ "TextInfo" + TXTEXTENSION));
-			
-			
-			textInfo.filename = reader.readLine();		
-			//???dirty first char on laptop version
-			System.out.println((int)textInfo.filename.charAt(0));
+		try (BufferedReader reader = new BufferedReader(new FileReader(PATH
+				+ "TextInfo" + TXTEXTENSION))) {
+			textInfo.filename = reader.readLine();
+
+			System.out.println((int) textInfo.filename.charAt(0));
 			if (!Character.isLetter(textInfo.filename.charAt(0)))
-				textInfo.filename=textInfo.filename.substring(1);
+				textInfo.filename = textInfo.filename.substring(1);
 			System.out.println("textInfo.filename=" + textInfo.filename);
-			// System.out.println(textInfo.filename);
+
 			textInfo.min = Integer.parseInt(reader.readLine());
 			textInfo.max = Integer.parseInt(reader.readLine());
 			System.out.println("TextInfo " + textInfo.filename + " "
@@ -73,35 +62,32 @@ public class PreprocessMain {
 	}
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		// save name to file
-
 		String PATH_NAME = pathName();
-		TextInfo textInfo = getTextInfo("Data/"/*PATH_NAME*/);
-		
+		TextInfo textInfo = getTextInfo(FOLDER_NAME);
+
 		String NAME = textInfo.filename;
-		
-		/*StringBuilder sb = new StringBuilder();
-		for (Character c : filename.toCharArray()) {
-			if(Character.isLetter(c))
-				sb.append(c);
-		}
-		
-		String NAME = sb.toString();
-		*/
-		
+
+		/*
+		 * StringBuilder sb = new StringBuilder(); for (Character c :
+		 * filename.toCharArray()) { if(Character.isLetter(c)) sb.append(c); }
+		 * 
+		 * String NAME = sb.toString();
+		 */
+
 		final String ENCODING = "UTF-8";// StandardCharsets.UTF_8;
 		final String TXTEXTENSION = ".txt";
 		final String OUTPUT_FILE_NAME = NAME + "Preprocess" + TXTEXTENSION;
 
 		String text = "";
 		StringBuffer filterBuf = null;
-		System.out.println("PreprocessMain " + PATH_NAME + NAME + TXTEXTENSION);
+		System.out.println("PreprocessMain " + PATH_NAME + FOLDER_NAME + NAME
+				+ TXTEXTENSION);
 		try {
-			
-			InputStreamReader reader = new InputStreamReader(
-					new FileInputStream(new File("Data/"/*PATH_NAME*/ + NAME
-							+ TXTEXTENSION)));
+
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					new FileInputStream(new File(FOLDER_NAME + NAME
+							+ TXTEXTENSION)), ENCODING));
 
 			Preprocess preprocess = new Preprocess();
 			text = preprocess.readText(reader);
@@ -110,9 +96,8 @@ public class PreprocessMain {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			//int i=10/0;
+			// int i=10/0;
 		}
-		;
 
 		// save name of Input text
 		try {
@@ -125,9 +110,8 @@ public class PreprocessMain {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			int i=10/0;
+			int i = 10 / 0;
 		}
-		;
 
 		try {
 			PrintWriter out = new PrintWriter(new FileWriter(PATH_NAME
@@ -137,10 +121,9 @@ public class PreprocessMain {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			int i=10/0;
+			int i = 10 / 0;
 		}
-		
+
 		System.out.println("PreprocessMain Ende");
 	}
-
 }

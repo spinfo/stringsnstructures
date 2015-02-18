@@ -1,33 +1,28 @@
 package preprocess;
 
-//import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.BufferedReader;
 
 public class Preprocess {
 
 	String eol = System.getProperty("line.separator");
 
-	public String readText(InputStreamReader reader) {
+	public String readText(BufferedReader reader) {
 		System.out.println("Preprocess.readText entry");
-		//new StringBuffer("\n"): must begin with line break for
-		//identification of line number in normalize method
-		StringBuffer textBuffer = new StringBuffer("\n");
-		int ch;
+		// must begin with line break for identification of line number in
+		// normalize method
+		StringBuilder textBuffer = new StringBuilder("\n");
+		String line;
 		try {
-			//ch = reader.read();// ??? hier wurde am anfang fragezeichen
-								// gelesen???
-
-			while ((ch = reader.read()) != -1) {
-				System.out.print((char) ch);
-				textBuffer.append((char) ch);
+			while ((line = reader.readLine()) != null) {
+				System.out.println(line);
+				textBuffer.append(line);
 			}
-
 		} catch (Exception e) {
 			System.out.println("Exception Preprocess.readText");
 		}
-		
 
-		System.out.println("\n\nResult readText\n" + textBuffer.toString());
+		// System.out.println("\n\nResult readText\n"
+		// + /* textBuffer.toString() */result);
 		return textBuffer.toString();
 	}
 
@@ -39,72 +34,67 @@ public class Preprocess {
 			text = text.replaceAll("\\n[0-9]+", "");
 			// colon, quotation mark by blank
 			text = text.replaceAll("[,\"\\«\\»]", " ");
-			
-			//System.out.println("Test1"+"\n"+text);
-			
+
+			// System.out.println("Test1"+"\n"+text);
+
 			// replace all white chars (blank, newline, tab)
 			text = text.replaceAll("[\\s]+", " ");
-			
-			//System.out.println("Test2 "+"\n"+text);
+
+			// System.out.println("Test2 "+"\n"+text);
 			// 19,3
-			text = text.replaceAll("([0-9])([,])([0-9])","$1#$3");
+			text = text.replaceAll("([0-9])([,])([0-9])", "$1#$3");
 			// colon, quotation mark by blank
-			//text = text.replaceAll("[,\"\\«\\»]", " ");
+			// text = text.replaceAll("[,\"\\«\\»]", " ");
 			// parentheses
 			text = text.replaceAll("[\\(][^\\)]*[\\)]", " ");
 			// multiple blank by (one) blank
 			text = text.replaceAll("[ ]+", " ");
 			// date:10.-29., 30.-31,1.-9.month
 			// blank vorher!!
-			
-			String daymonth=
-			"([1-2][0-9]|[3][0-1]|[1-9])([\\.])([1-9]|[1][0-2])([\\.])";
-			text = text.replaceAll(daymonth,"$1&$3&");
-			
-			String day="([1-2][0-9]|[3][0-1]|[1-9])([\\.])";
-			text = text.replaceAll(day,"$1&");
-			
-			// abbreviation bzw., ca. Dr. usw. 
-			String abbrev=
-			"(a|al|B|bzw|ca|Chr|Dr|Fr|Hrg|Hrsg|I|i|Mill|Mio|Mr|Mrd|Nr|O|phil|Prof|s|S|St|u|usf|usw|v|V|z)([\\.])";
-			text = text.replaceAll(abbrev,"$1&");
-			
+
+			String daymonth = "([1-2][0-9]|[3][0-1]|[1-9])([\\.])([1-9]|[1][0-2])([\\.])";
+			text = text.replaceAll(daymonth, "$1&$3&");
+
+			String day = "([1-2][0-9]|[3][0-1]|[1-9])([\\.])";
+			text = text.replaceAll(day, "$1&");
+
+			// abbreviation bzw., ca. Dr. usw.
+			String abbrev = "(a|al|B|bzw|ca|Chr|Dr|Fr|Hrg|Hrsg|I|i|Mill|Mio|Mr|Mrd|Nr|O|phil|Prof|s|S|St|u|usf|usw|v|V|z)([\\.])";
+			text = text.replaceAll(abbrev, "$1&");
+
 			// 100'000, 100 000
-			
-			text = text.replaceAll("([0-9]+)([\\'])([0-9]+)",
-					"$1$3");	
-			
-			
-			text = text.replaceAll("([0-9]+)([ ])([0-9]+)",
-					"$1$3");
-			
+
+			text = text.replaceAll("([0-9]+)([\\'])([0-9]+)", "$1$3");
+
+			text = text.replaceAll("([0-9]+)([ ])([0-9]+)", "$1$3");
+
 			// z.B. 2:0
-			text = text.replaceAll("([0-9])([:])([0-9])","$1|$3");
+			text = text.replaceAll("([0-9])([:])([0-9])", "$1|$3");
 			// 10.000
-			text = text.replaceAll("([0-9])([.])([0-9])","$1$3");
-			
-			//System.out.println("Test2 "+"\n"+text);
-			
+			text = text.replaceAll("([0-9])([.])([0-9])", "$1$3");
+
+			// System.out.println("Test2 "+"\n"+text);
+
 			// (blank) full stop (.,!,? ...) (blank) by $ eol
 			text = text.replaceAll("[ ]*[.;!?;:][\\s]*", "\\$" + eol);
 			// undo & for ., s.above for date
-			text = text.replaceAll("[&]","\\.");
-			text = text.replaceAll("[|]","\\:");
-			text = text.replaceAll("[#]","\\,");
-			
+			text = text.replaceAll("[&]", "\\.");
+			text = text.replaceAll("[|]", "\\:");
+			text = text.replaceAll("[#]", "\\,");
+
 			// blanks at beginning of text (may occur after deletion of
 			// " for ex.
-			//while (text.charAt(0)==' ') text=text.substring(1);
-			System.out.println("Test3"+"\n"+text);
-			
+			// while (text.charAt(0)==' ') text=text.substring(1);
+			System.out.println("Test3" + "\n" + text);
+
 			System.out.println("Exit normalize");
 		} catch (Exception e) {
 			System.out.println("Exception normalize");
-			int i=10/0;
+			int i = 10 / 0;
 		}
-		
+
 		;
-		
+
 		return text;
 	}
 
@@ -120,9 +110,11 @@ public class Preprocess {
 			for (int i = 0; i < phrases.length; i++) {
 				String words[] = phrases[i].split("[ ]");
 				len = words.length;
-				System.out.println(phrases[i] + " len: " + len+" min: "+min+ " max: "+max);
+				System.out.println(phrases[i] + " len: " + len + " min: " + min
+						+ " max: " + max);
 				if ((len >= min) && (len <= max)) {
-					System.out.println("Phrase within filter: "+phrases[i] + "  ");
+					System.out.println("Phrase within filter: " + phrases[i]
+							+ "  ");
 					buf.append(phrases[i] + eol);
 				}
 			}
