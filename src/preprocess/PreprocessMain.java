@@ -69,18 +69,9 @@ public class PreprocessMain {
 	public static void main(String[] args) {
 		LoggerConfigurator.configGlobal();
 
-		// save name to file
 		String PATH_NAME = pathName();
 		TextInfo textInfo = getTextInfo(FOLDER_NAME);
-
 		String NAME = textInfo.filename;
-
-		/*
-		 * StringBuilder sb = new StringBuilder(); for (Character c :
-		 * filename.toCharArray()) { if(Character.isLetter(c)) sb.append(c); }
-		 * 
-		 * String NAME = sb.toString();
-		 */
 
 		final String ENCODING = "UTF-8";// StandardCharsets.UTF_8;
 		final String TXTEXTENSION = ".txt";
@@ -106,7 +97,7 @@ public class PreprocessMain {
 			// int i=10/0;
 		}
 
-		// save name of Input text
+		// save name of Input text to file "Name.txt" in parent folder of project
 		try {
 			PrintWriter name = new PrintWriter(new FileWriter(PATH_NAME
 					+ "Name" + TXTEXTENSION));
@@ -120,6 +111,7 @@ public class PreprocessMain {
 			int i = 10 / 0;
 		}
 
+		// save result of preprocessing to a file in parent folder of project
 		try {
 			PrintWriter out = new PrintWriter(new FileWriter(PATH_NAME
 					+ OUTPUT_FILE_NAME));
