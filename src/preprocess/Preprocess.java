@@ -1,6 +1,8 @@
 package preprocess;
 
 import java.io.BufferedReader;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Preprocess {
 
@@ -14,33 +16,35 @@ public class Preprocess {
 		String line;
 		try {
 			while ((line = reader.readLine()) != null) {
-				System.out.println(line);
-				textBuffer.append(line);
+				textBuffer.append(line + "\n");
 			}
 		} catch (Exception e) {
 			System.out.println("Exception Preprocess.readText");
 		}
 
-		// System.out.println("\n\nResult readText\n"
-		// + /* textBuffer.toString() */result);
-		return textBuffer.toString();
+		// For large Strings, StringBuffer.toString() is bad, use new
+		// String(StringBuffer) instead
+		String result = new String(textBuffer);
+		System.out.println("\n\nResult readText\n" + result);
+		return result;
 	}
 
 	String process(String text) {
+		System.out.println("Length of text: " + text.length());
+
+		Map<String, String> replacements = getReplacements();
 
 		try {
 			System.out.println("\n\nPreprocess.normalize entry");
+
 			// replace initial line number
 			text = text.replaceAll("\\n[0-9]+", "");
 			// colon, quotation mark by blank
 			text = text.replaceAll("[,\"\\«\\»]", " ");
 
-			// System.out.println("Test1"+"\n"+text);
-
 			// replace all white chars (blank, newline, tab)
 			text = text.replaceAll("[\\s]+", " ");
 
-			// System.out.println("Test2 "+"\n"+text);
 			// 19,3
 			text = text.replaceAll("([0-9])([,])([0-9])", "$1#$3");
 			// colon, quotation mark by blank
@@ -63,17 +67,14 @@ public class Preprocess {
 			text = text.replaceAll(abbrev, "$1&");
 
 			// 100'000, 100 000
-
 			text = text.replaceAll("([0-9]+)([\\'])([0-9]+)", "$1$3");
 
 			text = text.replaceAll("([0-9]+)([ ])([0-9]+)", "$1$3");
 
 			// z.B. 2:0
 			text = text.replaceAll("([0-9])([:])([0-9])", "$1|$3");
-			// 10.000
+			// replace e.g. 10.000 with 10000
 			text = text.replaceAll("([0-9])([.])([0-9])", "$1$3");
-
-			// System.out.println("Test2 "+"\n"+text);
 
 			// (blank) full stop (.,!,? ...) (blank) by $ eol
 			text = text.replaceAll("[ ]*[.;!?;:][\\s]*", "\\$" + eol);
@@ -85,7 +86,6 @@ public class Preprocess {
 			// blanks at beginning of text (may occur after deletion of
 			// " for ex.
 			// while (text.charAt(0)==' ') text=text.substring(1);
-			System.out.println("Test3" + "\n" + text);
 
 			System.out.println("Exit normalize");
 		} catch (Exception e) {
@@ -93,9 +93,49 @@ public class Preprocess {
 			int i = 10 / 0;
 		}
 
-		;
-
 		return text;
+	}
+
+	private Map<String, String> getReplacements() {
+		Map<String, String> toReturn = new HashMap<>();
+
+		// replace initial line number
+		toReturn.put("\\n[0-9]+", "");
+		// replace colon, quotation mark by blank
+		toReturn.put("[,\"\\«\\»]", " ");
+		// normalize all white chars (blank, newline, tab) to single ws
+		toReturn.put("[\\s]+", " ");
+
+		toReturn.put("([0-9])([,])([0-9])", "$1#$3");
+		// remove parentheses
+		toReturn.put("[\\(][^\\)]*[\\)]", " ");
+		// reduce multiple blanks to one blank
+		toReturn.put("[ ]+", " ");
+		// dates
+		toReturn.put(
+				"([1-2][0-9]|[3][0-1]|[1-9])([\\.])([1-9]|[1][0-2])([\\.])",
+				"$1&$3&");
+		toReturn.put("([1-2][0-9]|[3][0-1]|[1-9])([\\.])", "$1&");
+
+		// abbreviations
+		toReturn.put(
+				"(a|al|B|bzw|ca|Chr|Dr|Fr|Hrg|Hrsg|I|i|Mill|Mio|Mr|Mrd|Nr|O|phil|Prof|s|S|St|u|usf|usw|v|V|z)([\\.])",
+				"$1&");
+		// 100'000
+		toReturn.put("([0-9]+)([\\'])([0-9]+)", "$1$3");
+		// 100 000
+		toReturn.put("([0-9]+)([ ])([0-9]+)", "$1$3");
+		// z.B. 2:0
+		toReturn.put("([0-9])([:])([0-9])", "$1|$3");
+		toReturn.put("([0-9])([.])([0-9])", "$1$3");
+		// replace (blank) full stop (.,!,? ...) (blank) by $ eol
+		toReturn.put("[ ]*[.;!?;:][\\s]*", "\\$" + eol);
+
+		// undo & for ., s.above for date
+		toReturn.put("[&]", "\\.");
+		toReturn.put("[|]", "\\:");
+		toReturn.put("[#]", "\\,");
+		return toReturn;
 	}
 
 	StringBuffer filter(String text, int min, int max) {
@@ -122,5 +162,4 @@ public class Preprocess {
 		System.out.println();
 		return buf;
 	}
-
 }
