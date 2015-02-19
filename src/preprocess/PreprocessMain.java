@@ -11,8 +11,13 @@ import java.io.PrintWriter;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
+
+import util.LoggerConfigurator;
 
 public class PreprocessMain {
+
+	private static final Logger LOGGER = Logger.getGlobal();
 
 	private static String TXTEXTENSION = ".txt";
 	private static String FOLDER_NAME = "data/"; // TODO: use properties for
@@ -43,15 +48,15 @@ public class PreprocessMain {
 				+ "TextInfo" + TXTEXTENSION))) {
 			textInfo.filename = reader.readLine();
 
-			System.out.println((int) textInfo.filename.charAt(0));
+			LOGGER.fine("First char: " + (int) textInfo.filename.charAt(0));
 			if (!Character.isLetter(textInfo.filename.charAt(0)))
 				textInfo.filename = textInfo.filename.substring(1);
-			System.out.println("textInfo.filename=" + textInfo.filename);
+			LOGGER.fine("textInfo.filename=" + textInfo.filename);
 
 			textInfo.min = Integer.parseInt(reader.readLine());
 			textInfo.max = Integer.parseInt(reader.readLine());
-			System.out.println("TextInfo " + textInfo.filename + " "
-					+ textInfo.min + " " + textInfo.max);
+			LOGGER.fine("TextInfo " + textInfo.filename + " " + textInfo.min
+					+ " " + textInfo.max);
 
 			return textInfo;
 
@@ -62,6 +67,8 @@ public class PreprocessMain {
 	}
 
 	public static void main(String[] args) {
+		LoggerConfigurator.configGlobal();
+
 		// save name to file
 		String PATH_NAME = pathName();
 		TextInfo textInfo = getTextInfo(FOLDER_NAME);
@@ -81,7 +88,7 @@ public class PreprocessMain {
 
 		String text = "";
 		StringBuffer filterBuf = null;
-		System.out.println("PreprocessMain " + PATH_NAME + FOLDER_NAME + NAME
+		LOGGER.info("PreprocessMain " + PATH_NAME + FOLDER_NAME + NAME
 				+ TXTEXTENSION);
 		try {
 
@@ -124,6 +131,6 @@ public class PreprocessMain {
 			int i = 10 / 0;
 		}
 
-		System.out.println("PreprocessMain Ende");
+		LOGGER.exiting("PreprocessMain", "main");
 	}
 }

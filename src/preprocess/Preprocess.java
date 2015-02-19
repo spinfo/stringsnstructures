@@ -3,13 +3,17 @@ package preprocess;
 import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Preprocess {
 
-	String eol = System.getProperty("line.separator");
+	private static final Logger LOGGER = Logger.getGlobal();
+
+	private String eol = System.getProperty("line.separator");
 
 	public String readText(BufferedReader reader) {
-		System.out.println("Preprocess.readText entry");
+		LOGGER.entering(this.getClass().getName(), "readText");
 		// must begin with line break for identification of line number in
 		// normalize method
 		StringBuilder textBuffer = new StringBuilder("\n");
@@ -19,24 +23,24 @@ public class Preprocess {
 				textBuffer.append(line + "\n");
 			}
 		} catch (Exception e) {
-			System.out.println("Exception Preprocess.readText");
+			LOGGER.log(Level.SEVERE, "Exception Preprocess.readText", e);
 		}
 
 		// For large Strings, StringBuffer.toString() is bad, use new
 		// String(StringBuffer) instead
 		String result = new String(textBuffer);
-		System.out.println("\n\nResult readText\n" + result);
+		LOGGER.finest("\n\nResult readText\n" + result);
 		return result;
 	}
 
 	String process(String text) {
-		System.out.println("Length of text: " + text.length());
+		LOGGER.info("Length of text: " + text.length());
+
+		LOGGER.entering(this.getClass().getName(), "process");
 
 		Map<String, String> replacements = getReplacements();
 
 		try {
-			System.out.println("\n\nPreprocess.normalize entry");
-
 			// replace initial line number
 			text = text.replaceAll("\\n[0-9]+", "");
 			// colon, quotation mark by blank
@@ -87,9 +91,9 @@ public class Preprocess {
 			// " for ex.
 			// while (text.charAt(0)==' ') text=text.substring(1);
 
-			System.out.println("Exit normalize");
+			LOGGER.exiting(this.getClass().getName(), "normalize");
 		} catch (Exception e) {
-			System.out.println("Exception normalize");
+			LOGGER.log(Level.SEVERE, "Exception normalize", e);
 			int i = 10 / 0;
 		}
 
@@ -150,11 +154,10 @@ public class Preprocess {
 			for (int i = 0; i < phrases.length; i++) {
 				String words[] = phrases[i].split("[ ]");
 				len = words.length;
-				System.out.println(phrases[i] + " len: " + len + " min: " + min
+				LOGGER.finest(phrases[i] + " len: " + len + " min: " + min
 						+ " max: " + max);
 				if ((len >= min) && (len <= max)) {
-					System.out.println("Phrase within filter: " + phrases[i]
-							+ "  ");
+					LOGGER.finer("Phrase within filter: " + phrases[i] + "  ");
 					buf.append(phrases[i] + eol);
 				}
 			}
