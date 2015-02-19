@@ -313,7 +313,7 @@ public class KeyWordInPhrase {
 		LoggerConfigurator.configGlobal();
 
 		try {
-			LOGGER.info("Name file: " + PATH + "/" + name);
+			LOGGER.info("Path of file: " + PATH + name);
 
 			// Text to search
 			Directory index = generateIndex();

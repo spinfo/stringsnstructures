@@ -26,16 +26,16 @@ public class GeneralisedSuffixTreeMain {
 	private static final Logger LOGGER = Logger.getGlobal();
 	// .getLogger(GeneralisedSuffixTreeMain.class.getName());
 
-	SuffixTreeAppl st;
-	ArrayList<Integer> unitList = new ArrayList<Integer>();
-	ArrayList<String> typeList = new ArrayList<String>();
-	int nrTypes = 0;
-	String text;
-	String name;
-	String PATH;
-	static final String TXTEXTENSION = ".txt";
-	static final String XMLEXTENSION = ".xml";
-	static String fileSeparator = System.getProperty("file.separator");
+	private SuffixTreeAppl st;
+	private ArrayList<Integer> unitList = new ArrayList<Integer>();
+	private ArrayList<String> typeList = new ArrayList<String>();
+	private int nrTypes = 0;
+	private String text;
+	private String name;
+	private String PATH;
+	private static final String TXTEXTENSION = ".txt";
+	private static final String XMLEXTENSION = ".xml";
+	private static String fileSeparator = System.getProperty("file.separator");
 
 	private static String pathName() {
 
@@ -49,7 +49,7 @@ public class GeneralisedSuffixTreeMain {
 		return null;
 	}
 
-	private static String Name(String PATH) {
+	private static String name(String PATH) {
 		// reads name of input file from file "name"
 		try (BufferedReader reader = new BufferedReader(new FileReader(PATH
 				+ "name" + TXTEXTENSION))) {
@@ -96,7 +96,7 @@ public class GeneralisedSuffixTreeMain {
 			PATH = pathName();
 
 			LOGGER.info("GeneralisedSuffixTreeMain Path: " + PATH);
-			name = Name(PATH);
+			name = name(PATH);
 			readCorpusAndUnitListFromFile();
 		}
 		int start = 0, end;
@@ -108,13 +108,13 @@ public class GeneralisedSuffixTreeMain {
 		// The tokens (texts) are numbered (continuously), and the last token of
 		// a type is numbered by an integer called unit. All unit integers are
 		// stored a unit list.
-		// readCorpusAndUnitListFromFile();
+		readCorpusAndUnitListFromFile();
 		// String text = "aba$";
 		// String text = "aba$abc$";
 		// String text = "aba$abc$dce$";
 		//
 		// String text = "abc$dce$";
-		String text = "banana$ananas$";
+		// String text = "banana$ananas$";
 		// String text = "babxba$xabxa$";//example Pekka Kilpeläinen
 		// String text = "aba$aca$";
 		// String text = "aaa$banana$";
@@ -233,7 +233,7 @@ public class GeneralisedSuffixTreeMain {
 		LOGGER.info("GeneralisedSuffixTreeMain Start");
 
 		/*
-		 * set to true for test,i.e. for input strings, not from file
+		 * set to true for test, i.e. for input strings, not from file
 		 */
 		new GeneralisedSuffixTreeMain(false);
 
