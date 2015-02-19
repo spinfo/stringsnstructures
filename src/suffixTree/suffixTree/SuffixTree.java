@@ -89,7 +89,7 @@ public class SuffixTree {
 
 	public void write(int val, String messageFrom, String str) {
 		if (val > 0)
-			LOGGER.finer(messageFrom);
+			LOGGER.finest(messageFrom);
 		LOGGER.finest(" " + str);
 	}
 
@@ -355,18 +355,18 @@ public class SuffixTree {
 					+ remainder + " active_pointPhase: " + activePoint.phase);
 			currentPosition = start - 1;// 13.1.-1;
 			//
-			LOGGER.fine(" start, end : " + nodes[active_node].getStart() + "  "
+			LOGGER.finer(" start, end : " + nodes[active_node].getStart() + "  "
 					+ nodes[active_node].getEnd(this.getPosition() + 1));
 			if (nodes[active_node].getStart() >= 0)
-				LOGGER.fine(" active_node Kante " + edgeString(active_node));
+				LOGGER.finer(" active_node Kante " + edgeString(active_node));
 			for (int i = start - activePoint.phase; i < start; i++) {
 				text[i] = textStr.charAt(i);
-				LOGGER.info("" + text[i]);
+				LOGGER.fine("" + text[i]);
 			}
 			System.out.println();
 			// System.out.print("text (phase): ");
 			for (int i = 0; i < text.length; i++) {
-				LOGGER.fine("Char: " + text[i]);
+				LOGGER.finer("Char: " + text[i]);
 				if (text[i] == '$')
 					System.out.println();
 			}
@@ -377,9 +377,9 @@ public class SuffixTree {
 			addChar(textStr.charAt(i));
 		}
 
-		LOGGER.finer("currentPosition : " + currentPosition);
+		LOGGER.finest("currentPosition : " + currentPosition);
 		oo.setEnd(currentPosition + 1);
-		LOGGER.finer("oo.End end : " + oo.getEnd());
+		LOGGER.finest("oo.End end : " + oo.getEnd());
 	}
 
 	public String edgeString(int node) {

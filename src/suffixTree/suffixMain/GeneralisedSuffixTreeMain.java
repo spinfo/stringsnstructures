@@ -8,6 +8,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import suffixTree.suffixTree.SuffixTree;
@@ -80,7 +81,7 @@ public class GeneralisedSuffixTreeMain {
 			}
 			brInt.close();
 			while ((type = brType.readLine()) != null) {
-				LOGGER.fine("Type: " + type);
+				LOGGER.finest("Type: " + type);
 				typeList.add(type);
 				nrTypes++;
 			}
@@ -129,7 +130,7 @@ public class GeneralisedSuffixTreeMain {
 		if ((end = text.indexOf('$', start)) != -1) {
 
 			// --------------------------------------
-			LOGGER.fine("GeneralisedSuffixTreeMain: first suffix tree: start: "
+			LOGGER.finer("GeneralisedSuffixTreeMain: first suffix tree: start: "
 					+ start + " end $: " + end + " substring: "
 					+ text.substring(start, end + 1));
 			SuffixTree.oo = new End(Integer.MAX_VALUE / 2);
@@ -145,7 +146,7 @@ public class GeneralisedSuffixTreeMain {
 
 			start = end + 1;
 
-			LOGGER.fine("GeneralisedSuffixTreeMain: vor while text: " + text
+			LOGGER.finer("GeneralisedSuffixTreeMain: vor while text: " + text
 					+ " start: " + start);
 
 			// next texts (ending in terminator symbol), add to suffix tree in
@@ -160,13 +161,13 @@ public class GeneralisedSuffixTreeMain {
 
 					{
 						SuffixTreeAppl.unit++;
-						LOGGER.info("unit: " + SuffixTreeAppl.unit
+						LOGGER.finer("unit: " + SuffixTreeAppl.unit
 								+ "  textNr: " + SuffixTreeAppl.textNr
 								+ " type " + typeList.get(SuffixTreeAppl.unit));
 					}
 				}
 				nextText = text.substring(start, end + 1);
-				LOGGER.fine("GeneralisedSuffixTreeMain:  start: " + start
+				LOGGER.finer("GeneralisedSuffixTreeMain:  start: " + start
 						+ " end $: " + end + " nextText: " + nextText
 						+ "  textNr:  " + SuffixTreeAppl.textNr);
 
@@ -222,7 +223,7 @@ public class GeneralisedSuffixTreeMain {
 				out.printTag("output", false, 0, true);
 				out.close();
 			} catch (Exception e) {
-				System.out.println("Exception GeneralisedSuffixTreeMain");
+				LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 	}
@@ -230,13 +231,13 @@ public class GeneralisedSuffixTreeMain {
 	public static void main(String... args) throws Exception {
 		LoggerConfigurator.configGlobal();
 
-		LOGGER.info("GeneralisedSuffixTreeMain Start");
+		LOGGER.entering(GeneralisedSuffixTreeMain.class.getName(), "main");
 
 		/*
 		 * set to true for test, i.e. for input strings, not from file
 		 */
 		new GeneralisedSuffixTreeMain(false);
-
-		LOGGER.info("GeneralisedSuffixTreeMain End");
+		
+		LOGGER.exiting(GeneralisedSuffixTreeMain.class.getName(), "main");
 	}
 }

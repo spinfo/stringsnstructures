@@ -87,7 +87,7 @@ public class SuffixTreeAppl extends SuffixTree {
 
 			int child_node = this.nodes[node].children.get(str.charAt(phase));
 
-			LOGGER.info("SuffixTreeAppl.longestPath child_node: " + child_node
+			LOGGER.finer("SuffixTreeAppl.longestPath child_node: " + child_node
 					+ " start " + this.nodes[child_node].getStart() + " end  "
 					+ this.nodes[child_node].getEnd(this.getPosition())
 					+ " phase " + phase + " activeEdgeInConcatinatedText: "
@@ -104,7 +104,7 @@ public class SuffixTreeAppl extends SuffixTree {
 					.getEnd(this.getPosition() + 1); i++) {
 				/* char in edge equal to char in edge */
 				if (this.text[i] == str.charAt(phase)) {
-					LOGGER.fine("" + this.text[i]);
+					LOGGER.finest("" + this.text[i]);
 					phase++;
 					if (phase >= str.length()) {
 						write(1,
@@ -167,7 +167,7 @@ public class SuffixTreeAppl extends SuffixTree {
 					}
 				}
 			}// for
-			LOGGER.info("\nSuffixTreeAppl.longestPath vor Rekursion: "
+			LOGGER.fine("\nSuffixTreeAppl.longestPath vor Rekursion: "
 					+ str.substring(0, phase + 1)
 					+ " activeEdgeInConcatinatedText: "
 					+ activeEdgeInConcatinatedText + " phase: " + phase);
@@ -186,7 +186,7 @@ public class SuffixTreeAppl extends SuffixTree {
 	public void printText() {
 		// print text (array of char, s.a.)
 		for (int i = 0; i <= this.getCurrentPosition(); i++) {
-			LOGGER.info("" + text[i]);
+			LOGGER.fine("" + text[i]);
 		}
 		System.out.println();
 	}
