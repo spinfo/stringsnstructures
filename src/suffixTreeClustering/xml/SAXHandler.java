@@ -148,7 +148,7 @@ public class SAXHandler extends DefaultHandler {
 
 		if (eName.equals("node")) {
 			// end of currentNode --> save it
-			// if node number == 1 --> ignore (hack)
+			// if node number == 1 --> ignore (root node)
 			if (!(currentNode.getNodeNumber() == 1))
 				outputInfo.addNode(currentNode);
 		}
@@ -170,8 +170,8 @@ public class SAXHandler extends DefaultHandler {
 			outputInfo.setNumberOfTypes(Integer.parseInt(s));
 			break;
 		case NODES:
-			// TODO: have to manually subtract 1 because total number contains
-			// root node in XML
+			// manually subtract 1 because total number contains
+			// root node
 			outputInfo.setNumberOfNodes(Integer.parseInt(s) - 1);
 			break;
 		case NUMBER:
