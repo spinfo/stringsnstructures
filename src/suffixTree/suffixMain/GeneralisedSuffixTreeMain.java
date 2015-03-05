@@ -109,7 +109,7 @@ public class GeneralisedSuffixTreeMain {
 		// The tokens (texts) are numbered (continuously), and the last token of
 		// a type is numbered by an integer called unit. All unit integers are
 		// stored a unit list.
-		readCorpusAndUnitListFromFile();
+		// readCorpusAndUnitListFromFile();
 		// String text = "aba$";
 		// String text = "aba$abc$";
 		// String text = "aba$abc$dce$";
@@ -131,7 +131,10 @@ public class GeneralisedSuffixTreeMain {
 
 			// --------------------------------------
 			LOGGER.finer("GeneralisedSuffixTreeMain: first suffix tree: start: "
-					+ start + " end $: " + end + " substring: "
+					+ start
+					+ " end $: "
+					+ end
+					+ " substring: "
 					+ text.substring(start, end + 1));
 			SuffixTree.oo = new End(Integer.MAX_VALUE / 2);
 			st = new SuffixTreeAppl(text.length(),
@@ -237,7 +240,7 @@ public class GeneralisedSuffixTreeMain {
 		 * set to true for test, i.e. for input strings, not from file
 		 */
 		new GeneralisedSuffixTreeMain(false);
-		
+
 		LOGGER.exiting(GeneralisedSuffixTreeMain.class.getName(), "main");
 	}
 }
