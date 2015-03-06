@@ -4,9 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,6 +18,7 @@ import suffixTree.suffixTree.node.activePoint.ExtActivePoint;
 import suffixTree.suffixTree.node.info.End;
 import suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
 import util.LoggerConfigurator;
+import util.TextInfo;
 
 public class GeneralisedSuffixTreeMain {
 
@@ -32,49 +30,19 @@ public class GeneralisedSuffixTreeMain {
 	private ArrayList<String> typeList = new ArrayList<String>();
 	private int nrTypes = 0;
 	private String text;
-	private String name;
-	private String PATH;
-	private static final String TXTEXTENSION = ".txt";
-	private static final String XMLEXTENSION = ".xml";
-	private static String fileSeparator = System.getProperty("file.separator");
-
-	private static String pathName() {
-
-		Path p = Paths.get("../");
-		try {
-			return p.toRealPath(LinkOption.NOFOLLOW_LINKS).toString()
-					+ fileSeparator;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	private static String name(String PATH) {
-		// reads name of input file from file "name"
-		try (BufferedReader reader = new BufferedReader(new FileReader(PATH
-				+ "name" + TXTEXTENSION))) {
-			String name = reader.readLine();
-			LOGGER.info("Name of file to be processed: " + name);
-			return name;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 
 	void readCorpusAndUnitListFromFile() {
-		try (BufferedReader brText = new BufferedReader(new FileReader(PATH
-				+ name + "Kwip" + TXTEXTENSION))) {
+		try (BufferedReader brText = new BufferedReader(new FileReader(
+				TextInfo.getKwipPath()))) {
 
 			text = brText.readLine();
 			LOGGER.info("Text read:\n" + text);
 
 			String line, type;
-			BufferedReader brInt = new BufferedReader(new FileReader(PATH
-					+ name + "Kwip" + "Unit" + TXTEXTENSION));
-			BufferedReader brType = new BufferedReader(new FileReader(PATH
-					+ name + "Kwip" + "Type" + TXTEXTENSION));
+			BufferedReader brInt = new BufferedReader(new FileReader(
+					TextInfo.getKwipUnitPath()));
+			BufferedReader brType = new BufferedReader(new FileReader(
+					TextInfo.getKwipTypePath()));
 			while ((line = brInt.readLine()) != null) {
 				// LOGGER.fine("Next line: " + line);
 				unitList.add(Integer.parseInt(line));
@@ -94,10 +62,7 @@ public class GeneralisedSuffixTreeMain {
 
 	public GeneralisedSuffixTreeMain(boolean test) throws Exception {
 		if (!test) {
-			PATH = pathName();
-
-			LOGGER.info("GeneralisedSuffixTreeMain Path: " + PATH);
-			name = name(PATH);
+			LOGGER.info("GeneralisedSuffixTreeMain Path: " + TextInfo.getWorkspacePath());
 			readCorpusAndUnitListFromFile();
 		}
 		int start = 0, end;
@@ -208,8 +173,8 @@ public class GeneralisedSuffixTreeMain {
 		if (!test) {
 			ResultSuffixTreeNodeStack.setPrintSuffixTree(st);
 			try {
-				XmlPrintWriter out = new XmlPrintWriter(new FileWriter(PATH
-						+ name + "SuffixTree" + XMLEXTENSION));
+				XmlPrintWriter out = new XmlPrintWriter(new FileWriter(
+						TextInfo.getSuffixTreePath()));
 				out.printTag("output", true, 0, true);
 				out.printTag("units", true, 1, false);
 				out.printInt(nrTypes);
