@@ -21,6 +21,7 @@ public class TextInfo {
 
 	private static final String TXT_EXTENSION = ".txt";
 	private static final String XML_EXTENSION = ".xml";
+	private static final String HTML_EXTENSION = ".html";
 
 	private static String textName;
 	private static String preprocessName;
@@ -34,6 +35,12 @@ public class TextInfo {
 
 	private static int minLength;
 	private static int maxLength;
+	private static String kwipTypeName;
+	private static String kwipTypePath;
+	private static String kwipUnitName;
+	private static String kwipUnitPath;
+	private static String prettyKwipName;
+	private static String prettyKwipPath;
 
 	static {
 		determineWorkspacePath();
@@ -51,9 +58,9 @@ public class TextInfo {
 			setMinLengthAndPath(properties.getProperty("minLength"));
 			setMaxLengthAndPath(properties.getProperty("maxLength"));
 
-			setPreprocessName();
-			setKwipName();
-			setSuffixTreeName();
+			setPreprocessNameAndPath();
+			setKwipNamesAndPaths();
+			setSuffixTreeNameAndPath();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -80,17 +87,26 @@ public class TextInfo {
 				+ TXT_EXTENSION;
 	}
 
-	private static void setPreprocessName() {
+	private static void setPreprocessNameAndPath() {
 		TextInfo.preprocessName = textName + "Preprocess";
 		TextInfo.preprocessPath = createFilePath(preprocessName, TXT_EXTENSION);
 	}
 
-	private static void setKwipName() {
+	private static void setKwipNamesAndPaths() {
 		TextInfo.kwipName = textName + "Kwip";
 		TextInfo.kwipPath = createFilePath(kwipName, TXT_EXTENSION);
+
+		TextInfo.kwipTypeName = textName + "KwipType";
+		TextInfo.kwipTypePath = createFilePath(kwipTypeName, TXT_EXTENSION);
+
+		TextInfo.kwipUnitName = textName + "KwipUnit";
+		TextInfo.kwipUnitPath = createFilePath(kwipUnitName, TXT_EXTENSION);
+
+		TextInfo.prettyKwipName = textName + "PrettyKwip";
+		TextInfo.prettyKwipPath = createFilePath(prettyKwipName, HTML_EXTENSION);
 	}
 
-	private static void setSuffixTreeName() {
+	private static void setSuffixTreeNameAndPath() {
 		TextInfo.suffixTreeName = textName + "SuffixTree";
 		TextInfo.suffixTreePath = createFilePath(suffixTreeName, XML_EXTENSION);
 	}
@@ -143,7 +159,31 @@ public class TextInfo {
 		return kwipPath;
 	}
 
+	public static String getKwipTypeName() {
+		return kwipTypeName;
+	}
+
+	public static String getKwipTypePath() {
+		return kwipTypePath;
+	}
+
+	public static String getKwipUnitName() {
+		return kwipUnitName;
+	}
+
+	public static String getKwipUnitPath() {
+		return kwipUnitPath;
+	}
+
 	public static String getSuffixTreePath() {
 		return suffixTreePath;
+	}
+
+	public static String getPrettyKwipName() {
+		return prettyKwipName;
+	}
+
+	public static String getPrettyKwipPath() {
+		return prettyKwipPath;
 	}
 }

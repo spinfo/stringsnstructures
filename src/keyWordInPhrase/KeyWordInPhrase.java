@@ -1,4 +1,5 @@
 package keyWordInPhrase;
+
 //   
 //
 import java.io.BufferedReader;
@@ -7,9 +8,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -39,48 +37,11 @@ import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
 import util.LoggerConfigurator;
+import util.TextInfo;
 
 public class KeyWordInPhrase {
 
 	private static final Logger LOGGER = Logger.getGlobal();
-
-	private static final String ENCODING = "UTF-8";// StandardCharsets.UTF_8;
-	private static final String TXTEXTENSION = ".txt";
-	private static String PATH = pathName();
-	private static String name = ReadNameOfInputFile(PATH);
-	private static String fileSeparator = System.getProperty("file.separator");
-	private static String INPUT_FILE_NAME = PATH + name + "Preprocess"
-			+ TXTEXTENSION;
-	private static String OUTPUT_RESULT_FILE_NAME = PATH + name + "Kwip"
-			+ TXTEXTENSION;
-	private static String OUTPUT_TYPE_FILE_NAME = PATH + name + "Kwip" + "Type"
-			+ TXTEXTENSION;
-	private static String OUTPUT_UNIT_FILE_NAME = PATH + name + "Kwip" + "Unit"
-			+ TXTEXTENSION;
-
-	private static String pathName() {
-
-		Path p = Paths.get("../");
-		try {
-			return p.toRealPath(LinkOption.NOFOLLOW_LINKS).toString() + "\\";
-		} catch (IOException e) {
-			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-		}
-		return null;
-	}
-
-	private static String ReadNameOfInputFile(String PATH) {
-		// reads name of input file from file "Name"
-		try (BufferedReader reader = new BufferedReader(new FileReader(PATH
-				+ "Name" + TXTEXTENSION))) {
-			String name = reader.readLine();
-			LOGGER.info("Name of text file: " + name);
-			return name;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 
 	static StandardAnalyzer analyzer = null;
 	static StringBuffer resultBuf = new StringBuffer();
@@ -125,7 +86,7 @@ public class KeyWordInPhrase {
 					analyzer);
 			IndexWriter w = new IndexWriter(index, config);
 			// ----------------------------------------------------------------------
-			File file = new File(INPUT_FILE_NAME);
+			File file = new File(TextInfo.getPreprocessPath());
 			int lineNr = 0;
 			try (BufferedReader bufreader = new BufferedReader(new FileReader(
 					file))) {
@@ -242,7 +203,7 @@ public class KeyWordInPhrase {
 		 */
 
 		try {
-			FileWriter fw = new FileWriter(OUTPUT_UNIT_FILE_NAME);
+			FileWriter fw = new FileWriter(TextInfo.getKwipUnitPath());
 			for (int i = 0; i < unitList.size(); i++) {
 				fw.write(String.valueOf(unitList.get(i)) + "\n");
 				LOGGER.finer("UnitList item: " + unitList.get(i));
@@ -258,7 +219,7 @@ public class KeyWordInPhrase {
 	static void writeToFileTypeList(ArrayList<String> typeList) {
 		/* saves type strings */
 		try {
-			FileWriter fw = new FileWriter(OUTPUT_TYPE_FILE_NAME);
+			FileWriter fw = new FileWriter(TextInfo.getKwipTypePath());
 			for (int i = 0; i < typeList.size(); i++) {
 				fw.write(String.valueOf(typeList.get(i)) + "\n");
 				LOGGER.finer("TypeList item: " + typeList.get(i));
@@ -314,7 +275,7 @@ public class KeyWordInPhrase {
 		LoggerConfigurator.configGlobal();
 
 		try {
-			LOGGER.info("Path of file: " + PATH + name);
+			LOGGER.info("Path of file: " + TextInfo.getTextName());
 
 			// Text to search
 			Directory index = generateIndex();
@@ -324,14 +285,14 @@ public class KeyWordInPhrase {
 			// documents any more
 			reader.close();
 			// System.out.println(resultBuf);
-			FileWriter fwresult = new FileWriter(OUTPUT_RESULT_FILE_NAME);
+			FileWriter fwresult = new FileWriter(TextInfo.getKwipPath());
 			fwresult.write(resultBuf.toString());
 			fwresult.close();
 
 			prettyBuf.append("</BODY></HTML>");
 			LOGGER.fine("vor prettyWriter");
-			FileWriter prettyWriter = new FileWriter(PATH + name + "PrettyKwip"
-					+ ".html");
+			FileWriter prettyWriter = new FileWriter(
+					TextInfo.getPrettyKwipPath());
 
 			prettyWriter.write(prettyBuf.toString());
 			// System.out.println(prettyBuf);
