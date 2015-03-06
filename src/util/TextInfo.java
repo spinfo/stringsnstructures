@@ -83,8 +83,7 @@ public class TextInfo {
 
 	private static void setClusterNameAndPath() {
 		TextInfo.clusterName = textName + "Cluster";
-		TextInfo.clusterPath = FOLDER_NAME + PATH_SEPARATOR + clusterName
-				+ DOT_EXTENSION;
+		TextInfo.clusterPath = createFilePath(clusterName, DOT_EXTENSION);
 	}
 
 	private static String createFilePath(String name, String extension) {

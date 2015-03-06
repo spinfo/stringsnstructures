@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import suffixTreeClustering.clustering.flat.FlatCluster;
@@ -48,7 +49,7 @@ public class SuffixTreeClusteringMain {
 			String typeName;
 
 			BufferedReader typeReader = new BufferedReader(new FileReader(
-					TextInfo.getKwipPath()));
+					TextInfo.getKwipTypePath()));
 
 			LineNumberReader lnReader = new LineNumberReader(typeReader);
 
@@ -95,8 +96,8 @@ public class SuffixTreeClusteringMain {
 			System.out.println(node);
 		}
 
-		List<Type> types = new ArrayList<Type>(corpus.getTypes());
-		for (Type type : types) {
+		Set<Type> types2 = corpus.getTypes();
+		for (Type type : types2) {
 			System.out.println(type);
 		}
 
@@ -137,7 +138,7 @@ public class SuffixTreeClusteringMain {
 
 		// Schritt 2: durchlaufe Liste, suche für jeden Knoten die unit und
 		// notiere Betrag der unit nach tf/idf + speichere in Vektor
-		for (Type doc : types) {
+		for (Type doc : corpus.getTypes()) {
 			LOGGER.info(String.format("Node weights for Type %s (%s)\n",
 					doc.getID(), doc.getString()));
 			doc.calculateVector(corpus, features);
@@ -154,6 +155,7 @@ public class SuffixTreeClusteringMain {
 			System.out.println("]");
 		}
 
+		List<Type> types = new ArrayList<Type>(corpus.getTypes());
 		System.out.println("****************\n");
 
 		// ************* User Input ***************************//
