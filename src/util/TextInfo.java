@@ -22,6 +22,7 @@ public class TextInfo {
 	private static final String TXT_EXTENSION = ".txt";
 	private static final String XML_EXTENSION = ".xml";
 	private static final String HTML_EXTENSION = ".html";
+	private static final String DOT_EXTENSION = ".dot";
 
 	private static String textName;
 	private static String preprocessName;
@@ -41,6 +42,8 @@ public class TextInfo {
 	private static String kwipUnitPath;
 	private static String prettyKwipName;
 	private static String prettyKwipPath;
+	private static String clusterName;
+	private static String clusterPath;
 
 	static {
 		determineWorkspacePath();
@@ -61,6 +64,7 @@ public class TextInfo {
 			setPreprocessNameAndPath();
 			setKwipNamesAndPaths();
 			setSuffixTreeNameAndPath();
+			setClusterNameAndPath();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -75,6 +79,12 @@ public class TextInfo {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private static void setClusterNameAndPath() {
+		TextInfo.clusterName = textName + "Cluster";
+		TextInfo.clusterPath = FOLDER_NAME + PATH_SEPARATOR + clusterName
+				+ DOT_EXTENSION;
 	}
 
 	private static String createFilePath(String name, String extension) {
@@ -185,5 +195,13 @@ public class TextInfo {
 
 	public static String getPrettyKwipPath() {
 		return prettyKwipPath;
+	}
+
+	public static String getClusterName() {
+		return clusterName;
+	}
+
+	public static String getClusterPath() {
+		return clusterPath;
 	}
 }

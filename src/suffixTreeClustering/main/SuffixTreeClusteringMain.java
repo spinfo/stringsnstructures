@@ -7,15 +7,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import suffixTreeClustering.clustering.flat.FlatCluster;
@@ -29,6 +25,7 @@ import suffixTreeClustering.features.FeatureType;
 import suffixTreeClustering.st_interface.SuffixTreeInfo;
 import suffixTreeClustering.xml.XMLDataReader;
 import util.LoggerConfigurator;
+import util.TextInfo;
 
 /**
  * Main class
@@ -41,70 +38,17 @@ public class SuffixTreeClusteringMain {
 
 	private static Map<Integer, String> typeStrings;
 
-	private static final String TXTEXTENSION = ".txt";
-	private static final String XMLEXTENSION = ".xml";
-	private static final String DOTEXTENSION = ".dot";
-
-	/*
-	 * Returns the current workspace directory path.
-	 * 
-	 * @return path of current workspace
-	 */
-	private static String getWorkspacePath() {
-		Path p = Paths.get("../");
-		try {
-			return p.toRealPath(LinkOption.NOFOLLOW_LINKS).toString() + "/";
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	/*
-	 * Method to retrieve the name of the file we want to work with. The
-	 * workspace should contain a file 'name.txt' that contains that name. Opens
-	 * that file and reads the name.
-	 * 
-	 * @param PATH - path where the file 'name.txt' is looked for
-	 * 
-	 * @return string with the file name basis
-	 */
-	private static String getNameOfInputFile(String PATH) {
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader(PATH + "Name"
-					+ TXTEXTENSION));
-			String name = reader.readLine();
-			System.out.println(name);
-			return name;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		} finally {
-			try {
-				reader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
 	/*
 	 * reads in the types list from the specified file and saves it to a Map to
 	 * get a mapping from type IDs to type Strings
-	 * 
-	 * @param PATH - location of the Type file
-	 * 
-	 * @param name - name basis of the Type file
 	 */
-	private static void readTypesFromFile(String PATH, String name) {
+	private static void readTypesFromFile() {
 		typeStrings = new HashMap<Integer, String>();
 		try {
 			String typeName;
 
-			BufferedReader typeReader = new BufferedReader(new FileReader(PATH
-					+ name + "Kwip" + "Type" + TXTEXTENSION));
+			BufferedReader typeReader = new BufferedReader(new FileReader(
+					TextInfo.getKwipPath()));
 
 			LineNumberReader lnReader = new LineNumberReader(typeReader);
 
@@ -131,11 +75,11 @@ public class SuffixTreeClusteringMain {
 		LoggerConfigurator.configGlobal();
 
 		// Schritt 1: lies suffixTreeResult als Liste ein
-		String PATH = getWorkspacePath();
-		String name = getNameOfInputFile(PATH);
-		String inputXml = PATH + name + "SuffixTree" + XMLEXTENSION;
+		String workspacePath = TextInfo.getWorkspacePath();
+		String textName = TextInfo.getTextName();
+		String inputXml = TextInfo.getSuffixTreePath();
 
-		readTypesFromFile(PATH, name); // fill the typeID <-> typeString mapping
+		readTypesFromFile(); // fill the typeID <-> typeString mapping
 
 		XMLDataReader reader = new XMLDataReader(inputXml);
 		// XMLDataReader reader = new
@@ -151,8 +95,8 @@ public class SuffixTreeClusteringMain {
 			System.out.println(node);
 		}
 
-		Set<Type> types2 = corpus.getTypes();
-		for (Type type : types2) {
+		List<Type> types = new ArrayList<Type>(corpus.getTypes());
+		for (Type type : types) {
 			System.out.println(type);
 		}
 
@@ -193,7 +137,7 @@ public class SuffixTreeClusteringMain {
 
 		// Schritt 2: durchlaufe Liste, suche für jeden Knoten die unit und
 		// notiere Betrag der unit nach tf/idf + speichere in Vektor
-		for (Type doc : corpus.getTypes()) {
+		for (Type doc : types) {
 			LOGGER.info(String.format("Node weights for Type %s (%s)\n",
 					doc.getID(), doc.getString()));
 			doc.calculateVector(corpus, features);
@@ -211,8 +155,6 @@ public class SuffixTreeClusteringMain {
 		}
 
 		System.out.println("****************\n");
-
-		List<Type> types = new ArrayList<Type>(corpus.getTypes());
 
 		// ************* User Input ***************************//
 		System.out.println("Which clustering algorithm should be used?");
@@ -236,13 +178,13 @@ public class SuffixTreeClusteringMain {
 			scanner.close();
 			System.exit(0);
 		case 1:
-			clusterHierarchical(types, PATH, name);
+			clusterHierarchical(types, workspacePath, textName);
 			break;
 		case 2:
 			clusterNeighborJoin(types);
 			break;
 		case 3:
-			clusterFlat(types, PATH, name);
+			clusterFlat(types, workspacePath, textName);
 			break;
 		default:
 			System.err.println("Undefined Answer! Exiting...");
@@ -305,9 +247,8 @@ public class SuffixTreeClusteringMain {
 	private static void saveToFile(String clusterToDot, String path, String name) {
 		BufferedWriter writer = null;
 		try {
-			writer = new BufferedWriter(
-					new OutputStreamWriter(new FileOutputStream(path + name
-							+ "Cluster" + DOTEXTENSION), "UTF-8"));
+			writer = new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(TextInfo.getClusterPath()), "UTF-8"));
 			writer.write(clusterToDot);
 		} catch (IOException e) {
 			e.printStackTrace();
