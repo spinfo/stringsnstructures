@@ -15,34 +15,24 @@ public class TextInfo {
 
 	private static final String FILE_SEPARATOR = System
 			.getProperty("file.separator");
-	private static final String PATH_SEPARATOR = "/";
-
-	private static String workspacePath;
 
 	private static final String TXT_EXTENSION = ".txt";
 	private static final String XML_EXTENSION = ".xml";
 	private static final String HTML_EXTENSION = ".html";
 	private static final String DOT_EXTENSION = ".dot";
 
+	private static int minLength;
+	private static int maxLength;
 	private static String textName;
-	private static String preprocessName;
-	private static String kwipName;
-	private static String suffixTreeName;
 
+	private static String workspacePath;
 	private static String textPath;
 	private static String preprocessPath;
 	private static String kwipPath;
 	private static String suffixTreePath;
-
-	private static int minLength;
-	private static int maxLength;
-	private static String kwipTypeName;
 	private static String kwipTypePath;
-	private static String kwipUnitName;
 	private static String kwipUnitPath;
-	private static String prettyKwipName;
 	private static String prettyKwipPath;
-	private static String clusterName;
 	private static String clusterPath;
 
 	static {
@@ -58,13 +48,13 @@ public class TextInfo {
 			FOLDER_NAME = properties.getProperty("folder");
 
 			setTextNameAndPath(properties.getProperty("name"));
-			setMinLengthAndPath(properties.getProperty("minLength"));
-			setMaxLengthAndPath(properties.getProperty("maxLength"));
+			setMinLength(properties.getProperty("minLength"));
+			setMaxLength(properties.getProperty("maxLength"));
 
-			setPreprocessNameAndPath();
-			setKwipNamesAndPaths();
-			setSuffixTreeNameAndPath();
-			setClusterNameAndPath();
+			setPreprocessPath();
+			setKwipPaths();
+			setSuffixTreePath();
+			setClusterPath();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -81,9 +71,9 @@ public class TextInfo {
 		}
 	}
 
-	private static void setClusterNameAndPath() {
-		TextInfo.clusterName = textName + "Cluster";
-		TextInfo.clusterPath = createFilePath(clusterName, DOT_EXTENSION);
+	private static void setClusterPath() {
+		TextInfo.clusterPath = createFilePath(textName + "Cluster",
+				DOT_EXTENSION);
 	}
 
 	private static String createFilePath(String name, String extension) {
@@ -92,48 +82,36 @@ public class TextInfo {
 
 	private static void setTextNameAndPath(String name) {
 		TextInfo.textName = name;
-		TextInfo.textPath = FOLDER_NAME + PATH_SEPARATOR + textName
+		TextInfo.textPath = FOLDER_NAME + FILE_SEPARATOR + textName
 				+ TXT_EXTENSION;
 	}
 
-	private static void setPreprocessNameAndPath() {
-		TextInfo.preprocessName = textName + "Preprocess";
-		TextInfo.preprocessPath = createFilePath(preprocessName, TXT_EXTENSION);
+	private static void setPreprocessPath() {
+		TextInfo.preprocessPath = createFilePath(textName + "Preprocess",
+				TXT_EXTENSION);
 	}
 
-	private static void setKwipNamesAndPaths() {
-		TextInfo.kwipName = textName + "Kwip";
-		TextInfo.kwipPath = createFilePath(kwipName, TXT_EXTENSION);
-
-		TextInfo.kwipTypeName = textName + "KwipType";
-		TextInfo.kwipTypePath = createFilePath(kwipTypeName, TXT_EXTENSION);
-
-		TextInfo.kwipUnitName = textName + "KwipUnit";
-		TextInfo.kwipUnitPath = createFilePath(kwipUnitName, TXT_EXTENSION);
-
-		TextInfo.prettyKwipName = textName + "PrettyKwip";
-		TextInfo.prettyKwipPath = createFilePath(prettyKwipName, HTML_EXTENSION);
+	private static void setKwipPaths() {
+		TextInfo.kwipPath = createFilePath(textName + "Kwip", TXT_EXTENSION);
+		TextInfo.kwipTypePath = createFilePath(textName + "KwipType",
+				TXT_EXTENSION);
+		TextInfo.kwipUnitPath = createFilePath(textName + "KwipUnit",
+				TXT_EXTENSION);
+		TextInfo.prettyKwipPath = createFilePath(textName + "PrettyKwip",
+				HTML_EXTENSION);
 	}
 
-	private static void setSuffixTreeNameAndPath() {
-		TextInfo.suffixTreeName = textName + "SuffixTree";
-		TextInfo.suffixTreePath = createFilePath(suffixTreeName, XML_EXTENSION);
+	private static void setSuffixTreePath() {
+		TextInfo.suffixTreePath = createFilePath(textName + "SuffixTree",
+				XML_EXTENSION);
 	}
 
-	private static void setMaxLengthAndPath(String length) {
+	private static void setMaxLength(String length) {
 		TextInfo.maxLength = Integer.parseInt(length);
 	}
 
-	private static void setMinLengthAndPath(String length) {
+	private static void setMinLength(String length) {
 		TextInfo.minLength = Integer.parseInt(length);
-	}
-
-	public static String getSuffixTreeName() {
-		return suffixTreeName;
-	}
-
-	public static String getKwipName() {
-		return kwipName;
 	}
 
 	public static int getMaxLength() {
@@ -152,10 +130,6 @@ public class TextInfo {
 		return workspacePath;
 	}
 
-	public static String getPreprocessName() {
-		return preprocessName;
-	}
-
 	public static String getTextPath() {
 		return textPath;
 	}
@@ -168,16 +142,8 @@ public class TextInfo {
 		return kwipPath;
 	}
 
-	public static String getKwipTypeName() {
-		return kwipTypeName;
-	}
-
 	public static String getKwipTypePath() {
 		return kwipTypePath;
-	}
-
-	public static String getKwipUnitName() {
-		return kwipUnitName;
 	}
 
 	public static String getKwipUnitPath() {
@@ -188,16 +154,8 @@ public class TextInfo {
 		return suffixTreePath;
 	}
 
-	public static String getPrettyKwipName() {
-		return prettyKwipName;
-	}
-
 	public static String getPrettyKwipPath() {
 		return prettyKwipPath;
-	}
-
-	public static String getClusterName() {
-		return clusterName;
 	}
 
 	public static String getClusterPath() {
