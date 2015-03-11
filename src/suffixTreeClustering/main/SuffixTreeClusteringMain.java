@@ -247,19 +247,11 @@ public class SuffixTreeClusteringMain {
 	}
 
 	private static void saveToFile(String clusterToDot, String path, String name) {
-		BufferedWriter writer = null;
-		try {
-			writer = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(TextInfo.getClusterPath()), "UTF-8"));
+		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+				new FileOutputStream(TextInfo.getClusterPath()), "UTF-8"))) {
 			writer.write(clusterToDot);
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 }

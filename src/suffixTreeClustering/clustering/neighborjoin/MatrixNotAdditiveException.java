@@ -6,7 +6,6 @@ package suffixTreeClustering.clustering.neighborjoin;
  * @author Mandy Neumann
  */
 class MatrixNotAdditiveException extends RuntimeException {
-	transient private Double[][] matrix;
 
 	/***/
 	private static final long serialVersionUID = 8357404165430077570L;
@@ -18,14 +17,7 @@ class MatrixNotAdditiveException extends RuntimeException {
 	 */
 	@Override
 	public String getMessage() {
-		return String.format("Matrix %s is not additive!", this.matrix);
+		return "Matrix is not additive!";
 	}
 
-	/**
-	 * @param matrix
-	 *            the matrix
-	 */
-	public MatrixNotAdditiveException(Double[][] matrix) {
-		this.matrix = matrix;
-	}
 }

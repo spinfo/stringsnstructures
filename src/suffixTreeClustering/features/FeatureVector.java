@@ -1,5 +1,7 @@
 package suffixTreeClustering.features;
 
+import java.util.Arrays;
+
 /**
  * Class representing a Document Vector. A vector is initialized with vector
  * values (e.g. tf-idf weights)
@@ -18,6 +20,7 @@ public final class FeatureVector {
 
 	/**
 	 * Initialize Feature Vector.
+	 * 
 	 * @param values
 	 */
 	public FeatureVector(final Double[] values) {
@@ -34,17 +37,19 @@ public final class FeatureVector {
 			return false;
 		}
 		FeatureVector that = (FeatureVector) obj;
-		return this.features.equals(that.features);
+		return Arrays.equals(this.features, that.features);
 	}
 
 	@Override
 	public int hashCode() {
-		return features.hashCode();
+		return Arrays.hashCode(features);
 	}
 
 	/**
 	 * Calculates and returns Euclidian Distance from this vector to another.
-	 * @param other - the other feature vector.
+	 * 
+	 * @param other
+	 *            - the other feature vector.
 	 * @return float value of Euclidian Distance
 	 */
 	public Double distance(FeatureVector other) {
@@ -85,7 +90,9 @@ public final class FeatureVector {
 
 	/**
 	 * Calculates and returns Cosine-similarity between this vector and another.
-	 * @param other - the other feature vector.
+	 * 
+	 * @param other
+	 *            - the other feature vector.
 	 * @return Double value of Cosine-similarity
 	 */
 	public Double similarity(FeatureVector other) {
