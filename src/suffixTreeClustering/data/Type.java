@@ -76,6 +76,11 @@ public final class Type implements Comparable<Type> {
 			return ((Type) obj).ID == this.ID ? true : false;
 		return false;
 	}
+	
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
 
 	/**
 	 * use Type ID to sort Types in sorted Maps or Sets
