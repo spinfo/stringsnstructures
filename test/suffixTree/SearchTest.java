@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import suffixTree.suffixTree.SuffixTree;
 import suffixTree.suffixTree.applications.SuffixTreeAppl;
+import suffixTree.suffixTree.node.Node;
 import suffixTree.suffixTree.node.activePoint.ExtActivePoint;
 import suffixTree.suffixTree.node.info.End;
 import suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
@@ -19,18 +20,35 @@ import util.TextInfo;
 
 public class SearchTest {
 
-	private static final int ROOT = 1;
-
 	@Test
 	public void test() {
 		int startPos = 0;
-		int startNode = ROOT;
+		int startNode = st.getRoot();
 
 		String search = "Buch";
 
 		boolean found = st.search(search, startPos, startNode);
 
 		Assert.assertTrue("Didn't find search text", found);
+
+		Node[] nodes = st.nodes;
+
+		char[] text = st.text;
+		System.out.println(text);
+
+		int leafCount = SuffixTree.leafCount;
+		int end = SuffixTree.oo.getEnd();
+		int textNr = SuffixTree.textNr;
+		int unit = SuffixTree.unit;
+
+		System.out.println(String.format(
+				"Leaf count: %s\nEnd: %s\nTextNr: %s\nUnit: %s\n", leafCount,
+				end, textNr, unit));
+
+		for (Node node : nodes) {
+			if (null != node)
+				System.out.println(node.edgeLength(startNode));
+		}
 	}
 
 	private SuffixTreeAppl st;
