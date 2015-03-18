@@ -1,2 +1,1 @@
-Peter liest ein rotes Buch.
-Maria liest ein grünes Buch.
+Peter liest ein rotes Buch. Maria liest ein grünes Buch. Paul kauft ein rotes Buch.
