@@ -110,6 +110,7 @@ public class SuffixTreeClusteringMain {
 				.println("Which features should be used for vector creation?");
 		System.out.println("1 - TF-IDF");
 		System.out.println("2 - TF-DF");
+		System.out.println("3 - Binary");
 		System.out.println("0 - Exit");
 
 		Scanner scanner = new Scanner(System.in);
@@ -120,20 +121,26 @@ public class SuffixTreeClusteringMain {
 
 		int answer = processLine(line);
 
-		while (answer == -1 || answer > 2) {
+		while (answer < 0 || answer > 3) {
 			System.err.println("Undefined Answer! Please enter again:");
 			line = scanner.nextLine();
 			answer = processLine(line);
 		}
 
-		if (answer == 0) {
+		switch (answer) {
+		case 1:
+			features = FeatureType.TF_IDF;
+			break;
+		case 2:
+			features = FeatureType.TF_DF;
+			break;
+		case 3:
+			features = FeatureType.BINARY;
+			break;
+		default:
 			scanner.close();
 			System.exit(0);
-		} else {
-			if (answer == 1)
-				features = FeatureType.TF_IDF;
-			else if (answer == 2)
-				features = FeatureType.TF_DF;
+			break;
 		}
 
 		// Schritt 2: durchlaufe Liste, suche für jeden Knoten die unit und

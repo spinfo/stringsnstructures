@@ -1,5 +1,6 @@
 package suffixTreeClustering.data;
 
+import suffixTreeClustering.features.BinaryFeatures;
 import suffixTreeClustering.features.FeatureType;
 import suffixTreeClustering.features.FeatureVector;
 import suffixTreeClustering.features.TfDfFeatures;
@@ -36,6 +37,9 @@ public final class Type implements Comparable<Type> {
 				break;
 			case TF_DF:
 				vector = new TfDfFeatures(this, corpus).vector();
+				break;
+			case BINARY:
+				vector = new BinaryFeatures(this, corpus).vector();
 				break;
 			default:
 				System.err.println("Feature Type unknown");
@@ -76,7 +80,7 @@ public final class Type implements Comparable<Type> {
 			return ((Type) obj).ID == this.ID ? true : false;
 		return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return super.hashCode();
