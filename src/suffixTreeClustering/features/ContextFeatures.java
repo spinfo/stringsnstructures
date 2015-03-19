@@ -42,9 +42,24 @@ public final class ContextFeatures {
 		// Ein Vektor für dieses Dokument ist...
 		List<Double> values = new ArrayList<Double>();
 		// ...für jeden Term im Vokabular... (=jeder Knoten im SuffixTree)
-		List<Node> terms = corpus.getNodes();
+		List<Node> nodes = corpus.getNodes();
 
-		for (Node node : terms) {
+		for (Node node : nodes) {
+			
+			List<Integer> startPositionsOfType = node
+					.getStartPositionsOfType(document);
+			System.out.println("Start positions at node " + node + " of "
+					+ document);
+			if (null != startPositionsOfType) {
+				for (Integer pos : startPositionsOfType) {
+					System.out.println(pos);
+				}
+			} else
+				System.out.println("none");
+			System.out.println("-----------------");
+			
+			
+			
 			double value = 0.0; // TODO: anpassen
 			values.add(value);
 		}
