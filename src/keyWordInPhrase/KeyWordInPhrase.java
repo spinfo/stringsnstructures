@@ -86,22 +86,21 @@ public class KeyWordInPhrase {
 					analyzer);
 			IndexWriter w = new IndexWriter(index, config);
 			// ----------------------------------------------------------------------
-			File file = new File(TextInfo.getPreprocessPath());
+			File preprocessedFile = new File(TextInfo.getPreprocessPath());
 			int lineNr = 0;
 			try (BufferedReader bufreader = new BufferedReader(new FileReader(
-					file))) {
+					preprocessedFile))) {
 
-				String text = null;
-
-				while ((text = bufreader.readLine()) != null) {
-					LOGGER.fine(String.valueOf(lineNr) + " " + text);
-					// each token is one document
+				String line;
+				while ((line = bufreader.readLine()) != null) {
+					LOGGER.fine(String.valueOf(lineNr) + " " + line);
 					List<String> tokenList = TokenizeString.tokenizeString(
-							analyzer, text);
+							analyzer, line);
 					for (String token : tokenList) {
-						LOGGER.fine(token + "\t " + text);
+						LOGGER.fine(token + "\t " + line);
 
-						addDoc(w, token, text, lineNr);
+						// each token is one document
+						addDoc(w, token, line, lineNr);
 					}
 
 					lineNr++;
@@ -275,10 +274,10 @@ public class KeyWordInPhrase {
 		LoggerConfigurator.configGlobal();
 
 		try {
-			LOGGER.info("Path of file: " + TextInfo.getTextName());
+			LOGGER.info("Path of file: " + TextInfo.getTextPath());
 
 			// Text to search
-			Directory index = generateIndex();
+ 			Directory index = generateIndex();
 			IndexReader reader = DirectoryReader.open(index);
 			types(index, reader);
 			// reader can only be closed if there is no need to access the
