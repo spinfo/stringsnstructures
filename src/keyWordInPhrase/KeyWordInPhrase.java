@@ -41,12 +41,20 @@ import util.TextInfo;
 
 public class KeyWordInPhrase {
 
+	private static final String POSITION = "Position";
+	private static final String SOURCE = "Source";
+	private static final String TEXT = "Text";
+	private static final String CONTEXT = "Context";
+
 	private static final Logger LOGGER = Logger.getGlobal();
 
 	static StandardAnalyzer analyzer = null;
 	static StringBuffer resultBuf = new StringBuffer();
 	static StringBuffer prettyBuf = new StringBuffer(
 			"<HTML><HEAD><meta charset=\"utf-8\"><TITLE> </TITLE></HEAD><BODY>");
+
+	static StringBuffer xmlBuf = new StringBuffer(
+			"<?xml version=\"1.0\"?>\n<kwipInfo>\n");
 
 	private static void addDoc(IndexWriter w, String token, String context,
 			int line) throws IOException {
@@ -62,13 +70,18 @@ public class KeyWordInPhrase {
 
 		fieldType.setStoreTermVectorPositions(true);
 		fieldType.setStoreTermVectorOffsets(true);
-		Field field = new Field("Text", token, fieldType);
+		Field field = new Field(TEXT, token, fieldType);
 		doc.add(field);
 		// ******************************************************************
-		doc.add(new StringField("Context", context, Field.Store.YES));
+		doc.add(new StringField(CONTEXT, context, Field.Store.YES));
 		// ******************************************************************
 		// a field for source because not to be tokenized
-		doc.add(new IntField("Source", line, Field.Store.YES));
+		doc.add(new IntField(SOURCE, line, Field.Store.YES));
+
+		// a field for the token's position in the text
+		int pos = context.toLowerCase().indexOf(token.toLowerCase());
+		doc.add(new IntField(POSITION, pos, Field.Store.YES));
+
 		w.addDocument(doc);
 	}
 
@@ -126,6 +139,118 @@ public class KeyWordInPhrase {
 		return index;
 	}
 
+	static void types(Directory index, IndexReader reader) {
+		ArrayList<Integer> unitList = new ArrayList<Integer>();
+		ArrayList<String> typeList = new ArrayList<String>();
+		int units = 0;
+		try {
+			Terms terms = SlowCompositeReaderWrapper.wrap(reader).terms(TEXT);
+			TermsEnum termEnum = null;
+			termEnum = terms.iterator(termEnum);
+
+			String tabs = "\t\t";
+			int len = 0;
+			int currentPos = 0;
+			while (termEnum.next() != null) {
+				String type = termEnum.term().utf8ToString();
+
+				xmlBuf.append("\t<type ").append("text=\"").append(type)
+						.append("\">\n");
+
+				if (type.length() < 8)
+					len = 2;
+				else
+					len = 1;
+				LOGGER.finest("types type: " + type + tabs.substring(0, len)
+						+ "Freq.: " + termEnum.docFreq() + "\n");
+				// exclude numbers and numberstrings
+				if ((type.charAt(0) < '0') || (type.charAt(0) > '9')) {
+					currentPos = tokens(reader, type, currentPos);
+					units = units + termEnum.docFreq();
+					unitList.add(units);
+					typeList.add(type);
+					LOGGER.finest("units: " + units);
+				}
+				xmlBuf.append("\t</type>\n");
+			}
+
+			writeToFileUnitList(unitList);
+			writeToFileTypeList(typeList);
+			System.out.println();
+
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+			int x1 = 10 / 0;
+			System.exit(6);
+		}
+	}
+
+	static int tokens(IndexReader reader, String querystr, int currentPos) {
+		int lastSource = -1;
+
+		try {
+			int hitsPerPage = 100000;
+			IndexSearcher searcher = new IndexSearcher(reader);
+
+			// The \"title\" arg specifies the default field to use when no
+			// field is explicitly specified in the query
+			Query query = new QueryParser(Version.LUCENE_46, TEXT, analyzer)
+					.parse(querystr);
+
+			TopScoreDocCollector collector = TopScoreDocCollector.create(
+					hitsPerPage, true);
+
+			searcher.search(query, collector);
+			ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+			// Code to display the results of search
+
+			for (int i = 0; i < hits.length; ++i) {
+				xmlBuf.append("\t\t<token>\n");
+				int docId = hits[i].doc;
+				Document d = searcher.doc(docId);
+				StringBuffer context = new StringBuffer(d.get(CONTEXT));
+				xmlBuf.append("\t\t\t<context>").append(context)
+						.append("</context>\n");
+
+				int tokenPosition = d.getField(POSITION).numericValue()
+						.intValue();
+				LOGGER.fine("position of token in context: " + tokenPosition);
+
+				LOGGER.finer("tokens querystr: " + querystr + " context: "
+						+ context /* d.get("Context") */
+						+ " source: " + d.get(SOURCE));
+				xmlBuf.append("\t\t\t<contextStart>").append(currentPos)
+						.append("</contextStart>\n");
+				xmlBuf.append("\t\t\t<position>")
+						.append(currentPos + tokenPosition)
+						.append("</position>\n");
+				resultBuf.append(context);// d.get("Context"));
+				currentPos += context.length();
+				xmlBuf.append("\t\t\t<contextEnd>").append(currentPos)
+						.append("</contextEnd>\n");
+				prettyBuf.append(pretty(context, querystr));
+
+				if (lastSource == Integer.parseInt(d.get(SOURCE))) {
+					// int i1= 10/0;
+				}
+
+				lastSource = Integer.parseInt(d.get(SOURCE));
+				xmlBuf.append("\t\t\t<source>").append(lastSource)
+						.append("</source>\n");
+				xmlBuf.append("\t\t</token>\n");
+			}
+
+			return currentPos;
+
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+			int x1 = 10 / 0;
+			System.exit(3);
+		}
+		return -1;
+	}
+
 	/* pretty print in html */
 	static private StringBuffer pretty(StringBuffer buf, String type) {
 		int resPosition;
@@ -147,49 +272,6 @@ public class KeyWordInPhrase {
 		}
 		buf.append("<br />");
 		return buf;
-	}
-
-	static void tokens(IndexReader reader, String querystr) {
-		int lastSource = -1;
-
-		try {
-			int hitsPerPage = 100000;
-			IndexSearcher searcher = new IndexSearcher(reader);
-
-			// The \"title\" arg specifies the default field to use when no
-			// field is explicitly specified in the query
-			Query query = new QueryParser(Version.LUCENE_46, "Text", analyzer)
-					.parse(querystr);
-
-			TopScoreDocCollector collector = TopScoreDocCollector.create(
-					hitsPerPage, true);
-
-			searcher.search(query, collector);
-			ScoreDoc[] hits = collector.topDocs().scoreDocs;
-
-			// Code to display the results of search
-
-			for (int i = 0; i < hits.length; ++i) {
-				int docId = hits[i].doc;
-				Document d = searcher.doc(docId);
-				StringBuffer context = new StringBuffer(d.get("Context"));
-				LOGGER.finer("tokens querystr: " + querystr + " context: "
-						+ context /* d.get("Context") */
-						+ " source: " + d.get("Source"));
-				resultBuf.append(context);// d.get("Context"));
-				prettyBuf.append(pretty(context, querystr));
-				if (lastSource == Integer.parseInt(d.get("Source"))) {
-					// int i1= 10/0;
-				}
-
-				lastSource = Integer.parseInt(d.get("Source"));
-			}
-
-		} catch (Exception e) {
-			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			int x1 = 10 / 0;
-			System.exit(3);
-		}
 	}
 
 	static void writeToFileUnitList(ArrayList<Integer> unitList) {
@@ -231,45 +313,6 @@ public class KeyWordInPhrase {
 		}
 	}
 
-	static void types(Directory index, IndexReader reader) {
-		ArrayList<Integer> unitList = new ArrayList<Integer>();
-		ArrayList<String> typeList = new ArrayList<String>();
-		int units = 0;
-		try {
-			Terms terms = SlowCompositeReaderWrapper.wrap(reader).terms("Text");
-			TermsEnum termEnum = null;
-			termEnum = terms.iterator(termEnum);
-
-			String tabs = "\t\t";
-			int len = 0;
-			while (termEnum.next() != null) {
-				String type = termEnum.term().utf8ToString();
-				if (type.length() < 8)
-					len = 2;
-				else
-					len = 1;
-				LOGGER.finest("types type: " + type + tabs.substring(0, len)
-						+ "Freq.: " + termEnum.docFreq() + "\n");
-				// exclude numbers and numberstrings
-				if ((type.charAt(0) < '0') || (type.charAt(0) > '9')) {
-					tokens(reader, type);
-					units = units + termEnum.docFreq();
-					unitList.add(units);
-					typeList.add(type);
-					LOGGER.finest("units: " + units);
-				}
-			}
-			writeToFileUnitList(unitList);
-			writeToFileTypeList(typeList);
-			System.out.println();
-
-		} catch (Exception e) {
-			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			int x1 = 10 / 0;
-			System.exit(6);
-		}
-	}
-
 	public static void main(String[] args) {
 		LoggerConfigurator.configGlobal();
 
@@ -277,7 +320,7 @@ public class KeyWordInPhrase {
 			LOGGER.info("Path of file: " + TextInfo.getTextPath());
 
 			// Text to search
- 			Directory index = generateIndex();
+			Directory index = generateIndex();
 			IndexReader reader = DirectoryReader.open(index);
 			types(index, reader);
 			// reader can only be closed if there is no need to access the
@@ -297,6 +340,13 @@ public class KeyWordInPhrase {
 			// System.out.println(prettyBuf);
 			prettyWriter.close();
 			LOGGER.fine("nach prettyWriter");
+
+			xmlBuf.append("</kwipInfo>");
+			FileWriter xmlWriter = new FileWriter(TextInfo.getKwipXMLPath());
+
+			xmlWriter.write(xmlBuf.toString());
+			xmlWriter.close();
+
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			int x1 = 10 / 0;

@@ -34,6 +34,7 @@ public class TextInfo {
 	private static String kwipUnitPath;
 	private static String prettyKwipPath;
 	private static String clusterPath;
+	private static String kwipXmlPath;
 
 	static {
 		determineWorkspacePath();
@@ -99,6 +100,7 @@ public class TextInfo {
 				TXT_EXTENSION);
 		TextInfo.prettyKwipPath = createFilePath(textName + "PrettyKwip",
 				HTML_EXTENSION);
+		TextInfo.kwipXmlPath = createFilePath(textName + "KwipInfo", XML_EXTENSION);
 	}
 
 	private static void setSuffixTreePath() {
@@ -160,5 +162,9 @@ public class TextInfo {
 
 	public static String getClusterPath() {
 		return clusterPath;
+	}
+
+	public static String getKwipXMLPath() {
+		return kwipXmlPath;
 	}
 }
