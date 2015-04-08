@@ -111,7 +111,6 @@ public class SuffixTreeClusteringMain {
 		System.out.println("1 - TF-IDF");
 		System.out.println("2 - TF-DF");
 		System.out.println("3 - Binary");
-		System.out.println("4 - Context");
 		System.out.println("0 - Exit");
 
 		Scanner scanner = new Scanner(System.in);
@@ -122,7 +121,7 @@ public class SuffixTreeClusteringMain {
 
 		int answer = processLine(line);
 
-		while (answer < 0 || answer > 4) {
+		while (answer < 0 || answer > 3) {
 			System.err.println("Undefined Answer! Please enter again:");
 			line = scanner.nextLine();
 			answer = processLine(line);
@@ -137,9 +136,6 @@ public class SuffixTreeClusteringMain {
 			break;
 		case 3:
 			features = FeatureType.BINARY;
-			break;
-		case 4:
-			features = FeatureType.CONTEXT;
 			break;
 		default:
 			scanner.close();
