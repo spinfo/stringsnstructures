@@ -35,17 +35,16 @@ public class KwipXmlReader extends DefaultHandler {
 	private Token currentToken;
 	private List<Type> types;
 
-	private KwipXmlReader(String xmlFileName) {
+	public KwipXmlReader(String xmlFileName) {
 		KwipXmlReader.xmlFile = new File(xmlFileName);
 	}
 
 	public List<Type> read() {
-		DefaultHandler handler = new KwipXmlReader(TextInfo.getKwipXMLPath());
 		SAXParser saxParser;
 
 		try {
 			saxParser = SAXParserFactory.newInstance().newSAXParser();
-			saxParser.parse(xmlFile, handler);
+			saxParser.parse(xmlFile, this);
 
 		} catch (ParserConfigurationException pe) {
 			pe.printStackTrace();
