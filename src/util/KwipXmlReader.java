@@ -33,13 +33,13 @@ public class KwipXmlReader extends DefaultHandler {
 	private int iState = 0;
 	private Type currentType;
 	private Token currentToken;
-	private static List<Type> types;
+	private List<Type> types;
 
 	private KwipXmlReader(String xmlFileName) {
 		KwipXmlReader.xmlFile = new File(xmlFileName);
 	}
 
-	public static List<Type> read() {
+	public List<Type> read() {
 		DefaultHandler handler = new KwipXmlReader(TextInfo.getKwipXMLPath());
 		SAXParser saxParser;
 
@@ -71,7 +71,7 @@ public class KwipXmlReader extends DefaultHandler {
 
 		if (eName.equals("kwipInfo")) {
 			logger.info("Create new KwipInfo Object");
-			types = new ArrayList<Type>();
+			this.types = new ArrayList<Type>();
 		}
 		if (eName.equals("type")) {
 			iState = TYPE;
