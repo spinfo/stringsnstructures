@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import suffixTreeClustering.clustering.flat.FlatCluster;
@@ -25,6 +24,7 @@ import suffixTreeClustering.data.Type;
 import suffixTreeClustering.features.FeatureType;
 import suffixTreeClustering.st_interface.SuffixTreeInfo;
 import suffixTreeClustering.xml.XMLDataReader;
+import util.KwipXmlReader;
 import util.LoggerConfigurator;
 import util.TextInfo;
 
@@ -96,12 +96,19 @@ public class SuffixTreeClusteringMain {
 			System.out.println(node);
 		}
 
-		Set<Type> types2 = corpus.getTypes();
-		for (Type type : types2) {
+		for (Type type : corpus.getTypes()) {
 			System.out.println(type);
 		}
 
 		System.out.println("---------------------------");
+
+		// ********************** //
+		KwipXmlReader kwipReader = new KwipXmlReader(TextInfo.getKwipXMLPath());
+		List<Type> kwipTypes = kwipReader.read();
+		for (Type type : kwipTypes) {
+			if (corpus.getTypes().contains(type)) //contains uses compareTo!
+				System.out.println("Type already contained in list: " + type);
+		}
 
 		// ************* User Input ***************************//
 		FeatureType features = null;

@@ -87,10 +87,14 @@ public final class Type implements Comparable<Type> {
 	}
 
 	/**
-	 * use Type ID to sort Types in sorted Maps or Sets
+	 * use Type string and ID to sort Types in sorted Maps or Sets.
 	 */
 	@Override
 	public int compareTo(Type o) {
+		int stringDiff = this.string.compareTo(o.string);
+		if(stringDiff != 0)
+			return stringDiff;
+		//strings are equal, compare IDs
 		return this.ID - o.ID;
 	}
 
