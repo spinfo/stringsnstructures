@@ -45,17 +45,29 @@ public class NjCluster implements Iterable<Type> {
 		label = label.substring(0, Math.min(8, label.length()));
 		return label.toUpperCase();
 	}
-	
+
 	@Override
 	public String toString() {
-		return String.format("NJ_Cluster containing document(s): %s", this.documents);
+		return String.format("NJ_Cluster containing document(s): %s",
+				this.documents);
 	}
-	
+
 	/* 2 Cluster sind dann gleich, wenn sie dieselben Dokumente enthalten */
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof NjCluster)
-			return ((NjCluster) obj).documents.containsAll(this.documents);
-		return false;
+		if (!(obj instanceof NjCluster))
+			return false;
+		if (obj == this)
+			return true;
+
+		NjCluster other = (NjCluster) obj;
+		return other.documents.containsAll(this.documents);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 31 * result + documents.hashCode();
+		return result;
 	}
 }
