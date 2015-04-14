@@ -69,14 +69,21 @@ public final class Type implements Comparable<Type> {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Type)
-			return ((Type) obj).ID == this.ID ? true : false;
-		return false;
+		if (!(obj instanceof Type))
+			return false;
+		if (obj == this)
+			return true;
+
+		Type other = (Type) obj;
+		return other.ID == this.ID && this.string.contentEquals(other.string);
 	}
 
 	@Override
 	public int hashCode() {
-		return super.hashCode();
+		int result = 17;
+		result = 31 * result + string.hashCode();
+		result = 31 * result + ID;
+		return result;
 	}
 
 	/**
