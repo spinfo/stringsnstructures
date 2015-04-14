@@ -78,10 +78,10 @@ public class NeighborJoining {
 					for (int l = 0; l < matrix.length; l++) {
 						if (i != j && i != k && i != l && j != k && j != l
 								&& k != l) {
-							holds = ((matrix[i][k] + matrix[j][l] == matrix[i][l]
-									+ matrix[j][k]) && (matrix[i][k]
-									+ matrix[j][l] >= matrix[i][j]
-									+ matrix[k][l]));
+							holds = isSame(matrix[i][k] + matrix[j][l], 
+									matrix[i][l] + matrix[j][k]) 
+									&& isGreaterOrEqual(matrix[i][k] + matrix[j][l], 
+											matrix[i][j] + matrix[k][l]);
 							if (!holds)
 								return false;
 						}
@@ -90,6 +90,14 @@ public class NeighborJoining {
 			}
 		}
 		return true;
+	}
+
+	private boolean isGreaterOrEqual(double d1, double d2) {
+		return Double.compare(d1, d2) == 0;
+	}
+
+	private boolean isSame(double d1, double d2) {
+		return Double.compare(d1, d2) >= 0;
 	}
 
 	private boolean isSymmetric(double[][] matrix) {
