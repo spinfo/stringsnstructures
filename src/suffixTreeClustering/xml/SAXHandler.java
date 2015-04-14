@@ -120,7 +120,7 @@ public class SAXHandler extends DefaultHandler {
 		if (eName.equals("patternInfo")) {
 			// TODO: eigentlich muss nicht jedes Mal ein neuer Type erstellt
 			// werden...
-			currentType = new Type(outputInfo.getNumberOfNodes());
+			currentType = new Type();
 			logger.info("Create new type");
 			iState = PATTERNINFO;
 		}

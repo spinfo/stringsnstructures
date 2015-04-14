@@ -24,7 +24,7 @@ public class NJNode {
 		this.childrenMap = new HashMap<String, NJNode>();
 		this.clusteredDocuments = new TreeSet<>();
 		clusteredDocuments.add(doc);
-		setLabel(doc.getLabel());
+		setLabel(doc.getString());
 	}
 
 	public NJNode(NJNode parent, String label) {

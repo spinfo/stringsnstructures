@@ -58,7 +58,7 @@ public class NeighborJoining {
 
 		for (int i = 0; i < numCluster; i++) {
 			NJNode newTaxon = new NJNode(root, documents.get(i));
-			aliasNames.put(i, documents.get(i).getLabel());
+			aliasNames.put(i, documents.get(i).getString());
 			root.addChild(newTaxon);
 		}
 

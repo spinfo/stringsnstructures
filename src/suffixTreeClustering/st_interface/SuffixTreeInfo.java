@@ -89,6 +89,5 @@ public class SuffixTreeInfo {
 
 	public void addType(Type newType) {
 		this.types.add(newType);
-
 	}
 }

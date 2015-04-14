@@ -1,5 +1,8 @@
 package suffixTreeClustering.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import suffixTreeClustering.features.BinaryFeatures;
 import suffixTreeClustering.features.FeatureType;
 import suffixTreeClustering.features.FeatureVector;
@@ -11,14 +14,12 @@ public final class Type implements Comparable<Type> {
 
 	private int ID;
 	private FeatureVector vector;
-	// private Double[] nodeWeights;
 	private String string;
 
-	public Type(int vectorLength) {
-		// this.nodeWeights = new Double[vectorLength];
-	}
+	private List<Token> tokens;
 
 	public Type() {
+		tokens = new ArrayList<>();
 	}
 
 	/**
@@ -47,12 +48,12 @@ public final class Type implements Comparable<Type> {
 		}
 	}
 
-	// private void setVectorValue(int index, Double tfIdf) {
-	// this.nodeWeights[index] = tfIdf;
-	// }
-
 	public Integer getVectorLength() {
 		return vector.getLength();
+	}
+
+	public void addToken(Token token) {
+		tokens.add(token);
 	}
 
 	public int getID() {
@@ -62,14 +63,6 @@ public final class Type implements Comparable<Type> {
 	public void setID(int id) {
 		this.ID = id;
 	}
-
-	// private Double[] getNodeWeights() {
-	// return nodeWeights;
-	// }
-	//
-	// private void setNodeWeights(Double[] nodeWeigthts) {
-	// this.nodeWeights = nodeWeigthts;
-	// }
 
 	/**
 	 * 2 Types are defined equal iff they have the same ID.
@@ -108,11 +101,11 @@ public final class Type implements Comparable<Type> {
 		return string;
 	}
 
-	public String getLabel() {
-		return string;
-	}
-
 	public FeatureVector getVector() {
 		return vector;
+	}
+
+	public List<Token> getTokens() {
+		return tokens;
 	}
 }
