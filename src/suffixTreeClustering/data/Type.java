@@ -65,7 +65,7 @@ public final class Type implements Comparable<Type> {
 	}
 
 	/**
-	 * 2 Types are defined equal iff they have the same ID.
+	 * 2 Types are defined equal iff they have the same ID and the same string.
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -78,6 +78,9 @@ public final class Type implements Comparable<Type> {
 		return other.ID == this.ID && this.string.contentEquals(other.string);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		int result = 17;
