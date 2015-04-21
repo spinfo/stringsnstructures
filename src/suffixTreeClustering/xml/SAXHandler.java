@@ -31,21 +31,11 @@ public class SAXHandler extends DefaultHandler {
 	private static Map<Integer, String> types;
 	private Node currentNode;
 
-	private int iState = 0;
+	private Tags iState = Tags.UNDEFINED;
 	private Type currentType;
 
-	private static final int UNITS = 1;
-	private static final int NODES = 2;
-	private static final int NODE = 3;
-	private static final int NUMBER = 4;
-	private static final int LABEL = 5;
-	private static final int FREQUENCY = 6;
-	private static final int TYPE = 7;
-	private static final int PATTERNINFO = 8;
-	private static final int TYPENR = 9;
-	private static final int PATTERN = 10;
-	private static final int STARTPOS = 11;
-
+	private enum Tags {UNITS, NODES, NODE, NUMBER, LABEL, FREQUENCY, TYPE, PATTERNINFO, TYPENR, PATTERN, STARTPOS, UNDEFINED};
+	
 	/**
 	 * Read content from XML File into own data structure {@link SuffixTreeInfo}
 	 * .
@@ -97,41 +87,41 @@ public class SAXHandler extends DefaultHandler {
 			logger.info("Create new SuffixTreeInfo Object");
 		}
 		if (eName.equals("units")) {
-			iState = UNITS;
+			iState = Tags.UNITS;
 		}
 		if (eName.equals("nodes")) {
-			iState = NODES;
+			iState = Tags.NODES;
 		}
 		if (eName.equals("node")) {
 			currentNode = new Node();
 		}
 		if (eName.equals("number")) {
-			iState = NUMBER;
+			iState = Tags.NUMBER;
 		}
 		if (eName.equals("label")) {
-			iState = LABEL;
+			iState = Tags.LABEL;
 		}
 		if (eName.equals("frequency")) {
-			iState = FREQUENCY;
+			iState = Tags.FREQUENCY;
 		}
 		if (eName.equals("type")) {
-			iState = TYPE;
+			iState = Tags.TYPE;
 		}
 		if (eName.equals("patternInfo")) {
 			// TODO: eigentlich muss nicht jedes Mal ein neuer Type erstellt
 			// werden...
 			currentType = new Type();
 			logger.info("Create new type");
-			iState = PATTERNINFO;
+			iState = Tags.PATTERNINFO;
 		}
 		if (eName.equals("typeNr")) {
-			iState = TYPENR;
+			iState = Tags.TYPENR;
 		}
 		if (eName.equals("pattern")) {
-			iState = PATTERN;
+			iState = Tags.PATTERN;
 		}
 		if (eName.equals("startpos")) {
-			iState = STARTPOS;
+			iState = Tags.STARTPOS;
 		}
 	}
 
@@ -142,7 +132,7 @@ public class SAXHandler extends DefaultHandler {
 	public void endElement(String namespaceURI, String localName, String qName)
 			throws SAXException {
 
-		iState = 0; // TODO is this always a good idea?
+		iState = Tags.UNDEFINED;
 
 		String eName = ("".equals(localName)) ? qName : localName;
 
@@ -198,6 +188,8 @@ public class SAXHandler extends DefaultHandler {
 		case STARTPOS:
 			int startPosition = Integer.parseInt(s);
 			currentNode.getTypes().get(currentType).add(startPosition);
+			break;
+		default:
 			break;
 		}
 	}

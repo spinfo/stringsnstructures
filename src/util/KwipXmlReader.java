@@ -19,18 +19,14 @@ import suffixTreeClustering.data.Type;
 
 public class KwipXmlReader extends DefaultHandler {
 
-	private static final int TYPE = 1;
-	private static final int TOKEN = 2;
-	private static final int CONTEXTSTART = 3;
-	private static final int POSITION = 4;
-	private static final int CONTEXTEND = 5;
-	private static final int SOURCE = 6;
-	private static final int CONTEXT = 7;
+	private enum Tags {
+		TYPE, TOKEN, CONTEXTSTART, POSITION, CONTEXTEND, SOURCE, CONTEXT, UNDEFINED
+	};
 
 	private static Logger logger = Logger.getLogger(KwipXmlReader.class
 			.getSimpleName());
 	private static File xmlFile;
-	private int iState = 0;
+	private Tags iState = Tags.UNDEFINED;
 	private Type currentType;
 	private Token currentToken;
 	private List<Type> types;
@@ -73,7 +69,7 @@ public class KwipXmlReader extends DefaultHandler {
 			this.types = new ArrayList<Type>();
 		}
 		if (eName.equals("type")) {
-			iState = TYPE;
+			iState = Tags.TYPE;
 			if (attributes != null && attributes.getLength() == 2) {
 				String text = attributes.getValue(0);
 				currentType = new Type();
@@ -83,23 +79,23 @@ public class KwipXmlReader extends DefaultHandler {
 			}
 		}
 		if (eName.equals("token")) {
-			iState = TOKEN;
+			iState = Tags.TOKEN;
 			currentToken = new Token();
 		}
 		if (eName.equals("context")) {
-			iState = CONTEXT;
+			iState = Tags.CONTEXT;
 		}
 		if (eName.equals("contextStart")) {
-			iState = CONTEXTSTART;
+			iState = Tags.CONTEXTSTART;
 		}
 		if (eName.equals("position")) {
-			iState = POSITION;
+			iState = Tags.POSITION;
 		}
 		if (eName.equals("contextEnd")) {
-			iState = CONTEXTEND;
+			iState = Tags.CONTEXTEND;
 		}
 		if (eName.equals("source")) {
-			iState = SOURCE;
+			iState = Tags.SOURCE;
 		}
 	}
 
@@ -132,7 +128,7 @@ public class KwipXmlReader extends DefaultHandler {
 	@Override
 	public void endElement(String uri, String localName, String qName)
 			throws SAXException {
-		iState = 0;
+		iState = Tags.UNDEFINED;
 
 		String eName = ("".equals(localName)) ? qName : localName;
 
