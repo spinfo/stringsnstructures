@@ -31,11 +31,10 @@ public class ANCXmlReader {
 		// http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
 		doc.getDocumentElement().normalize();
 
-		logger.fine("Root element :" + doc.getDocumentElement().getNodeName());
+		logger.fine("Root element: " + doc.getDocumentElement().getNodeName());
 
 		NodeList nList = doc.getElementsByTagName("struct");
 
-		System.out.println("----------------------------");
 		List<String> extracted = new ArrayList<>();
 		String possibleVerb;
 
@@ -43,7 +42,7 @@ public class ANCXmlReader {
 
 			Node nNode = nList.item(temp);
 
-			logger.fine("\nCurrent Element :" + nNode.getNodeName());
+			logger.fine("\nCurrent Element: " + nNode.getNodeName());
 
 			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
@@ -57,7 +56,7 @@ public class ANCXmlReader {
 
 				String to = eElement.getAttribute("to");
 				int end = Integer.parseInt(to);
-				logger.fine("To:" + to);
+				logger.fine("To: " + to);
 
 				possibleVerb = text.substring(start, end);
 				extracted.add(possibleVerb);
