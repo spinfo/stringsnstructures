@@ -48,7 +48,10 @@ public class ANCXmlReader {
 
 				Element eElement = (Element) nNode;
 
-				logger.fine("Type: " + eElement.getAttribute("type"));
+				String type = eElement.getAttribute("type");
+				logger.fine("Type: " + type);
+				if (!"VG".equals(type))
+					continue;
 
 				String from = eElement.getAttribute("from");
 				logger.fine("From: " + from);
