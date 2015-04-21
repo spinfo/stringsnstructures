@@ -14,6 +14,8 @@ public class XMLDataReader {
 	}
 	
 	public SuffixTreeInfo read(Map<Integer, String> typeStrings){
+		if(null == typeStrings)
+			return new SuffixTreeInfo();
 		return SAXHandler.read(xmlFile, typeStrings);		
 	}
 	

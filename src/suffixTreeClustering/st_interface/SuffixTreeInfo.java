@@ -28,6 +28,7 @@ public class SuffixTreeInfo {
 	 */
 	public SuffixTreeInfo() {
 		this.types = new TreeSet<Type>();
+		this.nodes = new Node[]{};
 	}
 
 	/**

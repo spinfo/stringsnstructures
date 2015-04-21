@@ -151,11 +151,12 @@ public class KeyWordInPhrase {
 			String tabs = "\t\t";
 			int len = 0;
 			int currentPos = 0;
+			int typeNr = 0;
 			while (termEnum.next() != null) {
 				String type = termEnum.term().utf8ToString();
 
 				xmlBuf.append("\t<type ").append("text=\"").append(type)
-						.append("\">\n");
+						.append("\" ").append("id=\"").append(typeNr).append("\">\n");
 
 				if (type.length() < 8)
 					len = 2;
@@ -172,6 +173,7 @@ public class KeyWordInPhrase {
 					LOGGER.finest("units: " + units);
 				}
 				xmlBuf.append("\t</type>\n");
+				typeNr++;
 			}
 
 			writeToFileUnitList(unitList);

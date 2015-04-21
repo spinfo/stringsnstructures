@@ -1,17 +1,14 @@
 package suffixTreeClustering.main;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import suffixTreeClustering.clustering.flat.FlatCluster;
@@ -37,35 +34,6 @@ public class SuffixTreeClusteringMain {
 
 	private static final Logger LOGGER = Logger.getGlobal();
 
-	private static Map<Integer, String> typeStrings;
-
-	/*
-	 * reads in the types list from the specified file and saves it to a Map to
-	 * get a mapping from type IDs to type Strings
-	 */
-	private static void readTypesFromFile() {
-		typeStrings = new HashMap<Integer, String>();
-		try {
-			String typeName;
-
-			BufferedReader typeReader = new BufferedReader(new FileReader(
-					TextInfo.getKwipTypePath()));
-
-			LineNumberReader lnReader = new LineNumberReader(typeReader);
-
-			int id;
-			while ((typeName = lnReader.readLine()) != null) {
-				id = lnReader.getLineNumber() - 1;
-				typeStrings.put(id, typeName);
-			}
-
-			typeReader.close();
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	/**
 	 * Main method
 	 * 
@@ -78,14 +46,21 @@ public class SuffixTreeClusteringMain {
 		// Schritt 1: lies suffixTreeResult als Liste ein
 		String workspacePath = TextInfo.getWorkspacePath();
 		String textName = TextInfo.getTextName();
-		String inputXml = TextInfo.getSuffixTreePath();
 
-		readTypesFromFile(); // fill the typeID <-> typeString mapping
+		// ********************** //
+		KwipXmlReader kwipReader = new KwipXmlReader(TextInfo.getKwipXMLPath());
+		List<Type> kwipTypes = kwipReader.read();
+		for (Type type : kwipTypes)
+			System.out.println(type);
 
-		XMLDataReader reader = new XMLDataReader(inputXml);
-		// XMLDataReader reader = new
-		// XMLDataReader("data/suffixTreeResult2.xml");
-
+		Map<Integer, String> typeStrings = null;
+		try {
+			typeStrings = fillTypeStrings(kwipTypes);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		XMLDataReader reader = new XMLDataReader(TextInfo.getSuffixTreePath());
 		SuffixTreeInfo corpus = reader.read(typeStrings);
 
 		LOGGER.info("Number of nodes: " + corpus.getNumberOfNodes());
@@ -101,14 +76,6 @@ public class SuffixTreeClusteringMain {
 		}
 
 		System.out.println("---------------------------");
-
-		// ********************** //
-		KwipXmlReader kwipReader = new KwipXmlReader(TextInfo.getKwipXMLPath());
-		List<Type> kwipTypes = kwipReader.read();
-		for (Type type : kwipTypes) {
-			if (corpus.getTypes().contains(type)) //contains uses compareTo!
-				System.out.println("Type already contained in list: " + type);
-		}
 
 		// ************* User Input ***************************//
 		FeatureType features = null;
@@ -206,6 +173,16 @@ public class SuffixTreeClusteringMain {
 			System.err.println("Undefined Answer! Exiting...");
 			System.exit(0);
 		}
+	}
+
+	private static Map<Integer, String> fillTypeStrings(List<Type> kwipTypes) throws Exception {
+		Map<Integer, String> toReturn = new TreeMap<>();
+		for (Type type : kwipTypes) {
+			if(!toReturn.containsKey(type.getID()))
+				toReturn.put(type.getID(), type.getString());
+			else throw new Exception("There should not be 2 types with same ID!");
+		}
+		return toReturn;
 	}
 
 	private static void clusterFlat(List<Type> types, String path, String name) {

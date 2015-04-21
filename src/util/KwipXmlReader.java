@@ -74,10 +74,12 @@ public class KwipXmlReader extends DefaultHandler {
 		}
 		if (eName.equals("type")) {
 			iState = TYPE;
-			if (attributes != null && attributes.getLength() > 0) {
+			if (attributes != null && attributes.getLength() == 2) {
 				String text = attributes.getValue(0);
 				currentType = new Type();
 				currentType.setTypeString(text);
+				int id = Integer.parseInt(attributes.getValue(1));
+				currentType.setID(id);
 			}
 		}
 		if (eName.equals("token")) {
