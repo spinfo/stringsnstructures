@@ -35,6 +35,7 @@ public class TextInfo {
 	private static String prettyKwipPath;
 	private static String clusterPath;
 	private static String kwipXmlPath;
+	private static String ancPath;
 
 	static {
 		determineWorkspacePath();
@@ -85,6 +86,8 @@ public class TextInfo {
 		TextInfo.textName = name;
 		TextInfo.textPath = FOLDER_NAME + FILE_SEPARATOR + textName
 				+ TXT_EXTENSION;
+		TextInfo.ancPath = FOLDER_NAME + FILE_SEPARATOR + textName + "-vp"
+				+ XML_EXTENSION;
 	}
 
 	private static void setPreprocessPath() {
@@ -100,7 +103,8 @@ public class TextInfo {
 				TXT_EXTENSION);
 		TextInfo.prettyKwipPath = createFilePath(textName + "PrettyKwip",
 				HTML_EXTENSION);
-		TextInfo.kwipXmlPath = createFilePath(textName + "KwipInfo", XML_EXTENSION);
+		TextInfo.kwipXmlPath = createFilePath(textName + "KwipInfo",
+				XML_EXTENSION);
 	}
 
 	private static void setSuffixTreePath() {
@@ -166,5 +170,9 @@ public class TextInfo {
 
 	public static String getKwipXMLPath() {
 		return kwipXmlPath;
+	}
+
+	public static String getAncPath() {
+		return ancPath;
 	}
 }
