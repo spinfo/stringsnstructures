@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cesAna xmlns="http://www.xces.org/schema/2003" version="1.0.4">
+	<struct type="VG" from="5" to="8" />
+	<struct type="VG" from="24" to="27" />
+	<struct type="VG" from="43" to="46" />
+	<struct type="VG" from="61" to="64" />
+</cesAna>
