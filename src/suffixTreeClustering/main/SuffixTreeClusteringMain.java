@@ -124,11 +124,6 @@ public class SuffixTreeClusteringMain {
 					doc.getID(), doc.getString()));
 			doc.calculateVector(corpus, features);
 
-			// for (Node node : corpus.getNodes()) {
-			// Double tfIdf = new TfIdfFeatures(doc, corpus).tfIdf(node);
-			//
-			// // doc.setVectorValue(node.getNodeNumber() - 2, tfIdf);
-			// }
 			System.out.print("[");
 			for (Double val : doc.getVector().getValues()) {
 				System.out.print(val.doubleValue() + ", ");
