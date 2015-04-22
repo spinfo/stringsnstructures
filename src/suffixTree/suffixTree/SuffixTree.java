@@ -166,7 +166,7 @@ public class SuffixTree {
 		}
 	}
 
-	public void addChar(char ch) throws Exception {
+	public void addChar(char ch) {
 		String messageFrom = "SuffixTree.addChar char " + ch;
 
 		if (ch == '$')
@@ -332,7 +332,7 @@ public class SuffixTree {
 
 	// traverse textStr (input) from left to right and add char at pos i
 	public void phases(String textStr, int start, int end,
-			ExtActivePoint activePoint) throws Exception {
+			ExtActivePoint activePoint)  {
 		write(1, "phases", " text: " + textStr.substring(start, end)
 				+ " start(+activePoint.phase): " + start + " end: " + end
 				+ " currentPosition: " + currentPosition);

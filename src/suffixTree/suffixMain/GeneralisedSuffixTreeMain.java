@@ -60,9 +60,10 @@ public class GeneralisedSuffixTreeMain {
 		}
 	}
 
-	public GeneralisedSuffixTreeMain(boolean test) throws Exception {
+	public GeneralisedSuffixTreeMain(boolean test) {
 		if (!test) {
-			LOGGER.info("GeneralisedSuffixTreeMain Path: " + TextInfo.getWorkspacePath());
+			LOGGER.info("GeneralisedSuffixTreeMain Path: "
+					+ TextInfo.getWorkspacePath());
 			readCorpusAndUnitListFromFile();
 		}
 		int start = 0, end;
@@ -196,7 +197,7 @@ public class GeneralisedSuffixTreeMain {
 		}
 	}
 
-	public static void main(String... args) throws Exception {
+	public static void main(String... args) {
 		LoggerConfigurator.configGlobal();
 
 		LOGGER.entering(GeneralisedSuffixTreeMain.class.getName(), "main");
