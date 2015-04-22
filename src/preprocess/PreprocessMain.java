@@ -15,7 +15,7 @@ public class PreprocessMain {
 
 	private static final Logger LOGGER = Logger.getGlobal();
 
-	public static void main(String[] args) {
+	public static void run() {
 		LoggerConfigurator.configGlobal();
 		String workspacePath = TextInfo.getWorkspacePath();
 
@@ -24,7 +24,7 @@ public class PreprocessMain {
 
 		String text = "";
 		StringBuffer filterBuf = null;
-		LOGGER.info("PreprocessMain " + workspacePath + textPath);
+		LOGGER.info("PreprocessMain run " + workspacePath + textPath);
 		try {
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -52,6 +52,6 @@ public class PreprocessMain {
 			// int i = 10 / 0;
 		}
 
-		LOGGER.exiting("PreprocessMain", "main");
+		LOGGER.exiting("PreprocessMain", "run");
 	}
 }

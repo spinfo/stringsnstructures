@@ -34,13 +34,11 @@ public class SuffixTreeClusteringMain {
 
 	private static final Logger LOGGER = Logger.getGlobal();
 
+	
 	/**
-	 * Main method
 	 * 
-	 * @param args
-	 *            (not used)
 	 */
-	public static void main(String[] args) {
+	public static void run() {
 		LoggerConfigurator.configGlobal();
 
 		// Schritt 1: lies suffixTreeResult als Liste ein

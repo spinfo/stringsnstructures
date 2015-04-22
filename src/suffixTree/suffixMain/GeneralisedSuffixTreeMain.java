@@ -197,16 +197,16 @@ public class GeneralisedSuffixTreeMain {
 		}
 	}
 
-	public static void main(String... args) {
+	public static void run() {
 		LoggerConfigurator.configGlobal();
 
-		LOGGER.entering(GeneralisedSuffixTreeMain.class.getName(), "main");
+		LOGGER.entering(GeneralisedSuffixTreeMain.class.getName(), "run");
 
 		/*
 		 * set to true for test, i.e. for input strings, not from file
 		 */
 		new GeneralisedSuffixTreeMain(false);
 
-		LOGGER.exiting(GeneralisedSuffixTreeMain.class.getName(), "main");
+		LOGGER.exiting(GeneralisedSuffixTreeMain.class.getName(), "run");
 	}
 }
