@@ -45,6 +45,8 @@ public class KeyWordInPhrase {
 	private static final String SOURCE = "Source";
 	private static final String TEXT = "Text";
 	private static final String CONTEXT = "Context";
+	private static final String LEFT_CONTEXT = "LeftContext";
+	private static final String RIGHT_CONTEXT = "RightContext";
 
 	private static final Logger LOGGER = Logger.getGlobal();
 
@@ -82,7 +84,23 @@ public class KeyWordInPhrase {
 		int pos = context.toLowerCase().indexOf(token.toLowerCase());
 		doc.add(new IntField(POSITION, pos, Field.Store.YES));
 
+		String leftContext = getLeftContext(context, token);
+		doc.add(new StringField(LEFT_CONTEXT, leftContext, Field.Store.YES));
+
+		String rightContext = getRightContext(context, token);
+		doc.add(new StringField(RIGHT_CONTEXT, rightContext, Field.Store.YES));
+
 		w.addDocument(doc);
+	}
+
+	private static String getRightContext(String text, String token) {
+		int pos = text.toLowerCase().indexOf(token.toLowerCase());
+		return text.substring(pos + token.length(), text.length());
+	}
+
+	private static String getLeftContext(String text, String token) {
+		int pos = text.toLowerCase().indexOf(token.toLowerCase());
+		return text.substring(0, pos);
 	}
 
 	static Directory generateIndex() {
@@ -104,7 +122,7 @@ public class KeyWordInPhrase {
 			try (BufferedReader bufreader = new BufferedReader(new FileReader(
 					preprocessedFile))) {
 
-				String line;
+				String line; // line = sentence
 				while ((line = bufreader.readLine()) != null) {
 					LOGGER.fine(String.valueOf(lineNr) + " " + line);
 					List<String> tokenList = TokenizeString.tokenizeString(
@@ -156,7 +174,8 @@ public class KeyWordInPhrase {
 				String type = termEnum.term().utf8ToString();
 
 				xmlBuf.append("\t<type ").append("text=\"").append(type)
-						.append("\" ").append("id=\"").append(typeNr).append("\">\n");
+						.append("\" ").append("id=\"").append(typeNr)
+						.append("\">\n");
 
 				if (type.length() < 8)
 					len = 2;
@@ -240,6 +259,14 @@ public class KeyWordInPhrase {
 				lastSource = Integer.parseInt(d.get(SOURCE));
 				xmlBuf.append("\t\t\t<source>").append(lastSource)
 						.append("</source>\n");
+
+				String leftContext = d.get(LEFT_CONTEXT);
+				xmlBuf.append("\t\t\t<left>").append(leftContext)
+						.append("</left>\n");
+				String rightContext = d.get(RIGHT_CONTEXT);
+				xmlBuf.append("\t\t\t<right>").append(rightContext)
+						.append("</right>\n");
+
 				xmlBuf.append("\t\t</token>\n");
 			}
 
@@ -354,5 +381,9 @@ public class KeyWordInPhrase {
 			int x1 = 10 / 0;
 			// System.exit(7);
 		}
+	}
+
+	public static void main(String[] args) {
+		run();
 	}
 }
