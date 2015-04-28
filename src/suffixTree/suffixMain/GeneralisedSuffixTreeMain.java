@@ -202,9 +202,6 @@ public class GeneralisedSuffixTreeMain {
 
 		LOGGER.entering(GeneralisedSuffixTreeMain.class.getName(), "run");
 
-		/*
-		 * set to true for test, i.e. for input strings, not from file
-		 */
 		new GeneralisedSuffixTreeMain();
 
 		LOGGER.exiting(GeneralisedSuffixTreeMain.class.getName(), "run");
