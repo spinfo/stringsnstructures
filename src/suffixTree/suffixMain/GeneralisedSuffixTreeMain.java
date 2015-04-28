@@ -60,12 +60,12 @@ public class GeneralisedSuffixTreeMain {
 		}
 	}
 
-	public GeneralisedSuffixTreeMain(boolean test) {
-		if (!test) {
-			LOGGER.info("GeneralisedSuffixTreeMain Path: "
-					+ TextInfo.getWorkspacePath());
-			readCorpusAndUnitListFromFile();
-		}
+	public GeneralisedSuffixTreeMain() {
+
+		LOGGER.info("GeneralisedSuffixTreeMain Path: "
+				+ TextInfo.getWorkspacePath());
+		readCorpusAndUnitListFromFile();
+
 		int start = 0, end;
 		SuffixTreeAppl.unit = 0;
 		ExtActivePoint activePoint;
@@ -125,16 +125,16 @@ public class GeneralisedSuffixTreeMain {
 				// units are integers which mark texts; each unit number
 				// marks the end of texts corresponding to types in
 				// (alphabetically) ordered input
-				if (!test) {
-					if (unitList.get(SuffixTreeAppl.unit) == SuffixTreeAppl.textNr)
 
-					{
-						SuffixTreeAppl.unit++;
-						LOGGER.finer("unit: " + SuffixTreeAppl.unit
-								+ "  textNr: " + SuffixTreeAppl.textNr
-								+ " type " + typeList.get(SuffixTreeAppl.unit));
-					}
+				if (unitList.get(SuffixTreeAppl.unit) == SuffixTreeAppl.textNr)
+
+				{
+					SuffixTreeAppl.unit++;
+					LOGGER.finer("unit: " + SuffixTreeAppl.unit + "  textNr: "
+							+ SuffixTreeAppl.textNr + " type "
+							+ typeList.get(SuffixTreeAppl.unit));
 				}
+
 				nextText = text.substring(start, end + 1);
 				LOGGER.finer("GeneralisedSuffixTreeMain:  start: " + start
 						+ " end $: " + end + " nextText: " + nextText
@@ -171,30 +171,30 @@ public class GeneralisedSuffixTreeMain {
 		}
 
 		st.printTree("Generalized SuffixTree", -1, -1, -1);
-		if (!test) {
-			ResultSuffixTreeNodeStack.setPrintSuffixTree(st);
-			try {
-				XmlPrintWriter out = new XmlPrintWriter(new FileWriter(
-						TextInfo.getSuffixTreePath()));
-				out.printTag("output", true, 0, true);
-				out.printTag("units", true, 1, false);
-				out.printInt(nrTypes);
-				out.printTag("units", false, 0, true);
 
-				out.printTag("nodes", true, 1, false);
-				out.printInt(st.getCurrentNode());
-				out.printTag("nodes", false, 0, true);
+		ResultSuffixTreeNodeStack.setPrintSuffixTree(st);
+		try {
+			XmlPrintWriter out = new XmlPrintWriter(new FileWriter(
+					TextInfo.getSuffixTreePath()));
+			out.printTag("output", true, 0, true);
+			out.printTag("units", true, 1, false);
+			out.printInt(nrTypes);
+			out.printTag("units", false, 0, true);
 
-				ResultListener listener = new ResultListener(out);
-				TreeWalker treeWalker = new TreeWalker();
-				treeWalker.walk(st.getRoot(), st, listener);
-				LOGGER.fine("rootnr: " + st.getRoot());
-				out.printTag("output", false, 0, true);
-				out.close();
-			} catch (Exception e) {
-				LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			}
+			out.printTag("nodes", true, 1, false);
+			out.printInt(st.getCurrentNode());
+			out.printTag("nodes", false, 0, true);
+
+			ResultListener listener = new ResultListener(out);
+			TreeWalker treeWalker = new TreeWalker();
+			treeWalker.walk(st.getRoot(), st, listener);
+			LOGGER.fine("rootnr: " + st.getRoot());
+			out.printTag("output", false, 0, true);
+			out.close();
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
+
 	}
 
 	public static void run() {
@@ -205,8 +205,12 @@ public class GeneralisedSuffixTreeMain {
 		/*
 		 * set to true for test, i.e. for input strings, not from file
 		 */
-		new GeneralisedSuffixTreeMain(false);
+		new GeneralisedSuffixTreeMain();
 
 		LOGGER.exiting(GeneralisedSuffixTreeMain.class.getName(), "run");
+	}
+
+	public static void main(String[] args) {
+		run();
 	}
 }
