@@ -75,24 +75,12 @@ public class GeneralisedSuffixTreeMain {
 		// The tokens (texts) are numbered (continuously), and the last token of
 		// a type is numbered by an integer called unit. All unit integers are
 		// stored a unit list.
-		// readCorpusAndUnitListFromFile();
-		// String text = "aba$";
-		// String text = "aba$abc$";
-		// String text = "aba$abc$dce$";
-		//
-		// String text = "abc$dce$";
-		// String text = "banana$ananas$";
-		// String text = "babxba$xabxa$";//example Pekka Kilpeläinen
-		// String text = "aba$aca$";
-		// String text = "aaa$banana$";
-		// 0 1 2
-		// 012345678901234567890123456789
-		// text "aba$abc$abdce$abdce$dce$abdcff$";
+		
 		LOGGER.info("GeneralisedSuffixTreeMain cstr text: " + text + "   "
 				+ SuffixTreeAppl.textNr);
+		
 		// create suffix tree for first text
 		// look for terminator symbol
-
 		if ((end = text.indexOf('$', start)) != -1) {
 
 			// --------------------------------------
