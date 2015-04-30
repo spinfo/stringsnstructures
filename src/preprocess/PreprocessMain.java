@@ -14,6 +14,10 @@ import util.TextInfo;
 public class PreprocessMain {
 
 	private static final Logger LOGGER = Logger.getGlobal();
+	
+	public static void main (String[] args){
+		run();
+	}
 
 	public static void run() {
 		LoggerConfigurator.configGlobal();
