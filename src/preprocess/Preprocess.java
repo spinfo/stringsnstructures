@@ -76,7 +76,7 @@ public class Preprocess {
 			text = text.replaceAll("([0-9])([.])([0-9])", "$1$3");
 
 			// (blank) full stop (.,!,? ...) (blank) by $ eol
-			text = text.replaceAll("[ ]*[.;!?;:][\\s]*", "\\$" + EOL);
+			text = text.replaceAll("[ ]*[.;!?:][\\s]*", "\\$" + EOL);
 			// undo & for ., s.above for date
 			text = text.replaceAll("[&]", "\\.");
 			text = text.replaceAll("[|]", "\\:");
