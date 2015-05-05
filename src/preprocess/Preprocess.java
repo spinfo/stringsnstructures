@@ -1,8 +1,6 @@
 package preprocess;
 
 import java.io.BufferedReader;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,9 +12,8 @@ public class Preprocess {
 
 	public String readText(BufferedReader reader) {
 		LOGGER.entering(this.getClass().getName(), "readText");
-		// must begin with line break for identification of line number in
-		// normalize method
-		StringBuilder textBuffer = new StringBuilder("\n");
+		
+		StringBuilder textBuffer = new StringBuilder();
 		String line;
 		try {
 			while ((line = reader.readLine()) != null) {
@@ -38,8 +35,6 @@ public class Preprocess {
 
 		LOGGER.entering(this.getClass().getName(), "process");
 
-		Map<String, String> replacements = getReplacements();
-
 		try {
 			// replace initial line number
 			text = text.replaceAll("\\n[0-9]+", "");
@@ -47,7 +42,7 @@ public class Preprocess {
 			text = text.replaceAll("[,\"\\«\\»]", " ");
 
 			// replace all white chars (blank, newline, tab)
-			text = text.replaceAll("[\\s]+", " ");
+			text = text.replaceAll("[\\s]+", " ");	
 
 			// 19,3
 			text = text.replaceAll("([0-9])([,])([0-9])", "$1#$3");
@@ -94,52 +89,9 @@ public class Preprocess {
 			LOGGER.exiting(this.getClass().getName(), "normalize");
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, "Exception normalize", e);
-			int i = 10 / 0;
 		}
 
 		return text;
-	}
-
-	private Map<String, String> getReplacements() {
-		Map<String, String> toReturn = new HashMap<>();
-
-		// replace initial line number
-		toReturn.put("\\n[0-9]+", "");
-		// replace colon, quotation mark by blank
-		toReturn.put("[,\"\\«\\»]", " ");
-		// normalize all white chars (blank, newline, tab) to single ws
-		toReturn.put("[\\s]+", " ");
-
-		toReturn.put("([0-9])([,])([0-9])", "$1#$3");
-		// remove parentheses
-		toReturn.put("[\\(][^\\)]*[\\)]", " ");
-		// reduce multiple blanks to one blank
-		toReturn.put("[ ]+", " ");
-		// dates
-		toReturn.put(
-				"([1-2][0-9]|[3][0-1]|[1-9])([\\.])([1-9]|[1][0-2])([\\.])",
-				"$1&$3&");
-		toReturn.put("([1-2][0-9]|[3][0-1]|[1-9])([\\.])", "$1&");
-
-		// abbreviations
-		toReturn.put(
-				"(a|al|B|bzw|ca|Chr|Dr|Fr|Hrg|Hrsg|I|i|Mill|Mio|Mr|Mrd|Nr|O|phil|Prof|s|S|St|u|usf|usw|v|V|z)([\\.])",
-				"$1&");
-		// 100'000
-		toReturn.put("([0-9]+)([\\'])([0-9]+)", "$1$3");
-		// 100 000
-		toReturn.put("([0-9]+)([ ])([0-9]+)", "$1$3");
-		// z.B. 2:0
-		toReturn.put("([0-9])([:])([0-9])", "$1|$3");
-		toReturn.put("([0-9])([.])([0-9])", "$1$3");
-		// replace (blank) full stop (.,!,? ...) (blank) by $ eol
-		toReturn.put("[ ]*[.;!?;:][\\s]*", "\\$" + EOL);
-
-		// undo & for ., s.above for date
-		toReturn.put("[&]", "\\.");
-		toReturn.put("[|]", "\\:");
-		toReturn.put("[#]", "\\,");
-		return toReturn;
 	}
 
 	StringBuffer filter(String text, int min, int max) {
