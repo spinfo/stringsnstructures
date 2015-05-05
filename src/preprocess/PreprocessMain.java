@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import util.LoggerConfigurator;
@@ -38,7 +39,6 @@ public class PreprocessMain {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			// int i=10/0;
 		}
 
 		// save result of preprocessing to a file in parent folder of project
@@ -48,9 +48,7 @@ public class PreprocessMain {
 			out.close();
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			// int i = 10 / 0;
-		}
+			LOGGER.log(Level.SEVERE, "Exception in PreprocessMain.run", e);		}
 
 		LOGGER.exiting("PreprocessMain", "run");
 	}
