@@ -10,7 +10,7 @@ public class Preprocess {
 
 	private static final Logger LOGGER = Logger.getGlobal();
 
-	private String eol = System.getProperty("line.separator");
+	private static final String EOL = System.lineSeparator();
 
 	public String readText(BufferedReader reader) {
 		LOGGER.entering(this.getClass().getName(), "readText");
@@ -81,7 +81,7 @@ public class Preprocess {
 			text = text.replaceAll("([0-9])([.])([0-9])", "$1$3");
 
 			// (blank) full stop (.,!,? ...) (blank) by $ eol
-			text = text.replaceAll("[ ]*[.;!?;:][\\s]*", "\\$" + eol);
+			text = text.replaceAll("[ ]*[.;!?;:][\\s]*", "\\$" + EOL);
 			// undo & for ., s.above for date
 			text = text.replaceAll("[&]", "\\.");
 			text = text.replaceAll("[|]", "\\:");
@@ -133,7 +133,7 @@ public class Preprocess {
 		toReturn.put("([0-9])([:])([0-9])", "$1|$3");
 		toReturn.put("([0-9])([.])([0-9])", "$1$3");
 		// replace (blank) full stop (.,!,? ...) (blank) by $ eol
-		toReturn.put("[ ]*[.;!?;:][\\s]*", "\\$" + eol);
+		toReturn.put("[ ]*[.;!?;:][\\s]*", "\\$" + EOL);
 
 		// undo & for ., s.above for date
 		toReturn.put("[&]", "\\.");
@@ -150,7 +150,7 @@ public class Preprocess {
 		} else {
 			buf = new StringBuffer();
 
-			String phrases[] = text.split(eol);
+			String phrases[] = text.split(EOL);
 			for (int i = 0; i < phrases.length; i++) {
 				String words[] = phrases[i].split("[ ]");
 				len = words.length;
@@ -158,7 +158,7 @@ public class Preprocess {
 						+ " max: " + max);
 				if ((len >= min) && (len <= max)) {
 					LOGGER.finer("Phrase within filter: " + phrases[i] + "  ");
-					buf.append(phrases[i] + eol);
+					buf.append(phrases[i] + EOL);
 				}
 			}
 		}
