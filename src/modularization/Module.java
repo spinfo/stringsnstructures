@@ -17,8 +17,8 @@ public interface Module {
 	public void setInput(Object input) throws IncompatibleIOException;
 	
 	/**
-	 * Returns the input class (null if none is set).
-	 * @return Input class
+	 * Returns the input object (null if none is set).
+	 * @return Input object
 	 */
 	public Object getInput();
 	
@@ -35,6 +35,11 @@ public interface Module {
 	 * @throws IncompatibleIOException Thrown if the output class is not supported
 	 */
 	public void setOutput(Object output) throws IncompatibleIOException;
+	
+	/**
+	 * Returns the output object (null if none is set).
+	 * @return Output object
+	 */
 	public Object getOutput();
 
 	/**
