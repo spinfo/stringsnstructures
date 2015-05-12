@@ -16,6 +16,24 @@ public abstract class CallbackReceiverImpl implements
 	private Map<CallbackProcess, Action> successActions = new HashMap<CallbackProcess, Action>();
 	private Map<CallbackProcess, Action> failActions = new HashMap<CallbackProcess, Action>();
 
+	/**
+	 * Registers an Action to perform on a successful process' callback
+	 * @param process Process
+	 * @param action Action
+	 */
+	protected void registerSuccessCallback(CallbackProcess process, Action action){
+		this.successActions.put(process, action);
+	}
+	
+	/**
+	 * Registers an Action to perform on a failed process' callback
+	 * @param process Process
+	 * @param action Action
+	 */
+	protected void registerFailureCallback(CallbackProcess process, Action action){
+		this.failActions.put(process, action);
+	}
+	
 	@Override
 	public void receiveCallback(Object processingResult, CallbackProcess process) {
 		this.receiveCallback(processingResult, process, false);

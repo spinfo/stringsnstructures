@@ -1,26 +1,47 @@
 package modularization;
 
-import java.util.List;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PipedReader;
+import java.io.PipedWriter;
+import java.util.Properties;
+
+import parallelization.CallbackProcess;
 
 /**
  * Defines an abstract view of any processing module.
  * @author Marcel Boeing
  *
  */
-public interface Module {
+public interface Module extends CallbackProcess {
 	
 	/**
-	 * Sets the input object (e.g. BufferedReader, String[], whatever the class supports).
-	 * @param input Input object
-	 * @throws IncompatibleIOException Thrown if the input class is not supported
+	 * Returns the input reader.
+	 * @return Input reader
+	 * @throws NotSupportedException Thrown if module does not support input via reader
 	 */
-	public void setInput(Object input) throws IncompatibleIOException;
+	public PipedReader getInputReader() throws NotSupportedException;
 	
 	/**
-	 * Returns the input object (null if none is set).
-	 * @return Input object
+	 * Returns the output writer
+	 * @return output writer
+	 * @throws NotSupportedException Thrown if module does not support output via writer
 	 */
-	public Object getInput();
+	public PipedWriter getOutputWriter() throws NotSupportedException;
+	
+	/**
+	 * Returns the input stream.
+	 * @return Input stream
+	 * @throws NotSupportedException Thrown if module does not support input via stream
+	 */
+	public PipedInputStream getInputStream() throws NotSupportedException;
+	
+	/**
+	 * Returns the output stream.
+	 * @return Output stream
+	 * @throws NotSupportedException Thrown if module does not support output via stream
+	 */
+	public PipedOutputStream getOutputStream() throws NotSupportedException;
 	
 	/**
 	 * Starts the process.
@@ -30,48 +51,28 @@ public interface Module {
 	public boolean process() throws Exception;
 	
 	/**
-	 * Sets the output object (e.g. BufferedReader, String[], File, whatever the class supports).
-	 * @param output Output object
-	 * @throws IncompatibleIOException Thrown if the output class is not supported
-	 */
-	public void setOutput(Object output) throws IncompatibleIOException;
-	
-	/**
-	 * Returns the output object (null if none is set).
-	 * @return Output object
-	 */
-	public Object getOutput();
-
-	/**
-	 * Returns the supported input formats.
-	 * @return List of input formats
-	 */
-	public List<Class<?>> getInputformats();
-	
-	/**
-	 * Returns the supported output formats.
-	 * @return List of output formats
-	 */
-	public List<Class<?>> getOutputformats();
-	
-	/**
-	 * Indicates whether a given input object is supported.
-	 * @param input Input object
-	 * @return true if supported
-	 */
-	public boolean doesSupportInput(Object input);
-	
-	/**
-	 * Indicates whether a given output object is supported.
-	 * @param output Output object
-	 * @return true if supported
-	 */
-	public boolean doesSupportOutput(Object output);
-	
-	/**
 	 * Outputs the name of the module.
 	 * @return Name
 	 */
 	public String getName();
+	
+	/**
+	 * Sets the name of the module.
+	 * @param name Name
+	 */
+	public void setName(String name);
+	
+	/**
+	 * Outputs the properties used by this module instance.
+	 * @return properties
+	 */
+	public Properties getProperties();
+	
+	/**
+	 * Sets the properties used by this module instance.
+	 * @param properties properties to set
+	 * @throws Exception when properties are invalid
+	 */
+	public void setProperties(Properties properties) throws Exception;
 
 }

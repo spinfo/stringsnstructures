@@ -1,206 +1,51 @@
 package modularization;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-import java.util.List;
+import java.util.Properties;
 
 import org.junit.Test;
+
+import parallelization.CallbackReceiverImpl;
+import parser.oanc.OANC;
+import parser.oanc.OANCXMLParser;
 
 public class ModuleChainTest {
 
 	@Test
-	public void test() throws IncompatibleIOException {
-		Module m1 = new Module(){
-
-			@Override
-			public void setInput(Object input) throws IncompatibleIOException {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public Object getInput() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public boolean process() throws Exception {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public void setOutput(Object output) throws IncompatibleIOException {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public Object getOutput() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public List<Class<?>> getInputformats() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public List<Class<?>> getOutputformats() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public boolean doesSupportInput(Object input) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public boolean doesSupportOutput(Object output) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public String getName() {
-				return "m1";
-			}
-			
-		};
-		Module m2 = new Module(){
-
-			@Override
-			public void setInput(Object input) throws IncompatibleIOException {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public Object getInput() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public boolean process() throws Exception {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public void setOutput(Object output) throws IncompatibleIOException {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public Object getOutput() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public List<Class<?>> getInputformats() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public List<Class<?>> getOutputformats() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public boolean doesSupportInput(Object input) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public boolean doesSupportOutput(Object output) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public String getName() {
-				return "m2";
-			}
-			
-		};
-		Module m3 = new Module(){
-
-			@Override
-			public void setInput(Object input) throws IncompatibleIOException {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public Object getInput() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public boolean process() throws Exception {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public void setOutput(Object output) throws IncompatibleIOException {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public Object getOutput() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public List<Class<?>> getInputformats() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public List<Class<?>> getOutputformats() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public boolean doesSupportInput(Object input) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public boolean doesSupportOutput(Object output) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public String getName() {
-				return "m3";
-			}
+	public void test() throws Exception {
+		
+		String oancLoc0 = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/written_1/journal/slate/1/";
+		String oancLoc1 = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/written_1/journal/slate/2/";
+		
+		CallbackReceiverImpl receiver = new CallbackReceiverImpl(){
 			
 		};
 		
+		// Prepare OANC module
+		Properties oancProperties = new Properties();
+		oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION+"0", oancLoc0);
+		oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION+"1", oancLoc1);
+		OANC oanc = new OANC();
+		oanc.setProperties(oancProperties);
+		
+		// Prepare OANC parser module
+		Properties oancParserProperties = new Properties();
+		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_ADDSTARTSYMBOL, Boolean.toString(true));
+		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_ADDTERMINALSYMBOL, Boolean.toString(true));
+		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_CONVERTTOLOWERCASE, Boolean.toString(true));
+		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_KEEPPUNCTUATION, Boolean.toString(true));
+		OANCXMLParser oancParser = new OANCXMLParser();
+		oancParser.setProperties(oancParserProperties);
+		
+		
 		ModuleChain mc = new ModuleChain();
-		mc.appendModule(m1, 0);
-		mc.appendModule(m2, 1);
-		mc.appendModule(m3, 1);
+		mc.appendModule(oanc, 0);
+		mc.appendModule(oancParser, 1);
+		
+		System.out.println(mc.prettyPrint());
+		
+		mc.runChain();
 		
 		assertTrue(true);
 	}
