@@ -7,7 +7,7 @@ package parallelization;
  */
 public interface CallbackProcess extends Runnable {
 
-	public CallbackReceiver getRueckmeldungsEmpfaenger();
-	public void setRueckmeldungsEmpfaenger(CallbackReceiver callbackReceiver);
+	public CallbackReceiver getCallbackReceiver();
+	public void setCallbackReceiver(CallbackReceiver callbackReceiver);
 	
 }

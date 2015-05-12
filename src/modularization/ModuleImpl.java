@@ -94,7 +94,10 @@ public abstract class ModuleImpl implements Module {
 	 * afterwards.
 	 */
 	protected void updateProperties(){
-		this.getProperties().setProperty(PROPERTYKEY_NAME, name);
+		if (this.name != null)
+			this.getProperties().setProperty(PROPERTYKEY_NAME, name);
+		else
+			this.getProperties().remove(PROPERTYKEY_NAME);
 	}
 
 	/**
@@ -129,7 +132,7 @@ public abstract class ModuleImpl implements Module {
 	 * @see parallelization.CallbackProcess#getRueckmeldungsEmpfaenger()
 	 */
 	@Override
-	public CallbackReceiver getRueckmeldungsEmpfaenger() {
+	public CallbackReceiver getCallbackReceiver() {
 		return callbackReceiver;
 	}
 
@@ -137,7 +140,7 @@ public abstract class ModuleImpl implements Module {
 	 * @see parallelization.CallbackProcess#setRueckmeldungsEmpfaenger(parallelization.CallbackReceiver)
 	 */
 	@Override
-	public void setRueckmeldungsEmpfaenger(CallbackReceiver callbackReceiver) {
+	public void setCallbackReceiver(CallbackReceiver callbackReceiver) {
 		this.callbackReceiver = callbackReceiver;
 	}
 

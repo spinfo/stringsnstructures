@@ -52,8 +52,8 @@ public class OANCXMLParser extends ModuleImpl {
 	private boolean wandleInKleinbuchstaben;
 	private boolean behaltePunktuation;
 	
-	public OANCXMLParser() {
-		super();
+	public OANCXMLParser() throws IOException {
+		this(null);
 	}
 	
 	public OANCXMLParser(File quellDatei) throws IOException {

@@ -123,6 +123,7 @@ public class OANC extends ModuleImpl {
 			quellDateiListe.addAll(this.sucheQuellDateien(unterverzeichnisse[i]));
 		}
 		
+		// Ergebnisliste zurueckgeben
 		return quellDateiListe;
 	}
 
@@ -149,22 +150,44 @@ public class OANC extends ModuleImpl {
 
 	@Override
 	protected void applyProperties() throws Exception {
+		
+		// List for OANC locations
 		List<String> oancLocationList = new ArrayList<String>();
+		
+		// Determine which properties are OANC locations
 		Set<Object> propertyKeySet = this.getProperties().keySet();
 		Iterator<Object> propertyKeys = propertyKeySet.iterator();
 		while(propertyKeys.hasNext()){
 			Object propertyKey = propertyKeys.next();
+			
+			// If property is an OANC location, store it in OANC location list (makes sense, doesn't it?)
 			if (propertyKey.toString().matches(PROPERTYKEY_OANCLOCATION_REGEX))
 				oancLocationList.add(this.getProperties().getProperty(propertyKey.toString()));
 				
 		}
+		
+		// Call apply for super class
 		super.applyProperties();
 	}
 
 	@Override
 	protected void updateProperties() {
+		
+		// Remove existing OANC location properties
+		Set<Object> propertyKeySet = this.getProperties().keySet();
+		Iterator<Object> propertyKeys = propertyKeySet.iterator();
+		while(propertyKeys.hasNext()){
+			Object propertyKey = propertyKeys.next();
+			if (propertyKey.toString().matches(PROPERTYKEY_OANCLOCATION_REGEX))
+				this.getProperties().remove(propertyKey);
+				
+		}
+		
+		// Re-add OANC location based on this instance's variable
 		for (int i=0; i<oancSpeicherorte.length; i++)
 			this.getProperties().setProperty(PROPERTYKEY_OANCLOCATION+i, oancSpeicherorte[i]);
+		
+		// Call update for super class
 		super.updateProperties();
 	}
 }
