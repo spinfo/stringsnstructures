@@ -4,6 +4,8 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PipedReader;
 import java.io.PipedWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import parallelization.CallbackReceiver;
@@ -18,6 +20,14 @@ public abstract class ModuleImpl implements Module {
 	private PipedWriter outputWriter = new PipedWriter();
 	private Properties properties = new Properties();
 	private CallbackReceiver callbackReceiver;
+	private Map<String,String> propertyDescriptions = new HashMap<String,String>();
+	
+	public ModuleImpl(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
+		super();
+		this.callbackReceiver = callbackReceiver;
+		this.setProperties(properties);
+		this.getPropertyDescriptions().put(PROPERTYKEY_NAME, "The module instance's name");
+	}
 
 	@Override
 	public PipedReader getInputReader() throws NotSupportedException {
@@ -61,7 +71,10 @@ public abstract class ModuleImpl implements Module {
 	@Override
 	public void setName(String name) {
 		this.name = name;
-		this.updateProperties();
+		if (this.name != null)
+			this.getProperties().setProperty(PROPERTYKEY_NAME, name);
+		else
+			this.getProperties().remove(PROPERTYKEY_NAME);
 	}
 
 	
@@ -74,6 +87,7 @@ public abstract class ModuleImpl implements Module {
 	public void setProperties(Properties properties) throws Exception {
 		if (properties==null)
 			throw new Exception(this.getClass().getSimpleName()+" cannot handle null value as properties, sorry.");
+		this.properties = properties;
 		this.applyProperties();
 	}
 	
@@ -86,18 +100,6 @@ public abstract class ModuleImpl implements Module {
 	protected void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_NAME))
 			this.name = this.getProperties().getProperty(PROPERTYKEY_NAME);
-	}
-	
-	/**
-	 * Enters all relevant variables into the instance's property object. Subclasses should override this,
-	 * enter the properties they use themselves and call super().updateProperties()
-	 * afterwards.
-	 */
-	protected void updateProperties(){
-		if (this.name != null)
-			this.getProperties().setProperty(PROPERTYKEY_NAME, name);
-		else
-			this.getProperties().remove(PROPERTYKEY_NAME);
 	}
 
 	/**
@@ -126,6 +128,11 @@ public abstract class ModuleImpl implements Module {
 	 */
 	protected void setOutputWriter(PipedWriter outputWriter) {
 		this.outputWriter = outputWriter;
+	}
+
+	@Override
+	public Map<String, String> getPropertyDescriptions() {
+		return propertyDescriptions;
 	}
 
 	/* (non-Javadoc)

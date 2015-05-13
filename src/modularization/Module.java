@@ -4,6 +4,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PipedReader;
 import java.io.PipedWriter;
+import java.util.Map;
 import java.util.Properties;
 
 import parallelization.CallbackProcess;
@@ -74,5 +75,12 @@ public interface Module extends CallbackProcess {
 	 * @throws Exception when properties are invalid
 	 */
 	public void setProperties(Properties properties) throws Exception;
+	
+	/**
+	 * Returns a map containing all valid property keys of this module
+	 * with a short description as value.
+	 * @return
+	 */
+	public Map<String,String> getPropertyDescriptions();
 
 }

@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -18,6 +20,8 @@ import javax.xml.parsers.SAXParserFactory;
 import modularization.ModuleImpl;
 
 import org.xml.sax.SAXException;
+
+import parallelization.CallbackReceiver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -43,6 +47,7 @@ public class OANCXMLParser extends ModuleImpl {
 	public static final String PROPERTYKEY_ADDTERMINALSYMBOL = "fuegeTerminierSymbolHinzu";
 	public static final String PROPERTYKEY_CONVERTTOLOWERCASE = "wandleInKleinbuchstaben";
 	public static final String PROPERTYKEY_KEEPPUNCTUATION = "behaltePunktuation";
+	public static final String PROPERTYKEY_OUTPUTANNOTATEDJSON = "outputAnnotatedJson";
 	// local variables
 	private File quellDatei;
 	private File satzGrenzenXMLDatei;
@@ -51,57 +56,51 @@ public class OANCXMLParser extends ModuleImpl {
 	private boolean fuegeTerminierSymbolHinzu;
 	private boolean wandleInKleinbuchstaben;
 	private boolean behaltePunktuation;
+	private boolean outputAnnotatedJson;
 	
-	public OANCXMLParser() throws IOException {
-		this(null);
+	public OANCXMLParser(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
+		super(callbackReceiver, properties);
+		
+		// Define I/O
+		super.setInputStream(null);
+		super.setOutputStream(null);
+		
+		// Add description for properties
+		this.getPropertyDescriptions().put(PROPERTYKEY_ADDSTARTSYMBOL, "Set to 'true' if '"+STARTSYMBOL+"' should be added as start symbol to each sentence");
+		this.getPropertyDescriptions().put(PROPERTYKEY_ADDTERMINALSYMBOL, "Set to 'true' if '"+TERMINIERSYMBOL+"' should be added as start symbol to each sentence");
+		this.getPropertyDescriptions().put(PROPERTYKEY_CONVERTTOLOWERCASE,"If set to 'true' the output will be all lowercase");
+		this.getPropertyDescriptions().put(PROPERTYKEY_KEEPPUNCTUATION,"If set to 'true' punctuation will not be discarded");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTANNOTATEDJSON,"If set to 'true' the output will be annotated JSON instead of plain text");
+		
+		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
 	
-	public OANCXMLParser(File quellDatei) throws IOException {
-		this(quellDatei, null, null);
-	}
-	
-	public OANCXMLParser(File quellDatei, File satzGrenzenXMLDatei, File annotationsXMLDatei) throws IOException {
-		this(quellDatei, satzGrenzenXMLDatei, annotationsXMLDatei, true, true, true, true);
-	}
-	
-	public OANCXMLParser(File quellDatei, File satzGrenzenXMLDatei, File annotationsXMLDatei, boolean fuegeStartSymbolHinzu, boolean fuegeTerminierSymbolHinzu, boolean wandleInKleinbuchstaben, boolean behaltePunktuation) throws IOException {
-		super();
-		this.quellDatei = quellDatei;
-		this.setSatzGrenzenXMLDatei(satzGrenzenXMLDatei);
-		this.setAnnotationsXMLDatei(annotationsXMLDatei);
-		this.fuegeStartSymbolHinzu = fuegeStartSymbolHinzu;
-		this.fuegeTerminierSymbolHinzu = fuegeTerminierSymbolHinzu;
-		this.wandleInKleinbuchstaben = wandleInKleinbuchstaben;
-		this.behaltePunktuation = behaltePunktuation;
-	}
-	public File getQuellDatei() {
-		return quellDatei;
-	}
-	public void setQuellDatei(File quellDatei) {
-		this.quellDatei = quellDatei;
-	}
-	public File getSatzGrenzenXMLDatei() {
-		return satzGrenzenXMLDatei;
-	}
-	public void setSatzGrenzenXMLDatei(File satzGrenzenXMLDatei) {
-		if (satzGrenzenXMLDatei != null){
-			this.satzGrenzenXMLDatei = satzGrenzenXMLDatei;
-		} else {
+	/**
+	 * Guesses the location of the sentence borders file in relation to the
+	 * source file (if existent) and sets the internal variable accordingly.
+	 * @return true if file is found & readable
+	 */
+	private boolean guessSentenceBordersFile() {
+		if (quellDatei != null) {
 			this.satzGrenzenXMLDatei = new File(quellDatei.getAbsolutePath().substring(0, quellDatei.getAbsolutePath().lastIndexOf('.'))+SATZGRENZENDATEISUFFIX+".xml");
+			if (this.satzGrenzenXMLDatei.canRead())
+				return true;
 		}
-	}
-	
-	
-	public File getAnnotationsXMLDatei() {
-		return annotationsXMLDatei;
+		return false;
 	}
 
-	public void setAnnotationsXMLDatei(File annotationsXMLDatei) {
-		if (annotationsXMLDatei != null){
-			this.annotationsXMLDatei = annotationsXMLDatei;
-		} else {
+	/**
+	 * Guesses the location of the annotation file in relation to the
+	 * source file (if existent) and sets the internal variable accordingly.
+	 * @return true if file is found & readable
+	 */
+	private boolean guessAnnotationsFile() {
+		if (quellDatei != null) {
 			this.annotationsXMLDatei = new File(quellDatei.getAbsolutePath().substring(0, quellDatei.getAbsolutePath().lastIndexOf('.'))+ANNOTATIONSDATEISUFFIX+".xml");
+			if (this.annotationsXMLDatei.canRead())
+				return true;
 		}
+		return false;
 	}
 
 	/**
@@ -111,7 +110,7 @@ public class OANCXMLParser extends ModuleImpl {
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
 	 */
-	public List<String> parseQuellDatei() throws SAXException, IOException, ParserConfigurationException{
+	private List<String> parseQuellDatei() throws SAXException, IOException, ParserConfigurationException{
 		
 		// Zugriff auf Dateien pruefen
 		if (!this.quellDatei.canRead()){
@@ -184,7 +183,7 @@ public class OANCXMLParser extends ModuleImpl {
 	 * @param rohsatz
 	 * @return Wortliste
 	 */
-	public List<String> bereinigeUndSegmentiereSatz(String rohsatz, boolean fuegeStartSymbolEin, boolean fuegeTerminierSymbolEin, boolean wandleZuKleinbuchstaben, boolean behalteSatzzeichenAlsToken){
+	private List<String> bereinigeUndSegmentiereSatz(String rohsatz, boolean fuegeStartSymbolEin, boolean fuegeTerminierSymbolEin, boolean wandleZuKleinbuchstaben, boolean behalteSatzzeichenAlsToken){
 		List<String> ergebnisListe = new ArrayList<String>();
 		
 		// Satz segmentieren
@@ -239,9 +238,9 @@ public class OANCXMLParser extends ModuleImpl {
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 */
-	public List<List<WortAnnotationTupel>> parseQuellDateiMitAnnotationen() throws SAXException, IOException, ParserConfigurationException {
+	/*private List<List<WortAnnotationTupel>> parseQuellDateiMitAnnotationen() throws SAXException, IOException, ParserConfigurationException {
 		return this.parseQuellDateiMitAnnotationen(false);
-	}
+	}*/
 	
 	/**
 	 * Parst die Quell-, Annotations- und Satzgrenzendatei und gibt eine Liste von Saetzen mit annotierten Worten zurueck.
@@ -251,7 +250,7 @@ public class OANCXMLParser extends ModuleImpl {
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 */
-	public List<List<WortAnnotationTupel>> parseQuellDateiMitAnnotationen(boolean wandleZuKleinbuchstaben) throws SAXException, IOException, ParserConfigurationException{
+	private List<List<WortAnnotationTupel>> parseQuellDateiMitAnnotationen(boolean wandleZuKleinbuchstaben) throws SAXException, IOException, ParserConfigurationException{
 		
 		// Zugriff auf Dateien pruefen
 		if (!this.quellDatei.canRead()){
@@ -395,25 +394,50 @@ public class OANCXMLParser extends ModuleImpl {
 			File inputFile = inputFiles.next();
 			
 			// Aktuelle Korpusdatei als Quelle fuer Parser setzen
-			this.setQuellDatei(inputFile);
+			this.quellDatei = inputFile;
 
-			// Satzgrenzendatei auf null setzen; der oancParser ermittelt dann
-			// automatisch ihren Namen
-			this.setSatzGrenzenXMLDatei(null);
+			// Satzgrenzendatei auf ermitteln
+			boolean sentenceBordersArePresent = this.guessSentenceBordersFile();
+			
+			// If the sentence borders are missing, throw an exception
+			if (!sentenceBordersArePresent)
+				throw new Exception("I'm very sorry indeed, but I must stop processing for I could not find the file containing the sentence borders.");
+			
+			// If the output format is set to annotated JSON, the method used for parsing differs
+			if (this.outputAnnotatedJson){
+				
+				// The output format is annotated JSON; first we need to get the annotations
+				boolean annotationsArePresent = this.guessAnnotationsFile();
+				
+				// If the annotations are missing, throw an exception
+				if (!annotationsArePresent)
+					throw new Exception("I'm very sorry indeed, but I must stop processing for I could not find the file containing the annotation data.");
+				
+				// Parse the source text with annotations
+				List<List<WortAnnotationTupel>> annotatedTupelList = this.parseQuellDateiMitAnnotationen(this.wandleInKleinbuchstaben);
+				
+				// Write the result to output
+				gson.toJson(annotatedTupelList, this.getOutputWriter());
+				
+			} else {
+				// The output format is plain sentences, cleaned up a bit
+				
+				// Datei parsen und Rohsaetze ermitteln
+				List<String> rohsatzListe = this.parseQuellDatei();
 
-			// Datei parsen und Rohsaetze ermitteln
-			List<String> rohsatzListe = this.parseQuellDatei();
+				// Liste der Rohsaetze durchlaufen
+				Iterator<String> rohsaetze = rohsatzListe.iterator();
+				while (rohsaetze.hasNext()) {
 
-			// Liste der Rohsaetze durchlaufen
-			Iterator<String> rohsaetze = rohsatzListe.iterator();
-			while (rohsaetze.hasNext()) {
-
-				// Rohsatz bereinigen und in die Ausgabe schreiben
-				gson.toJson(this.bereinigeUndSegmentiereSatz(
-						rohsaetze.next(), fuegeStartSymbolHinzu,
-						fuegeTerminierSymbolHinzu, wandleInKleinbuchstaben,
-						behaltePunktuation), this.getOutputWriter());
+					// Rohsatz bereinigen und in die Ausgabe schreiben
+					gson.toJson(this.bereinigeUndSegmentiereSatz(
+							rohsaetze.next(), fuegeStartSymbolHinzu,
+							fuegeTerminierSymbolHinzu, wandleInKleinbuchstaben,
+							behaltePunktuation), this.getOutputWriter());
+				}
 			}
+
+			
 		}
 		
 		// Close output writer
@@ -435,19 +459,10 @@ public class OANCXMLParser extends ModuleImpl {
 			this.wandleInKleinbuchstaben = Boolean.getBoolean(this.getProperties().getProperty(PROPERTYKEY_CONVERTTOLOWERCASE));
 		if (this.getProperties().containsKey(PROPERTYKEY_KEEPPUNCTUATION))
 			this.behaltePunktuation = Boolean.getBoolean(this.getProperties().getProperty(PROPERTYKEY_KEEPPUNCTUATION));
+		if (this.getProperties().containsKey(PROPERTYKEY_OUTPUTANNOTATEDJSON))
+			this.outputAnnotatedJson = Boolean.getBoolean(this.getProperties().getProperty(PROPERTYKEY_OUTPUTANNOTATEDJSON));
+			
 		super.applyProperties();
-	}
-
-	/* (non-Javadoc)
-	 * @see modularization.ModuleImpl#updateProperties()
-	 */
-	@Override
-	protected void updateProperties() {
-		this.getProperties().setProperty(PROPERTYKEY_ADDSTARTSYMBOL, new Boolean(fuegeStartSymbolHinzu).toString());
-		this.getProperties().setProperty(PROPERTYKEY_ADDTERMINALSYMBOL, new Boolean(fuegeTerminierSymbolHinzu).toString());
-		this.getProperties().setProperty(PROPERTYKEY_CONVERTTOLOWERCASE, new Boolean(wandleInKleinbuchstaben).toString());
-		this.getProperties().setProperty(PROPERTYKEY_KEEPPUNCTUATION, new Boolean(behaltePunktuation).toString());
-		super.updateProperties();
 	}
 
 }

@@ -1,29 +1,32 @@
 package parser.oanc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
+import java.util.Properties;
 
 import org.junit.Test;
-import org.xml.sax.SAXException;
+
+import parallelization.CallbackReceiverImpl;
 
 public class OANCXMLParserTest {
 	
-	private static String DATEIPFAD = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/written_1/journal/verbatim/VOL15_1.txt";
+	/*private static String DATEIPFAD = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/written_1/journal/verbatim/VOL15_1.txt";
 	private static String SGDATEIPFAD = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/written_1/journal/verbatim/VOL15_1-s.xml";
-
+	private static CallbackReceiverImpl cbr = new CallbackReceiverImpl(){};
+	
 	@Test
 	public void testOANCXMLParserFile() {
 		System.out.println("Satzgrenzendatei ermitteln.");
 		OANCXMLParser p = null;
+		Properties pp = new Properties();
+		pp.setProperty(OANCXMLParser.PROPERTYKEY_NAME, "OANC-Parser");
 		try {
-			p = new OANCXMLParser(new File(DATEIPFAD));
-		} catch (IOException e) {
+			p = new OANCXMLParser(cbr,pp);
+		} catch (Exception e) {
 			fail(e.toString());
 		}
 		
@@ -139,5 +142,5 @@ public class OANCXMLParserTest {
 			fail(e.toString());
 		}
 	}
-
+*/
 }

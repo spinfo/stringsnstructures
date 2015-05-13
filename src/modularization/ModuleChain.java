@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import parallelization.Action;
 import parallelization.CallbackReceiverImpl;
@@ -68,6 +70,9 @@ public class ModuleChain extends CallbackReceiverImpl {
 		// Add module to list
 		moduleList.add(index, module);
 		
+		// Set module's callback receiver
+		module.setCallbackReceiver(this);
+		
 		return true;
 	}
 	
@@ -87,9 +92,9 @@ public class ModuleChain extends CallbackReceiverImpl {
 				@Override
 				public void perform(Object processResult){
 					if (Boolean.getBoolean(processResult.toString()))
-						System.out.println("Module "+m.getName()+" has successfully finished processing.");
+						Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Module "+m.getName()+" has successfully finished processing.");
 					else
-						System.out.println("Module "+m.getName()+" did not finish processing successfully.");
+						Logger.getLogger(this.getClass().getSimpleName()).log(Level.WARNING, "Module "+m.getName()+" did not finish processing successfully.");
 				}
 			};
 			
@@ -101,7 +106,7 @@ public class ModuleChain extends CallbackReceiverImpl {
 					if (processResult.getClass().isAssignableFrom(e.getClass())){
 						e = (Exception) processResult;
 					}
-					System.out.println("Module " + m.getName() + " encountered an error: "+e.getMessage());
+					Logger.getLogger(this.getClass().getSimpleName()).log(Level.SEVERE, "Module " + m.getName() + " encountered an error.", e);
 				}
 			};
 			
@@ -119,7 +124,7 @@ public class ModuleChain extends CallbackReceiverImpl {
 	 * @return String
 	 */
 	public String prettyPrint(){
-		StringBuffer result = new StringBuffer("o --> ");
+		StringBuffer result = new StringBuffer();
 		Iterator<Module> modules = moduleList.iterator();
 		while(modules.hasNext()){
 			Module m = modules.next();
@@ -140,7 +145,7 @@ public class ModuleChain extends CallbackReceiverImpl {
 			String outputLink;
 			try {
 				m.getOutputWriter();
-				outputLink = "R";
+				outputLink = "W";
 			} catch (NotSupportedException e1){
 				try {
 					m.getOutputStream();

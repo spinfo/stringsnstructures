@@ -8,8 +8,12 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import parallelization.CallbackReceiver;
 import modularization.ModuleImpl;
 
 import com.google.gson.Gson;
@@ -23,49 +27,22 @@ import com.google.gson.GsonBuilder;
 public class OANC extends ModuleImpl {
 
 	public static final String PROPERTYKEY_OANCLOCATION = "oanc-location";
-	public static final String PROPERTYKEY_OANCLOCATION_REGEX = PROPERTYKEY_OANCLOCATION+"[0-9]+";
-	private String[] oancSpeicherorte = new String[]{"/Users/marcel/Downloads/OANC/data/written_1/","/Users/marcel/Downloads/OANC/data/written_2/"};
+	private String[] oancSpeicherorte;
 	private FileFilter verzeichnisFilter = new VerzeichnisFilter();
 	private FileFilter quellDateiFilter = new RegAusdruckDateiFilter(".+\\.txt$");
 	
-	public OANC() throws Exception {
-		super();
+	public OANC(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
+		super(callbackReceiver, properties);
 		
 		// Define I/O
 		super.setInputReader(null);
 		super.setInputStream(null);
 		super.setOutputStream(null);
 		
-		// Set default module name
-		this.setName("OANC-Korpus");
+		// Add description for properties
+		this.getPropertyDescriptions().put(PROPERTYKEY_OANCLOCATION, "The directory containing OANC-Files (subdirectories are used, too)");
 		
-		// update properties
-		this.updateProperties();
-	}
-
-	public String[] getOancSpeicherorte() {
-		return oancSpeicherorte;
-	}
-
-	public void setOancSpeicherorte(String[] oancSpeicherorte) throws Exception {
-		this.oancSpeicherorte = oancSpeicherorte;
-		this.updateProperties();
-	}
-
-	public FileFilter getVerzeichnisFilter() {
-		return verzeichnisFilter;
-	}
-
-	public void setVerzeichnisFilter(FileFilter verzeichnisFilter) {
-		this.verzeichnisFilter = verzeichnisFilter;
-	}
-
-	public FileFilter getQuellDateiFilter() {
-		return quellDateiFilter;
-	}
-
-	public void setQuellDateiFilter(FileFilter quellDateiFilter) {
-		this.quellDateiFilter = quellDateiFilter;
+		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
 
 	/**
@@ -73,7 +50,7 @@ public class OANC extends ModuleImpl {
 	 * @return Liste mit Textdateien
 	 * @throws Exception Falls Dateien o. Verzeichnissse nicht gefunden werden oder nicht lesbar sind
 	 */
-	public List<File> sucheQuellDateien() throws Exception {
+	private List<File> sucheQuellDateien() throws Exception {
 		
 		// Liste fuer Ergebnis anlegen
 		List<File> quellDateiListe = new ArrayList<File>();
@@ -99,7 +76,7 @@ public class OANC extends ModuleImpl {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<File> sucheQuellDateien(File verzeichnis) throws Exception {
+	private List<File> sucheQuellDateien(File verzeichnis) throws Exception {
 		
 		// Liste fuer Ergebnis anlegen
 		List<File> quellDateiListe = new ArrayList<File>();
@@ -151,43 +128,11 @@ public class OANC extends ModuleImpl {
 	@Override
 	protected void applyProperties() throws Exception {
 		
-		// List for OANC locations
-		List<String> oancLocationList = new ArrayList<String>();
-		
-		// Determine which properties are OANC locations
-		Set<Object> propertyKeySet = this.getProperties().keySet();
-		Iterator<Object> propertyKeys = propertyKeySet.iterator();
-		while(propertyKeys.hasNext()){
-			Object propertyKey = propertyKeys.next();
-			
-			// If property is an OANC location, store it in OANC location list (makes sense, doesn't it?)
-			if (propertyKey.toString().matches(PROPERTYKEY_OANCLOCATION_REGEX))
-				oancLocationList.add(this.getProperties().getProperty(propertyKey.toString()));
-				
-		}
+		if (this.getProperties().containsKey(PROPERTYKEY_OANCLOCATION))
+			this.oancSpeicherorte = new String[]{this.getProperties().get(PROPERTYKEY_OANCLOCATION).toString()};
 		
 		// Call apply for super class
 		super.applyProperties();
 	}
 
-	@Override
-	protected void updateProperties() {
-		
-		// Remove existing OANC location properties
-		Set<Object> propertyKeySet = this.getProperties().keySet();
-		Iterator<Object> propertyKeys = propertyKeySet.iterator();
-		while(propertyKeys.hasNext()){
-			Object propertyKey = propertyKeys.next();
-			if (propertyKey.toString().matches(PROPERTYKEY_OANCLOCATION_REGEX))
-				this.getProperties().remove(propertyKey);
-				
-		}
-		
-		// Re-add OANC location based on this instance's variable
-		for (int i=0; i<oancSpeicherorte.length; i++)
-			this.getProperties().setProperty(PROPERTYKEY_OANCLOCATION+i, oancSpeicherorte[i]);
-		
-		// Call update for super class
-		super.updateProperties();
-	}
 }
