@@ -70,7 +70,7 @@ public class GeneralisedSuffixTreeMain {
 		SuffixTreeAppl.unit = 0;
 		ExtActivePoint activePoint;
 		String nextText;
-		// Hint: if texts input is aplphabetically sorted, it may consist of
+		// Hint: if texts input is alphabetically sorted, it may consist of
 		// types and its tokens (here: texts, each terminated by '$').
 		// The tokens (texts) are numbered (continuously), and the last token of
 		// a type is numbered by an integer called unit. All unit integers are
