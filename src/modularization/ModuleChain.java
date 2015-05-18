@@ -20,6 +20,9 @@ public class ModuleChain extends CallbackReceiverImpl {
 	// List of modules contained in this chain
 	List<Module> moduleList = new ArrayList<Module>();
 	
+	// List of started threads
+	List<Thread> startedThreads = new ArrayList<Thread>();
+	
 	/**
 	 * Appends a module to the chain
 	 * @param module module to append
@@ -45,9 +48,11 @@ public class ModuleChain extends CallbackReceiverImpl {
 		if (index<=moduleList.size() && index > 0){
 			try {
 				module.getInputReader().connect(moduleList.get(index-1).getOutputWriter());
+				Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Module "+moduleList.get(index-1).getName()+" and "+module.getName()+" linked via writer/reader.");
 			} catch (NotSupportedException | IOException e1){
 				try {
 					module.getInputStream().connect(moduleList.get(index-1).getOutputStream());
+					Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Module "+moduleList.get(index-1).getName()+" and "+module.getName()+" linked via stream.");
 				} catch (NotSupportedException | IOException e2){
 					throw new NotSupportedException("I'm terribly sorry, but that module cannot be linked to its predecessor.", e2);
 				}
@@ -58,9 +63,11 @@ public class ModuleChain extends CallbackReceiverImpl {
 		if (index<moduleList.size()){
 			try {
 				module.getOutputWriter().connect(moduleList.get(index).getInputReader());
+				Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Module "+module.getName()+" and "+moduleList.get(index-1).getName()+" linked via writer/reader.");
 			} catch (NotSupportedException | IOException e1){
 				try {
 					module.getOutputStream().connect(moduleList.get(index).getInputStream());
+					Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Module "+module.getName()+" and "+moduleList.get(index-1).getName()+" linked via stream.");
 				} catch (NotSupportedException | IOException e2){
 					throw new NotSupportedException("I'm terribly sorry, but that module cannot be linked to its predecessor.", e2);
 				}
@@ -78,10 +85,10 @@ public class ModuleChain extends CallbackReceiverImpl {
 	
 	/**
 	 * Runs the module chain
-	 * @throws Exception if something goes wrong
 	 */
 	public void runChain(){
 		Iterator<Module> modules = moduleList.iterator();
+		
 		while(modules.hasNext()){
 			
 			// Determine next module in list
@@ -91,7 +98,8 @@ public class ModuleChain extends CallbackReceiverImpl {
 			Action successAction = new Action(){
 				@Override
 				public void perform(Object processResult){
-					if (Boolean.getBoolean(processResult.toString()))
+					Boolean result = Boolean.parseBoolean(processResult.toString());
+					if (result)
 						Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Module "+m.getName()+" has successfully finished processing.");
 					else
 						Logger.getLogger(this.getClass().getSimpleName()).log(Level.WARNING, "Module "+m.getName()+" did not finish processing successfully.");
@@ -115,7 +123,34 @@ public class ModuleChain extends CallbackReceiverImpl {
 			this.registerFailureCallback(m, failureAction);
 			
 			Thread t1 = new Thread( m );
+			t1.setName(m.getName());
+			this.startedThreads.add(t1);
 			t1.start();
+		}
+		
+		// Wait for threads to finish
+		while(!this.startedThreads.isEmpty()){
+			try {
+				// Sleep for one second
+				Thread.sleep(1000l);
+				
+				// Test which threads are still active and remove the rest from the list
+				for (int i=this.startedThreads.size(); i>0; i--){
+					if (!this.startedThreads.get(i-1).isAlive()){
+						Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Thread "+this.startedThreads.get(i-1).getName()+" is done.");
+						Thread removedThread = this.startedThreads.remove(i-1);
+						if (removedThread != null)
+							Logger.getLogger(this.getClass().getSimpleName()).log(Level.FINEST, "Removed thread "+removedThread.getName()+".");
+						else
+							Logger.getLogger(this.getClass().getSimpleName()).log(Level.WARNING, "Could not remove thread.");
+					} else {
+						Logger.getLogger(this.getClass().getSimpleName()).log(Level.FINEST, "Thread "+this.startedThreads.get(i-1).getName()+" is still active.");
+					}
+				}
+				
+			} catch (InterruptedException e) {
+				break;
+			}
 		}
 	}
 	

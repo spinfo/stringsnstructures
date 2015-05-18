@@ -7,6 +7,8 @@ import java.io.PipedWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import parallelization.CallbackReceiver;
 
@@ -157,7 +159,9 @@ public abstract class ModuleImpl implements Module {
 	@Override
 	public void run() {
 		try {
+			Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Running module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 			Boolean result = this.process();
+			Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME)+" finished.");
 			this.callbackReceiver.receiveCallback(result, this);
 		} catch (Exception e){
 			this.callbackReceiver.receiveException(this, e);

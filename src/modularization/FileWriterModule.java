@@ -9,6 +9,11 @@ import java.util.logging.Logger;
 
 import parallelization.CallbackReceiver;
 
+/**
+ * Writes any input to file
+ * @author Marcel Boeing
+ *
+ */
 public class FileWriterModule extends ModuleImpl {
 	
 	public static final String PROPERTYKEY_OUTPUTFILE = "outputfile";
@@ -43,15 +48,14 @@ public class FileWriterModule extends ModuleImpl {
 			byte[] buffer = new byte[1024];
 			
 			// Read file data into buffer and write to outputstream
-			int readbytes = this.getInputStream().read(buffer);
-			while (readbytes>0){
-				fileOutputStream.write(buffer);
-				readbytes = this.getInputStream().read(buffer);
+			int readBytes = this.getInputStream().read(buffer);
+			while (readBytes != -1){
+				fileOutputStream.write(buffer, 0, readBytes);
+				readBytes = this.getInputStream().read(buffer);
 			}
 			
-			// close relevant I/O instances
+			// close output stream
 			fileOutputStream.close();
-			this.getInputStream().close();
 			
 			// Log message
 			Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Streamed output into "+this.filePath);
@@ -66,14 +70,14 @@ public class FileWriterModule extends ModuleImpl {
 			char[] buffer = new char[1024];
 			
 			// Read file data into buffer and output to writer
-			while(this.getInputReader().ready()){
-				this.getInputReader().read(buffer);
-				fileWriter.write(buffer);
+			int readBytes = this.getInputReader().read(buffer);
+			while(readBytes != -1){
+				fileWriter.write(buffer, 0, readBytes);
+				readBytes = this.getInputReader().read(buffer);
 			}
 			
-			// close relevant I/O instances
+			// close output writer
 			fileWriter.close();
-			this.getInputReader().close();
 			
 			// Log message
 			Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Wrote output to "+this.filePath);

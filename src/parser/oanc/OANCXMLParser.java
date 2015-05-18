@@ -82,7 +82,7 @@ public class OANCXMLParser extends ModuleImpl {
 	 */
 	private boolean guessSentenceBordersFile() {
 		if (quellDatei != null) {
-			this.satzGrenzenXMLDatei = new File(quellDatei.getAbsolutePath().substring(0, quellDatei.getAbsolutePath().lastIndexOf('.'))+SATZGRENZENDATEISUFFIX+".xml");
+			this.satzGrenzenXMLDatei = new File(quellDatei.getPath().substring(0, quellDatei.getPath().lastIndexOf('.'))+SATZGRENZENDATEISUFFIX+".xml");
 			if (this.satzGrenzenXMLDatei.canRead())
 				return true;
 		}
@@ -96,7 +96,7 @@ public class OANCXMLParser extends ModuleImpl {
 	 */
 	private boolean guessAnnotationsFile() {
 		if (quellDatei != null) {
-			this.annotationsXMLDatei = new File(quellDatei.getAbsolutePath().substring(0, quellDatei.getAbsolutePath().lastIndexOf('.'))+ANNOTATIONSDATEISUFFIX+".xml");
+			this.annotationsXMLDatei = new File(quellDatei.getPath().substring(0, quellDatei.getPath().lastIndexOf('.'))+ANNOTATIONSDATEISUFFIX+".xml");
 			if (this.annotationsXMLDatei.canRead())
 				return true;
 		}
@@ -372,7 +372,6 @@ public class OANCXMLParser extends ModuleImpl {
 		return ergebnisListe;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean process() throws Exception {
 		
@@ -380,18 +379,17 @@ public class OANCXMLParser extends ModuleImpl {
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
 		// Read list of files from input
-		List<File> inputFileList;
+		File[] inputFileList;
 		try {
-			inputFileList = gson.fromJson(getInputReader(), new ArrayList<File>().getClass());
+			inputFileList = gson.fromJson(getInputReader(), new File[0].getClass());
 		} catch (Exception e) {
 			throw new Exception("Error parsing the input -- it does not seem to be the expected list of files.", e);
 		}
 				
-		Iterator<File> inputFiles = inputFileList.iterator();
-		while (inputFiles.hasNext()){
+		for (int i=0; i<inputFileList.length; i++){
 			
 			// Determine the next input file
-			File inputFile = inputFiles.next();
+			File inputFile = inputFileList[i];
 			
 			// Aktuelle Korpusdatei als Quelle fuer Parser setzen
 			this.quellDatei = inputFile;
@@ -452,15 +450,15 @@ public class OANCXMLParser extends ModuleImpl {
 	@Override
 	protected void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_ADDSTARTSYMBOL))
-			this.fuegeStartSymbolHinzu = Boolean.getBoolean(this.getProperties().getProperty(PROPERTYKEY_ADDSTARTSYMBOL));
+			this.fuegeStartSymbolHinzu = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_ADDSTARTSYMBOL));
 		if (this.getProperties().containsKey(PROPERTYKEY_ADDTERMINALSYMBOL))
-			this.fuegeTerminierSymbolHinzu = Boolean.getBoolean(this.getProperties().getProperty(PROPERTYKEY_ADDTERMINALSYMBOL));
+			this.fuegeTerminierSymbolHinzu = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_ADDTERMINALSYMBOL));
 		if (this.getProperties().containsKey(PROPERTYKEY_CONVERTTOLOWERCASE))
-			this.wandleInKleinbuchstaben = Boolean.getBoolean(this.getProperties().getProperty(PROPERTYKEY_CONVERTTOLOWERCASE));
+			this.wandleInKleinbuchstaben = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_CONVERTTOLOWERCASE));
 		if (this.getProperties().containsKey(PROPERTYKEY_KEEPPUNCTUATION))
-			this.behaltePunktuation = Boolean.getBoolean(this.getProperties().getProperty(PROPERTYKEY_KEEPPUNCTUATION));
+			this.behaltePunktuation = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_KEEPPUNCTUATION));
 		if (this.getProperties().containsKey(PROPERTYKEY_OUTPUTANNOTATEDJSON))
-			this.outputAnnotatedJson = Boolean.getBoolean(this.getProperties().getProperty(PROPERTYKEY_OUTPUTANNOTATEDJSON));
+			this.outputAnnotatedJson = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_OUTPUTANNOTATEDJSON));
 			
 		super.applyProperties();
 	}
