@@ -6,15 +6,13 @@ import helpers.VerzeichnisFilter;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import parallelization.CallbackReceiver;
 import modularization.ModuleImpl;
+import parallelization.CallbackReceiver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
