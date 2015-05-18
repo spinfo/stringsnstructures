@@ -39,10 +39,10 @@ public class FileReaderModule extends ModuleImpl {
 			byte[] buffer = new byte[1024];
 			
 			// Read file data into buffer and write to outputstream
-			int readbytes = fileInputStream.read(buffer);
-			while (readbytes>0){
-				this.getOutputStream().write(buffer);
-				readbytes = fileInputStream.read(buffer);
+			int readBytes = fileInputStream.read(buffer);
+			while (readBytes != -1){
+				this.getOutputStream().write(buffer, 0, readBytes);
+				readBytes = fileInputStream.read(buffer);
 			}
 			
 			// close relevant I/O instances
@@ -59,9 +59,10 @@ public class FileReaderModule extends ModuleImpl {
 			char[] buffer = new char[1024];
 			
 			// Read file data into buffer and output to writer
-			while(fileReader.ready()){
-				fileReader.read(buffer);
-				this.getOutputWriter().write(buffer);
+			int readChars = fileReader.read(buffer);
+			while(readChars != -1){
+				this.getOutputWriter().write(buffer, 0, readChars);
+				readChars = fileReader.read(buffer);
 			}
 			
 			// close relevant I/O instances
