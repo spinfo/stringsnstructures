@@ -25,7 +25,7 @@ public class SearchTest {
 		int startPos = 0;
 		int startNode = st.getRoot();
 
-		String search = "Buch";
+		String search = "Test";
 
 		boolean found = st.search(search, startPos, startNode);
 
