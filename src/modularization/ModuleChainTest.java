@@ -18,14 +18,31 @@ public class ModuleChainTest {
 		//String oancLoc1 = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/written_1/journal/slate/2/";
 		String outputFileLocation = "/tmp/test.txt";
 		
-		ModuleChain mc = new ModuleChain();
+		// Set up first mudule chain
+		ModuleChain mc1 = new ModuleChain();
 		
 		// Prepare OANC module
 		Properties oancProperties = new Properties();
 		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "OANC");
 		oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION, oancLoc0);
 		//oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION+"1", oancLoc1);
-		OANC oanc = new OANC(mc,oancProperties);
+		OANC oanc = new OANC(mc1,oancProperties);
+		
+		// Prepare FileWriter module
+		Properties fileWriterProperties = new Properties();
+		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileWriter");
+		fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_OUTPUTFILE, outputFileLocation);
+		FileWriterModule fileWriter = new FileWriterModule(mc1,fileWriterProperties);
+		
+		// Append modules to chain
+		mc1.appendModule(oanc);
+		mc1.appendModule(fileWriter);
+		
+		// Print chain
+		System.out.println(mc1.prettyPrint());
+		
+		// Set up second mudule chain
+		ModuleChain mc2 = new ModuleChain();
 		
 		// Prepare OANC parser module
 		Properties oancParserProperties = new Properties();
@@ -35,28 +52,35 @@ public class ModuleChainTest {
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_CONVERTTOLOWERCASE, Boolean.toString(true));
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_KEEPPUNCTUATION, Boolean.toString(true));
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_OUTPUTANNOTATEDJSON, Boolean.toString(true));
-		OANCXMLParser oancParser = new OANCXMLParser(mc,oancParserProperties);
+		OANCXMLParser oancParser = new OANCXMLParser(mc2,oancParserProperties);
 		
-		// Prepare FileWriter module
-		Properties fileWriterProperties = new Properties();
-		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileWriter");
-		fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_OUTPUTFILE, outputFileLocation);
-		FileWriterModule fileWriter = new FileWriterModule(mc,fileWriterProperties);
+		// Prepare FileReader module
+		Properties fileReaderProperties = new Properties();
+		fileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileReader");
+		fileReaderProperties.setProperty(FileReaderModule.PROPERTYKEY_INPUTFILE, outputFileLocation);
+		FileReaderModule fileReader = new FileReaderModule(mc2,fileReaderProperties);
 		
 		// Prepare ConsoleWriter module
 		Properties consoleWriterProperties = new Properties();
 		consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "ConsoleWriter");
-		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(mc,consoleWriterProperties);
+		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(mc2,consoleWriterProperties);
 		
-		mc.appendModule(oanc);
-		mc.appendModule(oancParser);
-		mc.appendModule(fileWriter);
-		//mc.appendModule(consoleWriter);
+		// Append modules to chain
+		mc2.appendModule(fileReader);
+		mc2.appendModule(oancParser);
+		mc2.appendModule(consoleWriter);
 		
-		System.out.println(mc.prettyPrint());
+		// Print chain
+		System.out.println(mc2.prettyPrint());
 		
-		System.out.println("Attempting to run chain");
-		mc.runChain();
+		
+		// run chain #1
+		System.out.println("Attempting to run chain #1");
+		mc1.runChain();
+		
+		// run chain #2
+		System.out.println("Attempting to run chain #2");
+		mc2.runChain();
 		
 		assertTrue(true);
 	}
