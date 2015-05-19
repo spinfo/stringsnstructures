@@ -41,7 +41,7 @@ public class FileWriterModule extends ModuleImpl {
 		 * (that we will catch)
 		 */
 		try {
-			// Instanciate a new output stream
+			// Instantiate a new output stream
 			FileOutputStream fileOutputStream = new FileOutputStream(new File(this.filePath));
 			
 			// Define input buffer
@@ -63,7 +63,7 @@ public class FileWriterModule extends ModuleImpl {
 		} catch (Exception e){
 			/* The inputstream does not seem to be connected -- try reader/writer instead */
 			
-			// Instanciate a new writer
+			// Instantiate a new writer
 			FileWriter fileWriter = new FileWriter(new File(this.filePath));
 			
 			// Define input buffer

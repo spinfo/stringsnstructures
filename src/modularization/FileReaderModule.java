@@ -32,7 +32,7 @@ public class FileReaderModule extends ModuleImpl {
 		 * exception (that we will catch)
 		 */
 		try {
-			// Instanciate a new input stream
+			// Instantiate a new input stream
 			FileInputStream fileInputStream = new FileInputStream(this.file);
 			
 			// Define input buffer
@@ -52,7 +52,7 @@ public class FileReaderModule extends ModuleImpl {
 		} catch (Exception e){
 			/* The inputstream does not seem to be connected -- try reader/writer instead */
 			
-			// Instanciate a new reader
+			// Instantiate a new reader
 			FileReader fileReader = new FileReader(this.file);
 			
 			// Define input buffer

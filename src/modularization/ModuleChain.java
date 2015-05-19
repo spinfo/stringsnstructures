@@ -106,7 +106,7 @@ public class ModuleChain extends CallbackReceiverImpl {
 				}
 			};
 			
-			// Define action to perform on success
+			// Define action to perform on failure
 			Action failureAction = new Action() {
 				@Override
 				public void perform(Object processResult) {
