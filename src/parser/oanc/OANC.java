@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import modularization.CharPipe;
 import modularization.ModuleImpl;
 import parallelization.CallbackReceiver;
 
@@ -33,9 +34,7 @@ public class OANC extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Define I/O
-		super.setInputReader(null);
-		super.setInputStream(null);
-		super.setOutputStream(null);
+		this.getSupportedOutputs().add(CharPipe.class);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_OANCLOCATION, "The directory containing OANC-Files (subdirectories are used, too)");
@@ -113,11 +112,14 @@ public class OANC extends ModuleImpl {
 		// Instanciate JSON converter
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
-		// Convert file list to JSON and write to output
-		gson.toJson(fileList, this.getOutputWriter());
+		// Convert file list to JSON
+		String fileListJson = gson.toJson(fileList);
 		
-		// Close the output writer
-		this.getOutputWriter().close();
+		// Write the file list JSON to all output character pipes
+		this.outputToAllCharPipes(fileListJson);
+		
+		// Close outputs
+		this.closeAllOutputWriters();
 		
 		// Processing ended successfully
 		return true;

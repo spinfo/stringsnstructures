@@ -15,9 +15,9 @@ public class FileReaderModule extends ModuleImpl {
 	public FileReaderModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver,properties);
 		
-		// set I/O -- no other inputs allowed here (we'll read the file)
-		this.setInputReader(null);
-		this.setInputStream(null);
+		// set I/O -- no inputs allowed here (we'll read the file)
+		this.getSupportedOutputs().add(BytePipe.class);
+		this.getSupportedOutputs().add(CharPipe.class);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTFILE, "Path to the input file");
@@ -27,9 +27,7 @@ public class FileReaderModule extends ModuleImpl {
 	public boolean process() throws Exception {
 		
 		/*
-		 * write to both output channels (stream/writer) -- if the first one
-		 * is not connected to another module's input, it will throw an
-		 * exception (that we will catch)
+		 * write to both output channels (stream/writer)
 		 */
 		try {
 			// Instantiate a new input stream
@@ -41,33 +39,39 @@ public class FileReaderModule extends ModuleImpl {
 			// Read file data into buffer and write to outputstream
 			int readBytes = fileInputStream.read(buffer);
 			while (readBytes != -1){
-				this.getOutputStream().write(buffer, 0, readBytes);
+				this.outputToAllBytePipes(buffer, 0, readBytes);
 				readBytes = fileInputStream.read(buffer);
 			}
 			
 			// close relevant I/O instances
 			fileInputStream.close();
-			this.getOutputStream().close();
+			this.closeAllOutputStreams();
 			
 		} catch (Exception e){
-			/* The inputstream does not seem to be connected -- try reader/writer instead */
-			
+			/* The inputstream does not seem to be connected or another I/O-error occurred */
+			throw e;
+		}
+		
+		try {
 			// Instantiate a new reader
 			FileReader fileReader = new FileReader(this.file);
-			
+
 			// Define input buffer
 			char[] buffer = new char[1024];
-			
+
 			// Read file data into buffer and output to writer
 			int readChars = fileReader.read(buffer);
-			while(readChars != -1){
-				this.getOutputWriter().write(buffer, 0, readChars);
+			while (readChars != -1) {
+				this.outputToAllCharPipes(buffer, 0, readChars);
 				readChars = fileReader.read(buffer);
 			}
-			
+
 			// close relevant I/O instances
 			fileReader.close();
-			this.getOutputWriter().close();
+			this.closeAllOutputWriters();
+		} catch (Exception e){
+			/* The inputstream does not seem to be connected or another I/O-error occurred */
+			throw e;
 		}
 		
 		// Success

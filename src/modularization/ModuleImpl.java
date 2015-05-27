@@ -1,10 +1,10 @@
 package modularization;
 
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PipedReader;
-import java.io.PipedWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -13,57 +13,47 @@ import java.util.logging.Logger;
 import parallelization.CallbackReceiver;
 
 public abstract class ModuleImpl implements Module {
-	
+
 	public static final String PROPERTYKEY_NAME = "name";
 	private String name;
-	private PipedInputStream inputStream = new PipedInputStream();
-	private PipedOutputStream outputStream = new PipedOutputStream();
-	private PipedReader inputReader = new PipedReader();
-	private PipedWriter outputWriter = new PipedWriter();
+	private BytePipe byteInput = null;
+	private CharPipe charInput = null;
+	private List<BytePipe> byteOutputs = new ArrayList<BytePipe>();
+	private List<CharPipe> charOutputs = new ArrayList<CharPipe>();
 	private Properties properties = new Properties();
 	private CallbackReceiver callbackReceiver;
-	private Map<String,String> propertyDescriptions = new HashMap<String,String>();
-	
-	public ModuleImpl(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
+	private Map<String, String> propertyDescriptions = new HashMap<String, String>();
+	private int status = Module.STATUSCODE_NOTYETRUN;
+	private List<Class<?>> supportedInputs = new ArrayList<Class<?>>();
+	private List<Class<?>> supportedOutputs = new ArrayList<Class<?>>();
+
+	public ModuleImpl(CallbackReceiver callbackReceiver, Properties properties)
+			throws Exception {
 		super();
 		this.callbackReceiver = callbackReceiver;
 		this.setProperties(properties);
-		this.getPropertyDescriptions().put(PROPERTYKEY_NAME, "The module instance's name");
+		this.getPropertyDescriptions().put(PROPERTYKEY_NAME,
+				"The module instance's name");
+	}
+
+	/**
+	 * Returns the supported input pipe classes
+	 * @return
+	 */
+	protected List<Class<?>> getSupportedInputs(){
+		return this.supportedInputs;
+	}
+
+	/**
+	 * Returns the supported output pipe classes
+	 * @return
+	 */
+	protected List<Class<?>> getSupportedOutputs(){
+		return this.supportedOutputs;
 	}
 
 	@Override
-	public PipedReader getInputReader() throws NotSupportedException {
-		if (inputReader == null)
-			throw new NotSupportedException("This module does not support input via reader.");
-		return inputReader;
-	}
-	
-	@Override
-	public PipedWriter getOutputWriter() throws NotSupportedException {
-		if (outputWriter == null)
-			throw new NotSupportedException("This module does not support output via writer.");
-		return outputWriter;
-	}
-
-	@Override
-	public PipedInputStream getInputStream() throws NotSupportedException {
-		if (inputStream == null)
-			throw new NotSupportedException("This module does not support input via stream.");
-		return inputStream;
-	}
-
-	@Override
-	public PipedOutputStream getOutputStream() throws NotSupportedException {
-		if (outputStream == null)
-			throw new NotSupportedException("This module does not support output via stream.");
-		return outputStream;
-	}
-
-	@Override
-	public boolean process() throws Exception {
-		// Has to be implemented/overridden within the subclasses
-		return false;
-	}
+	public abstract boolean process() throws Exception;
 
 	@Override
 	public String getName() {
@@ -79,7 +69,6 @@ public abstract class ModuleImpl implements Module {
 			this.getProperties().remove(PROPERTYKEY_NAME);
 	}
 
-	
 	@Override
 	public Properties getProperties() {
 		return properties;
@@ -87,17 +76,20 @@ public abstract class ModuleImpl implements Module {
 
 	@Override
 	public void setProperties(Properties properties) throws Exception {
-		if (properties==null)
-			throw new Exception(this.getClass().getSimpleName()+" cannot handle null value as properties, sorry.");
+		if (properties == null)
+			throw new Exception(this.getClass().getSimpleName()
+					+ " cannot handle null value as properties, sorry.");
 		this.properties = properties;
 		this.applyProperties();
 	}
-	
+
 	/**
-	 * Applies all relevant properties to this instance. Subclasses should override this,
-	 * apply the properties they use themselves and call super().applyProperties()
-	 * afterwards.
-	 * @throws Exception when something goes wrong (property cannot be applied etc.)
+	 * Applies all relevant properties to this instance. Subclasses should
+	 * override this, apply the properties they use themselves and call
+	 * super().applyProperties() afterwards.
+	 * 
+	 * @throws Exception
+	 *             when something goes wrong (property cannot be applied etc.)
 	 */
 	protected void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_NAME))
@@ -105,31 +97,187 @@ public abstract class ModuleImpl implements Module {
 	}
 
 	/**
-	 * @param inputStream the inputStream to set
+	 * Writes the given String to all char output pipes.
+	 * @param data Data to write
+	 * @throws IOException Thrown if an I/O problem occurs
 	 */
-	protected void setInputStream(PipedInputStream inputStream) {
-		this.inputStream = inputStream;
+	public void outputToAllCharPipes(String data) throws IOException {
+		this.outputToAllCharPipes(data.toCharArray(), 0, data.length());
+	}
+	
+	/**
+	 * Writes the given data to all char output pipes.
+	 * @param data Data to write
+	 * @param offset The start offset in the data
+	 * @param charsToWrite The number of chars to write
+	 * @throws IOException Thrown if an I/O problem occurs
+	 */
+	public void outputToAllCharPipes(char[] data, int offset, int charsToWrite) throws IOException {
+		// Loop over the defined outputs
+		Iterator<CharPipe> outputPipes = this.charOutputs.iterator();
+		while (outputPipes.hasNext()) {
+
+			// Determine the next output on the list
+			CharPipe outputPipe = outputPipes.next();
+
+			// Write file list JSON to output
+			outputPipe.write(data, offset, charsToWrite);
+		}
+	}
+	
+
+	
+	/**
+	 * Writes the given byte array to all outputs.
+	 * @param data Data to write
+	 * @throws IOException Thrown if an I/O problem occurs
+	 */
+	public void outputToAllBytePipes(byte[] data) throws IOException {
+		this.outputToAllBytePipes(data, 0, data.length);
+	}
+	
+	/**
+	 * Writes the given byte array to all stream outputs.
+	 * @param data Data to write
+	 * @param offset The start offset in the data
+	 * @param bytesToWrite The number of bytes to write
+	 * @throws IOException Thrown if an I/O problem occurs
+	 */
+	public void outputToAllBytePipes(byte[] data, int offset, int bytesToWrite) throws IOException {
+		// Loop over the defined outputs
+		Iterator<BytePipe> outputStreams = this.byteOutputs.iterator();
+		while (outputStreams.hasNext()) {
+
+			// Determine the next output on the list
+			BytePipe outputStream = outputStreams.next();
+
+			// Write file list JSON to output
+			outputStream.write(data, offset, bytesToWrite);
+		}
+	}
+	
+	/**
+	 * Closes all output writers.
+	 * @throws IOException If an I/O error occurs
+	 */
+	public void closeAllOutputWriters() throws IOException {
+
+		// Loop over the defined outputs
+		Iterator<CharPipe> outputWriters = this.charOutputs.iterator();
+		while (outputWriters.hasNext()) {
+
+			// Close output
+			outputWriters.next().writeClose();
+		}
+	}
+	
+	/**
+	 * Closes all output streams.
+	 * @throws IOException If an I/O error occurs
+	 */
+	public void closeAllOutputStreams() throws IOException {
+
+		// Loop over the defined outputs
+		Iterator<BytePipe> outputStreams = this.byteOutputs.iterator();
+		while (outputStreams.hasNext()) {
+
+			// Close output
+			outputStreams.next().writeClose();
+		}
+	}
+	
+	public void closeAllOutputs() throws IOException {
+		this.closeAllOutputStreams();
+		this.closeAllOutputWriters();
 	}
 
-	/**
-	 * @param outputStream the outputStream to set
-	 */
-	protected void setOutputStream(PipedOutputStream outputStream) {
-		this.outputStream = outputStream;
+	@Override
+	public boolean supportsInputPipe(Pipe pipe) {
+		if (this.supportedInputs.contains(pipe.getClass()))
+			return true;
+		return false;
 	}
 
-	/**
-	 * @param inputReader the inputReader to set
-	 */
-	protected void setInputReader(PipedReader inputReader) {
-		this.inputReader = inputReader;
+	@Override
+	public boolean supportsOutputPipe(Pipe pipe) {
+		if (this.supportedOutputs.contains(pipe.getClass()))
+			return true;
+		return false;
 	}
 
-	/**
-	 * @param outputWriter the outputWriter to set
-	 */
-	protected void setOutputWriter(PipedWriter outputWriter) {
-		this.outputWriter = outputWriter;
+	@Override
+	public CharPipe getInputCharPipe() {
+		return this.charInput;
+	}
+
+	@Override
+	public void setInputCharPipe(CharPipe pipe) throws NotSupportedException {
+		if (!this.supportsInputPipe(pipe))
+			throw new NotSupportedException("Excuse me, but this module cannot take its input from that pipe.");
+		this.charInput = pipe;
+	}
+
+	@Override
+	public BytePipe getInputBytePipe() {
+		return this.byteInput;
+	}
+
+	@Override
+	public void setInputBytePipe(BytePipe pipe) throws NotSupportedException {
+		if (!this.supportsInputPipe(pipe))
+			throw new NotSupportedException("Excuse me, but this module cannot take its input from that pipe.");
+		this.byteInput = pipe;
+	}
+
+	@Override
+	public void setInputPipe(Pipe pipe) throws NotSupportedException {
+		if (pipe.getClass().equals(BytePipe.class))
+			this.setInputBytePipe((BytePipe) pipe);
+		else if (pipe.getClass().equals(CharPipe.class))
+			this.setInputCharPipe((CharPipe) pipe);
+		else
+			throw new NotSupportedException("Excuse me, but I do not recognize the type of that pipe.");
+	}
+
+	@Override
+	public List<CharPipe> getOutputCharPipes() {
+		return this.charOutputs;
+	}
+
+	@Override
+	public List<BytePipe> getOutputBytePipes() {
+		return this.byteOutputs;
+	}
+
+	@Override
+	public List<Pipe> getOutputPipes() {
+		// Concatenate both output pipe lists and return the result
+		List<Pipe> pipes = new ArrayList<Pipe>();
+		pipes.addAll(charOutputs);
+		pipes.addAll(byteOutputs);
+		return pipes;
+	}
+
+	@Override
+	public boolean addOutputPipe(Pipe pipe) throws NotSupportedException {
+		if (!this.supportsOutputPipe(pipe))
+			throw new NotSupportedException("Excuse me, but this module cannot output to that pipe.");
+		if (pipe.getClass().equals(BytePipe.class))
+			this.byteOutputs.add((BytePipe) pipe);
+		else if (pipe.getClass().equals(CharPipe.class))
+			this.charOutputs.add((CharPipe) pipe);
+		else
+			throw new NotSupportedException("Excuse me, but I do not recognize the type of that pipe.");
+		return true;
+	}
+
+	@Override
+	public boolean removeOutputPipe(Pipe pipe) {
+		if (pipe.getClass().equals(BytePipe.class))
+			return this.byteOutputs.remove((BytePipe) pipe);
+		else if (pipe.getClass().equals(CharPipe.class))
+			return this.charOutputs.remove((CharPipe) pipe);
+		return false;
 	}
 
 	@Override
@@ -137,7 +285,9 @@ public abstract class ModuleImpl implements Module {
 		return propertyDescriptions;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see parallelization.CallbackProcess#getRueckmeldungsEmpfaenger()
 	 */
 	@Override
@@ -145,29 +295,65 @@ public abstract class ModuleImpl implements Module {
 		return callbackReceiver;
 	}
 
-	/* (non-Javadoc)
-	 * @see parallelization.CallbackProcess#setRueckmeldungsEmpfaenger(parallelization.CallbackReceiver)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * parallelization.CallbackProcess#setRueckmeldungsEmpfaenger(parallelization
+	 * .CallbackReceiver)
 	 */
 	@Override
 	public void setCallbackReceiver(CallbackReceiver callbackReceiver) {
 		this.callbackReceiver = callbackReceiver;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
 	public void run() {
 		try {
-			Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Running module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
+			// Update status
+			this.status = Module.STATUSCODE_RUNNING;
+
+			// Log message
+			Logger.getLogger(this.getClass().getSimpleName()).log(
+					Level.INFO,
+					"Running module "
+							+ this.getProperties().getProperty(
+									ModuleImpl.PROPERTYKEY_NAME));
+
+			// Run process and determine result
 			Boolean result = this.process();
-			Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME)+" finished.");
+
+			// Log message
+			Logger.getLogger(this.getClass().getSimpleName())
+					.log(Level.INFO,
+							"Module "
+									+ this.getProperties().getProperty(
+											ModuleImpl.PROPERTYKEY_NAME)
+									+ " finished.");
+
+			// Update status
+			if (result)
+				this.status = Module.STATUSCODE_SUCCESS;
+			else
+				this.status = Module.STATUSCODE_FAILURE;
+
+			// Return result
 			this.callbackReceiver.receiveCallback(result, this);
-		} catch (Exception e){
+
+		} catch (Exception e) {
+			this.status = Module.STATUSCODE_FAILURE;
 			this.callbackReceiver.receiveException(this, e);
 		}
 	}
 
-	
+	@Override
+	public int getStatus() {
+		return status;
+	}
 
 }

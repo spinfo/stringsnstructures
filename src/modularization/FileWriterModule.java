@@ -3,6 +3,10 @@ package modularization;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PipedReader;
+import java.io.PipedWriter;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,12 +26,12 @@ public class FileWriterModule extends ModuleImpl {
 	public FileWriterModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
 		
-		// set I/O -- no other outputs allowed here (we'll write the file instead of piping to another module)
-		this.setOutputWriter(null);
-		this.setOutputStream(null);
-		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTFILE, "Path to the output file");
+		
+		// Define I/O
+		this.getSupportedInputs().add(BytePipe.class);
+		this.getSupportedInputs().add(CharPipe.class);
 		
 		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
@@ -48,10 +52,10 @@ public class FileWriterModule extends ModuleImpl {
 			byte[] buffer = new byte[1024];
 			
 			// Read file data into buffer and write to outputstream
-			int readBytes = this.getInputStream().read(buffer);
+			int readBytes = this.getInputBytePipe().getInput().read(buffer);
 			while (readBytes != -1){
 				fileOutputStream.write(buffer, 0, readBytes);
-				readBytes = this.getInputStream().read(buffer);
+				readBytes = this.getInputBytePipe().getInput().read(buffer);
 			}
 			
 			// close output stream
@@ -61,7 +65,7 @@ public class FileWriterModule extends ModuleImpl {
 			Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Streamed output into "+this.filePath);
 			
 		} catch (Exception e){
-			/* The inputstream does not seem to be connected -- try reader/writer instead */
+			/* The inputstream does not seem to be connected -- try inputreader instead */
 			
 			// Instantiate a new writer
 			FileWriter fileWriter = new FileWriter(new File(this.filePath));
@@ -70,10 +74,10 @@ public class FileWriterModule extends ModuleImpl {
 			char[] buffer = new char[1024];
 			
 			// Read file data into buffer and output to writer
-			int readBytes = this.getInputReader().read(buffer);
+			int readBytes = this.getInputCharPipe().getInput().read(buffer);
 			while(readBytes != -1){
 				fileWriter.write(buffer, 0, readBytes);
-				readBytes = this.getInputReader().read(buffer);
+				readBytes = this.getInputCharPipe().getInput().read(buffer);
 			}
 			
 			// close output writer

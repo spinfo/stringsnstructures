@@ -17,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import modularization.CharPipe;
 import modularization.ModuleImpl;
 
 import org.xml.sax.SAXException;
@@ -62,8 +63,8 @@ public class OANCXMLParser extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Define I/O
-		super.setInputStream(null);
-		super.setOutputStream(null);
+		this.getSupportedInputs().add(CharPipe.class);
+		this.getSupportedOutputs().add(CharPipe.class);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_ADDSTARTSYMBOL, "Set to 'true' if '"+STARTSYMBOL+"' should be added as start symbol to each sentence");
@@ -381,7 +382,7 @@ public class OANCXMLParser extends ModuleImpl {
 		// Read list of files from input
 		File[] inputFileList;
 		try {
-			inputFileList = gson.fromJson(getInputReader(), new File[0].getClass());
+			inputFileList = gson.fromJson(this.getInputCharPipe().getInput(), new File[0].getClass());
 		} catch (Exception e) {
 			throw new Exception("Error parsing the input -- it does not seem to be the expected list of files.", e);
 		}
@@ -390,6 +391,9 @@ public class OANCXMLParser extends ModuleImpl {
 			
 			// Determine the next input file
 			File inputFile = inputFileList[i];
+			
+			// Write log message
+			Logger.getLogger(this.getClass().getSimpleName()).log(Level.FINEST,"Parser is processing "+inputFile.getPath());
 			
 			// Aktuelle Korpusdatei als Quelle fuer Parser setzen
 			this.quellDatei = inputFile;
@@ -400,6 +404,8 @@ public class OANCXMLParser extends ModuleImpl {
 			// If the sentence borders are missing, throw an exception
 			if (!sentenceBordersArePresent)
 				throw new Exception("I'm very sorry indeed, but I must stop processing for I could not find the file containing the sentence borders.");
+			else
+				Logger.getLogger(this.getClass().getSimpleName()).log(Level.FINEST,"Found sentence borders in "+this.satzGrenzenXMLDatei.getPath());
 			
 			// If the output format is set to annotated JSON, the method used for parsing differs
 			if (this.outputAnnotatedJson){
@@ -410,12 +416,17 @@ public class OANCXMLParser extends ModuleImpl {
 				// If the annotations are missing, throw an exception
 				if (!annotationsArePresent)
 					throw new Exception("I'm very sorry indeed, but I must stop processing for I could not find the file containing the annotation data.");
+				else
+					Logger.getLogger(this.getClass().getSimpleName()).log(Level.FINEST,"Found annotations in "+this.annotationsXMLDatei.getPath());
 				
 				// Parse the source text with annotations
 				List<List<WortAnnotationTupel>> annotatedTupelList = this.parseQuellDateiMitAnnotationen(this.wandleInKleinbuchstaben);
 				
-				// Write the result to output
-				gson.toJson(annotatedTupelList, this.getOutputWriter());
+				// Convert tupel list to JSON
+				String annotatedTupelListJson = gson.toJson(annotatedTupelList);
+				
+				// Output the result
+				this.outputToAllCharPipes(annotatedTupelListJson);
 				
 			} else {
 				// The output format is plain sentences, cleaned up a bit
@@ -427,19 +438,20 @@ public class OANCXMLParser extends ModuleImpl {
 				Iterator<String> rohsaetze = rohsatzListe.iterator();
 				while (rohsaetze.hasNext()) {
 
-					// Rohsatz bereinigen und in die Ausgabe schreiben
-					gson.toJson(this.bereinigeUndSegmentiereSatz(
+					// Clean up raw sentence & convert to JSON
+					String cleanedUpSentenceJson = gson.toJson(this.bereinigeUndSegmentiereSatz(
 							rohsaetze.next(), fuegeStartSymbolHinzu,
 							fuegeTerminierSymbolHinzu, wandleInKleinbuchstaben,
-							behaltePunktuation), this.getOutputWriter());
+							behaltePunktuation));
+
+					// Output the result
+					this.outputToAllCharPipes(cleanedUpSentenceJson);
 				}
 			}
-
-			
 		}
-		
-		// Close output writer
-		this.getOutputWriter().close();
+
+		// Close outputs
+		this.closeAllOutputWriters();
 		
 		return true;
 	}

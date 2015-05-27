@@ -17,9 +17,9 @@ public class ConsoleWriterModule extends ModuleImpl {
 	public ConsoleWriterModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
 		
-		// set I/O -- no other outputs allowed here (we'll write the file instead of piping to another module)
-		this.setOutputWriter(null);
-		this.setOutputStream(null);
+		// Define I/O
+		this.getSupportedInputs().add(BytePipe.class);
+		this.getSupportedInputs().add(CharPipe.class);
 		
 		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
@@ -40,10 +40,10 @@ public class ConsoleWriterModule extends ModuleImpl {
 			byte[] buffer = new byte[1024];
 			
 			// Read file data into buffer and write to outputstream
-			int readBytes = this.getInputStream().read(buffer);
+			int readBytes = this.getInputBytePipe().getInput().read(buffer);
 			while (readBytes>0){
 				out.write(buffer, 0, readBytes);
-				readBytes = this.getInputStream().read(buffer);
+				readBytes = this.getInputBytePipe().getInput().read(buffer);
 			}
 			
 			// Log message
@@ -59,14 +59,14 @@ public class ConsoleWriterModule extends ModuleImpl {
 			char[] buffer = new char[1024];
 			
 			// Read file data into buffer and output to writer
-			int readChars = this.getInputReader().read(buffer);
+			int readChars = this.getInputCharPipe().getInput().read(buffer);
 			while(readChars != -1){
 				for (int i=0; i<readChars; i++){
 					if (buffer[i]<0)
 						break;
 					out.print(buffer[i]);
 				}
-				readChars = this.getInputReader().read(buffer);
+				readChars = this.getInputCharPipe().getInput().read(buffer);
 			}
 			
 			// Log message
