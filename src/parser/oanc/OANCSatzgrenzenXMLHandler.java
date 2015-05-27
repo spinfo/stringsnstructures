@@ -19,7 +19,7 @@ public class OANCSatzgrenzenXMLHandler extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName,
 			Attributes attributes) throws SAXException {
-		if (qName.equals("struct") && attributes.getValue("type").equals("s")){
+		if (qName.equals("struct") && (attributes.getValue("type").equals("s") || attributes.getValue("type").equals("u"))){
 			this.satzgrenzen.add(new OANCXMLSatzgrenze(Integer.parseInt(attributes.getValue("from")), Integer.parseInt(attributes.getValue("to"))));
 		}
 	}

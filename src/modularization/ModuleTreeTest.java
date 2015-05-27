@@ -15,8 +15,8 @@ public class ModuleTreeTest {
 	@Test
 	public void test() throws Exception {
 		
-		//String oancLoc0 = System.getProperty("user.home")+File.separator+"Dropbox"+File.separator+"Strings_and_Structures"+File.separator+"ANC"+File.separator+"XCES Format"+File.separator+"written"+File.separator;
-		String oancLoc0 = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/written_1/journal/slate/8/";
+		String oancLoc0 = System.getProperty("user.home")+File.separator+"Dropbox"+File.separator+"Strings_and_Structures"+File.separator+"ANC"+File.separator+"XCES Format"+File.separator+"written"+File.separator;
+		//String oancLoc0 = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/written_1/journal/slate/8/";
 		//String oancLoc0 = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/spoken/face-to-face/charlotte/";
 		String outputFileLocation = System.getProperty("java.io.tmpdir")+File.separator+"test.txt";
 		
