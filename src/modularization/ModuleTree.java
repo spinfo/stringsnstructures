@@ -26,41 +26,66 @@ public class ModuleTree extends CallbackReceiverImpl {
 	// List of started threads
 	private List<Thread> startedThreads = new ArrayList<Thread>();
 	
+	/**
+	 * When using the constructor without parameters you need to
+	 * set the root module manually before adding any other modules!
+	 */
 	public ModuleTree(){
 		super();
 	}
 	
+	/**
+	 * Preferred constructor
+	 * @param module
+	 */
 	public ModuleTree(Module module){
 		super();
 		this.setRootModule(module);
 	}
 	
 	/**
-	 * @return the moduleTree
+	 * @return Returns the module tree model
 	 */
 	public TreeModel getModuleTree() {
 		return moduleTree;
 	}
 
 	/**
-	 * @return the startedThreads
+	 * @return Returns a list of running threads
 	 */
 	public List<Thread> getStartedThreads() {
 		return startedThreads;
 	}
 
+	/**
+	 * Sets the tree's root module
+	 * @param module Module to set as root
+	 */
 	public void setRootModule(Module module){
 		DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(module);
 		this.moduleTree = new DefaultTreeModel(rootNode);
 	}
 	
-	private DefaultMutableTreeNode locateModuleInTree(Module module){
+	/**
+	 * Returns the tree node that holds the given module
+	 * (or null if it is not found)
+	 * @param module Module to search for
+	 * @return Tree node that holds the module or null
+	 */
+	public DefaultMutableTreeNode locateModuleInTree(Module module){
 		// Determine the tree's root node
 		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) this.moduleTree.getRoot();
 		
 		return this.locateModuleInTree(module, rootNode);
 	}
 	
+	/**
+	 * Returns the tree node that holds the given module
+	 * (or null if it is not found)
+	 * @param module Module to search for
+	 * @param parentNode Tree node to start the search from
+	 * @return Tree node that holds the module or null
+	 */
 	private DefaultMutableTreeNode locateModuleInTree(Module module, DefaultMutableTreeNode parentNode){
 		if (parentNode.getUserObject() != null && parentNode.getUserObject().equals(module))
 			return parentNode;
@@ -158,7 +183,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 	}
 	
 	/**
-	 * Runs the module tree
+	 * Runs all modules the module tree contains
 	 */
 	public void runModules() throws Exception {
 		
@@ -284,6 +309,13 @@ public class ModuleTree extends CallbackReceiverImpl {
 		return this.prettyPrint(rootNode);
 	}
 	
+	/**
+	 * Prints a pretty representation of the module chain
+	 * (from the given node on)
+	 * @param parentNode Node to start from
+	 * @return String
+	 * @throws Exception
+	 */
 	private String prettyPrint(DefaultMutableTreeNode parentNode) throws Exception {
 		
 		if (parentNode.getUserObject()==null || !Module.class.isAssignableFrom(parentNode.getUserObject().getClass()))
