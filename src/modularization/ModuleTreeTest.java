@@ -27,7 +27,6 @@ public class ModuleTreeTest {
 		Properties oancProperties = new Properties();
 		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "OANC");
 		oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION, oancLoc0);
-		//oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION+"1", oancLoc1);
 		OANC oanc = new OANC(moduleTree,oancProperties);
 		
 		moduleTree.setRootModule(oanc); // Necessary before adding more modules!
@@ -64,11 +63,11 @@ public class ModuleTreeTest {
 		moduleTree.addModule(oancParser, oanc);
 		moduleTree.addModule(fileWriter, oancParser);
 		
-		// Print chain
+		// Print tree
 		System.out.println(moduleTree.prettyPrint());
 		
 		
-		// run chain #1
+		// run tree
 		System.out.println("Attempting to run chain #1");
 		moduleTree.runModules();
 		
