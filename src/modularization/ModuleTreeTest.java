@@ -67,8 +67,8 @@ public class ModuleTreeTest {
 		System.out.println(moduleTree.prettyPrint());
 		
 		
-		// run tree
-		System.out.println("Attempting to run chain #1");
+		// Run modules in tree
+		System.out.println("Attempting to run module tree");
 		moduleTree.runModules();
 		
 		assertTrue(true);
