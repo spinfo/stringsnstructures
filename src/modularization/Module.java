@@ -135,6 +135,12 @@ public interface Module extends CallbackProcess {
 	public Map<String,String> getPropertyDescriptions();
 	
 	/**
+	 * Returns a map containing available default values for properties of this module.
+	 * @return
+	 */
+	public Map<String,String> getPropertyDefaultValues();
+	
+	/**
 	 * Returns a code indicating the status of the module (see static vars in this class)
 	 * @return status code
 	 */

@@ -23,6 +23,7 @@ public abstract class ModuleImpl implements Module {
 	private String name;
 	private Properties properties = new Properties();
 	private Map<String, String> propertyDescriptions = new HashMap<String, String>();
+	private Map<String, String> propertyDefaultValues = new HashMap<String, String>();
 	private int status = Module.STATUSCODE_NOTYETRUN;
 	private List<Class<?>> supportedInputs = new ArrayList<Class<?>>();
 	private List<Class<?>> supportedOutputs = new ArrayList<Class<?>>();
@@ -149,6 +150,11 @@ public abstract class ModuleImpl implements Module {
 	@Override
 	public Map<String, String> getPropertyDescriptions() {
 		return propertyDescriptions;
+	}
+	
+	@Override
+	public Map<String, String> getPropertyDefaultValues() {
+		return propertyDefaultValues;
 	}
 	
 	@Override
