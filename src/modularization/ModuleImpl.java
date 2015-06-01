@@ -59,7 +59,7 @@ public abstract class ModuleImpl implements Module {
 	 */
 	public void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_NAME))
-			this.name = this.getProperties().getProperty(PROPERTYKEY_NAME);
+			this.name = this.getProperties().getProperty(PROPERTYKEY_NAME, "unnamed module");
 	}
 
 	public void closeAllOutputs() throws IOException {
