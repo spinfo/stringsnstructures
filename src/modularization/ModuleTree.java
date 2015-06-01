@@ -306,23 +306,29 @@ public class ModuleTree extends CallbackReceiverImpl {
 		// Determine the tree's root node
 		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) this.moduleTree.getRoot();
 		
-		return this.prettyPrint(rootNode);
+		return this.prettyPrint(rootNode, 0);
 	}
 	
 	/**
 	 * Prints a pretty representation of the module chain
 	 * (from the given node on)
 	 * @param parentNode Node to start from
+	 * @param level Level of indention
 	 * @return String
 	 * @throws Exception
 	 */
-	private String prettyPrint(DefaultMutableTreeNode parentNode) throws Exception {
+	private String prettyPrint(DefaultMutableTreeNode parentNode, int level) throws Exception {
 		
 		if (parentNode.getUserObject()==null || !Module.class.isAssignableFrom(parentNode.getUserObject().getClass()))
 			throw new Exception("This tree node does not hold a module -- I am sorry, but I cannot print it.");
 		
 		// Instantiate string buffer to concatenate the result
 		StringBuffer result = new StringBuffer();
+		
+		// Insert indention
+		for (int i=0; i<level; i++){
+			result.append("\t");
+		}
 		
 		Module module = (Module) parentNode.getUserObject();
 		Pipe pipe = module.getInputBytePipe();
@@ -341,7 +347,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 		Enumeration<?> childNodes = parentNode.children();
 		while (childNodes.hasMoreElements()) {
 			DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) childNodes.nextElement();
-			result.append(this.prettyPrint(childNode));
+			result.append("\n"+this.prettyPrint(childNode, level+1));
 		}
 		
 		return result.toString();
