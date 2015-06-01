@@ -58,10 +58,19 @@ public class ModuleTreeTest {
 		consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "ConsoleWriter");
 		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleTree,consoleWriterProperties);
 		
+		// Prepare ExampleModule module
+		Properties exampleModuleProperties = new Properties();
+		exampleModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "Example Module");
+		exampleModuleProperties.setProperty(ExampleModule.PROPERTYKEY_REGEX, "[aeiu]");
+		exampleModuleProperties.setProperty(ExampleModule.PROPERTYKEY_REPLACEMENT, "o");
+		ExampleModule exampleModule = new ExampleModule(moduleTree, exampleModuleProperties);
+		
 		// Add modules to tree
-		moduleTree.addModule(consoleWriter, oanc);
 		moduleTree.addModule(oancParser, oanc);
 		moduleTree.addModule(fileWriter, oancParser);
+		moduleTree.addModule(consoleWriter, oancParser);
+		//moduleTree.addModule(exampleModule, oancParser);
+		//moduleTree.addModule(consoleWriter, exampleModule);
 		
 		// Print tree
 		System.out.println(moduleTree.prettyPrint());

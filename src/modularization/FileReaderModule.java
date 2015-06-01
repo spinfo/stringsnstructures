@@ -79,7 +79,7 @@ public class FileReaderModule extends ModuleImpl {
 	}
 
 	@Override
-	protected void applyProperties() throws Exception {
+	public void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_INPUTFILE))
 			this.file = new File(this.getProperties().getProperty(PROPERTYKEY_INPUTFILE));
 		super.applyProperties();

@@ -88,7 +88,7 @@ public class FileWriterModule extends ModuleImpl {
 	}
 
 	@Override
-	protected void applyProperties() throws Exception {
+	public void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_OUTPUTFILE))
 			this.filePath = this.getProperties().getProperty(PROPERTYKEY_OUTPUTFILE);
 		super.applyProperties();

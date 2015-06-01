@@ -62,7 +62,7 @@ public class ExampleModule extends ModuleImpl {
 	}
 	
 	@Override
-	protected void applyProperties() throws Exception {
+	public void applyProperties() throws Exception {
 		
 		// Apply own properties
 		if (this.getProperties().containsKey(PROPERTYKEY_REGEX))

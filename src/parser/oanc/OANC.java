@@ -126,7 +126,7 @@ public class OANC extends ModuleImpl {
 	}
 
 	@Override
-	protected void applyProperties() throws Exception {
+	public void applyProperties() throws Exception {
 		
 		if (this.getProperties().containsKey(PROPERTYKEY_OANCLOCATION))
 			this.oancSpeicherorte = new String[]{this.getProperties().get(PROPERTYKEY_OANCLOCATION).toString()};
