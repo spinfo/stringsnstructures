@@ -20,6 +20,24 @@ import parallelization.CallbackReceiverImpl;
  */
 public class ModuleTree extends CallbackReceiverImpl {
 	
+	/**
+	 * Determines which pipe to use between both given modules (prefers byte pipe).
+	 * @param outputProvider Module that provides the output
+	 * @param inputReceiver Module that receives the input
+	 * @return Compatible pipe
+	 * @throws Exception Thrown if the modules' I/O is not compatible
+	 */
+	public static Pipe getCompatiblePipe(Module outputProvider, Module inputReceiver) throws Exception{
+		Pipe pipe = new BytePipe();
+		if (!(inputReceiver.supportsInputPipe(pipe) && outputProvider.supportsOutputPipe(pipe))){
+			pipe = new CharPipe();
+			if (!(inputReceiver.supportsInputPipe(pipe) && outputProvider.supportsOutputPipe(pipe))){
+				throw new Exception("I'm very sorry, but the I/O of those two modules does not seem to be compatible.");
+			}
+		}
+		return pipe;
+	}
+	
 	// The treemodel used to organize the modules
 	private TreeModel moduleTree;
 	
@@ -112,13 +130,8 @@ public class ModuleTree extends CallbackReceiverImpl {
 	 */
 	public boolean addModule(Module newModule, Module parentModule) throws NotSupportedException, Exception{
 		
-		Pipe pipe = new BytePipe();
-		if (!(newModule.supportsInputPipe(pipe) && parentModule.supportsOutputPipe(pipe))){
-			pipe = new CharPipe();
-			if (!(newModule.supportsInputPipe(pipe) && parentModule.supportsOutputPipe(pipe))){
-				throw new Exception("I'm very sorry, but the I/O of those two modules does not seem to be compatible.");
-			}
-		}
+		// Determine pipe that connects both modules
+		Pipe pipe = ModuleTree.getCompatiblePipe(parentModule, newModule);
 		
 		// Jump to more detailed method
 		return this.addModule(newModule, parentModule, pipe);
