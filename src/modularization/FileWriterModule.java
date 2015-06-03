@@ -25,6 +25,9 @@ public class FileWriterModule extends ModuleImpl {
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTFILE, "Path to the output file");
 		
+		// Add default values
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "File Writer");
+		
 		// Define I/O
 		this.getSupportedInputs().add(BytePipe.class);
 		this.getSupportedInputs().add(CharPipe.class);

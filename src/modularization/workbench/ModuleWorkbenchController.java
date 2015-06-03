@@ -1,5 +1,7 @@
 package modularization.workbench;
 
+import helpers.ListLoggingHandler;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import modularization.ExampleModule;
 import modularization.FileReaderModule;
 import modularization.FileWriterModule;
 import modularization.Module;
+import modularization.ModuleImpl;
 import modularization.ModuleTree;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
@@ -31,11 +34,13 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 	
 	protected static final String ACTION_STARTNEWMODULETREE = "ACTION_STARTNEWMODULETREE";
 	protected static final String ACTION_ADDMODULETOTREE = "ACTION_ADDMODULETOTREE";
+	protected static final String ACTION_RUNMODULES = "ACTION_RUNMODULES";
 	protected List<Module> availableModules = new ArrayList<Module>();
 	private ModuleTree moduleTree;
 	private DefaultMutableTreeNode selectedTreeNode;
 	private Module selectedModule;
 	private Map<String, PropertyQuadrupel> selectedModulesProperties;
+	private ListLoggingHandler listLoggingHandler;
 
 	/**
 	 * Instantiates a new ModuleWorkbenchController
@@ -43,13 +48,61 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 	 */
 	public ModuleWorkbenchController() throws Exception {
 		
+		// Add jlist handler to logger
+		this.listLoggingHandler = new ListLoggingHandler();
+		Logger.getLogger("").addHandler(this.listLoggingHandler);
+		
 		// Define available modules TODO Load at runtime
-		availableModules.add(new ConsoleWriterModule(null, new Properties()));
-		availableModules.add(new ExampleModule(null, new Properties()));
-		availableModules.add(new FileReaderModule(null, new Properties()));
-		availableModules.add(new FileWriterModule(null, new Properties()));
-		availableModules.add(new OANC(null, new Properties()));
-		availableModules.add(new OANCXMLParser(null, new Properties()));
+		
+		// Prepare OANC module
+		Properties oancProperties = new Properties();
+		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "OANC");
+		OANC oanc = new OANC(moduleTree, oancProperties);
+
+		// Prepare FileWriter module
+		Properties fileWriterProperties = new Properties();
+		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
+				"FileWriter");
+		FileWriterModule fileWriter = new FileWriterModule(moduleTree,
+				fileWriterProperties);
+
+		// Prepare OANC parser module
+		Properties oancParserProperties = new Properties();
+		oancParserProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
+				"OANC-Parser");
+		OANCXMLParser oancParser = new OANCXMLParser(moduleTree,
+				oancParserProperties);
+
+		// Prepare FileReader module
+		Properties fileReaderProperties = new Properties();
+		fileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
+				"FileReader");
+		FileReaderModule fileReader = new FileReaderModule(moduleTree,
+				fileReaderProperties);
+
+		// Prepare ConsoleWriter module
+		Properties consoleWriterProperties = new Properties();
+		consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
+				"ConsoleWriter");
+		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleTree,
+				consoleWriterProperties);
+
+		// Prepare ExampleModule module
+		Properties exampleModuleProperties = new Properties();
+		exampleModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
+				"Example Module");
+		ExampleModule exampleModule = new ExampleModule(moduleTree,
+				exampleModuleProperties);
+		
+		availableModules.add(consoleWriter);
+		availableModules.add(exampleModule);
+		availableModules.add(fileReader);
+		availableModules.add(fileWriter);
+		availableModules.add(oanc);
+		availableModules.add(oancParser);
+		
+		// Instantiate default module tree
+		this.startNewModuleTree(oanc);
 		
 	}
 	
@@ -61,8 +114,10 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 	public ModuleTree startNewModuleTree(Module rootModule){
 		
 		// Create new module tree
-		this.moduleTree = new ModuleTree(rootModule);
-		rootModule.setCallbackReceiver(this.moduleTree);
+		if (this.moduleTree != null && this.moduleTree.getModuleTree() != null)
+			this.moduleTree.getModuleTree().setRoot(new DefaultMutableTreeNode(rootModule));
+		else
+			this.moduleTree = new ModuleTree(rootModule);
 		
 		// Reset selected tree node
 		this.selectedTreeNode = (DefaultMutableTreeNode) this.moduleTree.getModuleTree().getRoot();
@@ -91,6 +146,12 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 		return selectedModulesProperties;
 	}
 	
+	/**
+	 * Returns a new instance of the module currently selected in the available modules list.
+	 * @param moduleTree Module tree to set as callback receiver for the new module's instance
+	 * @return new module instance
+	 * @throws Exception
+	 */
 	public Module getNewInstanceOfSelectedModule(ModuleTree moduleTree) throws Exception{
 		
 		// If no module is selected, throw exception
@@ -105,7 +166,9 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 		Iterator<String> propertyKeys = this.selectedModulesProperties.keySet().iterator();
 		while(propertyKeys.hasNext()){
 			String propertyKey = propertyKeys.next();
-			properties.setProperty(propertyKey, this.selectedModulesProperties.get(propertyKey).getValue());
+			String propertyValue = this.selectedModulesProperties.get(propertyKey).getValue();
+			if (propertyValue != null)
+				properties.setProperty(propertyKey, propertyValue);
 		}
 		
 		// Determine the type of the module and instanciate it accordingly
@@ -138,11 +201,13 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 			// New module to create
 			Module rootModule;
 			try {
+				if (this.selectedModule == null)
+					throw new Exception("Please do select a module from the lefthand list first.");
 				rootModule = this.getNewInstanceOfSelectedModule(null);
 				this.startNewModuleTree(rootModule);
 				
 			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I'm sorry, but I could not create a new module tree.", e1);
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Could not create a new module tree.", e1);
 			}
 			
 		} else if (e.getActionCommand().equals(ACTION_ADDMODULETOTREE)){
@@ -155,7 +220,7 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 				// Add new module to selected tree node
 				this.moduleTree.addModule(newModule, parentModule);
 			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Very sorry, but I wasn't able to add the selected module to the tree.", e1);
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
 			}
 			
 		} else {
@@ -202,6 +267,8 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 				property.setDefaultValue(this.selectedModule.getPropertyDefaultValues().get(propertyKey));
 				property.setValue(this.selectedModule.getPropertyDefaultValues().get(propertyKey));
 				
+				// Add property quadrupel to result list
+				this.selectedModulesProperties.put(propertyKey, property);
 			}
 			
 			
@@ -216,6 +283,13 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 	 */
 	public List<Module> getAvailableModules() {
 		return availableModules;
+	}
+
+	/**
+	 * @return the listLoggingHandler
+	 */
+	public ListLoggingHandler getListLoggingHandler() {
+		return listLoggingHandler;
 	}
 
 }

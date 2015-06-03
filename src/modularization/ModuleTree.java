@@ -20,6 +20,12 @@ import parallelization.CallbackReceiverImpl;
  */
 public class ModuleTree extends CallbackReceiverImpl {
 	
+	// The treemodel used to organize the modules
+	private DefaultTreeModel moduleTree;
+	
+	// List of started threads
+	private List<Thread> startedThreads = new ArrayList<Thread>();
+	
 	/**
 	 * Determines which pipe to use between both given modules (prefers byte pipe).
 	 * @param outputProvider Module that provides the output
@@ -37,12 +43,6 @@ public class ModuleTree extends CallbackReceiverImpl {
 		}
 		return pipe;
 	}
-	
-	// The treemodel used to organize the modules
-	private TreeModel moduleTree;
-	
-	// List of started threads
-	private List<Thread> startedThreads = new ArrayList<Thread>();
 	
 	/**
 	 * When using the constructor without parameters you need to
@@ -64,7 +64,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 	/**
 	 * @return Returns the module tree model
 	 */
-	public TreeModel getModuleTree() {
+	public DefaultTreeModel getModuleTree() {
 		return moduleTree;
 	}
 
@@ -81,7 +81,12 @@ public class ModuleTree extends CallbackReceiverImpl {
 	 */
 	public void setRootModule(Module module){
 		DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(module);
-		this.moduleTree = new DefaultTreeModel(rootNode);
+		if (this.moduleTree != null)
+			this.moduleTree.setRoot(rootNode);
+		else {
+			this.moduleTree = new DefaultTreeModel(rootNode);
+			module.setCallbackReceiver(this);
+		}
 	}
 	
 	/**
@@ -187,7 +192,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 		DefaultMutableTreeNode newModuleNode = new DefaultMutableTreeNode(newModule);
 		
 		// Insert new tree node
-		parentNode.add(newModuleNode);
+		this.moduleTree.insertNodeInto(newModuleNode, parentNode, parentNode.getChildCount());
 		
 		// Set module's callback receiver
 		newModule.setCallbackReceiver(this);

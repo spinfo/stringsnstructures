@@ -1,16 +1,21 @@
 package modularization.workbench;
 
+import helpers.PrettyLogRecord;
+
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
-import javax.swing.ListModel;
 
 import modularization.Module;
 
@@ -26,8 +31,11 @@ public class ModuleWorkbenchGui {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					ModuleWorkbenchGui window = new ModuleWorkbenchGui(new ModuleWorkbenchController());
+					ModuleWorkbenchController controller = new ModuleWorkbenchController();
+					ModuleWorkbenchGui window = new ModuleWorkbenchGui(controller);
 					window.frame.setVisible(true);
+					
+					Logger.getGlobal().log(Level.INFO, "Workbench GUI started.");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -50,9 +58,12 @@ public class ModuleWorkbenchGui {
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setTitle("Module Workbench");
+		
+		JSplitPane topSplitPane = new JSplitPane();
+		topSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		
 		JSplitPane splitPane = new JSplitPane();
-		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 		
 		JPanel availableModulesPanel = new JPanel();
 		splitPane.setLeftComponent(availableModulesPanel);
@@ -60,17 +71,56 @@ public class ModuleWorkbenchGui {
 		
 		// Initialize available modules list
 		JList<Module> list = new JList<Module>(this.controller.getAvailableModules().toArray(new Module[this.controller.getAvailableModules().size()]));
-		list.addListSelectionListener(controller);
+		list.addListSelectionListener(this.controller);
 		availableModulesPanel.add(list);
 		
 		JPanel moduleTreePanel = new JPanel();
 		splitPane.setRightComponent(moduleTreePanel);
 		moduleTreePanel.setLayout(new BorderLayout(0, 0));
 		
-		JTree tree = new JTree();
+		JTree tree = new JTree(this.controller.getModuleTree().getModuleTree());
+		tree.addTreeSelectionListener(this.controller);
 		moduleTreePanel.add(tree);
 		
 		JToolBar toolBar = new JToolBar();
 		moduleTreePanel.add(toolBar, BorderLayout.SOUTH);
+		
+		
+		// Define toolbar buttons
+		
+		JButton startNewModuleTreeButton = new JButton();
+		startNewModuleTreeButton.setActionCommand(ModuleWorkbenchController.ACTION_STARTNEWMODULETREE);
+		startNewModuleTreeButton.addActionListener(this.controller);
+		startNewModuleTreeButton.setText("new tree");
+		
+		JButton addModuleButton = new JButton();
+		addModuleButton.setActionCommand(ModuleWorkbenchController.ACTION_ADDMODULETOTREE);
+		addModuleButton.addActionListener(this.controller);
+		addModuleButton.setText("add module");
+		
+		JButton runModulesButton = new JButton();
+		runModulesButton.setActionCommand(ModuleWorkbenchController.ACTION_RUNMODULES);
+		runModulesButton.addActionListener(this.controller);
+		runModulesButton.setText("run");
+		
+		toolBar.add(startNewModuleTreeButton);
+		toolBar.add(addModuleButton);
+		toolBar.add(runModulesButton);
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout(0, 0));
+		
+		JScrollPane scrollPane = new JScrollPane();
+		
+		DefaultListModel<PrettyLogRecord> messageListModel = new DefaultListModel<PrettyLogRecord>();
+		JList<PrettyLogRecord> messageList = new JList<PrettyLogRecord>(messageListModel);
+		this.controller.getListLoggingHandler().setListModel(messageListModel);
+		scrollPane.setViewportView(messageList);
+		panel.add(scrollPane, BorderLayout.CENTER);
+		
+		topSplitPane.setLeftComponent(splitPane);
+		topSplitPane.setRightComponent(panel);
+		frame.getContentPane().add(topSplitPane, BorderLayout.CENTER);
+		
 	}
 }

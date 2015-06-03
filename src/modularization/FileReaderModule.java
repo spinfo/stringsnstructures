@@ -21,6 +21,9 @@ public class FileReaderModule extends ModuleImpl {
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTFILE, "Path to the input file");
+		
+		// Add default values
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "File Reader");
 	}
 
 	@Override

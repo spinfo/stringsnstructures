@@ -35,6 +35,8 @@ public abstract class ModuleImpl implements Module {
 		this.setProperties(properties);
 		this.getPropertyDescriptions().put(PROPERTYKEY_NAME,
 				"The module instance's name");
+		// Add default values
+		this.getPropertyDefaultValues().put(PROPERTYKEY_NAME, "(unnamed module)");
 	}
 
 	@Override
@@ -354,6 +356,14 @@ public abstract class ModuleImpl implements Module {
 		if (this.supportedOutputs.contains(pipe.getClass()))
 			return true;
 		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return this.name;
 	}
 
 }

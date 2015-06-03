@@ -23,6 +23,7 @@ public class ExampleModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_REPLACEMENT, "Replacement for found strings");
 		
 		// Add property defaults
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Example Module");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_REGEX, "[aeiu]");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_REPLACEMENT, "o");
 		
