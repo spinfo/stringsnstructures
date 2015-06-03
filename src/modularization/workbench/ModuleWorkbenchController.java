@@ -35,6 +35,7 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 	protected static final String ACTION_STARTNEWMODULETREE = "ACTION_STARTNEWMODULETREE";
 	protected static final String ACTION_ADDMODULETOTREE = "ACTION_ADDMODULETOTREE";
 	protected static final String ACTION_RUNMODULES = "ACTION_RUNMODULES";
+	protected static final String ACTION_EDITMODULE = "ACTION_EDITMODULE";
 	protected List<Module> availableModules = new ArrayList<Module>();
 	private ModuleTree moduleTree;
 	private DefaultMutableTreeNode selectedTreeNode;

@@ -92,20 +92,30 @@ public class ModuleWorkbenchGui {
 		startNewModuleTreeButton.setActionCommand(ModuleWorkbenchController.ACTION_STARTNEWMODULETREE);
 		startNewModuleTreeButton.addActionListener(this.controller);
 		startNewModuleTreeButton.setText("new tree");
+		startNewModuleTreeButton.setToolTipText("Clears the current module tree and creates a new one based on the selected module type.");
 		
 		JButton addModuleButton = new JButton();
 		addModuleButton.setActionCommand(ModuleWorkbenchController.ACTION_ADDMODULETOTREE);
 		addModuleButton.addActionListener(this.controller);
 		addModuleButton.setText("add module");
+		addModuleButton.setToolTipText("Adds a module as a child to the one currently selected in the tree.");
 		
 		JButton runModulesButton = new JButton();
 		runModulesButton.setActionCommand(ModuleWorkbenchController.ACTION_RUNMODULES);
 		runModulesButton.addActionListener(this.controller);
 		runModulesButton.setText("run");
+		runModulesButton.setToolTipText("Starts the processing of the module tree.");
+		
+		JButton editModuleButton = new JButton();
+		editModuleButton.setActionCommand(ModuleWorkbenchController.ACTION_EDITMODULE);
+		editModuleButton.addActionListener(this.controller);
+		editModuleButton.setText("edit");
+		editModuleButton.setToolTipText("Lets you edit or review the properties of the module that is currently chosen in the tree.");
 		
 		toolBar.add(startNewModuleTreeButton);
 		toolBar.add(addModuleButton);
 		toolBar.add(runModulesButton);
+		toolBar.add(editModuleButton);
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
