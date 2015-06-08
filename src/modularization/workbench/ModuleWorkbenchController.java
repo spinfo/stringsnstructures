@@ -2,8 +2,6 @@ package modularization.workbench;
 
 import helpers.ListLoggingHandler;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,12 +28,9 @@ import modularization.ModuleTree;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
 
-public class ModuleWorkbenchController implements ActionListener, TreeSelectionListener, ListSelectionListener {
+public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
 	
-	protected static final String ACTION_STARTNEWMODULETREE = "ACTION_STARTNEWMODULETREE";
-	protected static final String ACTION_ADDMODULETOTREE = "ACTION_ADDMODULETOTREE";
-	protected static final String ACTION_RUNMODULES = "ACTION_RUNMODULES";
-	protected static final String ACTION_EDITMODULE = "ACTION_EDITMODULE";
+
 	protected List<Module> availableModules = new ArrayList<Module>();
 	private ModuleTree moduleTree;
 	private DefaultMutableTreeNode selectedTreeNode;
@@ -125,7 +120,7 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 			
 		
 		// Reset selected tree node
-		this.selectedTreeNode = (DefaultMutableTreeNode) this.moduleTree.getModuleTree().getRoot();
+		this.setSelectedTreeNode((DefaultMutableTreeNode) this.moduleTree.getModuleTree().getRoot());
 		
 		return this.moduleTree;
 	}
@@ -200,44 +195,10 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		if (e.getActionCommand().equals(ACTION_STARTNEWMODULETREE)){
-			
-			// New module to create
-			Module rootModule;
-			try {
-				if (this.selectedModule == null)
-					throw new Exception("Please do select a module from the lefthand list first.");
-				rootModule = this.getNewInstanceOfSelectedModule(null);
-				this.startNewModuleTree(rootModule);
-				
-			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Could not create a new module tree.", e1);
-			}
-			
-		} else if (e.getActionCommand().equals(ACTION_ADDMODULETOTREE)){
-			
-			try {
-				// Determine module that is currently selected within the module tree
-				Module parentModule = (Module) this.selectedTreeNode.getUserObject();
-				Module newModule = this.getNewInstanceOfSelectedModule(this.moduleTree);
-						
-				// Add new module to selected tree node
-				this.moduleTree.addModule(newModule, parentModule);
-			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
-			}
-			
-		} else {
-			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but this command is unknown to me: "+e.getActionCommand());
-		}
-	}
-
-	@Override
 	public void valueChanged(TreeSelectionEvent e) {
 		try {
 			// Determine which node is selected within the module tree
-			this.selectedTreeNode = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
+			this.setSelectedTreeNode((DefaultMutableTreeNode) e.getPath().getLastPathComponent());
 		} catch (ClassCastException ex){
 			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I am afraid there was an error processing the selected element.", ex);
 		}
@@ -295,6 +256,21 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 	 */
 	public ListLoggingHandler getListLoggingHandler() {
 		return listLoggingHandler;
+	}
+
+	public DefaultMutableTreeNode getSelectedTreeNode() {
+		return selectedTreeNode;
+	}
+
+	public void setSelectedTreeNode(DefaultMutableTreeNode selectedTreeNode) {
+		this.selectedTreeNode = selectedTreeNode;
+	}
+
+	/**
+	 * @return the selectedModule
+	 */
+	public Module getSelectedModule() {
+		return selectedModule;
 	}
 
 }

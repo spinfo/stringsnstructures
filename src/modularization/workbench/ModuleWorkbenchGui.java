@@ -4,10 +4,13 @@ import helpers.PrettyLogRecord;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -16,15 +19,30 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreePath;
 
 import modularization.Module;
 import modularization.ModuleImpl;
 import parallelization.CallbackProcess;
 import parallelization.CallbackReceiverImpl;
 
-public class ModuleWorkbenchGui extends CallbackReceiverImpl {
+public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeModelListener, ActionListener {
+	
+	protected static final String ACTION_STARTNEWMODULETREE = "ACTION_STARTNEWMODULETREE";
+	protected static final String ACTION_ADDMODULETOTREE = "ACTION_ADDMODULETOTREE";
+	protected static final String ACTION_RUNMODULES = "ACTION_RUNMODULES";
+	protected static final String ACTION_EDITMODULE = "ACTION_EDITMODULE";
 
+	// Icons
+	public static final ImageIcon ICON_NEW_TREE = new ImageIcon("resources/icons/reload.png");
+	public static final ImageIcon ICON_ADD_MODULE = new ImageIcon("resources/icons/add.png");
+	public static final ImageIcon ICON_RUN = new ImageIcon("resources/icons/forward.png");
+	public static final ImageIcon ICON_EDIT_MODULE = new ImageIcon("resources/icons/configure.png");
+	
 	private JFrame frame;
 	private ModuleWorkbenchController controller;
 	private JTree moduleTree;
@@ -89,6 +107,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl {
 		TreeCellRenderer moduleTreeCellRenderer = new ModuleTreeCellRenderer();
 		this.moduleTree.setCellRenderer(moduleTreeCellRenderer);
 		this.moduleTree.addTreeSelectionListener(this.controller);
+		this.moduleTree.getModel().addTreeModelListener(this);
 		moduleTreePanel.add(this.moduleTree);
 		
 		JToolBar toolBar = new JToolBar();
@@ -98,26 +117,30 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl {
 		// Define toolbar buttons
 		
 		JButton startNewModuleTreeButton = new JButton();
-		startNewModuleTreeButton.setActionCommand(ModuleWorkbenchController.ACTION_STARTNEWMODULETREE);
-		startNewModuleTreeButton.addActionListener(this.controller);
+		startNewModuleTreeButton.setActionCommand(ACTION_STARTNEWMODULETREE);
+		startNewModuleTreeButton.setIcon(ICON_NEW_TREE);
+		startNewModuleTreeButton.addActionListener(this);
 		startNewModuleTreeButton.setText("new tree");
 		startNewModuleTreeButton.setToolTipText("Clears the current module tree and creates a new one based on the selected module type.");
 		
 		JButton addModuleButton = new JButton();
-		addModuleButton.setActionCommand(ModuleWorkbenchController.ACTION_ADDMODULETOTREE);
-		addModuleButton.addActionListener(this.controller);
+		addModuleButton.setActionCommand(ACTION_ADDMODULETOTREE);
+		addModuleButton.setIcon(ICON_ADD_MODULE);
+		addModuleButton.addActionListener(this);
 		addModuleButton.setText("add module");
 		addModuleButton.setToolTipText("Adds a module as a child to the one currently selected in the tree.");
 		
 		JButton runModulesButton = new JButton();
-		runModulesButton.setActionCommand(ModuleWorkbenchController.ACTION_RUNMODULES);
-		runModulesButton.addActionListener(this.controller);
+		runModulesButton.setActionCommand(ACTION_RUNMODULES);
+		runModulesButton.setIcon(ICON_RUN);
+		runModulesButton.addActionListener(this);
 		runModulesButton.setText("run");
 		runModulesButton.setToolTipText("Starts the processing of the module tree.");
 		
 		JButton editModuleButton = new JButton();
-		editModuleButton.setActionCommand(ModuleWorkbenchController.ACTION_EDITMODULE);
-		editModuleButton.addActionListener(this.controller);
+		editModuleButton.setActionCommand(ACTION_EDITMODULE);
+		editModuleButton.setIcon(ICON_EDIT_MODULE);
+		editModuleButton.addActionListener(this);
 		editModuleButton.setText("edit");
 		editModuleButton.setToolTipText("Lets you edit or review the properties of the module that is currently chosen in the tree.");
 		
@@ -166,5 +189,97 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl {
 			this.moduleTree.revalidate();
 		}
 		super.receiveException(process, exception);
+	}
+
+	@Override
+	public void treeNodesChanged(TreeModelEvent e) {
+		System.out.println("Changed node at "+e.getTreePath().toString());
+	}
+
+	@Override
+	public void treeNodesInserted(TreeModelEvent e) {
+		System.out.println("Inserted new node at "+e.getTreePath().toString());
+		Object[] children = e.getChildren();
+		if (children.length>0 && DefaultMutableTreeNode.class.isAssignableFrom(children[0].getClass())){
+			TreePath newNodePath = new TreePath(((DefaultMutableTreeNode)children[0]).getPath());
+			System.out.println(newNodePath.toString());
+			this.moduleTree.setSelectionPath(newNodePath);
+		}
+	}
+
+	@Override
+	public void treeNodesRemoved(TreeModelEvent e) {
+	}
+
+	@Override
+	public void treeStructureChanged(TreeModelEvent e) {
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getActionCommand().equals(ACTION_STARTNEWMODULETREE)){
+			
+			// New module to create
+			Module rootModule;
+			try {
+				if (this.controller.getSelectedModule() == null)
+					throw new Exception("Please do select a module from the lefthand list first.");
+				rootModule = this.controller.getNewInstanceOfSelectedModule(null);
+				this.controller.startNewModuleTree(rootModule);
+				
+			} catch (Exception e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Could not create a new module tree.", e1);
+			}
+			
+		} else if (e.getActionCommand().equals(ACTION_ADDMODULETOTREE)){
+			
+			try {
+				// Determine module that is currently selected within the module tree
+				Module parentModule = (Module) this.controller.getSelectedTreeNode().getUserObject();
+				Module newModule = this.controller.getNewInstanceOfSelectedModule(this.controller.getModuleTree());
+						
+				// Add new module to selected tree node
+				this.controller.getModuleTree().addModule(newModule, parentModule);
+				
+			} catch (Exception e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
+			}
+			
+		} else if (e.getActionCommand().equals(ACTION_EDITMODULE)){
+			
+			try {
+				// Determine module that is currently selected within the module tree
+				final Module selectedModule = (Module) this.controller.getSelectedTreeNode().getUserObject();
+						
+				// Create new editor dialogue in separate thread
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						try {
+							ModulePropertyEditor modulePropertyEditor = new ModulePropertyEditor(selectedModule);
+							modulePropertyEditor.setVisible(true);
+							
+							Logger.getGlobal().log(Level.INFO, "Opened editor for "+selectedModule.getName()+".");
+						} catch (Exception e) {
+							Logger.getLogger("").log(Level.WARNING, "Could not open editor for module "+selectedModule.getName()+".", e);
+						}
+					}
+				});
+				
+			} catch (Exception e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Could not display editor dialogue.", e1);
+			}
+			
+		} else if (e.getActionCommand().equals(ACTION_RUNMODULES)){
+			
+			try {
+				this.controller.getModuleTree().runModules();
+				
+			} catch (Exception e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to run the modules.", e1);
+			}
+			
+		} else {
+			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but this command is unknown to me: "+e.getActionCommand());
+		}
 	}
 }

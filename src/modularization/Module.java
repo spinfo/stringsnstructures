@@ -145,5 +145,15 @@ public interface Module extends CallbackProcess {
 	 * @return status code
 	 */
 	public int getStatus();
+	
+	/**
+	 * Applies all relevant properties to this instance. Subclasses should
+	 * override this, apply the properties they use themselves and call
+	 * super().applyProperties() afterwards.
+	 * 
+	 * @throws Exception
+	 *             when something goes wrong (property cannot be applied etc.)
+	 */
+	public void applyProperties() throws Exception;
 
 }

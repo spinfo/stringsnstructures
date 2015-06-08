@@ -52,14 +52,7 @@ public abstract class ModuleImpl implements Module {
 		return true;
 	}
 
-	/**
-	 * Applies all relevant properties to this instance. Subclasses should
-	 * override this, apply the properties they use themselves and call
-	 * super().applyProperties() afterwards.
-	 * 
-	 * @throws Exception
-	 *             when something goes wrong (property cannot be applied etc.)
-	 */
+	@Override
 	public void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_NAME))
 			this.name = this.getProperties().getProperty(PROPERTYKEY_NAME, "unnamed module");
