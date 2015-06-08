@@ -253,7 +253,7 @@ public abstract class ModuleImpl implements Module {
 			this.status = Module.STATUSCODE_RUNNING;
 
 			// Log message
-			Logger.getLogger(this.getClass().getSimpleName()).log(
+			Logger.getLogger("").log(
 					Level.INFO,
 					"Running module "
 							+ this.getProperties().getProperty(
@@ -263,7 +263,7 @@ public abstract class ModuleImpl implements Module {
 			Boolean result = this.process();
 
 			// Log message
-			Logger.getLogger(this.getClass().getSimpleName())
+			Logger.getLogger("")
 					.log(Level.INFO,
 							"Module "
 									+ this.getProperties().getProperty(

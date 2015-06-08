@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 
 import parallelization.Action;
 import parallelization.CallbackReceiverImpl;
@@ -212,9 +211,9 @@ public class ModuleTree extends CallbackReceiverImpl {
 		this.runModules(rootNode);
 		
 		// Wait for threads to finish
-		while (!this.startedThreads.isEmpty()) {
+		/*while (!this.startedThreads.isEmpty()) {
 			try {
-				// Sleep for one second
+				// Sleep for a quarter second
 				Thread.sleep(250l);
 
 				// Print pretty overview
@@ -247,7 +246,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 			} catch (InterruptedException e) {
 				break;
 			}
-		}
+		}*/
 	}
 	
 	/**
@@ -270,12 +269,12 @@ public class ModuleTree extends CallbackReceiverImpl {
 			public void perform(Object processResult) {
 				Boolean result = Boolean.parseBoolean(processResult.toString());
 				if (result)
-					Logger.getLogger(this.getClass().getSimpleName()).log(
+					Logger.getLogger("").log(
 							Level.INFO,
 							"Module " + m.getName()
 									+ " has successfully finished processing.");
 				else
-					Logger.getLogger(this.getClass().getSimpleName())
+					Logger.getLogger("")
 							.log(Level.WARNING,
 									"Module "
 											+ m.getName()
@@ -304,6 +303,8 @@ public class ModuleTree extends CallbackReceiverImpl {
 		Thread t1 = new Thread(m);
 		t1.setName(m.getName());
 		this.startedThreads.add(t1);
+		
+		Logger.getLogger("").log(Level.INFO, "Starting to process module "+m.getName()+" on thread #"+t1.getId());
 		t1.start();
 		
 		// Recursively run this method for the tree node's children
