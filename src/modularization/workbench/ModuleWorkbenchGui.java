@@ -34,14 +34,20 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	
 	protected static final String ACTION_STARTNEWMODULETREE = "ACTION_STARTNEWMODULETREE";
 	protected static final String ACTION_ADDMODULETOTREE = "ACTION_ADDMODULETOTREE";
+	protected static final String ACTION_DELETEMODULEFROMTREE = "ACTION_DELETEMODULEFROMTREE";
 	protected static final String ACTION_RUNMODULES = "ACTION_RUNMODULES";
 	protected static final String ACTION_EDITMODULE = "ACTION_EDITMODULE";
+	protected static final String ACTION_LOADTREE = "ACTION_LOADTREE";
+	protected static final String ACTION_SAVETREE = "ACTION_SAVETREE";
 
 	// Icons
 	public static final ImageIcon ICON_NEW_TREE = new ImageIcon("resources/icons/reload.png");
 	public static final ImageIcon ICON_ADD_MODULE = new ImageIcon("resources/icons/add.png");
+	public static final ImageIcon ICON_DELETE_MODULE = new ImageIcon("resources/icons/delete.png");
 	public static final ImageIcon ICON_RUN = new ImageIcon("resources/icons/forward.png");
 	public static final ImageIcon ICON_EDIT_MODULE = new ImageIcon("resources/icons/configure.png");
+	public static final ImageIcon ICON_SAVE = new ImageIcon("resources/icons/save.png");
+	public static final ImageIcon ICON_LOAD = new ImageIcon("resources/icons/open.png");
 	
 	private JFrame frame;
 	private ModuleWorkbenchController controller;
@@ -111,7 +117,8 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		moduleTreePanel.add(this.moduleTree);
 		
 		JToolBar toolBar = new JToolBar();
-		moduleTreePanel.add(toolBar, BorderLayout.SOUTH);
+		toolBar.setOrientation(JToolBar.VERTICAL);
+		moduleTreePanel.add(toolBar, BorderLayout.WEST);
 		
 		
 		// Define toolbar buttons
@@ -120,34 +127,58 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		startNewModuleTreeButton.setActionCommand(ACTION_STARTNEWMODULETREE);
 		startNewModuleTreeButton.setIcon(ICON_NEW_TREE);
 		startNewModuleTreeButton.addActionListener(this);
-		startNewModuleTreeButton.setText("new tree");
+		//startNewModuleTreeButton.setText("new tree");
 		startNewModuleTreeButton.setToolTipText("Clears the current module tree and creates a new one based on the selected module type.");
 		
 		JButton addModuleButton = new JButton();
 		addModuleButton.setActionCommand(ACTION_ADDMODULETOTREE);
 		addModuleButton.setIcon(ICON_ADD_MODULE);
 		addModuleButton.addActionListener(this);
-		addModuleButton.setText("add module");
+		//addModuleButton.setText("add module");
 		addModuleButton.setToolTipText("Adds a module as a child to the one currently selected in the tree.");
+		
+		JButton deleteModuleButton = new JButton();
+		deleteModuleButton.setActionCommand(ACTION_DELETEMODULEFROMTREE);
+		deleteModuleButton.setIcon(ICON_DELETE_MODULE);
+		deleteModuleButton.addActionListener(this);
+		//deleteModuleButton.setText("remove module");
+		deleteModuleButton.setToolTipText("Removes the selected module from the tree.");
 		
 		JButton runModulesButton = new JButton();
 		runModulesButton.setActionCommand(ACTION_RUNMODULES);
 		runModulesButton.setIcon(ICON_RUN);
 		runModulesButton.addActionListener(this);
-		runModulesButton.setText("run");
+		//runModulesButton.setText("run");
 		runModulesButton.setToolTipText("Starts the processing of the module tree.");
 		
 		JButton editModuleButton = new JButton();
 		editModuleButton.setActionCommand(ACTION_EDITMODULE);
 		editModuleButton.setIcon(ICON_EDIT_MODULE);
 		editModuleButton.addActionListener(this);
-		editModuleButton.setText("edit");
+		//editModuleButton.setText("edit");
 		editModuleButton.setToolTipText("Lets you edit or review the properties of the module that is currently chosen in the tree.");
+		
+		JButton saveTreeButton = new JButton();
+		saveTreeButton.setActionCommand(ACTION_SAVETREE);
+		saveTreeButton.setIcon(ICON_SAVE);
+		saveTreeButton.addActionListener(this);
+		//saveTreeButton.setText("save tree");
+		saveTreeButton.setToolTipText("Lets you choose a file to save the module tree to.");
+		
+		JButton loadTreeButton = new JButton();
+		loadTreeButton.setActionCommand(ACTION_SAVETREE);
+		loadTreeButton.setIcon(ICON_LOAD);
+		loadTreeButton.addActionListener(this);
+		//loadTreeButton.setText("load tree");
+		loadTreeButton.setToolTipText("Lets you choose a file to load the module tree from.");
 		
 		toolBar.add(startNewModuleTreeButton);
 		toolBar.add(addModuleButton);
+		toolBar.add(deleteModuleButton);
 		toolBar.add(runModulesButton);
 		toolBar.add(editModuleButton);
+		toolBar.add(saveTreeButton);
+		toolBar.add(loadTreeButton);
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
@@ -174,7 +205,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 			CallbackProcess process, boolean repeat) {
 		// Inserting a hook here -- if the process sending the callback is a module, we update the GUI tree display
 		if (ModuleImpl.class.isAssignableFrom(process.getClass())){
-			this.moduleTree.revalidate();
+			this.moduleTree.repaint();
 		}
 		super.receiveCallback(processingResult, process, repeat);
 	}
@@ -193,16 +224,13 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 
 	@Override
 	public void treeNodesChanged(TreeModelEvent e) {
-		System.out.println("Changed node at "+e.getTreePath().toString());
 	}
 
 	@Override
 	public void treeNodesInserted(TreeModelEvent e) {
-		System.out.println("Inserted new node at "+e.getTreePath().toString());
 		Object[] children = e.getChildren();
 		if (children.length>0 && DefaultMutableTreeNode.class.isAssignableFrom(children[0].getClass())){
 			TreePath newNodePath = new TreePath(((DefaultMutableTreeNode)children[0]).getPath());
-			System.out.println(newNodePath.toString());
 			this.moduleTree.setSelectionPath(newNodePath);
 		}
 	}

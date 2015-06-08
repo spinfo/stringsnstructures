@@ -110,9 +110,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	public ModuleTree startNewModuleTree(Module rootModule){
 		
 		// Determine if a module tree already exists
-		if (this.moduleTree != null && this.moduleTree.getModuleTree() != null)
+		if (this.moduleTree != null && this.moduleTree.getModuleTree() != null){
 			// If so, we just need to set a new root module
 			this.moduleTree.getModuleTree().setRoot(new DefaultMutableTreeNode(rootModule));
+			// ... and make sure the root node knows its callback receiver
+			rootModule.setCallbackReceiver(this.moduleTree);
+		}
+			
 		else {
 			// Instantiate a new module tree
 			this.moduleTree = new ModuleTree(rootModule);
