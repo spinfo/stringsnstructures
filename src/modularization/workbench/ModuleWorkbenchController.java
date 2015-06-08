@@ -114,11 +114,15 @@ public class ModuleWorkbenchController implements ActionListener, TreeSelectionL
 	 */
 	public ModuleTree startNewModuleTree(Module rootModule){
 		
-		// Create new module tree
+		// Determine if a module tree already exists
 		if (this.moduleTree != null && this.moduleTree.getModuleTree() != null)
+			// If so, we just need to set a new root module
 			this.moduleTree.getModuleTree().setRoot(new DefaultMutableTreeNode(rootModule));
-		else
+		else {
+			// Instantiate a new module tree
 			this.moduleTree = new ModuleTree(rootModule);
+		}
+			
 		
 		// Reset selected tree node
 		this.selectedTreeNode = (DefaultMutableTreeNode) this.moduleTree.getModuleTree().getRoot();

@@ -16,13 +16,18 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.tree.TreeCellRenderer;
 
 import modularization.Module;
+import modularization.ModuleImpl;
+import parallelization.CallbackProcess;
+import parallelization.CallbackReceiverImpl;
 
-public class ModuleWorkbenchGui {
+public class ModuleWorkbenchGui extends CallbackReceiverImpl {
 
 	private JFrame frame;
 	private ModuleWorkbenchController controller;
+	private JTree moduleTree;
 
 	/**
 	 * Launch the application.
@@ -33,6 +38,7 @@ public class ModuleWorkbenchGui {
 				try {
 					ModuleWorkbenchController controller = new ModuleWorkbenchController();
 					ModuleWorkbenchGui window = new ModuleWorkbenchGui(controller);
+					controller.getModuleTree().addCallbackReceiver(window);
 					window.frame.setVisible(true);
 					
 					Logger.getGlobal().log(Level.INFO, "Workbench GUI started.");
@@ -78,9 +84,12 @@ public class ModuleWorkbenchGui {
 		splitPane.setRightComponent(moduleTreePanel);
 		moduleTreePanel.setLayout(new BorderLayout(0, 0));
 		
-		JTree tree = new JTree(this.controller.getModuleTree().getModuleTree());
-		tree.addTreeSelectionListener(this.controller);
-		moduleTreePanel.add(tree);
+		// Instantiate new JTree with a custom TreeCellRenderer
+		this.moduleTree = new JTree(this.controller.getModuleTree().getModuleTree());
+		TreeCellRenderer moduleTreeCellRenderer = new ModuleTreeCellRenderer();
+		this.moduleTree.setCellRenderer(moduleTreeCellRenderer);
+		this.moduleTree.addTreeSelectionListener(this.controller);
+		moduleTreePanel.add(this.moduleTree);
 		
 		JToolBar toolBar = new JToolBar();
 		moduleTreePanel.add(toolBar, BorderLayout.SOUTH);
@@ -132,5 +141,30 @@ public class ModuleWorkbenchGui {
 		topSplitPane.setRightComponent(panel);
 		frame.getContentPane().add(topSplitPane, BorderLayout.CENTER);
 		
+	}
+
+	/* (non-Javadoc)
+	 * @see parallelization.CallbackReceiverImpl#receiveCallback(java.lang.Object, parallelization.CallbackProcess, boolean)
+	 */
+	@Override
+	public void receiveCallback(Object processingResult,
+			CallbackProcess process, boolean repeat) {
+		// Inserting a hook here -- if the process sending the callback is a module, we update the GUI tree display
+		if (ModuleImpl.class.isAssignableFrom(process.getClass())){
+			this.moduleTree.revalidate();
+		}
+		super.receiveCallback(processingResult, process, repeat);
+	}
+
+	/* (non-Javadoc)
+	 * @see parallelization.CallbackReceiverImpl#receiveException(parallelization.CallbackProcess, java.lang.Exception)
+	 */
+	@Override
+	public void receiveException(CallbackProcess process, Exception exception) {
+		// Inserting a hook here -- if the process sending the callback is a module, we update the GUI tree display
+		if (ModuleImpl.class.isAssignableFrom(process.getClass())){
+			this.moduleTree.revalidate();
+		}
+		super.receiveException(process, exception);
 	}
 }
