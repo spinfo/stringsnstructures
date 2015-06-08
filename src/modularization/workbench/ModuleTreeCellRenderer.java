@@ -20,14 +20,8 @@ public class ModuleTreeCellRenderer  extends DefaultTreeCellRenderer {
 	public static final ImageIcon ICON_MODULE_RUNNING = new ImageIcon("resources/icons/run.png");
 	public static final ImageIcon ICON_MODULE_SUCCESSFUL = new ImageIcon("resources/icons/clean.png");
 	public static final ImageIcon ICON_MODULE_FAILED = new ImageIcon("resources/icons/error.png");
-
-	private JPanel cellTextPanel;
-	private JLabel cellTextLabel;
 	
 	public ModuleTreeCellRenderer() {
-		this.cellTextPanel = new JPanel();
-		this.cellTextLabel = new JLabel("empty");
-		this.cellTextPanel.add(this.cellTextLabel);
 	}
 
 	@Override
@@ -35,15 +29,13 @@ public class ModuleTreeCellRenderer  extends DefaultTreeCellRenderer {
 			boolean selected, boolean expanded, boolean leaf, int row,
 			boolean hasFocus) {
 		
-		Component treeCellRenderer = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+		super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 		
 		try {
 			// Determine the node to display
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 			// Determine the attached module
 			Module module = (Module) node.getUserObject();
-			// Set text to display in tree node
-			this.cellTextLabel.setText(module.toString());
 			// Set icon depending on module status
 			if (module.getStatus()==Module.STATUSCODE_NOTYETRUN)
 				this.setIcon(ICON_MODULE_QUEUED);
