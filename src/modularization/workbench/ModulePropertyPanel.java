@@ -42,7 +42,7 @@ public class ModulePropertyPanel extends JPanel implements KeyListener {
 		// Clear old components (if present)
 		this.removeAll();
 		// Create labels and input fields according to given property
-		JLabel keyLabel = new JLabel(this.property.getKey());
+		JLabel keyLabel = new JLabel(this.property.getKey()+" ");
 		keyLabel.setToolTipText(this.property.getDescription());
 		this.valueTextField = new JTextField();
 		this.valueTextField.setToolTipText(this.property.getDescription());

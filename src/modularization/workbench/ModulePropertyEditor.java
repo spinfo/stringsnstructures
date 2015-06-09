@@ -32,6 +32,8 @@ public class ModulePropertyEditor extends JDialog implements ActionListener {
 	 */
 	public ModulePropertyEditor(Module module) {
 		this.module = module;
+		
+		this.setTitle(module.getName()+" properties");
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -87,6 +89,10 @@ public class ModulePropertyEditor extends JDialog implements ActionListener {
 			// Add panel to editor
 			contentPanel.add(propertyPanel);
 		}
+		
+		// Set size of dialogue according to amount of properties displayed
+		this.setSize(this.getSize().width, 65+(propertyDescriptionMap.keySet().size()*21));
+		
 	}
 
 	/**

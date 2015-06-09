@@ -68,6 +68,28 @@ public class ModuleTree extends CallbackReceiverImpl {
 	}
 
 	/**
+	 * @param moduleTree the moduleTree to set
+	 */
+	public void setModuleTree(DefaultTreeModel moduleTree) {
+		
+		// Update instance variable
+		this.moduleTree = moduleTree;
+		
+		// Determine root module and set its callback receiver
+		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) this.moduleTree.getRoot();
+		Module module = (Module) rootNode.getUserObject();
+		module.setCallbackReceiver(this);
+		
+		// Do the same with all other modules within the tree
+		@SuppressWarnings("unchecked")
+		Enumeration<DefaultMutableTreeNode> childNodes = rootNode.breadthFirstEnumeration();
+		while (childNodes.hasMoreElements()){
+			module = (Module) childNodes.nextElement().getUserObject();
+			module.setCallbackReceiver(this);
+		}
+	}
+
+	/**
 	 * @return Returns a list of running threads
 	 */
 	public List<Thread> getStartedThreads() {

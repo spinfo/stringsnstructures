@@ -384,7 +384,7 @@ public class OANCXMLParser extends ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 		
-		// Instanciate JSON converter
+		// Instantiate JSON converter
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
 		// Read list of files from input

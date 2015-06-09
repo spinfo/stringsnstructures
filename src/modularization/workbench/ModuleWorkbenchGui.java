@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -22,6 +23,7 @@ import javax.swing.JTree;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
@@ -51,7 +53,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	
 	private JFrame frame;
 	private ModuleWorkbenchController controller;
-	private JTree moduleTree;
+	private JTree moduleJTree;
 
 	/**
 	 * Launch the application.
@@ -109,12 +111,12 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		moduleTreePanel.setLayout(new BorderLayout(0, 0));
 		
 		// Instantiate new JTree with a custom TreeCellRenderer
-		this.moduleTree = new JTree(this.controller.getModuleTree().getModuleTree());
+		this.moduleJTree = new JTree(this.controller.getModuleTree().getModuleTree());
 		TreeCellRenderer moduleTreeCellRenderer = new ModuleTreeCellRenderer();
-		this.moduleTree.setCellRenderer(moduleTreeCellRenderer);
-		this.moduleTree.addTreeSelectionListener(this.controller);
-		this.moduleTree.getModel().addTreeModelListener(this);
-		moduleTreePanel.add(this.moduleTree);
+		this.moduleJTree.setCellRenderer(moduleTreeCellRenderer);
+		this.moduleJTree.addTreeSelectionListener(this.controller);
+		this.moduleJTree.getModel().addTreeModelListener(this);
+		moduleTreePanel.add(this.moduleJTree);
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.setOrientation(JToolBar.VERTICAL);
@@ -141,6 +143,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		deleteModuleButton.setActionCommand(ACTION_DELETEMODULEFROMTREE);
 		deleteModuleButton.setIcon(ICON_DELETE_MODULE);
 		deleteModuleButton.addActionListener(this);
+		deleteModuleButton.setEnabled(false);
 		//deleteModuleButton.setText("remove module");
 		deleteModuleButton.setToolTipText("Removes the selected module from the tree.");
 		
@@ -162,13 +165,15 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		saveTreeButton.setActionCommand(ACTION_SAVETREE);
 		saveTreeButton.setIcon(ICON_SAVE);
 		saveTreeButton.addActionListener(this);
+		saveTreeButton.setEnabled(false);
 		//saveTreeButton.setText("save tree");
 		saveTreeButton.setToolTipText("Lets you choose a file to save the module tree to.");
 		
 		JButton loadTreeButton = new JButton();
-		loadTreeButton.setActionCommand(ACTION_SAVETREE);
+		loadTreeButton.setActionCommand(ACTION_LOADTREE);
 		loadTreeButton.setIcon(ICON_LOAD);
 		loadTreeButton.addActionListener(this);
+		loadTreeButton.setEnabled(false);
 		//loadTreeButton.setText("load tree");
 		loadTreeButton.setToolTipText("Lets you choose a file to load the module tree from.");
 		
@@ -205,7 +210,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 			CallbackProcess process, boolean repeat) {
 		// Inserting a hook here -- if the process sending the callback is a module, we update the GUI tree display
 		if (ModuleImpl.class.isAssignableFrom(process.getClass())){
-			this.moduleTree.repaint();
+			this.moduleJTree.repaint();
 		}
 		super.receiveCallback(processingResult, process, repeat);
 	}
@@ -217,7 +222,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	public void receiveException(CallbackProcess process, Exception exception) {
 		// Inserting a hook here -- if the process sending the callback is a module, we update the GUI tree display
 		if (ModuleImpl.class.isAssignableFrom(process.getClass())){
-			this.moduleTree.revalidate();
+			this.moduleJTree.revalidate();
 		}
 		super.receiveException(process, exception);
 	}
@@ -231,7 +236,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		Object[] children = e.getChildren();
 		if (children.length>0 && DefaultMutableTreeNode.class.isAssignableFrom(children[0].getClass())){
 			TreePath newNodePath = new TreePath(((DefaultMutableTreeNode)children[0]).getPath());
-			this.moduleTree.setSelectionPath(newNodePath);
+			this.moduleJTree.setSelectionPath(newNodePath);
 		}
 	}
 
@@ -304,6 +309,46 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to run the modules.", e1);
+			}
+			
+		} else if (e.getActionCommand().equals(ACTION_LOADTREE)){
+			
+			try {
+				
+				// Instantiate a new file chooser
+				final JFileChooser fileChooser = new JFileChooser();
+				
+				// Determine return value
+				int returnVal = fileChooser.showOpenDialog(this.frame);
+				
+				// If the return value indicates approval, load the selected file
+				if (returnVal==JFileChooser.APPROVE_OPTION){
+					DefaultTreeModel loadedTreeModel = this.controller.loadModuleTreeFromFile(fileChooser.getSelectedFile());
+					loadedTreeModel.addTreeModelListener(this);
+					this.moduleJTree.setModel(loadedTreeModel);
+					this.moduleJTree.revalidate();
+				}
+				
+			} catch (Exception e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to load the module tree.", e1);
+			}
+			
+		} else if (e.getActionCommand().equals(ACTION_SAVETREE)){
+			
+			try {
+				// Instantiate a new file chooser
+				final JFileChooser fileChooser = new JFileChooser();
+				
+				// Determine return value
+				int returnVal = fileChooser.showSaveDialog(this.frame);
+				
+				// If the return value indicates approval, save module tree to the selected file
+				if (returnVal==JFileChooser.APPROVE_OPTION){
+					this.controller.saveModuleTreeToFile(fileChooser.getSelectedFile());
+				}
+				
+			} catch (Exception e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to save the module tree.", e1);
 			}
 			
 		} else {
