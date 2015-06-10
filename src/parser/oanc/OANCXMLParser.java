@@ -73,6 +73,14 @@ public class OANCXMLParser extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_KEEPPUNCTUATION,"If set to 'true' punctuation will not be discarded");
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTANNOTATEDJSON,"If set to 'true' the output will be annotated JSON instead of plain text");
 		
+		// Add default values
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "OANC-XML-Parser");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_ADDSTARTSYMBOL, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_ADDTERMINALSYMBOL, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_CONVERTTOLOWERCASE, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_KEEPPUNCTUATION, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTANNOTATEDJSON, "true");
+		
 		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
 	
@@ -376,7 +384,7 @@ public class OANCXMLParser extends ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 		
-		// Instanciate JSON converter
+		// Instantiate JSON converter
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
 		// Read list of files from input

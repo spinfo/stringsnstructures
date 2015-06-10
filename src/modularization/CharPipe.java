@@ -10,9 +10,7 @@ public class CharPipe implements Pipe {
 	private PipedWriter output;
 
 	public CharPipe() throws IOException {
-		this.input = new PipedReader();
-		this.output = new PipedWriter();
-		this.input.connect(this.output);
+		this.reset();
 	}
 	
 	/**
@@ -49,6 +47,13 @@ public class CharPipe implements Pipe {
 	@Override
 	public void readClose() throws IOException {
 		this.input.close();
+	}
+
+	@Override
+	public void reset() throws IOException {
+		this.input = new PipedReader();
+		this.output = new PipedWriter();
+		this.input.connect(this.output);
 	}
 
 }

@@ -39,6 +39,9 @@ public class OANC extends ModuleImpl {
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_OANCLOCATION, "The directory containing OANC-Files (subdirectories are used, too)");
 		
+		// Add default values
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "OANC-Files");
+		
 		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
 

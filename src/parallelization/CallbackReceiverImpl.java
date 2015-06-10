@@ -1,6 +1,9 @@
 package parallelization;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -15,6 +18,7 @@ public abstract class CallbackReceiverImpl implements
 	// Maps containing the actions to perform on process callback
 	private Map<CallbackProcess, Action> successActions = new HashMap<CallbackProcess, Action>();
 	private Map<CallbackProcess, Action> failActions = new HashMap<CallbackProcess, Action>();
+	private List<CallbackReceiver> externalCallbackReceiverList = new ArrayList<CallbackReceiver>();
 
 	/**
 	 * Registers an Action to perform on a successful process' callback
@@ -56,6 +60,12 @@ public abstract class CallbackReceiverImpl implements
 			// Perform the action
 			action.perform(processingResult);
 		}
+		
+		// Relay callback to additional CallbackReceivers if present
+		Iterator<CallbackReceiver> externalCallbackReceivers = this.externalCallbackReceiverList.iterator();
+		while (externalCallbackReceivers.hasNext()){
+			externalCallbackReceivers.next().receiveCallback(processingResult, process, repeat);
+		}
 	}
 
 	@Override
@@ -74,6 +84,46 @@ public abstract class CallbackReceiverImpl implements
 			Action action = failActions.remove(process);
 			action.perform(exception);
 		}
+		
+		// Relay exception to additional CallbackReceivers if present
+		Iterator<CallbackReceiver> externalCallbackReceivers = this.externalCallbackReceiverList.iterator();
+		while (externalCallbackReceivers.hasNext()){
+			externalCallbackReceivers.next().receiveException(process, exception);
+		}
 	}
+
+	/* (non-Javadoc)
+	 * @see parallelization.CallbackReceiver#addCallbackReceiver(parallelization.CallbackReceiver)
+	 */
+	@Override
+	public boolean addCallbackReceiver(CallbackReceiver receiver) {
+		return this.externalCallbackReceiverList.add(receiver);
+	}
+
+	/* (non-Javadoc)
+	 * @see parallelization.CallbackReceiver#removeCallbackReceiver(parallelization.CallbackReceiver)
+	 */
+	@Override
+	public boolean removeCallbackReceiver(CallbackReceiver receiver) {
+		return this.externalCallbackReceiverList.remove(receiver);
+	}
+
+	/* (non-Javadoc)
+	 * @see parallelization.CallbackReceiver#removeAllCallbackReceivers()
+	 */
+	@Override
+	public void removeAllCallbackReceivers() {
+		this.externalCallbackReceiverList.clear();
+	}
+
+	/* (non-Javadoc)
+	 * @see parallelization.CallbackReceiver#getCallbackReceivers()
+	 */
+	@Override
+	public List<CallbackReceiver> getCallbackReceivers() {
+		return this.externalCallbackReceiverList;
+	}
+	
+	
 
 }

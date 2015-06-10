@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 
 import parallelization.Action;
 import parallelization.CallbackReceiverImpl;
@@ -21,10 +20,28 @@ import parallelization.CallbackReceiverImpl;
 public class ModuleTree extends CallbackReceiverImpl {
 	
 	// The treemodel used to organize the modules
-	private TreeModel moduleTree;
+	private DefaultTreeModel moduleTree;
 	
 	// List of started threads
 	private List<Thread> startedThreads = new ArrayList<Thread>();
+	
+	/**
+	 * Determines which pipe to use between both given modules (prefers byte pipe).
+	 * @param outputProvider Module that provides the output
+	 * @param inputReceiver Module that receives the input
+	 * @return Compatible pipe
+	 * @throws Exception Thrown if the modules' I/O is not compatible
+	 */
+	public static Pipe getCompatiblePipe(Module outputProvider, Module inputReceiver) throws Exception{
+		Pipe pipe = new BytePipe();
+		if (!(inputReceiver.supportsInputPipe(pipe) && outputProvider.supportsOutputPipe(pipe))){
+			pipe = new CharPipe();
+			if (!(inputReceiver.supportsInputPipe(pipe) && outputProvider.supportsOutputPipe(pipe))){
+				throw new Exception("I'm very sorry, but the I/O of those two modules does not seem to be compatible.");
+			}
+		}
+		return pipe;
+	}
 	
 	/**
 	 * When using the constructor without parameters you need to
@@ -46,8 +63,30 @@ public class ModuleTree extends CallbackReceiverImpl {
 	/**
 	 * @return Returns the module tree model
 	 */
-	public TreeModel getModuleTree() {
+	public DefaultTreeModel getModuleTree() {
 		return moduleTree;
+	}
+
+	/**
+	 * @param moduleTree the moduleTree to set
+	 */
+	public void setModuleTree(DefaultTreeModel moduleTree) {
+		
+		// Update instance variable
+		this.moduleTree = moduleTree;
+		
+		// Determine root module and set its callback receiver
+		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) this.moduleTree.getRoot();
+		Module module = (Module) rootNode.getUserObject();
+		module.setCallbackReceiver(this);
+		
+		// Do the same with all other modules within the tree
+		@SuppressWarnings("unchecked")
+		Enumeration<DefaultMutableTreeNode> childNodes = rootNode.breadthFirstEnumeration();
+		while (childNodes.hasMoreElements()){
+			module = (Module) childNodes.nextElement().getUserObject();
+			module.setCallbackReceiver(this);
+		}
 	}
 
 	/**
@@ -63,7 +102,34 @@ public class ModuleTree extends CallbackReceiverImpl {
 	 */
 	public void setRootModule(Module module){
 		DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(module);
-		this.moduleTree = new DefaultTreeModel(rootNode);
+		if (this.moduleTree != null)
+			this.moduleTree.setRoot(rootNode);
+		else {
+			this.moduleTree = new DefaultTreeModel(rootNode);
+			module.setCallbackReceiver(this);
+		}
+	}
+	
+	/**
+	 * Returns the module tree's root node.
+	 * @return root node
+	 */
+	public DefaultMutableTreeNode getRootNode() throws ClassCastException {
+		return (DefaultMutableTreeNode) this.moduleTree.getRoot();
+	}
+	
+	/**
+	 * Returns the module tree's root module.
+	 * @return root module
+	 */
+	public Module getRootModule(){
+		try {
+			return (Module) this.getRootNode().getUserObject();
+			
+		} catch (Exception e){
+			Logger.getLogger("").log(Level.WARNING, "Failed to determine the module tree's root module.", e);
+			return null;
+		}
 	}
 	
 	/**
@@ -112,13 +178,8 @@ public class ModuleTree extends CallbackReceiverImpl {
 	 */
 	public boolean addModule(Module newModule, Module parentModule) throws NotSupportedException, Exception{
 		
-		Pipe pipe = new BytePipe();
-		if (!(newModule.supportsInputPipe(pipe) && parentModule.supportsOutputPipe(pipe))){
-			pipe = new CharPipe();
-			if (!(newModule.supportsInputPipe(pipe) && parentModule.supportsOutputPipe(pipe))){
-				throw new Exception("I'm very sorry, but the I/O of those two modules does not seem to be compatible.");
-			}
-		}
+		// Determine pipe that connects both modules
+		Pipe pipe = ModuleTree.getCompatiblePipe(parentModule, newModule);
 		
 		// Jump to more detailed method
 		return this.addModule(newModule, parentModule, pipe);
@@ -174,7 +235,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 		DefaultMutableTreeNode newModuleNode = new DefaultMutableTreeNode(newModule);
 		
 		// Insert new tree node
-		parentNode.add(newModuleNode);
+		this.moduleTree.insertNodeInto(newModuleNode, parentNode, parentNode.getChildCount());
 		
 		// Set module's callback receiver
 		newModule.setCallbackReceiver(this);
@@ -188,15 +249,19 @@ public class ModuleTree extends CallbackReceiverImpl {
 	public void runModules() throws Exception {
 		
 		// Determine the tree's root node
-		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) this.moduleTree.getRoot();
+		DefaultMutableTreeNode rootNode = this.getRootNode();
+		
+		// If that node's module has already been run, we will have to reset all modules' I/O
+		if (((Module)rootNode.getUserObject()).getStatus()!=Module.STATUSCODE_NOTYETRUN)
+			this.resetModuleIO();
 		
 		// Run modules
 		this.runModules(rootNode);
 		
 		// Wait for threads to finish
-		while (!this.startedThreads.isEmpty()) {
+		/*while (!this.startedThreads.isEmpty()) {
 			try {
-				// Sleep for one second
+				// Sleep for a quarter second
 				Thread.sleep(250l);
 
 				// Print pretty overview
@@ -229,7 +294,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 			} catch (InterruptedException e) {
 				break;
 			}
-		}
+		}*/
 	}
 	
 	/**
@@ -252,12 +317,12 @@ public class ModuleTree extends CallbackReceiverImpl {
 			public void perform(Object processResult) {
 				Boolean result = Boolean.parseBoolean(processResult.toString());
 				if (result)
-					Logger.getLogger(this.getClass().getSimpleName()).log(
+					Logger.getLogger("").log(
 							Level.INFO,
 							"Module " + m.getName()
 									+ " has successfully finished processing.");
 				else
-					Logger.getLogger(this.getClass().getSimpleName())
+					Logger.getLogger("")
 							.log(Level.WARNING,
 									"Module "
 											+ m.getName()
@@ -286,6 +351,8 @@ public class ModuleTree extends CallbackReceiverImpl {
 		Thread t1 = new Thread(m);
 		t1.setName(m.getName());
 		this.startedThreads.add(t1);
+		
+		Logger.getLogger("").log(Level.INFO, "Starting to process module "+m.getName()+" on thread #"+t1.getId());
 		t1.start();
 		
 		// Recursively run this method for the tree node's children
@@ -295,6 +362,27 @@ public class ModuleTree extends CallbackReceiverImpl {
 		  this.runModules(childNode);
 		}
 		
+	}
+	
+	/**
+	 * Resets the modules' I/O. Must be called prior re-running the module tree.
+	 * @throws Exception
+	 */
+	public void resetModuleIO() throws Exception{
+		
+		// Determine root node + module and reset the latter
+		DefaultMutableTreeNode rootNode = this.getRootNode();
+		Module rootModule = (Module) rootNode.getUserObject();
+		rootModule.resetOutputs();
+		
+		// Do the same with all child nodes/modules
+		@SuppressWarnings("unchecked")
+		Enumeration<DefaultMutableTreeNode> children = rootNode.breadthFirstEnumeration();
+		while (children.hasMoreElements()){
+			DefaultMutableTreeNode childNode = children.nextElement();
+			Module childModule = (Module) childNode.getUserObject();
+			childModule.resetOutputs();
+		}
 	}
 	
 	/**

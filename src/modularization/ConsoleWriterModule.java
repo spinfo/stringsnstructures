@@ -21,6 +21,9 @@ public class ConsoleWriterModule extends ModuleImpl {
 		this.getSupportedInputs().add(BytePipe.class);
 		this.getSupportedInputs().add(CharPipe.class);
 		
+		// Add default values
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Console Writer");
+		
 		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
 

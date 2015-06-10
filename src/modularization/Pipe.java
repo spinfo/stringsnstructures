@@ -15,4 +15,9 @@ public interface Pipe {
 	 * @throws IOException
 	 */
 	public void writeClose() throws IOException;
+	
+	/**
+	 * Resets the I/O (for re-use after close)
+	 */
+	public void reset() throws IOException;
 }

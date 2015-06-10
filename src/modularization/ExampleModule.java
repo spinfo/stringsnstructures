@@ -10,9 +10,9 @@ public class ExampleModule extends ModuleImpl {
 	public static final String PROPERTYKEY_REGEX = "regex";
 	public static final String PROPERTYKEY_REPLACEMENT = "replacement";
 	
-	// Module variables with default values
-	private String regex = "[aeiu]";
-	private String replacement = "o";
+	// Module variables
+	private String regex;
+	private String replacement;
 
 	public ExampleModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -21,6 +21,11 @@ public class ExampleModule extends ModuleImpl {
 		// Add property descriptions
 		this.getPropertyDescriptions().put(PROPERTYKEY_REGEX, "Regular expression to search for");
 		this.getPropertyDescriptions().put(PROPERTYKEY_REPLACEMENT, "Replacement for found strings");
+		
+		// Add property defaults
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Example Module");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_REGEX, "[aeiu]");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_REPLACEMENT, "o");
 		
 		// Define I/O
 		this.getSupportedInputs().add(CharPipe.class);
@@ -66,9 +71,9 @@ public class ExampleModule extends ModuleImpl {
 		
 		// Apply own properties
 		if (this.getProperties().containsKey(PROPERTYKEY_REGEX))
-			this.regex = this.getProperties().getProperty(PROPERTYKEY_REGEX);
+			this.regex = this.getProperties().getProperty(PROPERTYKEY_REGEX, this.getPropertyDefaultValues().get(PROPERTYKEY_REGEX));
 		if (this.getProperties().containsKey(PROPERTYKEY_REPLACEMENT))
-			this.replacement = this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT);
+			this.replacement = this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_REPLACEMENT));
 		
 		// Apply parent object's properties
 		super.applyProperties();

@@ -23,6 +23,7 @@ public abstract class ModuleImpl implements Module {
 	private String name;
 	private Properties properties = new Properties();
 	private Map<String, String> propertyDescriptions = new HashMap<String, String>();
+	private Map<String, String> propertyDefaultValues = new HashMap<String, String>();
 	private int status = Module.STATUSCODE_NOTYETRUN;
 	private List<Class<?>> supportedInputs = new ArrayList<Class<?>>();
 	private List<Class<?>> supportedOutputs = new ArrayList<Class<?>>();
@@ -34,6 +35,8 @@ public abstract class ModuleImpl implements Module {
 		this.setProperties(properties);
 		this.getPropertyDescriptions().put(PROPERTYKEY_NAME,
 				"The module instance's name");
+		// Add default values
+		this.getPropertyDefaultValues().put(PROPERTYKEY_NAME, "(unnamed module)");
 	}
 
 	@Override
@@ -49,17 +52,10 @@ public abstract class ModuleImpl implements Module {
 		return true;
 	}
 
-	/**
-	 * Applies all relevant properties to this instance. Subclasses should
-	 * override this, apply the properties they use themselves and call
-	 * super().applyProperties() afterwards.
-	 * 
-	 * @throws Exception
-	 *             when something goes wrong (property cannot be applied etc.)
-	 */
+	@Override
 	public void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_NAME))
-			this.name = this.getProperties().getProperty(PROPERTYKEY_NAME);
+			this.name = this.getProperties().getProperty(PROPERTYKEY_NAME, "unnamed module");
 	}
 
 	public void closeAllOutputs() throws IOException {
@@ -149,6 +145,11 @@ public abstract class ModuleImpl implements Module {
 	@Override
 	public Map<String, String> getPropertyDescriptions() {
 		return propertyDescriptions;
+	}
+	
+	@Override
+	public Map<String, String> getPropertyDefaultValues() {
+		return propertyDefaultValues;
 	}
 	
 	@Override
@@ -252,7 +253,7 @@ public abstract class ModuleImpl implements Module {
 			this.status = Module.STATUSCODE_RUNNING;
 
 			// Log message
-			Logger.getLogger(this.getClass().getSimpleName()).log(
+			Logger.getLogger("").log(
 					Level.INFO,
 					"Running module "
 							+ this.getProperties().getProperty(
@@ -262,7 +263,7 @@ public abstract class ModuleImpl implements Module {
 			Boolean result = this.process();
 
 			// Log message
-			Logger.getLogger(this.getClass().getSimpleName())
+			Logger.getLogger("")
 					.log(Level.INFO,
 							"Module "
 									+ this.getProperties().getProperty(
@@ -348,6 +349,27 @@ public abstract class ModuleImpl implements Module {
 		if (this.supportedOutputs.contains(pipe.getClass()))
 			return true;
 		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see modularization.Module#resetOutputs()
+	 */
+	@Override
+	public void resetOutputs() throws IOException {
+		
+		// Cycle through all output pipes & reset them
+		Iterator<Pipe> pipes = this.getOutputPipes().iterator();
+		while (pipes.hasNext()){
+			pipes.next().reset();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return this.name;
 	}
 
 }

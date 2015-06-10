@@ -1,5 +1,6 @@
 package modularization;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -135,9 +136,31 @@ public interface Module extends CallbackProcess {
 	public Map<String,String> getPropertyDescriptions();
 	
 	/**
+	 * Returns a map containing available default values for properties of this module.
+	 * @return
+	 */
+	public Map<String,String> getPropertyDefaultValues();
+	
+	/**
 	 * Returns a code indicating the status of the module (see static vars in this class)
 	 * @return status code
 	 */
 	public int getStatus();
+	
+	/**
+	 * Applies all relevant properties to this instance. Subclasses should
+	 * override this, apply the properties they use themselves and call
+	 * super().applyProperties() afterwards.
+	 * 
+	 * @throws Exception
+	 *             when something goes wrong (property cannot be applied etc.)
+	 */
+	public void applyProperties() throws Exception;
+	
+	/**
+	 * Resets all outputs.
+	 * @throws IOException
+	 */
+	public void resetOutputs() throws IOException;
 
 }
