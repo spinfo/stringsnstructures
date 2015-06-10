@@ -10,9 +10,7 @@ public class BytePipe implements Pipe {
 	private PipedOutputStream output;
 
 	public BytePipe() throws IOException {
-		this.input = new PipedInputStream();
-		this.output = new PipedOutputStream();
-		this.input.connect(this.output);
+		this.reset();
 	}
 	
 	/**
@@ -45,6 +43,13 @@ public class BytePipe implements Pipe {
 	@Override
 	public void readClose() throws IOException {
 		this.input.close();
+	}
+
+	@Override
+	public void reset() throws IOException {
+		this.input = new PipedInputStream();
+		this.output = new PipedOutputStream();
+		this.input.connect(this.output);
 	}
 
 }

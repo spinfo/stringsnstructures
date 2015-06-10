@@ -1,5 +1,6 @@
 package modularization;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -155,5 +156,11 @@ public interface Module extends CallbackProcess {
 	 *             when something goes wrong (property cannot be applied etc.)
 	 */
 	public void applyProperties() throws Exception;
+	
+	/**
+	 * Resets all outputs.
+	 * @throws IOException
+	 */
+	public void resetOutputs() throws IOException;
 
 }

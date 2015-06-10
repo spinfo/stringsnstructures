@@ -111,6 +111,28 @@ public class ModuleTree extends CallbackReceiverImpl {
 	}
 	
 	/**
+	 * Returns the module tree's root node.
+	 * @return root node
+	 */
+	public DefaultMutableTreeNode getRootNode() throws ClassCastException {
+		return (DefaultMutableTreeNode) this.moduleTree.getRoot();
+	}
+	
+	/**
+	 * Returns the module tree's root module.
+	 * @return root module
+	 */
+	public Module getRootModule(){
+		try {
+			return (Module) this.getRootNode().getUserObject();
+			
+		} catch (Exception e){
+			Logger.getLogger("").log(Level.WARNING, "Failed to determine the module tree's root module.", e);
+			return null;
+		}
+	}
+	
+	/**
 	 * Returns the tree node that holds the given module
 	 * (or null if it is not found)
 	 * @param module Module to search for
@@ -227,7 +249,11 @@ public class ModuleTree extends CallbackReceiverImpl {
 	public void runModules() throws Exception {
 		
 		// Determine the tree's root node
-		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) this.moduleTree.getRoot();
+		DefaultMutableTreeNode rootNode = this.getRootNode();
+		
+		// If that node's module has already been run, we will have to reset all modules' I/O
+		if (((Module)rootNode.getUserObject()).getStatus()!=Module.STATUSCODE_NOTYETRUN)
+			this.resetModuleIO();
 		
 		// Run modules
 		this.runModules(rootNode);
@@ -336,6 +362,27 @@ public class ModuleTree extends CallbackReceiverImpl {
 		  this.runModules(childNode);
 		}
 		
+	}
+	
+	/**
+	 * Resets the modules' I/O. Must be called prior re-running the module tree.
+	 * @throws Exception
+	 */
+	public void resetModuleIO() throws Exception{
+		
+		// Determine root node + module and reset the latter
+		DefaultMutableTreeNode rootNode = this.getRootNode();
+		Module rootModule = (Module) rootNode.getUserObject();
+		rootModule.resetOutputs();
+		
+		// Do the same with all child nodes/modules
+		@SuppressWarnings("unchecked")
+		Enumeration<DefaultMutableTreeNode> children = rootNode.breadthFirstEnumeration();
+		while (children.hasMoreElements()){
+			DefaultMutableTreeNode childNode = children.nextElement();
+			Module childModule = (Module) childNode.getUserObject();
+			childModule.resetOutputs();
+		}
 	}
 	
 	/**

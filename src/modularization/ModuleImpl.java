@@ -352,6 +352,19 @@ public abstract class ModuleImpl implements Module {
 	}
 
 	/* (non-Javadoc)
+	 * @see modularization.Module#resetOutputs()
+	 */
+	@Override
+	public void resetOutputs() throws IOException {
+		
+		// Cycle through all output pipes & reset them
+		Iterator<Pipe> pipes = this.getOutputPipes().iterator();
+		while (pipes.hasNext()){
+			pipes.next().reset();
+		}
+	}
+
+	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
