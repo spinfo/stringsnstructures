@@ -193,6 +193,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		DefaultListModel<PrettyLogRecord> messageListModel = new DefaultListModel<PrettyLogRecord>();
 		JList<PrettyLogRecord> messageList = new JList<PrettyLogRecord>(messageListModel);
 		this.controller.getListLoggingHandler().setListModel(messageListModel);
+		this.controller.getListLoggingHandler().getAutoScrollLists().add(messageList);
 		scrollPane.setViewportView(messageList);
 		panel.add(scrollPane, BorderLayout.CENTER);
 		
