@@ -32,6 +32,11 @@ import modularization.ModuleTree;
 import parallelization.CallbackProcess;
 import parallelization.CallbackReceiverImpl;
 
+/**
+ * Provides a GUI to create/edit/run module trees.
+ * @author Marcel Boeing
+ *
+ */
 public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeModelListener, ActionListener {
 	
 	protected static final String ACTION_STARTNEWMODULETREE = "ACTION_STARTNEWMODULETREE";

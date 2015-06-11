@@ -244,9 +244,29 @@ public class ModuleTree extends CallbackReceiverImpl {
 	}
 	
 	/**
-	 * Runs all modules the module tree contains
+	 * Runs all modules the module tree contains.
+	 * @throws Exception
 	 */
 	public void runModules() throws Exception {
+		this.runModules(false);
+	}
+	
+	/**
+	 * Runs all modules the module tree contains.
+	 * @param runUntilAllThreadsAreDone If true, the method runs until all spawned threads have finished
+	 * @throws Exception
+	 */
+	public void runModules(boolean runUntilAllThreadsAreDone) throws Exception {
+		this.runModules(runUntilAllThreadsAreDone, 5000l);
+	}
+	
+	/**
+	 * Runs all modules the module tree contains.
+	 * @param runUntilAllThreadsAreDone If true, the method runs until all spawned threads have finished
+	 * @param interval Interval to check for thread completion in milliseconds
+	 * @throws Exception
+	 */
+	public void runModules(boolean runUntilAllThreadsAreDone, long interval) throws Exception {
 		
 		// Determine the tree's root node
 		DefaultMutableTreeNode rootNode = this.getRootNode();
@@ -258,21 +278,19 @@ public class ModuleTree extends CallbackReceiverImpl {
 		// Run modules
 		this.runModules(rootNode);
 		
-		// Wait for threads to finish
-		/*while (!this.startedThreads.isEmpty()) {
+		// Wait for threads to finish, if requested
+		while (runUntilAllThreadsAreDone && !this.startedThreads.isEmpty()) {
 			try {
 				// Sleep for a quarter second
-				Thread.sleep(250l);
+				Thread.sleep(interval);
 
 				// Print pretty overview
-				System.out.print(this.prettyPrint() + "\r");
+				Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, this.prettyPrint());
 
-				// Test which threads are still active and remove the rest from
-				// the list
+				// Test which threads are still active and remove the rest from the list
 				for (int i = this.startedThreads.size(); i > 0; i--) {
 					if (!this.startedThreads.get(i - 1).isAlive()) {
-						// Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO,
-						// "Thread "+this.startedThreads.get(i-1).getName()+" is done.");
+						Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Thread "+this.startedThreads.get(i-1).getName()+" is done.");
 						Thread removedThread = this.startedThreads
 								.remove(i - 1);
 						if (removedThread != null)
@@ -286,15 +304,14 @@ public class ModuleTree extends CallbackReceiverImpl {
 									.log(Level.WARNING,
 											"Could not remove thread.");
 					} else {
-						// Logger.getLogger(this.getClass().getSimpleName()).log(Level.FINEST,
-						// "Thread "+this.startedThreads.get(i-1).getName()+" is still active.");
+						Logger.getLogger(this.getClass().getSimpleName()).log(Level.FINEST, "Thread "+this.startedThreads.get(i-1).getName()+" is still active.");
 					}
 				}
 
 			} catch (InterruptedException e) {
 				break;
 			}
-		}*/
+		}
 	}
 	
 	/**
