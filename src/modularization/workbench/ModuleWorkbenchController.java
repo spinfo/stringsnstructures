@@ -30,6 +30,8 @@ import modularization.FileWriterModule;
 import modularization.Module;
 import modularization.ModuleImpl;
 import modularization.ModuleTree;
+import modularization.ModuleTreeGsonDeserializer;
+import modularization.ModuleTreeGsonSerializer;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
 
@@ -39,19 +41,25 @@ import com.google.gson.JsonIOException;
 
 public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
 	
-
 	protected List<Module> availableModules = new ArrayList<Module>();
 	private ModuleTree moduleTree;
 	private DefaultMutableTreeNode selectedTreeNode;
 	private Module selectedModule;
 	private Map<String, PropertyQuadrupel> selectedModulesProperties;
 	private ListLoggingHandler listLoggingHandler;
+	private Gson jsonConverter;
 
 	/**
 	 * Instantiates a new ModuleWorkbenchController
 	 * @throws Exception Thrown if initialization fails
 	 */
 	public ModuleWorkbenchController() throws Exception {
+		
+		// Initialize JSON converter
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.registerTypeAdapter(ModuleTree.class, new ModuleTreeGsonSerializer());
+		gsonBuilder.registerTypeAdapter(ModuleTree.class, new ModuleTreeGsonDeserializer());
+		this.jsonConverter = gsonBuilder.setPrettyPrinting().create();
 		
 		// Add jlist handler to logger
 		this.listLoggingHandler = new ListLoggingHandler();
@@ -119,9 +127,9 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	public ModuleTree startNewModuleTree(Module rootModule){
 		
 		// Determine if a module tree already exists
-		if (this.moduleTree != null && this.moduleTree.getModuleTree() != null){
+		if (this.moduleTree != null && this.moduleTree.getModuleTreeModel() != null){
 			// If so, we just need to set a new root module
-			this.moduleTree.getModuleTree().setRoot(new DefaultMutableTreeNode(rootModule));
+			this.moduleTree.getModuleTreeModel().setRoot(new DefaultMutableTreeNode(rootModule));
 			// ... and make sure the root node knows its callback receiver
 			rootModule.setCallbackReceiver(this.moduleTree);
 		}
@@ -133,7 +141,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			
 		
 		// Reset selected tree node
-		this.setSelectedTreeNode((DefaultMutableTreeNode) this.moduleTree.getModuleTree().getRoot());
+		this.setSelectedTreeNode((DefaultMutableTreeNode) this.moduleTree.getModuleTreeModel().getRoot());
 		
 		return this.moduleTree;
 	}
@@ -287,34 +295,21 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	}
 	
 	/**
-	 * Loads the module tree model from a file.
+	 * Loads the module tree from a file.
 	 * @param file file
-	 * @return Loaded module tree model
+	 * @return Loaded module tree
 	 * @throws IOException
 	 * @throws ClassNotFoundException 
 	 */
-	public DefaultTreeModel loadModuleTreeFromFile(File file) throws IOException, ClassNotFoundException {
-		// Instantiate JSON converter
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	public ModuleTree loadModuleTreeFromFile(File file) throws IOException, ClassNotFoundException {
 				
 		// Read JSON representation of the current module tree from file
 		FileReader fileReader = new FileReader(file);
-		DefaultTreeModel loadedModuleTree = gson.fromJson(fileReader, DefaultTreeModel.class);
-		this.getModuleTree().setModuleTree(loadedModuleTree);
+		ModuleTree loadedModuleTree = this.jsonConverter.fromJson(fileReader, ModuleTree.class);
+		this.setModuleTree(loadedModuleTree);
 				
 		// Close file writer
 		fileReader.close();
-		
-		/*// Create new file- and object input streams
-		FileInputStream fileInputStream= new FileInputStream(file);
-        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-        
-        // Read object from input and close the latter
-        DefaultTreeModel loadedModuleTree = (DefaultTreeModel) objectInputStream.readObject();
-        objectInputStream.close();
-        
-        // Set current module tree
-        this.getModuleTree().setModuleTree(loadedModuleTree);*/
 		
         // Write log message
         Logger.getLogger("").log(Level.INFO, "Successfully loaded the module tree from the file "+file.getPath());
@@ -330,23 +325,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	 * @throws JsonIOException 
 	 */
 	public void saveModuleTreeToFile(File file) throws JsonIOException, Exception {
-		// Instantiate JSON converter
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
 		// Write JSON representation of the current module tree to file
 		FileWriter fileWriter = new FileWriter(file);
-		gson.toJson(SerializableModuleTreeNode.convertModuleTreeModel(this.moduleTree.getModuleTree()), fileWriter);
+		this.jsonConverter.toJson(this.moduleTree, fileWriter);
 		
 		// Close file writer
 		fileWriter.close();
-		
-		// Instantiate new file- and object output streams
-		/*FileOutputStream fileOutputStream = new FileOutputStream(file);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-        
-        // Write tree to file and close output
-        objectOutputStream.writeObject(this.moduleTree.getModuleTree());
-        objectOutputStream.close();*/
 		
         // Write log message
         Logger.getLogger("").log(Level.INFO, "Successfully saved the module tree into the file "+file.getPath());

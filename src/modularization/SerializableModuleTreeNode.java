@@ -1,13 +1,12 @@
-package modularization.workbench;
+package modularization;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-
-import modularization.Module;
 
 /**
  * A serializable representation of a module tree (node)
@@ -16,7 +15,9 @@ import modularization.Module;
  */
 public class SerializableModuleTreeNode {
 
-	private Module module;
+	private Properties properties;
+	private String inputCanonicalClassName = null;
+	private String moduleCanonicalClassName;
 	private List<SerializableModuleTreeNode> children = new ArrayList<SerializableModuleTreeNode>();
 	
 	/**
@@ -49,8 +50,7 @@ public class SerializableModuleTreeNode {
 		Module module = (Module) node.getUserObject();
 		
 		// Instantiate serializable node and attach the root module to it
-		SerializableModuleTreeNode serializableNode = new SerializableModuleTreeNode();
-		serializableNode.setModule(module);
+		SerializableModuleTreeNode serializableNode = new SerializableModuleTreeNode(module);
 		
 		// Loop over child nodes
 		@SuppressWarnings("unchecked")
@@ -68,21 +68,12 @@ public class SerializableModuleTreeNode {
 	}
 	
 	public SerializableModuleTreeNode(Module module) {
-		this.module = module;
-	}
-
-	/**
-	 * @return the module
-	 */
-	public Module getModule() {
-		return module;
-	}
-
-	/**
-	 * @param module the module to set
-	 */
-	public void setModule(Module module) {
-		this.module = module;
+		this.properties = module.getProperties();
+		this.moduleCanonicalClassName = module.getClass().getCanonicalName();
+		if (module.getInputCharPipe() != null)
+			this.inputCanonicalClassName = module.getInputCharPipe().getClass().getCanonicalName();
+		else if (module.getInputBytePipe() != null)
+			this.inputCanonicalClassName = module.getInputBytePipe().getClass().getCanonicalName();
 	}
 
 	/**
@@ -98,7 +89,47 @@ public class SerializableModuleTreeNode {
 	public void setChildren(List<SerializableModuleTreeNode> children) {
 		this.children = children;
 	}
-	
-	
+
+	/**
+	 * @return the properties
+	 */
+	public Properties getProperties() {
+		return properties;
+	}
+
+	/**
+	 * @param properties the properties to set
+	 */
+	public void setProperties(Properties properties) {
+		this.properties = properties;
+	}
+
+	/**
+	 * @return the inputCanonicalClassName
+	 */
+	public String getInputCanonicalClassName() {
+		return inputCanonicalClassName;
+	}
+
+	/**
+	 * @param inputCanonicalClassName the inputCanonicalClassName to set
+	 */
+	public void setInputCanonicalClassName(String inputCanonicalClassName) {
+		this.inputCanonicalClassName = inputCanonicalClassName;
+	}
+
+	/**
+	 * @return the moduleCanonicalClassName
+	 */
+	public String getModuleCanonicalClassName() {
+		return moduleCanonicalClassName;
+	}
+
+	/**
+	 * @param moduleCanonicalClassName the moduleCanonicalClassName to set
+	 */
+	public void setModuleCanonicalClassName(String moduleCanonicalClassName) {
+		this.moduleCanonicalClassName = moduleCanonicalClassName;
+	}
 
 }

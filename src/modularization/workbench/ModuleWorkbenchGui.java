@@ -23,12 +23,12 @@ import javax.swing.JTree;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 import modularization.Module;
 import modularization.ModuleImpl;
+import modularization.ModuleTree;
 import parallelization.CallbackProcess;
 import parallelization.CallbackReceiverImpl;
 
@@ -111,7 +111,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		moduleTreePanel.setLayout(new BorderLayout(0, 0));
 		
 		// Instantiate new JTree with a custom TreeCellRenderer
-		this.moduleJTree = new JTree(this.controller.getModuleTree().getModuleTree());
+		this.moduleJTree = new JTree(this.controller.getModuleTree().getModuleTreeModel());
 		TreeCellRenderer moduleTreeCellRenderer = new ModuleTreeCellRenderer();
 		this.moduleJTree.setCellRenderer(moduleTreeCellRenderer);
 		this.moduleJTree.addTreeSelectionListener(this.controller);
@@ -165,7 +165,6 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		saveTreeButton.setActionCommand(ACTION_SAVETREE);
 		saveTreeButton.setIcon(ICON_SAVE);
 		saveTreeButton.addActionListener(this);
-		saveTreeButton.setEnabled(false);
 		//saveTreeButton.setText("save tree");
 		saveTreeButton.setToolTipText("Lets you choose a file to save the module tree to.");
 		
@@ -173,7 +172,6 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		loadTreeButton.setActionCommand(ACTION_LOADTREE);
 		loadTreeButton.setIcon(ICON_LOAD);
 		loadTreeButton.addActionListener(this);
-		loadTreeButton.setEnabled(false);
 		//loadTreeButton.setText("load tree");
 		loadTreeButton.setToolTipText("Lets you choose a file to load the module tree from.");
 		
@@ -324,9 +322,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				
 				// If the return value indicates approval, load the selected file
 				if (returnVal==JFileChooser.APPROVE_OPTION){
-					DefaultTreeModel loadedTreeModel = this.controller.loadModuleTreeFromFile(fileChooser.getSelectedFile());
-					loadedTreeModel.addTreeModelListener(this);
-					this.moduleJTree.setModel(loadedTreeModel);
+					ModuleTree loadedModuleTree = this.controller.loadModuleTreeFromFile(fileChooser.getSelectedFile());
+					loadedModuleTree.getModuleTreeModel().addTreeModelListener(this);
+					this.moduleJTree.setModel(loadedModuleTree.getModuleTreeModel());
 					this.moduleJTree.revalidate();
 				}
 				

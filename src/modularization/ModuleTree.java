@@ -63,7 +63,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 	/**
 	 * @return Returns the module tree model
 	 */
-	public DefaultTreeModel getModuleTree() {
+	public DefaultTreeModel getModuleTreeModel() {
 		return moduleTree;
 	}
 
