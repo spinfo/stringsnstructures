@@ -48,13 +48,13 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	protected static final String ACTION_SAVETREE = "ACTION_SAVETREE";
 
 	// Icons
-	public static final ImageIcon ICON_NEW_TREE = new ImageIcon("resources/icons/reload.png");
-	public static final ImageIcon ICON_ADD_MODULE = new ImageIcon("resources/icons/add.png");
-	public static final ImageIcon ICON_DELETE_MODULE = new ImageIcon("resources/icons/delete.png");
-	public static final ImageIcon ICON_RUN = new ImageIcon("resources/icons/forward.png");
-	public static final ImageIcon ICON_EDIT_MODULE = new ImageIcon("resources/icons/configure.png");
-	public static final ImageIcon ICON_SAVE = new ImageIcon("resources/icons/save.png");
-	public static final ImageIcon ICON_LOAD = new ImageIcon("resources/icons/open.png");
+	public static final ImageIcon ICON_NEW_TREE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/reload.png"));
+	public static final ImageIcon ICON_ADD_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/add.png"));
+	public static final ImageIcon ICON_DELETE_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/delete.png"));
+	public static final ImageIcon ICON_RUN = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/forward.png"));
+	public static final ImageIcon ICON_EDIT_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/configure.png"));
+	public static final ImageIcon ICON_SAVE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/save.png"));
+	public static final ImageIcon ICON_LOAD = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/open.png"));
 	
 	private JFrame frame;
 	private ModuleWorkbenchController controller;

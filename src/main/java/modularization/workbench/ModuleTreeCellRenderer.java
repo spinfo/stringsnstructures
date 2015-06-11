@@ -14,10 +14,10 @@ import modularization.Module;
 public class ModuleTreeCellRenderer  extends DefaultTreeCellRenderer {
 
 	private static final long serialVersionUID = -1122661295170702986L;
-	public static final ImageIcon ICON_MODULE_QUEUED = new ImageIcon("resources/icons/clock.png");
-	public static final ImageIcon ICON_MODULE_RUNNING = new ImageIcon("resources/icons/run.png");
-	public static final ImageIcon ICON_MODULE_SUCCESSFUL = new ImageIcon("resources/icons/clean.png");
-	public static final ImageIcon ICON_MODULE_FAILED = new ImageIcon("resources/icons/error.png");
+	public static final ImageIcon ICON_MODULE_QUEUED = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/clock.png"));
+	public static final ImageIcon ICON_MODULE_RUNNING = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/run.png"));
+	public static final ImageIcon ICON_MODULE_SUCCESSFUL = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/clean.png"));
+	public static final ImageIcon ICON_MODULE_FAILED = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/error.png"));
 	
 	public ModuleTreeCellRenderer() {
 	}
