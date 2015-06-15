@@ -49,6 +49,7 @@ public class OANCXMLParser extends ModuleImpl {
 	public static final String PROPERTYKEY_CONVERTTOLOWERCASE = "wandleInKleinbuchstaben";
 	public static final String PROPERTYKEY_KEEPPUNCTUATION = "behaltePunktuation";
 	public static final String PROPERTYKEY_OUTPUTANNOTATEDJSON = "outputAnnotatedJson";
+	public static final String PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE = "oneJSONObjectPerLine";
 	// local variables
 	private File quellDatei;
 	private File satzGrenzenXMLDatei;
@@ -58,6 +59,7 @@ public class OANCXMLParser extends ModuleImpl {
 	private boolean wandleInKleinbuchstaben;
 	private boolean behaltePunktuation;
 	private boolean outputAnnotatedJson;
+	private boolean oneJSONObjectPerLine;
 	
 	public OANCXMLParser(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
@@ -72,6 +74,7 @@ public class OANCXMLParser extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_CONVERTTOLOWERCASE,"If set to 'true' the output will be all lowercase");
 		this.getPropertyDescriptions().put(PROPERTYKEY_KEEPPUNCTUATION,"If set to 'true' punctuation will not be discarded");
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTANNOTATEDJSON,"If set to 'true' the output will be annotated JSON instead of plain text");
+		this.getPropertyDescriptions().put(PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE,"If set to 'true' and the output is JSON, it will be one JSON object per line.");
 		
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "OANC-XML-Parser");
@@ -80,6 +83,7 @@ public class OANCXMLParser extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_CONVERTTOLOWERCASE, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_KEEPPUNCTUATION, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTANNOTATEDJSON, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE, "true");
 		
 		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
@@ -385,7 +389,12 @@ public class OANCXMLParser extends ModuleImpl {
 	public boolean process() throws Exception {
 		
 		// Instantiate JSON converter
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		Gson gson;
+		
+		if (this.oneJSONObjectPerLine)
+			gson = new Gson();
+		else
+			gson = new GsonBuilder().setPrettyPrinting().create();
 		
 		// Read list of files from input
 		File[] inputFileList;
@@ -434,7 +443,7 @@ public class OANCXMLParser extends ModuleImpl {
 				String annotatedTupelListJson = gson.toJson(annotatedTupelList);
 				
 				// Output the result
-				this.outputToAllCharPipes(annotatedTupelListJson);
+				this.outputToAllCharPipes(annotatedTupelListJson+"\n");
 				
 			} else {
 				// The output format is plain sentences, cleaned up a bit
@@ -479,6 +488,8 @@ public class OANCXMLParser extends ModuleImpl {
 			this.behaltePunktuation = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_KEEPPUNCTUATION));
 		if (this.getProperties().containsKey(PROPERTYKEY_OUTPUTANNOTATEDJSON))
 			this.outputAnnotatedJson = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_OUTPUTANNOTATEDJSON));
+		if (this.getProperties().containsKey(PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE))
+			this.oneJSONObjectPerLine = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE));
 			
 		super.applyProperties();
 	}
