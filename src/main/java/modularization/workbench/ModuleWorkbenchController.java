@@ -33,6 +33,7 @@ import modularization.ModuleTreeGsonDeserializer;
 import modularization.ModuleTreeGsonSerializer;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
+import treeBuilder.TreeBuilder;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -105,6 +106,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				"Example Module");
 		ExampleModule exampleModule = new ExampleModule(moduleTree,
 				exampleModuleProperties);
+
+		// Prepare TreeBuilder module
+		Properties treeBuilderModuleProperties = new Properties();
+		treeBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
+				"TreeBuilder");
+		TreeBuilder treeBuilder = new TreeBuilder(moduleTree,
+				treeBuilderModuleProperties);
 		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
@@ -112,6 +120,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(fileWriter);
 		availableModules.add(oanc);
 		availableModules.add(oancParser);
+		availableModules.add(treeBuilder);
 		
 		// Instantiate default module tree
 		this.startNewModuleTree(oanc);
@@ -205,6 +214,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new OANC(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(OANCXMLParser.class)){
 			newModule = new OANCXMLParser(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(TreeBuilder.class)){
+			newModule = new TreeBuilder(moduleTree, properties);
 		}
 		
 		else {

@@ -6,6 +6,9 @@ public class WortAnnotationTupel {
 	private String annotation;
 	private String begriff;
 	
+	public WortAnnotationTupel(){
+	}
+	
 	public WortAnnotationTupel(String wort, String annotation, String begriff) {
 		super();
 		this.wort = wort;
