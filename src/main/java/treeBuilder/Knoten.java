@@ -38,6 +38,10 @@ public class Knoten {
 		this.name = name;
 	}
 
+	public void setName(char name) {
+		this.name = String.valueOf(name);
+	}
+
 	public HashMap<String, Knoten> getKinder() {
 		return kinder;
 	}

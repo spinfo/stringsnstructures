@@ -33,6 +33,7 @@ import modularization.ModuleTreeGsonDeserializer;
 import modularization.ModuleTreeGsonSerializer;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
+import treeBuilder.AtomicRangeSuffixTreeBuilder;
 import treeBuilder.TreeBuilder;
 
 import com.google.gson.Gson;
@@ -113,6 +114,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				"TreeBuilder");
 		TreeBuilder treeBuilder = new TreeBuilder(moduleTree,
 				treeBuilderModuleProperties);
+
+		// Prepare AtomicRangeSuffixTreeBuilder module
+		Properties atomicRangeSuffixTreeBuilderProperties = new Properties();
+		atomicRangeSuffixTreeBuilderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
+				"AtomicRangeSuffixTreeBuilder");
+		AtomicRangeSuffixTreeBuilder atomicRangeSuffixTreeBuilder = new AtomicRangeSuffixTreeBuilder(moduleTree,
+				atomicRangeSuffixTreeBuilderProperties);
 		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
@@ -121,6 +129,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(oanc);
 		availableModules.add(oancParser);
 		availableModules.add(treeBuilder);
+		availableModules.add(atomicRangeSuffixTreeBuilder);
 		
 		// Instantiate default module tree
 		this.startNewModuleTree(oanc);
@@ -216,6 +225,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new OANCXMLParser(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(TreeBuilder.class)){
 			newModule = new TreeBuilder(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(AtomicRangeSuffixTreeBuilder.class)){
+			newModule = new AtomicRangeSuffixTreeBuilder(moduleTree, properties);
 		}
 		
 		else {

@@ -45,6 +45,9 @@ public class TreeBuilder extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BUILDTRIE, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXLENGTH, "-1");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_REVERSE, "false");
+		
+		// Add module description
+		this.setDescription("Builds a suffixtree from the JSON output of OANCXMLParser. Can be configured to build other forms.");
 	}
 
 	@Override
