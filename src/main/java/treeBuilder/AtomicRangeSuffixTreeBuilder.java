@@ -1,0 +1,213 @@
+package treeBuilder;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Properties;
+import java.util.TreeSet;
+
+import modularization.CharPipe;
+import modularization.ModuleImpl;
+import parallelization.CallbackReceiver;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
+	
+	// Property keys
+	public static final String PROPERTYKEY_MAXLENGTH = "Maximum length of branches";
+	
+	private int maxLaenge; // Maximale Laenge des zu bauenden Baums
+
+	public AtomicRangeSuffixTreeBuilder(CallbackReceiver callbackReceiver, Properties properties)
+			throws Exception {
+		super(callbackReceiver, properties);
+
+		// Define I/O
+		this.getSupportedInputs().add(CharPipe.class);
+		this.getSupportedOutputs().add(CharPipe.class);
+		
+		// Add description for properties
+		this.getPropertyDescriptions().put(PROPERTYKEY_MAXLENGTH,"Define the maximum length of any branch of the tree.");
+		
+		// Add default values
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "AtomicRangeSuffixTreeBuilder");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXLENGTH, "10");
+		
+		// Add module description
+		this.setDescription("Iterates over a raw and unsegmented string input, building a suffix tree from the data of limited range with each step. Keeps track of how often each node of the suffix tree gets triggered.");
+	}
+
+	@Override
+	public boolean process() throws Exception {
+		
+		// Wurzelknoten des zu erstellenden Baumes erstellen
+		Knoten wurzelKnoten = new Knoten("^");
+		
+		LinkedList<Character> buffer = new LinkedList<Character>();
+		
+		// Read first character
+		int charCode = this.getInputCharPipe().getInput().read();
+
+		// Loop until no more data can be read
+		while (charCode != -1) {
+
+			// Add read char code to buffer
+			buffer.add(Character.valueOf((char) charCode));
+			
+			// If the buffer exceeds the set maximum length, remove the oldest (first) element
+			if (buffer.size()>this.maxLaenge)
+				buffer.removeFirst();
+			
+			// Construct trie from buffer and attach it to the root node
+			this.baueTrie(buffer, wurzelKnoten, false, -1);
+			
+			// Read next char
+			charCode = this.getInputCharPipe().getInput().read();
+		}
+		
+		// Letztlich wird der Wurzelknoten (und damit der gesamte erstellte Baum) in JSON umgewandelt und ausgegeben
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		String ausgabeDaten = gson.toJson(wurzelKnoten);
+		this.outputToAllCharPipes(ausgabeDaten);
+		
+		// Ausgabekanaele schliessen
+		this.closeAllOutputs();
+		
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see modularization.ModuleImpl#applyProperties()
+	 */
+	@Override
+	public void applyProperties() throws Exception {
+		if (this.getProperties().containsKey(PROPERTYKEY_MAXLENGTH))
+			this.maxLaenge = Integer.parseInt(this.getProperties().getProperty(PROPERTYKEY_MAXLENGTH));
+		super.applyProperties();
+	}
+	
+    /**
+     * Erzeugt einen Suffixtrie im uebergebenen Knoten anhand der uebergebenen Token.
+     * Inkrementiert die Zaehlvariable eines jeden Knotens um eins fuer jede "Beruehrung".
+     * @param token LinkedList<Character> mit Token
+     * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
+     * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
+     * @param maxLaenge Die maximale Anzahl an Token, die dem Trie hinzugefuegt werden soll (<0 = ignorieren).
+     * @return Die Anzahl der neu erstellten Knoten
+     */
+    public int baueTrie(LinkedList<Character> token, Knoten rootnode, boolean umgekehrt, int maxLaenge) {
+
+    	// Variable zum Mitzaehlen der erstellten Knoten
+		int knotenerstellt = 0;
+		
+		// "Beruehrung" des Knotens mitzaehlen
+		rootnode.setZaehler(rootnode.getZaehler() + 1);
+
+		// Wenn keine Token mehr vorhanden sind bzw. die maximal hinzuzufuegende Anzahl an Token ueberschritten wird, wird abgebrochen
+		if (token == null || token.size() == 0 || maxLaenge==0) {
+			return knotenerstellt;
+		}
+
+		// Index des als naechstes zu vergleichenden Tokens ermitteln
+		int vergleichsTokenIndex = 0;
+		if (umgekehrt) {
+			vergleichsTokenIndex = token.size() - 1;
+		}
+
+		// Variable fuer Kindknoten definieren
+		Knoten kindKnoten;
+
+		// Ggf. neuen Knoten erstellen
+		if (!rootnode.getKinder().containsKey(String.valueOf(token.get(vergleichsTokenIndex)))) {
+			// passender Knoten NICHT vorhanden - neuen erstellen
+			kindKnoten = new Knoten();
+			
+			// Zaehler fuer erstellte Knoten inkrementieren
+			knotenerstellt++;
+			
+			// Den Namen der Kante in der Node speichern .. um spaeter bei Bedarf die Knoten geordnet ausgeben zu koennen (debug)
+			kindKnoten.setName(String.valueOf(token.get(vergleichsTokenIndex)));
+			
+			// Kind dem Elternknoten anfuegen
+			rootnode.getKinder().put(String.valueOf(token.get(vergleichsTokenIndex)), kindKnoten);
+
+		} else {
+			// passender Knoten vorhanden
+			kindKnoten = rootnode.getKinder().get(String.valueOf(token.get(vergleichsTokenIndex)));
+		}
+
+		// Eingabeliste klonen (da sie im weiteren Schritt gekuerzt wird)
+		@SuppressWarnings("unchecked")
+		LinkedList<Character> restListe = (LinkedList<Character>)token.clone();
+		
+		// Pruefen, ob der Baum "umgekehrt" erstellt werden soll
+		if (umgekehrt) {
+			// Rekursiver Aufruf mit Token 0 bis n-1
+			restListe.removeLast();
+			knotenerstellt += this.baueTrie( restListe,
+					kindKnoten, umgekehrt, maxLaenge-1);
+		} else {
+			// Rekursiver Aufruf mit Token 1 bis n
+			restListe.removeFirst();
+			knotenerstellt += this.baueTrie( restListe,
+					kindKnoten, umgekehrt, maxLaenge-1);
+		}
+
+		// Anzahl der neu erstellten Knoten zurueckgeben
+		return knotenerstellt;
+
+    }
+
+	/**
+	 * Gibt eine Kopie des uebergebenen Baumes zurueck, aber ohne die Knoten, die nicht als Treffer
+	 * markiert waren.
+	 * @param knoten Wurzelknoten des zu kopierenden Baumes
+	 * @param ignoriereErstenKnoten Gibt vor, ob der Wurzelknoten ignoriert werden soll (nuetzlich fuer Kontextvergleichsbaeume)
+	 * @return Wurzel des neu erstellten Baumes
+	 */
+	public Knoten entferneNichtTrefferKnoten(Knoten knoten, boolean ignoriereErstenKnoten) {
+
+		// Bearbeitung ggf. Abbrechen
+		if (knoten == null || !(knoten.isMatch() || ignoriereErstenKnoten)) {
+			return null;
+		}
+
+		// Neuen Knoten erstellen und Werte uebertragen
+		Knoten neuerKnoten = new Knoten();
+		neuerKnoten.setName(knoten.getName());
+		neuerKnoten.setZaehler(knoten.getZaehler());
+		neuerKnoten.setMatch(true);
+
+		// Aufruf fuer Kindknoten rekursiv wiederholen
+		Iterator<String> kinder = knoten.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			String kindName = kinder.next();
+			Knoten kind = entferneNichtTrefferKnoten(knoten.getKinder().get(
+					kindName),false);
+			if (kind != null)
+				neuerKnoten.getKinder().put(kindName, kind);
+		}
+
+		// Neuen Knoten zurueckgeben
+		return neuerKnoten;
+
+	}
+
+	/**
+	 * Fuegt alle Elemente und Unterelemente des uebergebenen Baumes dem uebergebenen TreeSet hinzu. 
+	 * @param wurzel
+	 * @param treeSet
+	 */
+	public void fuegeNodesInTreeSetEin(Knoten wurzel, TreeSet<Knoten> treeSet) {
+		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
+		while (kinder.hasNext()) {
+			fuegeNodesInTreeSetEin(wurzel.getKinder().get(kinder.next()),
+					treeSet);
+		}
+		treeSet.add(wurzel);
+	}
+
+}

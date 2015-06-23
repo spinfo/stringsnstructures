@@ -27,6 +27,7 @@ public abstract class ModuleImpl implements Module {
 	private int status = Module.STATUSCODE_NOTYETRUN;
 	private List<Class<?>> supportedInputs = new ArrayList<Class<?>>();
 	private List<Class<?>> supportedOutputs = new ArrayList<Class<?>>();
+	private String description = "(no description)";
 
 	public ModuleImpl(CallbackReceiver callbackReceiver, Properties properties)
 			throws Exception {
@@ -370,6 +371,22 @@ public abstract class ModuleImpl implements Module {
 	@Override
 	public String toString() {
 		return this.name;
+	}
+
+	/* (non-Javadoc)
+	 * @see modularization.Module#getDescription()
+	 */
+	@Override
+	public String getDescription() {
+		return this.description;
+	}
+
+	/* (non-Javadoc)
+	 * @see modularization.Module#setDescription(java.lang.String)
+	 */
+	@Override
+	public void setDescription(String desc) {
+		this.description = desc;
 	}
 
 }

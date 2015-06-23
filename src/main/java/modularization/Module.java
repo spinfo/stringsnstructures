@@ -116,6 +116,18 @@ public interface Module extends CallbackProcess {
 	public void setName(String name);
 	
 	/**
+	 * Outputs the description of the module.
+	 * @return Description
+	 */
+	public String getDescription();
+	
+	/**
+	 * Sets the description of the module.
+	 * @param desc Description
+	 */
+	public void setDescription(String desc);
+	
+	/**
 	 * Outputs the properties used by this module instance.
 	 * @return properties
 	 */
