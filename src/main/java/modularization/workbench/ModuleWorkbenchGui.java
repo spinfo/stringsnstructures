@@ -47,6 +47,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	protected static final String ACTION_SAVETREE = "ACTION_SAVETREE";
 
 	// Icons
+	public static final ImageIcon ICON_APP = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/app.png"));
 	public static final ImageIcon ICON_NEW_TREE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/reload.png"));
 	public static final ImageIcon ICON_ADD_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/add.png"));
 	public static final ImageIcon ICON_DELETE_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/delete.png"));
@@ -54,6 +55,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	public static final ImageIcon ICON_EDIT_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/configure.png"));
 	public static final ImageIcon ICON_SAVE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/save.png"));
 	public static final ImageIcon ICON_LOAD = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/open.png"));
+	
+	public static final String WINDOWTITLE = "Module Workbench - ";
+	public static final String WINDOWTITLE_NEWTREESUFFIX = "(new module tree)";
 	
 	private JFrame frame;
 	private ModuleWorkbenchController controller;
@@ -69,6 +73,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 					ModuleWorkbenchController controller = new ModuleWorkbenchController();
 					ModuleWorkbenchGui window = new ModuleWorkbenchGui(controller);
 					controller.getModuleTree().addCallbackReceiver(window);
+					window.frame.setIconImage(ICON_APP.getImage());
 					window.frame.setVisible(true);
 					
 					Logger.getGlobal().log(Level.INFO, "Workbench GUI started.");
@@ -92,9 +97,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 550, 400);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setTitle("Module Workbench");
+		frame.setTitle(WINDOWTITLE+WINDOWTITLE_NEWTREESUFFIX);
 		
 		JSplitPane topSplitPane = new JSplitPane();
 		topSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -263,6 +268,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				// Start new module tree and add this class as callback receiver to it
 				ModuleTree moduleTree = this.controller.startNewModuleTree(rootModule);
 				moduleTree.addCallbackReceiver(this);
+				frame.setTitle(WINDOWTITLE+WINDOWTITLE_NEWTREESUFFIX);
 				
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Could not create a new module tree.", e1);
@@ -310,7 +316,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 			
 			try {
 				this.controller.getModuleTree().runModules();
-				
+				this.moduleJTree.revalidate();
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to run the modules.", e1);
 			}
@@ -333,6 +339,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 					this.moduleJTree.setModel(loadedModuleTree.getModuleTreeModel());
 					this.moduleJTree.revalidate();
 					this.expandAllNodes(this.moduleJTree);
+					frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
 				}
 				
 			} catch (Exception e1) {
@@ -351,6 +358,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				// If the return value indicates approval, save module tree to the selected file
 				if (returnVal==JFileChooser.APPROVE_OPTION){
 					this.controller.saveModuleTreeToFile(fileChooser.getSelectedFile());
+					frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
 				}
 				
 			} catch (Exception e1) {

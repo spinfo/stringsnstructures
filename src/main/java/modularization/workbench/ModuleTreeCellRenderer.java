@@ -14,8 +14,8 @@ import modularization.Module;
 public class ModuleTreeCellRenderer  extends DefaultTreeCellRenderer {
 
 	private static final long serialVersionUID = -1122661295170702986L;
-	public static final ImageIcon ICON_MODULE_QUEUED = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/clock.png"));
-	public static final ImageIcon ICON_MODULE_RUNNING = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/run.png"));
+	public static final ImageIcon ICON_MODULE_QUEUED = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/idle.gif"));
+	public static final ImageIcon ICON_MODULE_RUNNING = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/running.gif"));
 	public static final ImageIcon ICON_MODULE_SUCCESSFUL = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/clean.png"));
 	public static final ImageIcon ICON_MODULE_FAILED = new ImageIcon(ModuleTreeCellRenderer.class.getResource("/icons/error.png"));
 	
@@ -37,8 +37,10 @@ public class ModuleTreeCellRenderer  extends DefaultTreeCellRenderer {
 			// Set icon depending on module status
 			if (module.getStatus()==Module.STATUSCODE_NOTYETRUN)
 				this.setIcon(ICON_MODULE_QUEUED);
-			else if (module.getStatus()==Module.STATUSCODE_RUNNING)
+			else if (module.getStatus()==Module.STATUSCODE_RUNNING){
 				this.setIcon(ICON_MODULE_RUNNING);
+				ICON_MODULE_RUNNING.setImageObserver(tree);
+			}
 			else if (module.getStatus()==Module.STATUSCODE_SUCCESS)
 				this.setIcon(ICON_MODULE_SUCCESSFUL);
 			else if (module.getStatus()==Module.STATUSCODE_FAILURE)
