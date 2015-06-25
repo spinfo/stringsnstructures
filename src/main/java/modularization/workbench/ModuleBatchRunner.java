@@ -68,7 +68,7 @@ public class ModuleBatchRunner {
 		// Load module tree config file
 		try {
 			controller.loadModuleTreeFromFile(new File(configFilePath));
-		} catch (ClassNotFoundException | IOException e) {
+		} catch (Exception e) {
 			Logger.getLogger("").log(Level.SEVERE, "Could not load module tree from given config file.", e);
 			System.exit(1);
 		}

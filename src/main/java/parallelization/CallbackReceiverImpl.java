@@ -1,5 +1,6 @@
 package parallelization;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,11 +14,11 @@ import java.util.logging.Logger;
  *
  */
 public abstract class CallbackReceiverImpl implements
-		CallbackReceiver {
+		CallbackReceiver, UncaughtExceptionHandler {
 	
 	// Maps containing the actions to perform on process callback
-	private Map<CallbackProcess, Action> successActions = new HashMap<CallbackProcess, Action>();
-	private Map<CallbackProcess, Action> failActions = new HashMap<CallbackProcess, Action>();
+	private Map<Thread, Action> successActions = new HashMap<Thread, Action>();
+	private Map<Thread, Action> failActions = new HashMap<Thread, Action>();
 	private List<CallbackReceiver> externalCallbackReceiverList = new ArrayList<CallbackReceiver>();
 
 	/**
@@ -25,7 +26,8 @@ public abstract class CallbackReceiverImpl implements
 	 * @param process Process
 	 * @param action Action
 	 */
-	protected void registerSuccessCallback(CallbackProcess process, Action action){
+	protected void registerSuccessCallback(Thread process, Action action){
+		process.setUncaughtExceptionHandler(this);
 		this.successActions.put(process, action);
 	}
 	
@@ -34,18 +36,18 @@ public abstract class CallbackReceiverImpl implements
 	 * @param process Process
 	 * @param action Action
 	 */
-	protected void registerFailureCallback(CallbackProcess process, Action action){
+	protected void registerFailureCallback(Thread process, Action action){
+		process.setUncaughtExceptionHandler(this);
 		this.failActions.put(process, action);
 	}
 	
 	@Override
-	public void receiveCallback(Object processingResult, CallbackProcess process) {
-		this.receiveCallback(processingResult, process, false);
+	public void receiveCallback(Thread process, Object processingResult) {
+		this.receiveCallback(process, processingResult, false);
 	}
 
 	@Override
-	public void receiveCallback(Object processingResult,
-			CallbackProcess process, boolean repeat) {
+	public void receiveCallback(Thread process, Object processingResult, boolean repeat) {
 		
 		// Determine whether a success action is present
 		if (successActions.containsKey(process)) {
@@ -64,12 +66,12 @@ public abstract class CallbackReceiverImpl implements
 		// Relay callback to additional CallbackReceivers if present
 		Iterator<CallbackReceiver> externalCallbackReceivers = this.externalCallbackReceiverList.iterator();
 		while (externalCallbackReceivers.hasNext()){
-			externalCallbackReceivers.next().receiveCallback(processingResult, process, repeat);
+			externalCallbackReceivers.next().receiveCallback(process, processingResult, repeat);
 		}
 	}
 
 	@Override
-	public void receiveException(CallbackProcess process, Exception exception) {
+	public void receiveException(Thread process, Throwable exception) {
 		
 		// Log the error message
 		Logger.getLogger(this.getClass().getSimpleName()).warning(exception.toString());
@@ -122,6 +124,14 @@ public abstract class CallbackReceiverImpl implements
 	@Override
 	public List<CallbackReceiver> getCallbackReceivers() {
 		return this.externalCallbackReceiverList;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Thread.UncaughtExceptionHandler#uncaughtException(java.lang.Thread, java.lang.Throwable)
+	 */
+	@Override
+	public void uncaughtException(Thread t, Throwable e) {
+		this.receiveException(t, e);
 	}
 	
 	

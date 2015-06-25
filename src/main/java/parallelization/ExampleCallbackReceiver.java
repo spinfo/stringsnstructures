@@ -9,7 +9,7 @@ public class ExampleCallbackReceiver extends CallbackReceiverImpl {
 
 	public void start(){
 		
-		// Instantiate two processes (change string to null if you want to see a process fail with en exception)
+		// Instantiate two processes (change string to null if you want to see a process fail with an exception)
 		ExampleCallbackProcess process1 = new ExampleCallbackProcess(this, "auf der mauer auf der lauer");
 		ExampleCallbackProcess process2 = new ExampleCallbackProcess(this, "sitzt ne kleine wanze");
 		
@@ -37,14 +37,16 @@ public class ExampleCallbackReceiver extends CallbackReceiverImpl {
 			}
 		};
 		
-		// Register processes and actions withing the controlling CallbackReceiver (this object)
-		this.registerSuccessCallback(process1, process1SuccessAction);
-		this.registerFailureCallback(process1, process1FailAction);
-		this.registerSuccessCallback(process2, process2SuccessAction);
+		// Package processes into threads
+		Thread process1Thread = new Thread(process1, "Process one");
+		Thread process2Thread = new Thread(process2, "Process two");
 		
-		// Lastly, package processes into threads, start them and lean back
-		Thread process1Thread = new Thread(process1);
-		Thread process2Thread = new Thread(process2);
+		// Register processes and actions within the controlling CallbackReceiver (this object)
+		this.registerSuccessCallback(process1Thread, process1SuccessAction);
+		this.registerFailureCallback(process1Thread, process1FailAction);
+		this.registerSuccessCallback(process2Thread, process2SuccessAction);
+		
+		// Lastly start the threads and lean back
 		process1Thread.start();
 		process2Thread.start();
 	}

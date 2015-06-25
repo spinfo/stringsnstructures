@@ -278,11 +278,11 @@ public abstract class ModuleImpl implements Module {
 				this.status = Module.STATUSCODE_FAILURE;
 
 			// Return result
-			this.callbackReceiver.receiveCallback(result, this);
+			this.callbackReceiver.receiveCallback(Thread.currentThread(), result);
 
 		} catch (Exception e) {
 			this.status = Module.STATUSCODE_FAILURE;
-			this.callbackReceiver.receiveException(this, e);
+			this.callbackReceiver.receiveException(Thread.currentThread(), e);
 		}
 	}
 

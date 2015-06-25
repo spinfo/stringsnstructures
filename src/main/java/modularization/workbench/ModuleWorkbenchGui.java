@@ -210,20 +210,19 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	 * @see parallelization.CallbackReceiverImpl#receiveCallback(java.lang.Object, parallelization.CallbackProcess, boolean)
 	 */
 	@Override
-	public void receiveCallback(Object processingResult,
-			CallbackProcess process, boolean repeat) {
+	public void receiveCallback(Thread process, Object processingResult, boolean repeat) {
 		// Inserting a hook here -- if the process sending the callback is a module, we update the GUI tree display
 		if (ModuleImpl.class.isAssignableFrom(process.getClass())){
 			this.moduleJTree.repaint();
 		}
-		super.receiveCallback(processingResult, process, repeat);
+		super.receiveCallback(process, processingResult, repeat);
 	}
 
 	/* (non-Javadoc)
 	 * @see parallelization.CallbackReceiverImpl#receiveException(parallelization.CallbackProcess, java.lang.Exception)
 	 */
 	@Override
-	public void receiveException(CallbackProcess process, Exception exception) {
+	public void receiveException(Thread process, Throwable exception) {
 		// Inserting a hook here -- if the process sending the callback is a module, we update the GUI tree display
 		if (ModuleImpl.class.isAssignableFrom(process.getClass())){
 			this.moduleJTree.revalidate();

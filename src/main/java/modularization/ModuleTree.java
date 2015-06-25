@@ -326,7 +326,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 			throw new Exception("Excuse me, but this tree node does not hold a module -- I am afraid I cannot continue the operation.");
 			
 		// Determine the module
-		final Module m = (Module) parentNode.getUserObject();
+		final Module module = (Module) parentNode.getUserObject();
 
 		// Define action to perform on success
 		Action successAction = new Action() {
@@ -336,13 +336,13 @@ public class ModuleTree extends CallbackReceiverImpl {
 				if (result)
 					Logger.getLogger("").log(
 							Level.INFO,
-							"Module " + m.getName()
+							"Module " + module.getName()
 									+ " has successfully finished processing.");
 				else
 					Logger.getLogger("")
 							.log(Level.WARNING,
 									"Module "
-											+ m.getName()
+											+ module.getName()
 											+ " did not finish processing successfully.");
 			}
 		};
@@ -357,20 +357,22 @@ public class ModuleTree extends CallbackReceiverImpl {
 				}
 				Logger.getLogger(this.getClass().getSimpleName()).log(
 						Level.SEVERE,
-						"Module " + m.getName() + " encountered an error.", e);
+						"Module " + module.getName() + " encountered an error.", e);
 			}
 		};
 
-		// register callback actions
-		this.registerSuccessCallback(m, successAction);
-		this.registerFailureCallback(m, failureAction);
-
-		Thread t1 = new Thread(m);
-		t1.setName(m.getName());
-		this.startedThreads.add(t1);
+		// Initialize thread
+		Thread moduleThread = new Thread(module);
+		moduleThread.setName(module.getName());
 		
-		Logger.getLogger("").log(Level.INFO, "Starting to process module "+m.getName()+" on thread #"+t1.getId());
-		t1.start();
+		// register callback actions
+		this.registerSuccessCallback(moduleThread, successAction);
+		this.registerFailureCallback(moduleThread, failureAction);
+
+		this.startedThreads.add(moduleThread);
+		
+		Logger.getLogger("").log(Level.INFO, "Starting to process module "+module.getName()+" on thread #"+moduleThread.getId());
+		moduleThread.start();
 		
 		// Recursively run this method for the tree node's children
 		Enumeration<?> childNodes = parentNode.children();

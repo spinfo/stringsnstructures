@@ -21,11 +21,11 @@ public class ExampleCallbackProcess implements CallbackProcess {
 			// Do whatever we need to
 			String result = this.inputData.toString().replaceAll("[aeiu]", "o");
 			// Return the result to our CallbackReceiver
-			this.callbackReceiver.receiveCallback(result, this);
+			this.callbackReceiver.receiveCallback(Thread.currentThread(), result);
 			
 		} catch (Exception e){
 			// If we catch an exception here, report it to the CallbackReceiver
-			this.callbackReceiver.receiveException(this, e);
+			this.callbackReceiver.receiveException(Thread.currentThread(), e);
 		}
 	}
 

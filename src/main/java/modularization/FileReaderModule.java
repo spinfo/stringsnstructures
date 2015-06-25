@@ -82,7 +82,7 @@ public class FileReaderModule extends ModuleImpl {
 				throw new Exception("Sorry, but I could not write to any output.");
 			
 		} catch (Exception e1) {
-			this.getCallbackReceiver().receiveException(this, e1);
+			this.getCallbackReceiver().receiveException(Thread.currentThread(), e1);
 		}
 		
 		

@@ -11,25 +11,25 @@ public interface CallbackReceiver {
 
 	/**
 	 * Accepts a processing result and performs the associated action.
-	 * @param processingResult Result of the process
 	 * @param process The process calling back
+	 * @param processingResult Result of the process
 	 */
-	public void receiveCallback(Object processingResult, CallbackProcess process);
+	public void receiveCallback(Thread process, Object processingResult);
 	
 	/**
 	 * Accepts a processing result and performs the associated action.
-	 * @param processingResult Result of the process
 	 * @param process The process calling back
+	 * @param processingResult Result of the process
 	 * @param repeat If true, the associated action will not be removed (and can be used for another callback).
 	 */
-	public void receiveCallback(Object processingResult, CallbackProcess process, boolean repeat);
+	public void receiveCallback(Thread process, Object processingResult, boolean repeat);
 	
 	/**
 	 * Performs the action associated with a process failure.
 	 * @param process The process calling back
 	 * @param exception The exception that occurred
 	 */
-	public void receiveException(CallbackProcess process, Exception exception);
+	public void receiveException(Thread process, Throwable exception);
 	
 	/**
 	 * Adds another CallbackReceiver to relay received callbacks to.

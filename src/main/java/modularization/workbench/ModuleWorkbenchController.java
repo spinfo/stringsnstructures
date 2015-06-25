@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import modularization.ModuleImpl;
 import modularization.ModuleTree;
 import modularization.ModuleTreeGsonDeserializer;
 import modularization.ModuleTreeGsonSerializer;
+import neo4j.Neo4jOutputModule;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
 import treeBuilder.AtomicRangeSuffixTreeBuilder;
@@ -121,6 +123,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				"AtomicRangeSuffixTreeBuilder");
 		AtomicRangeSuffixTreeBuilder atomicRangeSuffixTreeBuilder = new AtomicRangeSuffixTreeBuilder(moduleTree,
 				atomicRangeSuffixTreeBuilderProperties);
+
+		// Prepare Neo4jOutputModule module
+		Properties neo4jOutputModuleProperties = new Properties();
+		neo4jOutputModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
+				"Neo4J local");
+		Neo4jOutputModule neo4jOutputModule = new Neo4jOutputModule(moduleTree,
+				neo4jOutputModuleProperties);
 		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
@@ -130,6 +139,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(oancParser);
 		availableModules.add(treeBuilder);
 		availableModules.add(atomicRangeSuffixTreeBuilder);
+		availableModules.add(neo4jOutputModule);
 		
 		// Instantiate default module tree
 		this.startNewModuleTree(oanc);
@@ -227,6 +237,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new TreeBuilder(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(AtomicRangeSuffixTreeBuilder.class)){
 			newModule = new AtomicRangeSuffixTreeBuilder(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(Neo4jOutputModule.class)){
+			newModule = new Neo4jOutputModule(moduleTree, properties);
 		}
 		
 		else {
@@ -319,10 +331,9 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	 * Loads the module tree from a file.
 	 * @param file file
 	 * @return Loaded module tree
-	 * @throws IOException
-	 * @throws ClassNotFoundException 
+	 * @throws Exception 
 	 */
-	public ModuleTree loadModuleTreeFromFile(File file) throws IOException, ClassNotFoundException {
+	public ModuleTree loadModuleTreeFromFile(File file) throws Exception {
 				
 		// Read JSON representation of the current module tree from file
 		FileReader fileReader = new FileReader(file);
@@ -331,6 +342,15 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				
 		// Close file writer
 		fileReader.close();
+		
+		// Apply properties to modules
+		DefaultMutableTreeNode rootNode = loadedModuleTree.getRootNode();
+		((Module)rootNode.getUserObject()).applyProperties();
+		@SuppressWarnings("unchecked")
+		Enumeration<DefaultMutableTreeNode> children = rootNode.breadthFirstEnumeration();
+		while (children.hasMoreElements()){
+			((Module)children.nextElement().getUserObject()).applyProperties();
+		}
 		
         // Write log message
         Logger.getLogger("").log(Level.INFO, "Successfully loaded the module tree from the file "+file.getPath());

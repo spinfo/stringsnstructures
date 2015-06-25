@@ -89,7 +89,7 @@ public class FileWriterModule extends ModuleImpl {
 			}
 			
 		} catch (Exception e1){
-			this.getCallbackReceiver().receiveException(this, e1);
+			this.getCallbackReceiver().receiveException(Thread.currentThread(), e1);
 			return false;
 		}
 		
