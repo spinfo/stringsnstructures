@@ -347,27 +347,12 @@ public class ModuleTree extends CallbackReceiverImpl {
 			}
 		};
 
-		// Define action to perform on failure
-		Action failureAction = new Action() {
-			@Override
-			public void perform(Object processResult) {
-				Exception e = new Exception("(no error message received)");
-				if (processResult.getClass().isAssignableFrom(e.getClass())) {
-					e = (Exception) processResult;
-				}
-				Logger.getLogger(this.getClass().getSimpleName()).log(
-						Level.SEVERE,
-						"Module " + module.getName() + " encountered an error.", e);
-			}
-		};
-
 		// Initialize thread
 		Thread moduleThread = new Thread(module);
 		moduleThread.setName(module.getName());
 		
 		// register callback actions
 		this.registerSuccessCallback(moduleThread, successAction);
-		this.registerFailureCallback(moduleThread, failureAction);
 
 		this.startedThreads.add(moduleThread);
 		

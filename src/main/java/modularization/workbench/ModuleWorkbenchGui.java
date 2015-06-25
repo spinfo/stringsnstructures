@@ -29,7 +29,6 @@ import javax.swing.tree.TreePath;
 import modularization.Module;
 import modularization.ModuleImpl;
 import modularization.ModuleTree;
-import parallelization.CallbackProcess;
 import parallelization.CallbackReceiverImpl;
 
 /**
@@ -211,11 +210,11 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	 */
 	@Override
 	public void receiveCallback(Thread process, Object processingResult, boolean repeat) {
-		// Inserting a hook here -- if the process sending the callback is a module, we update the GUI tree display
-		if (ModuleImpl.class.isAssignableFrom(process.getClass())){
-			this.moduleJTree.repaint();
-		}
-		super.receiveCallback(process, processingResult, repeat);
+		// Inserting a hook here -- update the GUI tree display
+		this.moduleJTree.invalidate();
+		this.moduleJTree.validate();
+		this.moduleJTree.repaint();
+		this.expandAllNodes(this.moduleJTree);
 	}
 
 	/* (non-Javadoc)
@@ -223,11 +222,11 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	 */
 	@Override
 	public void receiveException(Thread process, Throwable exception) {
-		// Inserting a hook here -- if the process sending the callback is a module, we update the GUI tree display
-		if (ModuleImpl.class.isAssignableFrom(process.getClass())){
-			this.moduleJTree.revalidate();
-		}
-		super.receiveException(process, exception);
+		// Inserting a hook here -- update the GUI tree display
+		this.moduleJTree.invalidate();
+		this.moduleJTree.validate();
+		this.moduleJTree.repaint();
+		this.expandAllNodes(this.moduleJTree);
 	}
 
 	@Override
@@ -261,7 +260,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				if (this.controller.getSelectedModule() == null)
 					throw new Exception("Please do select a module from the lefthand list first.");
 				rootModule = this.controller.getNewInstanceOfSelectedModule(null);
-				this.controller.startNewModuleTree(rootModule);
+				// Start new module tree and add this class as callback receiver to it
+				ModuleTree moduleTree = this.controller.startNewModuleTree(rootModule);
+				moduleTree.addCallbackReceiver(this);
 				
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Could not create a new module tree.", e1);
@@ -328,8 +329,10 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				if (returnVal==JFileChooser.APPROVE_OPTION){
 					ModuleTree loadedModuleTree = this.controller.loadModuleTreeFromFile(fileChooser.getSelectedFile());
 					loadedModuleTree.getModuleTreeModel().addTreeModelListener(this);
+					loadedModuleTree.addCallbackReceiver(this);
 					this.moduleJTree.setModel(loadedModuleTree.getModuleTreeModel());
 					this.moduleJTree.revalidate();
+					this.expandAllNodes(this.moduleJTree);
 				}
 				
 			} catch (Exception e1) {
@@ -357,5 +360,29 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		} else {
 			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but this command is unknown to me: "+e.getActionCommand());
 		}
+	}
+	
+	/**
+	 * Expands all nodes on the given JTree
+	 * @param tree
+	 */
+	private void expandAllNodes(JTree tree) {
+		int row = 0;
+		while (row < tree.getRowCount()) {
+			tree.expandRow(row);
+			row++;
+		}
+	}
+	
+	/**
+	 * Collapses all nodes on the given JTree
+	 * @param tree
+	 */
+	private void collapseAllNodes(JTree tree) {
+		int row = tree.getRowCount() - 1;
+	    while (row >= 0) {
+	      tree.collapseRow(row);
+	      row--;
+	    }
 	}
 }
