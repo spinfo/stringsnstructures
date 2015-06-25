@@ -27,7 +27,6 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 import modularization.Module;
-import modularization.ModuleImpl;
 import modularization.ModuleTree;
 import parallelization.CallbackReceiverImpl;
 
@@ -386,11 +385,11 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	 * Collapses all nodes on the given JTree
 	 * @param tree
 	 */
-	private void collapseAllNodes(JTree tree) {
+	/*private void collapseAllNodes(JTree tree) {
 		int row = tree.getRowCount() - 1;
 	    while (row >= 0) {
 	      tree.collapseRow(row);
 	      row--;
 	    }
-	}
+	}*/
 }
