@@ -71,64 +71,65 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		
 		// Prepare OANC module
 		Properties oancProperties = new Properties();
-		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "OANC");
 		OANC oanc = new OANC(moduleTree, oancProperties);
+		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, oanc.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		oanc.applyProperties();
 
 		// Prepare FileWriter module
 		Properties fileWriterProperties = new Properties();
-		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
-				"FileWriter");
 		FileWriterModule fileWriter = new FileWriterModule(moduleTree,
 				fileWriterProperties);
+		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		fileWriter.applyProperties();
 
 		// Prepare OANC parser module
 		Properties oancParserProperties = new Properties();
-		oancParserProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
-				"OANC-Parser");
 		OANCXMLParser oancParser = new OANCXMLParser(moduleTree,
 				oancParserProperties);
+		oancParserProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, oancParser.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		oancParser.applyProperties();
 
 		// Prepare FileReader module
 		Properties fileReaderProperties = new Properties();
-		fileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
-				"FileReader");
 		FileReaderModule fileReader = new FileReaderModule(moduleTree,
 				fileReaderProperties);
+		fileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileReader.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		fileReader.applyProperties();
 
 		// Prepare ConsoleWriter module
 		Properties consoleWriterProperties = new Properties();
-		consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
-				"ConsoleWriter");
 		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleTree,
 				consoleWriterProperties);
+		consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, consoleWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		consoleWriter.applyProperties();
 
 		// Prepare ExampleModule module
 		Properties exampleModuleProperties = new Properties();
-		exampleModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
-				"Example Module");
 		ExampleModule exampleModule = new ExampleModule(moduleTree,
 				exampleModuleProperties);
+		exampleModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		exampleModule.applyProperties();
 
 		// Prepare TreeBuilder module
 		Properties treeBuilderModuleProperties = new Properties();
-		treeBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
-				"TreeBuilder");
 		TreeBuilder treeBuilder = new TreeBuilder(moduleTree,
 				treeBuilderModuleProperties);
+		treeBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		treeBuilder.applyProperties();
 
 		// Prepare AtomicRangeSuffixTreeBuilder module
 		Properties atomicRangeSuffixTreeBuilderProperties = new Properties();
-		atomicRangeSuffixTreeBuilderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
-				"AtomicRangeSuffixTreeBuilder");
 		AtomicRangeSuffixTreeBuilder atomicRangeSuffixTreeBuilder = new AtomicRangeSuffixTreeBuilder(moduleTree,
 				atomicRangeSuffixTreeBuilderProperties);
+		atomicRangeSuffixTreeBuilderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, atomicRangeSuffixTreeBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		atomicRangeSuffixTreeBuilder.applyProperties();
 
 		// Prepare Neo4jOutputModule module
 		Properties neo4jOutputModuleProperties = new Properties();
-		neo4jOutputModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
-				"Neo4J local");
 		Neo4jOutputModule neo4jOutputModule = new Neo4jOutputModule(moduleTree,
 				neo4jOutputModuleProperties);
+		neo4jOutputModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, neo4jOutputModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		neo4jOutputModule.applyProperties();
 		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
