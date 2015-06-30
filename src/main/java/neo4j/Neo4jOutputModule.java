@@ -2,16 +2,11 @@ package neo4j;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 
 import modularization.CharPipe;
 import modularization.ModuleImpl;
-
-import org.neo4j.graphdb.Node;
-
 import parallelization.CallbackReceiver;
 import treeBuilder.Knoten;
 

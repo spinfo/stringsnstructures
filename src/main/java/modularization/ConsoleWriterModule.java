@@ -23,8 +23,6 @@ public class ConsoleWriterModule extends ModuleImpl {
 		
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Console Writer");
-		
-		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
 
 	@Override

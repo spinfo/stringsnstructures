@@ -16,8 +16,10 @@ public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
 	
 	// Property keys
 	public static final String PROPERTYKEY_MAXLENGTH = "Maximum length of branches";
+	public static final String PROPERTYKEY_REVERSE = "Reverse the tree";
 	
 	private int maxLaenge; // Maximale Laenge des zu bauenden Baums
+	private boolean umgekehrt; // Maximale Laenge des zu bauenden Baums
 
 	public AtomicRangeSuffixTreeBuilder(CallbackReceiver callbackReceiver, Properties properties)
 			throws Exception {
@@ -29,10 +31,12 @@ public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_MAXLENGTH,"Define the maximum length of any branch of the tree.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_REVERSE,"Reverse the building of the tree (results in a prefix tree).");
 		
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "AtomicRangeSuffixTreeBuilder");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXLENGTH, "10");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_REVERSE, "false");
 		
 		// Add module description
 		this.setDescription("Iterates over a raw and unsegmented string input, building a suffix tree from the data of limited range with each step. Keeps track of how often each node of the suffix tree gets triggered.");
@@ -60,7 +64,7 @@ public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
 				buffer.removeFirst();
 			
 			// Construct trie from buffer and attach it to the root node
-			this.baueTrie(buffer, wurzelKnoten, false, -1);
+			this.baueTrie(buffer, wurzelKnoten, this.umgekehrt, -1);
 			
 			// Read next char
 			charCode = this.getInputCharPipe().getInput().read();
@@ -86,6 +90,8 @@ public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
 	public void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_MAXLENGTH))
 			this.maxLaenge = Integer.parseInt(this.getProperties().getProperty(PROPERTYKEY_MAXLENGTH));
+		if (this.getProperties().containsKey(PROPERTYKEY_REVERSE))
+			this.umgekehrt = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_REVERSE));
 		super.applyProperties();
 	}
 	

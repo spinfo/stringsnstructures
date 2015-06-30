@@ -31,8 +31,6 @@ public class FileWriterModule extends ModuleImpl {
 		// Define I/O
 		this.getSupportedInputs().add(BytePipe.class);
 		this.getSupportedInputs().add(CharPipe.class);
-		
-		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
 	}
 
 	@Override

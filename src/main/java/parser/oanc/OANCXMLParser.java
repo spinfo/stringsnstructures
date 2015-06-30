@@ -50,6 +50,8 @@ public class OANCXMLParser extends ModuleImpl {
 	public static final String PROPERTYKEY_KEEPPUNCTUATION = "behaltePunktuation";
 	public static final String PROPERTYKEY_OUTPUTANNOTATEDJSON = "outputAnnotatedJson";
 	public static final String PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE = "oneJSONObjectPerLine";
+	public static final String PROPERTYKEY_OUTPUTJSON = "output JSON";
+	public static final String PROPERTYKEY_SPACE = "word divider";
 	// local variables
 	private File quellDatei;
 	private File satzGrenzenXMLDatei;
@@ -60,6 +62,8 @@ public class OANCXMLParser extends ModuleImpl {
 	private boolean behaltePunktuation;
 	private boolean outputAnnotatedJson;
 	private boolean oneJSONObjectPerLine;
+	private boolean outputJson;
+	private String wortTrennzeichen;
 	
 	public OANCXMLParser(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
@@ -73,8 +77,10 @@ public class OANCXMLParser extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_ADDTERMINALSYMBOL, "Set to 'true' if '"+TERMINIERSYMBOL+"' should be added as start symbol to each sentence");
 		this.getPropertyDescriptions().put(PROPERTYKEY_CONVERTTOLOWERCASE,"If set to 'true' the output will be all lowercase");
 		this.getPropertyDescriptions().put(PROPERTYKEY_KEEPPUNCTUATION,"If set to 'true' punctuation will not be discarded");
-		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTANNOTATEDJSON,"If set to 'true' the output will be annotated JSON instead of plain text");
-		this.getPropertyDescriptions().put(PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE,"If set to 'true' and the output is JSON, it will be one JSON object per line.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTANNOTATEDJSON,"If this and \'"+PROPERTYKEY_OUTPUTJSON+"\' is set to 'true' the output will be annotated JSON.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE,"If this and \'"+PROPERTYKEY_OUTPUTJSON+"\' is set to 'true' the output will be one JSON object per line.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTJSON,"If set to 'true' the output will be JSON instead of plain text");
+		this.getPropertyDescriptions().put(PROPERTYKEY_SPACE,"symbol or string to divide words from each other");
 		
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "OANC-XML-Parser");
@@ -84,8 +90,8 @@ public class OANCXMLParser extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_KEEPPUNCTUATION, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTANNOTATEDJSON, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE, "true");
-		
-		Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Initialized module "+this.getProperties().getProperty(ModuleImpl.PROPERTYKEY_NAME));
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTJSON, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_SPACE, " ");
 	}
 	
 	/**
@@ -454,15 +460,42 @@ public class OANCXMLParser extends ModuleImpl {
 				// Liste der Rohsaetze durchlaufen
 				Iterator<String> rohsaetze = rohsatzListe.iterator();
 				while (rohsaetze.hasNext()) {
-
-					// Clean up raw sentence & convert to JSON
-					String cleanedUpSentenceJson = gson.toJson(this.bereinigeUndSegmentiereSatz(
+					
+					// Clean up raw sentence
+					List<String> bereinigterSatz = this.bereinigeUndSegmentiereSatz(
 							rohsaetze.next(), fuegeStartSymbolHinzu,
 							fuegeTerminierSymbolHinzu, wandleInKleinbuchstaben,
-							behaltePunktuation));
+							behaltePunktuation);
+
+					// Variable for the data that gets sent to output
+					String outputString;
+					
+					// Check whether we need to convert the output into JSON
+					if (this.outputJson){
+
+						// Convert to JSON
+						outputString = gson.toJson(bereinigterSatz);
+						
+					} else {
+						
+						// Create a stringbuilder for better performance
+						StringBuilder stringBuilder = new StringBuilder();
+						
+						// Loop over words of the parsed sentence to construct a single output string
+						Iterator<String> worte = bereinigterSatz.iterator();
+						while(worte.hasNext()){
+							stringBuilder.append(worte.next());
+							if (worte.hasNext())
+								stringBuilder.append(this.wortTrennzeichen);
+						}
+						
+						// Set the output variable
+						outputString = stringBuilder.toString();
+						
+					}
 
 					// Output the result
-					this.outputToAllCharPipes(cleanedUpSentenceJson);
+					this.outputToAllCharPipes(outputString);
 				}
 			}
 		}
@@ -490,6 +523,10 @@ public class OANCXMLParser extends ModuleImpl {
 			this.outputAnnotatedJson = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_OUTPUTANNOTATEDJSON));
 		if (this.getProperties().containsKey(PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE))
 			this.oneJSONObjectPerLine = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_JSONOUTPUT_ONEOBJECTPERLINE));
+		if (this.getProperties().containsKey(PROPERTYKEY_OUTPUTJSON))
+			this.outputJson = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_OUTPUTJSON));
+		if (this.getProperties().containsKey(PROPERTYKEY_SPACE))
+			this.wortTrennzeichen = this.getProperties().getProperty(PROPERTYKEY_SPACE);
 			
 		super.applyProperties();
 	}
