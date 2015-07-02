@@ -174,5 +174,17 @@ public interface Module extends CallbackProcess {
 	 * @throws IOException
 	 */
 	public void resetOutputs() throws IOException;
+	
+	/**
+	 * Returns the supported input pipe classes
+	 * @return
+	 */
+	public List<Class<?>> getSupportedInputs();
+
+	/**
+	 * Returns the supported output pipe classes
+	 * @return
+	 */
+	public List<Class<?>> getSupportedOutputs();
 
 }

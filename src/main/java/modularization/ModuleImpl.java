@@ -158,19 +158,13 @@ public abstract class ModuleImpl implements Module {
 		return status;
 	}
 
-	/**
-	 * Returns the supported input pipe classes
-	 * @return
-	 */
-	protected List<Class<?>> getSupportedInputs(){
+	@Override
+	public List<Class<?>> getSupportedInputs(){
 		return this.supportedInputs;
 	}
 
-	/**
-	 * Returns the supported output pipe classes
-	 * @return
-	 */
-	protected List<Class<?>> getSupportedOutputs(){
+	@Override
+	public List<Class<?>> getSupportedOutputs(){
 		return this.supportedOutputs;
 	}
 

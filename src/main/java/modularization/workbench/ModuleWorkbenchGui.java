@@ -110,7 +110,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		availableModulesPanel.setLayout(new BorderLayout(0, 0));
 		
 		// Initialize available modules list
-		JList<Module> list = new JList<Module>(this.controller.getAvailableModules().toArray(new Module[this.controller.getAvailableModules().size()]));
+		ToolTipJList<Module> list = new ToolTipJList<Module>(this.controller.getAvailableModules().toArray(new Module[this.controller.getAvailableModules().size()]));
 		list.addListSelectionListener(this.controller);
 		availableModulesPanel.add(list);
 		
