@@ -34,6 +34,7 @@ import modularization.ModuleTreeGsonSerializer;
 import neo4j.Neo4jOutputModule;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
+import suffixNetBuilder.SuffixNetBuilderModule;
 import treeBuilder.AtomicRangeSuffixTreeBuilder;
 import treeBuilder.TreeBuilder;
 
@@ -130,6 +131,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				neo4jOutputModuleProperties);
 		neo4jOutputModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, neo4jOutputModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		neo4jOutputModule.applyProperties();
+
+		// Prepare SuffixNetBuilderModule module
+		Properties suffixNetBuilderModuleProperties = new Properties();
+		SuffixNetBuilderModule suffixNetBuilderModule = new SuffixNetBuilderModule(moduleTree,
+				suffixNetBuilderModuleProperties);
+		suffixNetBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixNetBuilderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		suffixNetBuilderModule.applyProperties();
 		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
@@ -140,6 +148,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(treeBuilder);
 		availableModules.add(atomicRangeSuffixTreeBuilder);
 		availableModules.add(neo4jOutputModule);
+		availableModules.add(suffixNetBuilderModule);
 		
 		// Instantiate default module tree
 		this.startNewModuleTree(oanc);
@@ -239,6 +248,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new AtomicRangeSuffixTreeBuilder(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(Neo4jOutputModule.class)){
 			newModule = new Neo4jOutputModule(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(SuffixNetBuilderModule.class)){
+			newModule = new SuffixNetBuilderModule(moduleTree, properties);
 		}
 		
 		else {

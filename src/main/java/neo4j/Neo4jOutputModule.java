@@ -56,10 +56,6 @@ public class Neo4jOutputModule extends ModuleImpl {
 		// Wurzelknoten einlesen
 		Knoten rootNode = gson.fromJson(this.getInputCharPipe().getInput(), Knoten.class);
 		
-		System.out.println(rootNode.getName());
-		
-		
-		
 		// Wurzelknoten zu Graph hinzufuegen
 		//Node graphRootNode = graph.fuegeKnotenErstellungZurWarteschlangeHinzu(rootNode.getName(), rootNode.getZaehler()).get(rootNode.getName());
 		URI graphRootNode = graph.erstelleKnoten(rootNode.getName());

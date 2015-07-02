@@ -1,9 +1,11 @@
 package treeBuilder;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class Knoten {
+public class Knoten implements Serializable {
 	
+	private static final long serialVersionUID = 8432201362823586839L;
 	private int zaehler;
 	private String name;
 	private HashMap<String,Knoten> kinder;
@@ -22,6 +24,10 @@ public class Knoten {
 		this.name = name;
 	}
 
+	public int inkZaehler(){
+		return this.zaehler++;
+	}
+	
 	public int getZaehler() {
 		return zaehler;
 	}

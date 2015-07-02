@@ -79,7 +79,8 @@ public class Neo4jRestKlient {
 	public URI erstelleKnoten(String name){
 		URI uri = this.erstelleKnoten();
 		try {
-			this.addMetadataToProperty(uri, "name", name);
+			this.addMetadataToProperty(uri, "title", name);
+			//this.addLabelToNode(uri, "name", name);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
@@ -189,6 +190,22 @@ public class Neo4jRestKlient {
 
 		sb.append(" }");
 		return sb.toString();
+	}
+
+	public void addLabelToNode(URI nodeUri, String name,
+			String value) throws URISyntaxException {
+		URI labelUri = new URI(nodeUri.toString() + "/labels");
+		String entity = toJsonNameValuePairCollection(name, value);
+		WebResource resource = Client.create().resource(labelUri);
+		if (this.authFilter != null){
+			resource.addFilter(this.authFilter);
+		}
+		ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
+				.type(MediaType.APPLICATION_JSON).entity(entity)
+				.put(ClientResponse.class);
+
+		// System.out.println(String.format("PUT [%s] to [%s], status code [%d]",entity, propertyUri, response.getStatus()));
+		response.close();
 	}
 
 	public void addMetadataToProperty(URI relationshipUri, String name,
