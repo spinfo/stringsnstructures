@@ -105,29 +105,24 @@ public class Neo4jRestKlient {
 
 		return location;
 	}
-
+	
 	public void eigenschaftHinzufuegen(URI knotenUri,
 			String eigenschaftsBezeichner, String eigenschaftsWert) {
-		String propertyUri = knotenUri.toString() + "/properties/"
-				+ eigenschaftsBezeichner;
-		// http://localhost:7474/db/data/node/{node_id}/properties/{property_name}
-
-		WebResource resource = Client.create().resource(propertyUri);
-		if (this.authFilter != null){
-			resource.addFilter(this.authFilter);
-		}
-		ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
-				.type(MediaType.APPLICATION_JSON)
-				.entity("\"" + eigenschaftsWert + "\"")
-				.put(ClientResponse.class);
-
-		// System.out.println(String.format("PUT to [%s], status code [%d]",propertyUri, response.getStatus()));
-		response.close();
+		this.metaInformationHinzufuegen(knotenUri, eigenschaftsBezeichner, eigenschaftsWert, "/properties/", false);
 	}
-
+	
 	public void eigenschaftHinzufuegen(URI knotenUri,
 			String eigenschaftsBezeichner, int eigenschaftsWert) {
-		String propertyUri = knotenUri.toString() + "/properties/"
+		this.metaInformationHinzufuegen(knotenUri, eigenschaftsBezeichner, String.valueOf(eigenschaftsWert), "/properties/", false);
+	}
+	
+	public void etikettHinzufuegen(URI knotenUri, String etikettWert) {
+		this.metaInformationHinzufuegen(knotenUri, "", etikettWert, "/labels", true);
+	}
+
+	private void metaInformationHinzufuegen(URI knotenUri,
+			String eigenschaftsBezeichner, String eigenschaftsWert, String pfad, boolean post) {
+		String propertyUri = knotenUri.toString() + pfad
 				+ eigenschaftsBezeichner;
 		// http://localhost:7474/db/data/node/{node_id}/properties/{property_name}
 
@@ -135,10 +130,17 @@ public class Neo4jRestKlient {
 		if (this.authFilter != null){
 			resource.addFilter(this.authFilter);
 		}
-		ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
-				.type(MediaType.APPLICATION_JSON)
-				.entity(String.valueOf(eigenschaftsWert))
-				.put(ClientResponse.class);
+		ClientResponse response;
+		if (post)
+			response = resource.accept(MediaType.APPLICATION_JSON)
+					.type(MediaType.APPLICATION_JSON)
+					.entity("\"" + eigenschaftsWert + "\"")
+					.post(ClientResponse.class);
+		else
+			response = resource.accept(MediaType.APPLICATION_JSON)
+					.type(MediaType.APPLICATION_JSON)
+					.entity("\"" + eigenschaftsWert + "\"")
+					.put(ClientResponse.class);
 
 		// System.out.println(String.format("PUT to [%s], status code [%d]",propertyUri, response.getStatus()));
 		response.close();

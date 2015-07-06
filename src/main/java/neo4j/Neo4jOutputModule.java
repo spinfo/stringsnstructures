@@ -79,7 +79,7 @@ public class Neo4jOutputModule extends ModuleImpl {
 		graph.eigenschaftHinzufuegen(neuerGraphenKnoten, BERUEHRUNGSZAEHLER_SCHLUESSEL, child.getZaehler());
 		
 		// Kante erstellen
-		URI relationshipUri = graph.addRelationship(parent, neuerGraphenKnoten,
+		graph.addRelationship(parent, neuerGraphenKnoten,
 				"child", "{ }");
 		
 		// Baum durchlaufen; Knoten+Kanten erstellen
