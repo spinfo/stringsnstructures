@@ -32,7 +32,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>modularization.workbench.ModuleWorkbenchGui</mainClass>
+							<mainClass>modularization.workbench.ModuleBatchRunner</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

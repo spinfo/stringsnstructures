@@ -10,6 +10,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageOutputStream;
@@ -38,13 +40,14 @@ public class ColourGraph extends ModuleImpl {
 	public static final String PROPERTYKEY_IMAGEWIDTH = "Image width";
 	public static final String PROPERTYKEY_IMAGEHEIGHT = "Image height";
 	public static final String PROPERTYKEY_PIXELPERLEVEL = "Pixel per tree level";
-
+	int pixelsPerLevel;
+	
 	// Instance variables
+	KnotenKomparator knotenKomparator = new KnotenKomparator();
 	String outputFilePath;
 	int outputImageWidth;
 	int outputImageHeight;
-	int pixelsPerLevel;
-	KnotenKomparator knotenKomparator = new KnotenKomparator();
+	boolean fehlerGemeldet = false;
 
 	/**
 	 * @param callbackReceiver
@@ -81,39 +84,10 @@ public class ColourGraph extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_IMAGEWIDTH, "640");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_IMAGEHEIGHT, "480");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_PIXELPERLEVEL, "10");
-
+		
 		// Add module description
 		this.setDescription("Creates an image file a with visual representation of the node distribution within the input graph.");
 
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see modularization.ModuleImpl#process()
-	 */
-	@Override
-	public boolean process() throws Exception {
-
-		// Instantiate JSON parser
-		Gson gson = new GsonBuilder().create();
-		
-		// Bild instanziieren
-		BufferedImage bild = new BufferedImage(this.outputImageWidth, this.outputImageHeight, BufferedImage.TYPE_INT_RGB);
-
-		// Wurzelknoten einlesen
-		Knoten wurzelKnoten = gson.fromJson(this.getInputCharPipe().getInput(),
-				Knoten.class);
-
-		// Graphen ausgeben
-		this.paintImageFromGraphNodes(wurzelKnoten, bild, 0, 0, 255, 0, 0);
-
-		// Bild schreiben
-		FileImageOutputStream out = new FileImageOutputStream(new File(
-				this.outputFilePath));
-		ImageIO.write(bild, "png", out);
-		out.close();
-		return true;
 	}
 
 	/*
@@ -138,67 +112,187 @@ public class ColourGraph extends ModuleImpl {
 		super.applyProperties();
 	}
 
-	/**
-	 * Erstellt eine Graphik aus dem uebergebenen (Graphen)Knoten.
-	 * 
-	 * @param knoten
-	 * @param bild
-	 * @param zeilenIndex
-	 * @param spaltenIndex
-	 * @param r
-	 * @param g
-	 * @param b
-	 * @param bildZeilenProGeneration
-	 * @param horizontalePixelProZaehler
-	 * @return Anzahl der vorgerueckten Spalten
+	/* (non-Javadoc)
+	 * @see modularization.ModuleImpl#process()
 	 */
-	private int paintImageFromGraphNodes(Knoten knoten, BufferedImage bild,
-			int zeilenIndex, int spaltenIndex, int r, int g, int b) {
+	@Override
+	public boolean process() throws Exception {
+		
+		// Instantiate JSON parser
+		Gson gson = new GsonBuilder().create();
+		
+		// Bild instanziieren
+		BufferedImage bild = new BufferedImage(this.outputImageWidth, this.outputImageHeight, BufferedImage.TYPE_INT_RGB);
+				
+		// Wurzelknoten einlesen
+		Knoten wurzelKnoten = gson.fromJson(this.getInputCharPipe().getInput(), Knoten.class);
+		
+		// Baummodell initialisieren
+		DefaultTreeModel baum = this.insertIntoTreeModel(wurzelKnoten, null, null);
+		
+		// Graphen ausgeben
+		DefaultMutableTreeNode baumWurzelKnoten = (DefaultMutableTreeNode) baum.getRoot();
+		int zeichenProZeile = wurzelKnoten.getZaehler();
+		int zeichenInAktuellerZeile = 0;
+		int zeile = 0;
 
-		// Falls die Zeile ausserhalb des Bildes liegt, abbrechen
-		if (zeilenIndex >= bild.getHeight())
-			return 0;
-		if (spaltenIndex >= bild.getWidth())
-			return 0;
+		@SuppressWarnings("unchecked")
+		Enumeration<DefaultMutableTreeNode> baumKindKnotenListe = baumWurzelKnoten.breadthFirstEnumeration();
+		while (baumKindKnotenListe.hasMoreElements()){
+			DefaultMutableTreeNode baumKindKnoten = baumKindKnotenListe.nextElement();
+			Knoten kindKnoten = (Knoten) baumKindKnoten.getUserObject();
+			
+			// Farbvariablen
+			int r;
+			int g;
+			int b;
+			
+			// Ggf. Position der Schreibmarke vorruecken
+			if (baumKindKnoten.getParent() != null
+					&& ((DefaultMutableTreeNode) baumKindKnoten.getParent())
+							.getUserObject() != null
+					&& MetaKnoten.class
+							.isAssignableFrom(((DefaultMutableTreeNode) baumKindKnoten
+									.getParent()).getUserObject().getClass())){
 
-		// Bild einfaerben
-		int spalte = spaltenIndex;
-		System.out.print("schreibe in Zeile "+zeilenIndex+" von Spalte "+spalte);
-		System.out.flush();
-		int red = r;
-		int green = g;
-		int blue = b;
-		int rgb = (red << 16) | (green << 8) | blue;
-		for (; spalte < bild.getWidth() && spalte < spaltenIndex+knoten.getZaehler(); spalte ++) {
-			// Set colour for all affected pixels
-			bild.setRGB(spalte, zeilenIndex, rgb);
-			System.out.print(knoten.getName());
+				// Metaknotenobjekt ermitteln
+				MetaKnoten metaKnoten = (MetaKnoten) ((DefaultMutableTreeNode) baumKindKnoten
+						.getParent()).getUserObject();
+				
+				// Farben uebernehmen
+				r = metaKnoten.getR();
+				g = metaKnoten.getG();
+				b = metaKnoten.getB();
+				
+				// Farben aktualisieren, damit Geschwisterknoten einen dunkleren Farbton bekommen
+				/*int naechstesR = metaKnoten.getR()-5;
+				if (naechstesR<0)
+					naechstesR=0;
+				metaKnoten.setR(naechstesR);
+				int naechstesG = metaKnoten.getG()-5;
+				if (naechstesG<0)
+					naechstesG=0;
+				metaKnoten.setG(naechstesG);
+				int naechstesB = metaKnoten.getB()-5;
+				if (naechstesB<0)
+					naechstesB=0;
+				metaKnoten.setR(naechstesB);*/
+				metaKnoten.setR(new Double(20+(Math.random() * 234)).intValue());
+				metaKnoten.setG(new Double(20+(Math.random() * 234)).intValue());
+				metaKnoten.setB(new Double(20+(Math.random() * 234)).intValue());
+				
+				// Ggf. Position vorschieben
+				if (metaKnoten.getPosition()>zeichenInAktuellerZeile){
+					int leerZeichenEinfuegen = metaKnoten.getPosition()-zeichenInAktuellerZeile;
+					for (int i=0; i<leerZeichenEinfuegen; i++){
+						this.zeichnePixel(bild, zeile, zeichenInAktuellerZeile, 0, 0, 0);
+						zeichenInAktuellerZeile++;
+					}
+				}
+				
+				
+			} else {
+				// Farben randomisieren
+				r = new Double(127+(Math.random() * 127)).intValue();
+				g = new Double(127+(Math.random() * 127)).intValue();
+				b = new Double(127+(Math.random() * 127)).intValue();
+			}
+			
+			// Ausgabe
+			for (int i=0; i<kindKnoten.getZaehler(); i++)
+				this.zeichnePixel(bild, zeile, zeichenInAktuellerZeile+i, r, g, b);
+			
+			// Position und Farbe merken (etwas unelegant)
+			baumKindKnoten.setUserObject(new MetaKnoten(kindKnoten, zeichenInAktuellerZeile, r, g, b));
+			zeichenInAktuellerZeile += kindKnoten.getZaehler();
+			
+			// Ggf. Zeilenumbruch einfuegen
+			if (zeichenInAktuellerZeile >= zeichenProZeile){
+				zeile++;
+				zeichenInAktuellerZeile = 0;
+			}
 		}
-		System.out.println(" bis "+spalte);
+		
+		// Pruefen, welches Format die Bilddatei haben soll
+		String outputPath = this.outputFilePath;
+		String endung;
+		if (outputPath.endsWith(".png"))
+			endung = "png";
+		else if (outputPath.endsWith(".jpg")||outputPath.endsWith(".jpeg"))
+			endung = "jpg";
+		else {
+			endung = "png";
+			outputPath = outputPath.concat(".png");
+		}
+		
+		// Bild schreiben
+		FileImageOutputStream out = new FileImageOutputStream(new File(outputPath));
+		ImageIO.write(bild, endung, out);
+		out.close();
+		
+		return true;
+	}
+	
+	/**
+	 * Zeichnet einen Bildpunkt.
+	 * @param bild
+	 * @param zeile
+	 * @param spalte
+	 * @param red
+	 * @param green
+	 * @param blue
+	 */
+	private void zeichnePixel(BufferedImage bild, int zeile, int spalte, int red, int green, int blue){
+		
+		// Farbe umrechnen
+		int rgb = (red << 16) | (green << 8) | blue;
+		
+		// Bildpunkt zeichnen
+		this.zeichnePixel(bild, zeile, spalte, rgb);
+	}
+	
+	/**
+	 * Zeichnet einen Bildpunkt.
+	 * @param bild
+	 * @param zeile
+	 * @param spalte
+	 * @param rgb
+	 */
+	private void zeichnePixel(BufferedImage bild, int zeile, int spalte, int rgb){
+		
+		// Bildpunkt zeichnen
+		try {
+			bild.setRGB(spalte, zeile, rgb);
+		} catch (ArrayIndexOutOfBoundsException e){
+			if (!fehlerGemeldet){
+				fehlerGemeldet = true;
+				Logger.getLogger("").log(Level.WARNING, "The tree is too large to fit into the image dimensions.", e);
+			}
+		}
+	}
 
+	private DefaultTreeModel insertIntoTreeModel(Knoten knoten, DefaultMutableTreeNode elternBaumKnoten, DefaultTreeModel baum) throws IOException {
+		
+		DefaultMutableTreeNode baumKnoten = new DefaultMutableTreeNode(knoten);
+		
+		if (baum == null){
+			baum = new DefaultTreeModel(baumKnoten);
+		} else 
+			baum.insertNodeInto(baumKnoten, elternBaumKnoten, elternBaumKnoten.getChildCount());
+		
 		// Kindknoten in TreeSet mit eigenem Comparator speichern (sortiert nach
 		// Zaehlvariable der Knoten)
 		TreeSet<Knoten> sortierteKindKnoten = new TreeSet<Knoten>(
 				this.knotenKomparator);
 		sortierteKindKnoten.addAll(knoten.getKinder().values());
-
-		// Methode rekursiv fuer Kindknoten aufrufen
-		int kindSpalte = spaltenIndex;
+		
 		Iterator<Knoten> kindKnoten = sortierteKindKnoten.iterator();
-		while (kindKnoten.hasNext()) {
-			Knoten kind = kindKnoten.next();
-
-			// Zeilen kolorieren
-			kindSpalte += this.paintImageFromGraphNodes(kind, bild, zeilenIndex+1, kindSpalte, r, g, b);
-
-			// Farbe aendern
-			r = new Double(Math.random() * 254).intValue();
-			g = new Double(Math.random() * 254).intValue();
-			b = new Double(Math.random() * 254).intValue();
+		while (kindKnoten.hasNext()){
+			this.insertIntoTreeModel(kindKnoten.next(), baumKnoten, baum);
 		}
-
-		return spaltenIndex+spalte;
-
+		
+		return baum;
+		
 	}
 
 }
