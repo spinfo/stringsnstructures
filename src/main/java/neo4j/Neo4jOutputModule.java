@@ -48,7 +48,7 @@ public class Neo4jOutputModule extends ModuleImpl {
 	public boolean process() throws Exception {
 		
 		// Graph-Datenbank-Klienten instanziieren
-		final Neo4jRestKlient graph = new Neo4jRestKlient(this.neo4jUri, this.neo4jUsr, this.neo4jPwd);
+		Neo4jRestKlient graph = new Neo4jRestKlient(this.neo4jUri, this.neo4jUsr, this.neo4jPwd);
 		
 		// Instantiate JSON parser
 		Gson gson = new GsonBuilder().create();

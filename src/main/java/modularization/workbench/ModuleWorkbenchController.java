@@ -37,6 +37,8 @@ import parser.oanc.OANCXMLParser;
 import suffixNetBuilder.SuffixNetBuilderModule;
 import treeBuilder.AtomicRangeSuffixTreeBuilder;
 import treeBuilder.TreeBuilder;
+import visualizationModules.ASCIIGraph;
+import visualizationModules.ColourGraph;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -138,6 +140,20 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				suffixNetBuilderModuleProperties);
 		suffixNetBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixNetBuilderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		suffixNetBuilderModule.applyProperties();
+
+		// Prepare ColourGraph module
+		Properties colourGraphModuleProperties = new Properties();
+		ColourGraph colourGraphModule = new ColourGraph(moduleTree,
+				colourGraphModuleProperties);
+		colourGraphModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, colourGraphModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		colourGraphModule.applyProperties();
+
+		// Prepare ASCIIGraph module
+		Properties asciiGraphModuleProperties = new Properties();
+		ASCIIGraph asciiGraphModule = new ASCIIGraph(moduleTree,
+				asciiGraphModuleProperties);
+		asciiGraphModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, asciiGraphModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		asciiGraphModule.applyProperties();
 		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
@@ -149,6 +165,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(atomicRangeSuffixTreeBuilder);
 		availableModules.add(neo4jOutputModule);
 		availableModules.add(suffixNetBuilderModule);
+		availableModules.add(colourGraphModule);
+		availableModules.add(asciiGraphModule);
 		
 		// Instantiate default module tree
 		this.startNewModuleTree(oanc);
@@ -250,6 +268,10 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new Neo4jOutputModule(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(SuffixNetBuilderModule.class)){
 			newModule = new SuffixNetBuilderModule(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(ColourGraph.class)){
+			newModule = new ColourGraph(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(ASCIIGraph.class)){
+			newModule = new ASCIIGraph(moduleTree, properties);
 		}
 		
 		else {

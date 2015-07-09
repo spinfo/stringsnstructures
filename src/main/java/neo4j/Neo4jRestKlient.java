@@ -94,10 +94,15 @@ public class Neo4jRestKlient {
 			noderesource.addFilter(this.authFilter);
 		}
 		// POST {} to the node entry point URI
-		ClientResponse noderesponse = noderesource
+		ClientResponse noderesponse = null;
+		try {
+			noderesponse = noderesource
 				.accept(MediaType.APPLICATION_JSON)
 				.type(MediaType.APPLICATION_JSON).entity("{}")
 				.post(ClientResponse.class);
+		} catch (Exception e){
+			e.printStackTrace(System.out);
+		}
 
 		final URI location = noderesponse.getLocation();
 		// System.out.println(String.format("POST to [%s], status code [%d], location header [%s]",server_knoten_uri, noderesponse.getStatus(),location.toString()));

@@ -50,7 +50,7 @@ public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
 		
 		LinkedList<Character> buffer = new LinkedList<Character>();
 		
-		// Read first character
+		// Read first characters
 		int charCode = this.getInputCharPipe().getInput().read();
 
 		// Loop until no more data can be read
@@ -63,11 +63,21 @@ public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
 			if (buffer.size()>this.maxLaenge)
 				buffer.removeFirst();
 			
-			// Construct trie from buffer and attach it to the root node
-			this.baueTrie(buffer, wurzelKnoten, this.umgekehrt, -1);
+			// Construct trie from buffer and attach it to the root node (skip this until the buffer is full)
+			if (buffer.size()==this.maxLaenge)
+				this.baueTrie(buffer, wurzelKnoten, this.umgekehrt, -1);
 			
 			// Read next char
 			charCode = this.getInputCharPipe().getInput().read();
+		}
+		
+		// Read remaining buffer
+		if (!buffer.isEmpty())
+			buffer.removeFirst();
+		while (!buffer.isEmpty()){
+			// Construct trie from buffer and attach it to the root node
+			this.baueTrie(buffer, wurzelKnoten, this.umgekehrt, -1);
+			buffer.removeFirst();
 		}
 		
 		// Letztlich wird der Wurzelknoten (und damit der gesamte erstellte Baum) in JSON umgewandelt und ausgegeben

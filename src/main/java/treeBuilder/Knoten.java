@@ -66,6 +66,6 @@ public class Knoten implements Serializable {
 
 	@Override
 	public String toString() {
-		return this.zaehler+""; //+":"+this.kinder.size();
+		return this.name+"["+this.zaehler+"]"; //+":"+this.kinder.size();
 	}
 }
