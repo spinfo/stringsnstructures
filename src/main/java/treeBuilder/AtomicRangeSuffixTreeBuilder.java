@@ -82,8 +82,10 @@ public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
 		
 		// Letztlich wird der Wurzelknoten (und damit der gesamte erstellte Baum) in JSON umgewandelt und ausgegeben
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String ausgabeDaten = gson.toJson(wurzelKnoten);
-		this.outputToAllCharPipes(ausgabeDaten);
+		Iterator<CharPipe> charPipes = this.getOutputCharPipes().iterator();
+		while (charPipes.hasNext()){
+			gson.toJson(wurzelKnoten, charPipes.next().getOutput());
+		}
 		
 		// Ausgabekanaele schliessen
 		this.closeAllOutputs();

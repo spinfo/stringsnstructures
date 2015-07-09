@@ -40,14 +40,15 @@ public class ColourGraph extends ModuleImpl {
 	public static final String PROPERTYKEY_IMAGEWIDTH = "Image width";
 	public static final String PROPERTYKEY_IMAGEHEIGHT = "Image height";
 	public static final String PROPERTYKEY_PIXELPERLEVEL = "Pixel per tree level";
-	int pixelsPerLevel;
 	
 	// Instance variables
-	KnotenKomparator knotenKomparator = new KnotenKomparator();
-	String outputFilePath;
-	int outputImageWidth;
-	int outputImageHeight;
-	boolean fehlerGemeldet = false;
+	private KnotenKomparator knotenKomparator = new KnotenKomparator();
+	private String outputFilePath;
+	private int outputImageWidth;
+	private int outputImageHeight;
+	private boolean fehlerGemeldet = false;
+	private double horizontalePixelProKnoten = 1d;
+	private int pixelsPerLevel;
 
 	/**
 	 * @param callbackReceiver
@@ -126,6 +127,9 @@ public class ColourGraph extends ModuleImpl {
 				
 		// Wurzelknoten einlesen
 		Knoten wurzelKnoten = gson.fromJson(this.getInputCharPipe().getInput(), Knoten.class);
+		
+		// Skalierung ermitteln
+		horizontalePixelProKnoten = new Double(this.outputImageWidth)/new Double(wurzelKnoten.getZaehler());
 		
 		// Baummodell initialisieren
 		DefaultTreeModel baum = this.insertIntoTreeModel(wurzelKnoten, null, null);
@@ -262,7 +266,8 @@ public class ColourGraph extends ModuleImpl {
 		
 		// Bildpunkt zeichnen
 		try {
-			bild.setRGB(spalte, zeile, rgb);
+			for (double ppk = this.horizontalePixelProKnoten; ppk>0; ppk--)
+				bild.setRGB(new Double(new Double(spalte)*ppk).intValue(), zeile, rgb);
 		} catch (ArrayIndexOutOfBoundsException e){
 			if (!fehlerGemeldet){
 				fehlerGemeldet = true;
