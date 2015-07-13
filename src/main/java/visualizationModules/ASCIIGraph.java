@@ -29,8 +29,12 @@ import com.google.gson.GsonBuilder;
  */
 public class ASCIIGraph extends ModuleImpl {
 	
+	// Property keys
+	public static final String PROPERTYKEY_USEPARENTSYMBOL = "Biggest child uses parent symbol";
+	
 	// Instance variables
 	KnotenKomparator knotenKomparator = new KnotenKomparator();
+	boolean elternZeichenUebernehmen;
 
 	/**
 	 * @param callbackReceiver
@@ -44,13 +48,32 @@ public class ASCIIGraph extends ModuleImpl {
 		// Define I/O
 		this.getSupportedInputs().add(CharPipe.class);
 		this.getSupportedOutputs().add(CharPipe.class);
+
+		// Add description for properties
+		this.getPropertyDescriptions().put(PROPERTYKEY_USEPARENTSYMBOL,
+				"Has the biggest child of each node use that node's symbol (to visualize the flow of each path most used).");
 		
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "ASCIIGraph");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_USEPARENTSYMBOL, "true");
 		
 		// Add module description
 		this.setDescription("Creates ASCII output with a visual representation of the node distribution within the input graph.");
 
+	}
+
+	/* (non-Javadoc)
+	 * @see modularization.ModuleImpl#applyProperties()
+	 */
+	@Override
+	public void applyProperties() throws Exception {
+		if (this.getProperties().containsKey(PROPERTYKEY_USEPARENTSYMBOL))
+			this.elternZeichenUebernehmen = Boolean.valueOf(this.getProperties()
+					.getProperty(PROPERTYKEY_USEPARENTSYMBOL));
+		else
+			this.elternZeichenUebernehmen = Boolean.valueOf(this
+					.getPropertyDefaultValues().get(PROPERTYKEY_USEPARENTSYMBOL));
+		super.applyProperties();
 	}
 
 	/* (non-Javadoc)
@@ -83,24 +106,38 @@ public class ASCIIGraph extends ModuleImpl {
 			if (baumKindKnoten.getParent() != null
 					&& ((DefaultMutableTreeNode) baumKindKnoten.getParent())
 							.getUserObject() != null
-					&& Integer.class
+					&& MetaKnoten.class
 							.isAssignableFrom(((DefaultMutableTreeNode) baumKindKnoten
-									.getParent()).getUserObject().getClass())
-					&& (Integer) ((DefaultMutableTreeNode) baumKindKnoten
-							.getParent()).getUserObject() > zeichenInAktuellerZeile){
+									.getParent()).getUserObject().getClass())){
 				
-				int leerZeichenEinfuegen = (Integer) ((DefaultMutableTreeNode) baumKindKnoten
-						.getParent()).getUserObject()-zeichenInAktuellerZeile;
-				for (int i=0; i<leerZeichenEinfuegen; i++){
-					this.outputToAllCharPipes(" ");
-					zeichenInAktuellerZeile++;
+				// Metaknotenobjekt ermitteln
+				MetaKnoten metaKnoten = (MetaKnoten) ((DefaultMutableTreeNode) baumKindKnoten
+						.getParent()).getUserObject();
+				
+				// Zeichen vom Elternknoten uebernehmen (falls vorhanden und gewuenscht)
+				if (elternZeichenUebernehmen){
+					if (!metaKnoten.getKnoten().getName().isEmpty())
+						kindKnoten.setName(metaKnoten.getKnoten().getName());
+					
+					// Zeichen des Elternknotens loeschen, damit Geschwisterknoten ihr eigenes verwenden
+					metaKnoten.getKnoten().setName("");
+				}
+				
+				// Ggf. Position vorschieben
+				if (metaKnoten.getPosition()>zeichenInAktuellerZeile){
+					int leerZeichenEinfuegen = metaKnoten.getPosition()-zeichenInAktuellerZeile;
+					for (int i=0; i<leerZeichenEinfuegen; i++){
+						this.outputToAllCharPipes(" ");
+						zeichenInAktuellerZeile++;
+					}
 				}
 			}
 			
 			for (int i=0; i<kindKnoten.getZaehler(); i++)
 				this.outputToAllCharPipes(kindKnoten.getName());
+			
 			// Position merken (etwas unelegant)
-			baumKindKnoten.setUserObject(new Integer(zeichenInAktuellerZeile));
+			baumKindKnoten.setUserObject(new MetaKnoten(kindKnoten, zeichenInAktuellerZeile, 0, 0, 0));
 			zeichenInAktuellerZeile += kindKnoten.getZaehler();
 			
 			// Ggf. Zeilenumbruch einfuegen
@@ -121,7 +158,8 @@ public class ASCIIGraph extends ModuleImpl {
 		if (baum == null){
 			baum = new DefaultTreeModel(baumKnoten);
 		} else 
-			baum.insertNodeInto(baumKnoten, elternBaumKnoten, elternBaumKnoten.getChildCount());
+			//baum.insertNodeInto(baumKnoten, elternBaumKnoten, elternBaumKnoten.getChildCount());
+			baum.insertNodeInto(baumKnoten, elternBaumKnoten, 0);
 		
 		// Kindknoten in TreeSet mit eigenem Comparator speichern (sortiert nach
 		// Zaehlvariable der Knoten)

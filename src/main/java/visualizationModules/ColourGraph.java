@@ -101,15 +101,27 @@ public class ColourGraph extends ModuleImpl {
 		if (this.getProperties().containsKey(PROPERTYKEY_OUTPUTFILE))
 			this.outputFilePath = this.getProperties().getProperty(
 					PROPERTYKEY_OUTPUTFILE);
+		else
+			this.outputFilePath = this.getPropertyDefaultValues().get(
+					PROPERTYKEY_OUTPUTFILE);
 		if (this.getProperties().containsKey(PROPERTYKEY_IMAGEWIDTH))
 			this.outputImageWidth = Integer.valueOf(this.getProperties()
 					.getProperty(PROPERTYKEY_IMAGEWIDTH));
+		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_IMAGEWIDTH))
+			this.outputImageWidth = Integer.valueOf(this
+					.getPropertyDefaultValues().get(PROPERTYKEY_IMAGEWIDTH));
 		if (this.getProperties().containsKey(PROPERTYKEY_IMAGEHEIGHT))
 			this.outputImageHeight = Integer.valueOf(this.getProperties()
 					.getProperty(PROPERTYKEY_IMAGEHEIGHT));
+		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_IMAGEHEIGHT))
+			this.outputImageHeight = Integer.valueOf(this
+					.getPropertyDefaultValues().get(PROPERTYKEY_IMAGEHEIGHT));
 		if (this.getProperties().containsKey(PROPERTYKEY_PIXELPERLEVEL))
 			this.pixelsPerLevel = Integer.valueOf(this.getProperties()
 					.getProperty(PROPERTYKEY_PIXELPERLEVEL));
+		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_PIXELPERLEVEL))
+			this.pixelsPerLevel = Integer.valueOf(this
+					.getPropertyDefaultValues().get(PROPERTYKEY_PIXELPERLEVEL));
 		super.applyProperties();
 	}
 
@@ -129,7 +141,7 @@ public class ColourGraph extends ModuleImpl {
 		Knoten wurzelKnoten = gson.fromJson(this.getInputCharPipe().getInput(), Knoten.class);
 		
 		// Skalierung ermitteln
-		horizontalePixelProKnoten = new Double(this.outputImageWidth)/new Double(wurzelKnoten.getZaehler());
+		this.horizontalePixelProKnoten = new Double(this.outputImageWidth)/new Double(wurzelKnoten.getZaehler());
 		
 		// Baummodell initialisieren
 		DefaultTreeModel baum = this.insertIntoTreeModel(wurzelKnoten, null, null);
@@ -264,10 +276,11 @@ public class ColourGraph extends ModuleImpl {
 	 */
 	private void zeichnePixel(BufferedImage bild, int zeile, int spalte, int rgb){
 		
-		// Bildpunkt zeichnen
+		// Bildpunkt/Flaeche zeichnen
 		try {
-			for (double ppk = this.horizontalePixelProKnoten; ppk>0; ppk--)
-				bild.setRGB(new Double(new Double(spalte)*ppk).intValue(), zeile, rgb);
+			for (int zeilenIndex=zeile; zeilenIndex<zeile+this.pixelsPerLevel; zeilenIndex++)
+				for (double ppk = this.horizontalePixelProKnoten; ppk>0; ppk--)
+					bild.setRGB(new Double(new Double(spalte)*ppk).intValue(), zeilenIndex, rgb);
 		} catch (ArrayIndexOutOfBoundsException e){
 			if (!fehlerGemeldet){
 				fehlerGemeldet = true;
@@ -278,12 +291,12 @@ public class ColourGraph extends ModuleImpl {
 
 	private DefaultTreeModel insertIntoTreeModel(Knoten knoten, DefaultMutableTreeNode elternBaumKnoten, DefaultTreeModel baum) throws IOException {
 		
-		DefaultMutableTreeNode baumKnoten = new DefaultMutableTreeNode(knoten);
+DefaultMutableTreeNode baumKnoten = new DefaultMutableTreeNode(knoten);
 		
 		if (baum == null){
 			baum = new DefaultTreeModel(baumKnoten);
 		} else 
-			baum.insertNodeInto(baumKnoten, elternBaumKnoten, elternBaumKnoten.getChildCount());
+			baum.insertNodeInto(baumKnoten, elternBaumKnoten, 0);
 		
 		// Kindknoten in TreeSet mit eigenem Comparator speichern (sortiert nach
 		// Zaehlvariable der Knoten)
