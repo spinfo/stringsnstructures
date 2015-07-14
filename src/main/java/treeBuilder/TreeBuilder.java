@@ -98,8 +98,10 @@ public class TreeBuilder extends ModuleImpl {
 		}
 		
 		// Letztlich wird der Wurzelknoten (und damit der gesamte erstellte Baum) in JSON umgewandelt und ausgegeben
-		String ausgabeDaten = gson.toJson(wurzelKnoten);
-		this.outputToAllCharPipes(ausgabeDaten);
+		Iterator<CharPipe> charPipes = this.getOutputCharPipes().iterator();
+		while (charPipes.hasNext()) {
+			gson.toJson(wurzelKnoten, charPipes.next().getOutput());
+		}
 		
 		// Ausgabekanaele schliessen
 		this.closeAllOutputs();

@@ -64,7 +64,7 @@ public class ColourGraph extends ModuleImpl {
 
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTFILE,
-				"Specifies the location of the output file (jpeg).");
+				"Specifies the location of the output file (PNG or JPEG).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_IMAGEWIDTH,
 				"Width of the output image in pixels.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_IMAGEHEIGHT,
@@ -268,7 +268,7 @@ public class ColourGraph extends ModuleImpl {
 	}
 	
 	/**
-	 * Zeichnet einen Bildpunkt.
+	 * Zeichnet einen Bildpunkt. Die horizontale Skalierung der Ausgabe wird automatisch gewaehlt.
 	 * @param bild
 	 * @param zeile
 	 * @param spalte
@@ -278,9 +278,29 @@ public class ColourGraph extends ModuleImpl {
 		
 		// Bildpunkt/Flaeche zeichnen
 		try {
-			for (int zeilenIndex=zeile; zeilenIndex<zeile+this.pixelsPerLevel; zeilenIndex++)
-				for (double ppk = this.horizontalePixelProKnoten; ppk>0; ppk--)
-					bild.setRGB(new Double(new Double(spalte)*ppk).intValue(), zeilenIndex, rgb);
+			
+			// Erste Zeile, in die gezeichnet werden soll
+			int grundZeile = zeile*this.pixelsPerLevel;
+			
+			// Letzte Zeile, in die gezeichnet werden soll
+			int endZeile = grundZeile+this.pixelsPerLevel;
+			
+			// Vertikal (Zeilen) iterieren
+			for (int zeilenIndex=grundZeile; zeilenIndex<=endZeile; zeilenIndex++){
+				
+				// Erste Spalte, in die gezeichnet werden soll
+				double grundSpalte = this.horizontalePixelProKnoten * spalte;
+				
+				// Letzte Spalte, in die gezeichnet werden soll
+				double endSpalte = grundSpalte+this.horizontalePixelProKnoten;
+				
+				// Horizontal (Spalten) zeichnen
+				for (double spaltenIndex = grundSpalte; spaltenIndex<=endSpalte; spaltenIndex++){
+					int spaltenIndexGanzzahl = new Double(spaltenIndex).intValue();
+					bild.setRGB(spaltenIndexGanzzahl, zeilenIndex, rgb);
+				}
+					
+			}
 		} catch (ArrayIndexOutOfBoundsException e){
 			if (!fehlerGemeldet){
 				fehlerGemeldet = true;
