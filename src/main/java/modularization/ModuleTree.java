@@ -244,6 +244,46 @@ public class ModuleTree extends CallbackReceiverImpl {
 	}
 	
 	/**
+	 * Removes the specified node and all its children from the tree.
+	 * The root node cannot be removed.
+	 * @param node
+	 * @return True if successful
+	 */
+	public boolean removeModule(DefaultMutableTreeNode node){
+		
+		// Exit with failure if the root node is selected
+		if (node.equals(this.moduleTree.getRoot()))
+			return false;
+		
+		// Determine the node's module
+		Module module = (Module) node.getUserObject();
+		
+		// Determine parent node and ~module
+		DefaultMutableTreeNode parent = (DefaultMutableTreeNode)node.getParent();
+		Module parentModule = (Module) parent.getUserObject();
+		
+		// Determine correct input pipe
+		Pipe inputPipe;
+		if (module.getInputBytePipe() != null)
+			inputPipe = module.getInputBytePipe();
+		else
+			inputPipe = module.getInputCharPipe();
+		
+		// Exit with failure if no input pipe is present
+		if (inputPipe == null)
+			return false;
+		
+		// Delete pipe from parent
+		parentModule.removeOutputPipe(inputPipe);
+		
+		// Delete node
+		this.moduleTree.removeNodeFromParent(node);
+		
+		// Exit with success
+		return true;
+	}
+	
+	/**
 	 * Runs all modules the module tree contains.
 	 * @throws Exception
 	 */

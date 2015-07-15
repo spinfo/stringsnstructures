@@ -158,9 +158,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		deleteModuleButton.setActionCommand(ACTION_DELETEMODULEFROMTREE);
 		deleteModuleButton.setIcon(ICON_DELETE_MODULE);
 		deleteModuleButton.addActionListener(this);
-		deleteModuleButton.setEnabled(false);
+		deleteModuleButton.setEnabled(true);
 		//deleteModuleButton.setText("remove module");
-		deleteModuleButton.setToolTipText("Removes the selected module from the tree.");
+		deleteModuleButton.setToolTipText("Removes the selected module (and all its children) from the tree.");
 		
 		JButton runModulesButton = new JButton();
 		runModulesButton.setActionCommand(ACTION_RUNMODULES);
@@ -294,6 +294,25 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
 			}
 			
+		} else if (e.getActionCommand().equals(ACTION_DELETEMODULEFROMTREE)){
+			
+			try {
+				// Determine node that is currently selected within the module tree
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.controller.getSelectedTreeNode();
+						
+				// Remove module from tree
+				boolean removed = this.controller.getModuleTree().removeModule(node);
+				
+				// Log message
+				if (removed)
+					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO, "The selected module has been removed from the tree.");
+				else
+					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be removed from the tree.");
+				
+			} catch (Exception e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be removed from the tree.", e1);
+			}
+			
 		} else if (e.getActionCommand().equals(ACTION_EDITMODULE)){
 			
 			try {
@@ -307,7 +326,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 							ModulePropertyEditor modulePropertyEditor = new ModulePropertyEditor(selectedModule);
 							modulePropertyEditor.setVisible(true);
 							
-							Logger.getGlobal().log(Level.INFO, "Opened editor for "+selectedModule.getName()+".");
+							//Logger.getGlobal().log(Level.INFO, "Opened editor for "+selectedModule.getName()+".");
 						} catch (Exception e) {
 							Logger.getLogger("").log(Level.WARNING, "Could not open editor for module "+selectedModule.getName()+".", e);
 						}
