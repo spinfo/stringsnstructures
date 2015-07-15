@@ -107,12 +107,19 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		
 		JPanel availableModulesPanel = new JPanel();
 		splitPane.setLeftComponent(availableModulesPanel);
+		
 		availableModulesPanel.setLayout(new BorderLayout(0, 0));
 		
 		// Initialize available modules list
 		ToolTipJList<Module> list = new ToolTipJList<Module>(this.controller.getAvailableModules().toArray(new Module[this.controller.getAvailableModules().size()]));
 		list.addListSelectionListener(this.controller);
-		availableModulesPanel.add(list);
+		
+		// Scrollpane for the module list
+		JScrollPane availableModulesScrollPane = new JScrollPane();
+		availableModulesScrollPane.add(list);
+		availableModulesScrollPane.setViewportView(list);
+		
+		availableModulesPanel.add(availableModulesScrollPane);
 		
 		JPanel moduleTreePanel = new JPanel();
 		splitPane.setRightComponent(moduleTreePanel);
