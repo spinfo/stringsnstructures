@@ -168,6 +168,9 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(colourGraphModule);
 		availableModules.add(asciiGraphModule);
 		
+		// Sort list
+		availableModules.sort(new ModuleComparator());
+		
 		// Instantiate default module tree
 		this.startNewModuleTree(oanc);
 		
