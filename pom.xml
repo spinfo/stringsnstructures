@@ -26,14 +26,13 @@
 			</resource>
 		</resources>
 		<plugins>
-			<plugin>
+			<!-- <plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.5.4</version>
 				<configuration>
 					<archive>
 						<manifest>
 							<mainClass>modularization.workbench.ModuleBatchRunner</mainClass>
-							<!-- <mainClass>modularization.workbench.ModuleWorkbenchGui</mainClass>  -->
 						</manifest>
 					</archive>
 					<descriptorRefs>
@@ -49,7 +48,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
@@ -57,6 +56,94 @@
 					<source>1.7</source>
 					<target>1.7</target>
 				</configuration>
+			</plugin>
+			<!-- Builds one jar for each application and copies the dependencies and resources into a separate directory -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeScope>runtime</includeScope>
+							<outputDirectory>
+								${project.build.directory}/release/lib
+							</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/release</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>build-moduleworkbenchgui</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>
+								${project.build.directory}/release
+							</outputDirectory>
+							<finalName>moduleworkbenchgui</finalName>
+							<archive>
+								<manifest>
+									<addClasspath>true</addClasspath>
+									<classpathPrefix>lib/</classpathPrefix>
+									<mainClass>modularization.workbench.ModuleWorkbenchGui</mainClass>
+								</manifest>
+							</archive>
+						</configuration>
+					</execution>
+					<execution>
+						<id>build-modulebatchrunner</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>
+								${project.build.directory}/release
+							</outputDirectory>
+							<finalName>modulebatchrunner</finalName>
+							<archive>
+								<manifest>
+									<addClasspath>true</addClasspath>
+									<classpathPrefix>lib/</classpathPrefix>
+									<mainClass>modularization.workbench.ModuleBatchRunner</mainClass>
+								</manifest>
+							</archive>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -72,7 +159,7 @@
 			<version>1.3</version>
 		</dependency>
 		<dependency>
-    		<groupId>org.apache.commons</groupId>
+			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>1.3.2</version>
 		</dependency>
