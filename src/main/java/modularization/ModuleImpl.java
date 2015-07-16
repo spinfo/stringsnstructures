@@ -243,7 +243,14 @@ public abstract class ModuleImpl implements Module {
 	 */
 	@Override
 	public void run() {
+		
 		try {
+			// Check whether expected inputs are present (and fail if they are not)
+			if (!this.getSupportedInputs().isEmpty()
+					&& (this.getInputCharPipe() == null || this.getInputCharPipe().getInput() == null)
+					&& (this.getInputBytePipe() == null || this.getInputBytePipe().getInput() == null))
+				throw new Exception("There does not seem to be any input for me.");
+			
 			// Update status
 			this.status = Module.STATUSCODE_RUNNING;
 

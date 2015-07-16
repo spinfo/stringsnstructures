@@ -249,12 +249,13 @@ public class ModuleTree extends CallbackReceiverImpl {
 	 * The root node cannot be removed.
 	 * @param node
 	 * @return True if successful
+	 * @throws Exception Thrown if you try to remove the root node
 	 */
-	public boolean removeModule(DefaultMutableTreeNode node){
+	public boolean removeModule(DefaultMutableTreeNode node) throws Exception {
 		
-		// Exit with failure if the root node is selected
+		// Throw exception if the root node is selected
 		if (node.equals(this.moduleTree.getRoot()))
-			return false;
+			throw new Exception("The root node cannot be removed -- please do start a new tree instead.");
 		
 		// Determine the node's module
 		Module module = (Module) node.getUserObject();
