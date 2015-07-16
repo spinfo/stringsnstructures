@@ -46,6 +46,12 @@ public class ExampleModule extends ModuleImpl {
 		// Loop until no more data can be read
 		while (readChars != -1){
 			
+			// Check for interrupt signal
+			if (Thread.interrupted()) {
+				this.closeAllOutputs();
+				throw new InterruptedException("Thread has been interrupted.");
+			}
+			
 			// Convert char array to string
 			String inputChunk = new String(buffer);
 			
