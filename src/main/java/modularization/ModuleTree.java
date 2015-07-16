@@ -2,6 +2,7 @@ package modularization;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -284,6 +285,31 @@ public class ModuleTree extends CallbackReceiverImpl {
 	}
 	
 	/**
+	 * Stops all running modules.
+	 * @throws SecurityException
+	 */
+	public void stopModules() throws SecurityException {
+		
+		// Check whether there are running threads and if not, write a message into the log
+		if (this.startedThreads.isEmpty())
+			Logger.getLogger("").log(Level.INFO, "Excuse me, but there are no running threads to interrupt.");
+		
+		// Loop over started threads
+		Iterator<Thread> threads = this.startedThreads.iterator();
+		while (threads.hasNext()){
+			Thread thread = threads.next();
+			if (thread.isAlive()){
+				Logger.getLogger("").log(Level.INFO, "Interrupting thread #"+thread.getId()+" ("+thread.getName()+").");
+				thread.interrupt();
+				threads.remove();
+			} else {
+				Logger.getLogger("").log(Level.INFO, "Thread #"+thread.getId()+" ("+thread.getName()+") seems dead anyway, so no need to interrupt it.");
+				threads.remove();
+			}
+		}
+	}
+	
+	/**
 	 * Runs all modules the module tree contains.
 	 * @throws Exception
 	 */
@@ -293,7 +319,7 @@ public class ModuleTree extends CallbackReceiverImpl {
 	
 	/**
 	 * Runs all modules the module tree contains.
-	 * @param runUntilAllThreadsAreDone If true, the method runs until all spawned threads have finished
+	 * @param runUntilAllThreadsAreDone If true, the method blocks until all spawned threads have finished
 	 * @throws Exception
 	 */
 	public void runModules(boolean runUntilAllThreadsAreDone) throws Exception {
@@ -328,23 +354,12 @@ public class ModuleTree extends CallbackReceiverImpl {
 				Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, this.prettyPrint());
 
 				// Test which threads are still active and remove the rest from the list
-				for (int i = this.startedThreads.size(); i > 0; i--) {
-					if (!this.startedThreads.get(i - 1).isAlive()) {
-						Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Thread "+this.startedThreads.get(i-1).getName()+" is done.");
-						Thread removedThread = this.startedThreads
-								.remove(i - 1);
-						if (removedThread != null)
-							Logger.getLogger(this.getClass().getSimpleName())
-									.log(Level.FINEST,
-											"Removed thread "
-													+ removedThread.getName()
-													+ ".");
-						else
-							Logger.getLogger(this.getClass().getSimpleName())
-									.log(Level.WARNING,
-											"Could not remove thread.");
-					} else {
-						Logger.getLogger(this.getClass().getSimpleName()).log(Level.FINEST, "Thread "+this.startedThreads.get(i-1).getName()+" is still active.");
+				Iterator<Thread> threads = this.startedThreads.iterator();
+				while (threads.hasNext()){
+					Thread thread = threads.next();
+					if (!thread.isAlive()){
+						Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Thread "+thread.getName()+" is done.");
+						threads.remove();
 					}
 				}
 

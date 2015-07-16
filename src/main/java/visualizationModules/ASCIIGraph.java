@@ -99,6 +99,14 @@ public class ASCIIGraph extends ModuleImpl {
 		@SuppressWarnings("unchecked")
 		Enumeration<DefaultMutableTreeNode> baumKindKnotenListe = baumWurzelKnoten.breadthFirstEnumeration();
 		while (baumKindKnotenListe.hasMoreElements()){
+			
+			// Check for interrupt signal
+			if (Thread.interrupted()) {
+				this.closeAllOutputs();
+				throw new InterruptedException("Thread has been interrupted.");
+			}
+			
+			// Ermittle aktuelles Element
 			DefaultMutableTreeNode baumKindKnoten = baumKindKnotenListe.nextElement();
 			Knoten kindKnoten = (Knoten) baumKindKnoten.getUserObject();
 			

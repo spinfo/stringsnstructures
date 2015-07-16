@@ -41,6 +41,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	protected static final String ACTION_ADDMODULETOTREE = "ACTION_ADDMODULETOTREE";
 	protected static final String ACTION_DELETEMODULEFROMTREE = "ACTION_DELETEMODULEFROMTREE";
 	protected static final String ACTION_RUNMODULES = "ACTION_RUNMODULES";
+	protected static final String ACTION_STOPMODULES = "ACTION_STOPMODULES";
 	protected static final String ACTION_EDITMODULE = "ACTION_EDITMODULE";
 	protected static final String ACTION_LOADTREE = "ACTION_LOADTREE";
 	protected static final String ACTION_SAVETREE = "ACTION_SAVETREE";
@@ -51,6 +52,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	public static final ImageIcon ICON_ADD_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/add.png"));
 	public static final ImageIcon ICON_DELETE_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/delete.png"));
 	public static final ImageIcon ICON_RUN = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/forward.png"));
+	public static final ImageIcon ICON_STOP = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/stop.png"));
 	public static final ImageIcon ICON_EDIT_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/configure.png"));
 	public static final ImageIcon ICON_SAVE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/save.png"));
 	public static final ImageIcon ICON_LOAD = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/open.png"));
@@ -169,6 +171,12 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		//runModulesButton.setText("run");
 		runModulesButton.setToolTipText("Starts the processing of the module tree.");
 		
+		JButton stopModulesButton = new JButton();
+		stopModulesButton.setActionCommand(ACTION_STOPMODULES);
+		stopModulesButton.setIcon(ICON_STOP);
+		stopModulesButton.addActionListener(this);
+		stopModulesButton.setToolTipText("Stops the processing of the module tree.");
+		
 		JButton editModuleButton = new JButton();
 		editModuleButton.setActionCommand(ACTION_EDITMODULE);
 		editModuleButton.setIcon(ICON_EDIT_MODULE);
@@ -194,6 +202,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		toolBar.add(addModuleButton);
 		toolBar.add(deleteModuleButton);
 		toolBar.add(runModulesButton);
+		toolBar.add(stopModulesButton);
 		toolBar.add(editModuleButton);
 		toolBar.add(saveTreeButton);
 		toolBar.add(loadTreeButton);
@@ -344,6 +353,15 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				this.moduleJTree.revalidate();
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to run the modules.", e1);
+			}
+			
+		} else if (e.getActionCommand().equals(ACTION_STOPMODULES)){
+			
+			try {
+				this.controller.getModuleTree().stopModules();
+				this.moduleJTree.revalidate();
+			} catch (Exception e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to stop the modules.", e1);
 			}
 			
 		} else if (e.getActionCommand().equals(ACTION_LOADTREE)){

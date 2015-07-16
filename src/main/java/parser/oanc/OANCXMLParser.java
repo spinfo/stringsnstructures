@@ -412,6 +412,12 @@ public class OANCXMLParser extends ModuleImpl {
 				
 		for (int i=0; i<inputFileList.length; i++){
 			
+			// Auf Unterbrechersignal pruefen
+			if (Thread.interrupted()) {
+				this.closeAllOutputs();
+				throw new InterruptedException("Thread has been interrupted.");
+			}
+			
 			// Determine the next input file
 			File inputFile = inputFileList[i];
 			

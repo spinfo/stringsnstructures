@@ -72,7 +72,12 @@ public class Neo4jOutputModule extends ModuleImpl {
 		return true;
 	}
 	
-	private void attachNodeToGraph(URI parent, Knoten child, Neo4jRestKlient graph) throws URISyntaxException{
+	private void attachNodeToGraph(URI parent, Knoten child, Neo4jRestKlient graph) throws URISyntaxException, InterruptedException {
+
+		// Check for interrupt signal
+		if (Thread.interrupted()) {
+			throw new InterruptedException("Thread has been interrupted.");
+		}
 		
 		// Knoten erstellen
 		URI neuerGraphenKnoten = graph.erstelleKnoten(child.getName());

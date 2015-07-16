@@ -62,6 +62,11 @@ public class OANC extends ModuleImpl {
 			// Rekursive Variante dieser Methode aufrufen
 			quellDateiListe.addAll(this.sucheQuellDateien(verzeichnis));
 			
+			// Auf Unterbrechersignal pruefen
+			if (Thread.interrupted()) {
+			    throw new InterruptedException("Thread has been interrupted.");
+			}
+			
 		}
 		
 		// Ergebnisliste zurueckgeben
@@ -75,6 +80,11 @@ public class OANC extends ModuleImpl {
 	 * @throws Exception
 	 */
 	private List<File> sucheQuellDateien(File verzeichnis) throws Exception {
+		
+		// Auf Unterbrechersignal pruefen
+		if (Thread.interrupted()) {
+			throw new InterruptedException("Thread has been interrupted.");
+		}
 		
 		// Liste fuer Ergebnis anlegen
 		List<File> quellDateiListe = new ArrayList<File>();
@@ -109,6 +119,12 @@ public class OANC extends ModuleImpl {
 		
 		// Search for corpus files
 		List<File> fileList = this.sucheQuellDateien();
+		
+		// Auf Unterbrechersignal pruefen
+		if (Thread.interrupted()) {
+			this.closeAllOutputs();
+			throw new InterruptedException("Thread has been interrupted.");
+		}
 		
 		// Instanciate JSON converter
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();

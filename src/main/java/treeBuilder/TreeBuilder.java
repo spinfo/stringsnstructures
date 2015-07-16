@@ -69,6 +69,12 @@ public class TreeBuilder extends ModuleImpl {
 		// Eingabe einlesen
 		String jsonObjekt = eingabe.readLine();
 		while (jsonObjekt != null){
+
+			// Check for interrupt signal
+			if (Thread.interrupted()) {
+				this.closeAllOutputs();
+				throw new InterruptedException("Thread has been interrupted.");
+			}
 			
 			// JSON-Objekt parsen
 			WortAnnotationTupel[][] saetze = gson.fromJson(jsonObjekt, new WortAnnotationTupel[0][0].getClass());

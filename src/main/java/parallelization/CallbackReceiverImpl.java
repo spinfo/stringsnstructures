@@ -74,7 +74,7 @@ public abstract class CallbackReceiverImpl implements
 	public void receiveException(Thread process, Throwable exception) {
 		
 		// Log the error message
-		Logger.getLogger(this.getClass().getSimpleName()).warning("Error in thread "+process.getId()+" ("+process.getName()+"): "+exception.toString());
+		Logger.getLogger(this.getClass().getSimpleName()).warning("Error in thread #"+process.getId()+" ("+process.getName()+"): "+exception.toString());
 		exception.printStackTrace();
 		
 		// If a success action is present, remove it

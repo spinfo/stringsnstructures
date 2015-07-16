@@ -56,6 +56,12 @@ public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
 		// Loop until no more data can be read
 		while (charCode != -1) {
 
+			// Check for interrupt signal
+			if (Thread.interrupted()) {
+				this.closeAllOutputs();
+				throw new InterruptedException("Thread has been interrupted.");
+			}
+
 			// Add read char code to buffer
 			buffer.add(Character.valueOf((char) charCode));
 			
