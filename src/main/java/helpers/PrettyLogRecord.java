@@ -1,7 +1,6 @@
 package helpers;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.LogRecord;
 
@@ -11,7 +10,8 @@ import java.util.logging.LogRecord;
  *
  */
 public class PrettyLogRecord {
-	private static final DateFormat DATEFORMAT = new SimpleDateFormat();
+	// Format for date and time
+	private static final DateFormat DATEFORMAT = DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.MEDIUM );
 	private LogRecord logRecord;
 
 	public PrettyLogRecord(LogRecord logRecord) {
