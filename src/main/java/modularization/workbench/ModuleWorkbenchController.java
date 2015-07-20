@@ -32,6 +32,7 @@ import modularization.ModuleTree;
 import modularization.ModuleTreeGsonDeserializer;
 import modularization.ModuleTreeGsonSerializer;
 import modularization.SmbFileReaderModule;
+import modularization.SmbFileWriterModule;
 import neo4j.Neo4jOutputModule;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
@@ -85,6 +86,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				fileWriterProperties);
 		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		fileWriter.applyProperties();
+
+		// Prepare SmbFileWriter module
+		Properties smbFileWriterProperties = new Properties();
+		SmbFileWriterModule smbFileWriter = new SmbFileWriterModule(moduleTree,
+				smbFileWriterProperties);
+		smbFileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, smbFileWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		smbFileWriter.applyProperties();
 
 		// Prepare OANC parser module
 		Properties oancParserProperties = new Properties();
@@ -168,6 +176,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(fileReader);
 		availableModules.add(smbFileReader);
 		availableModules.add(fileWriter);
+		availableModules.add(smbFileWriter);
 		availableModules.add(oanc);
 		availableModules.add(oancParser);
 		availableModules.add(treeBuilder);
@@ -286,6 +295,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new ASCIIGraph(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(SmbFileReaderModule.class)){
 			newModule = new SmbFileReaderModule(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(SmbFileWriterModule.class)){
+			newModule = new SmbFileWriterModule(moduleTree, properties);
 		}
 		
 		else {
