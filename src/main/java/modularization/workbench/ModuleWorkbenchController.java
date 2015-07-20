@@ -31,6 +31,7 @@ import modularization.ModuleImpl;
 import modularization.ModuleTree;
 import modularization.ModuleTreeGsonDeserializer;
 import modularization.ModuleTreeGsonSerializer;
+import modularization.SmbFileReaderModule;
 import neo4j.Neo4jOutputModule;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
@@ -99,6 +100,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		fileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileReader.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		fileReader.applyProperties();
 
+		// Prepare SmbFileReader module
+		Properties smbFileReaderProperties = new Properties();
+		SmbFileReaderModule smbFileReader = new SmbFileReaderModule(moduleTree,
+				smbFileReaderProperties);
+		smbFileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, smbFileReader.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		smbFileReader.applyProperties();
+
 		// Prepare ConsoleWriter module
 		Properties consoleWriterProperties = new Properties();
 		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleTree,
@@ -158,6 +166,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
 		availableModules.add(fileReader);
+		availableModules.add(smbFileReader);
 		availableModules.add(fileWriter);
 		availableModules.add(oanc);
 		availableModules.add(oancParser);
@@ -275,6 +284,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new ColourGraph(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(ASCIIGraph.class)){
 			newModule = new ASCIIGraph(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(SmbFileReaderModule.class)){
+			newModule = new SmbFileReaderModule(moduleTree, properties);
 		}
 		
 		else {
