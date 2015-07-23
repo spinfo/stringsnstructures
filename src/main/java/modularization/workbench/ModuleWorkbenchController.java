@@ -33,6 +33,7 @@ import modularization.ModuleTreeGsonDeserializer;
 import modularization.ModuleTreeGsonSerializer;
 import modularization.SmbFileReaderModule;
 import modularization.SmbFileWriterModule;
+import module.ParadigmenErmittlerModul;
 import neo4j.Neo4jOutputModule;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
@@ -170,6 +171,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				asciiGraphModuleProperties);
 		asciiGraphModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, asciiGraphModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		asciiGraphModule.applyProperties();
+
+		// Prepare ParadigmenErmittlerModul module
+		Properties paradigmenErmittlerModulProperties = new Properties();
+		ParadigmenErmittlerModul paradigmenErmittlerModul = new ParadigmenErmittlerModul(moduleTree,
+				paradigmenErmittlerModulProperties);
+		paradigmenErmittlerModulProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, paradigmenErmittlerModul.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		paradigmenErmittlerModul.applyProperties();
 		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
@@ -185,6 +193,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(suffixNetBuilderModule);
 		availableModules.add(colourGraphModule);
 		availableModules.add(asciiGraphModule);
+		availableModules.add(paradigmenErmittlerModul);
 		
 		// Sort list
 		availableModules.sort(new ModuleComparator());
@@ -297,6 +306,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new SmbFileReaderModule(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(SmbFileWriterModule.class)){
 			newModule = new SmbFileWriterModule(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(ParadigmenErmittlerModul.class)){
+			newModule = new ParadigmenErmittlerModul(moduleTree, properties);
 		}
 		
 		else {
