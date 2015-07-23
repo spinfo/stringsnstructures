@@ -30,7 +30,7 @@ public class FileWriterModule extends ModuleImpl {
 	private String filePath;
 	private boolean useGzip = false;
 	private String encoding;
-	private int bufferLength = 1024;
+	private int bufferLength = 8192;
 
 	public FileWriterModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -53,7 +53,7 @@ public class FileWriterModule extends ModuleImpl {
 				"File Writer");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_USEGZIP, "false");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ENCODING, "UTF-8");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "1024");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "8192");
 
 		// Define I/O
 		this.getSupportedInputs().add(BytePipe.class);
