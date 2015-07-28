@@ -5,7 +5,32 @@ public class SplitDecisionNode {
 	private double value;
 	private SplitDecisionNode split;
 	private SplitDecisionNode join;
+	private String notiz;
 	
+	public SplitDecisionNode() {
+		super();
+	}
+	public SplitDecisionNode(double value) {
+		super();
+		this.value = value;
+	}
+	public SplitDecisionNode(double value, String notiz) {
+		super();
+		this.value = value;
+		this.notiz = notiz;
+	}
+	/**
+	 * @return the notiz
+	 */
+	public String getNotiz() {
+		return notiz;
+	}
+	/**
+	 * @param notiz the notiz to set
+	 */
+	public void setNotiz(String notiz) {
+		this.notiz = notiz;
+	}
 	/**
 	 * @return the value
 	 */
@@ -55,6 +80,10 @@ public class SplitDecisionNode {
 		for (int i=0; i<indentLevel; i++){
 			sb.append("\t");
 		}
+		
+		if (this.notiz != null && !this.notiz.isEmpty())
+			sb.append(this.notiz+":");
+		
 		sb.append(this.getValue());
 		
 		// Recurse for child nodes

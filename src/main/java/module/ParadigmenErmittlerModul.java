@@ -28,15 +28,16 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	public static final String PROPERTYKEY_DECISIONTREEDEPTH = "Depth of the decision tree";
 	public static final String PROPERTYKEY_BUFFERLENGTH = "Buffer length";
 	public static final String PROPERTYKEY_DIVIDER = "Token divider";
+	public static final String PROPERTYKEY_DEPTHFACTOR = "Tree depth factor";
 
 	// Local variables
 	private File file;
 	private boolean useGzip = false;
 	private String encoding = "UTF-8";
 	private int decisiontreeDepth = 10;
-	private int bufferLength = 8192;
-	private SplitDecisionNode splitDecisionTreeRootNode;
+	private int bufferLength = 10;
 	private String divider = "\t";
+	private double depthFactor = 2d;
 
 	public ParadigmenErmittlerModul(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -59,11 +60,13 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_ENCODING,
 				"The text encoding of the suffix tree file (if applicable, else set to empty string)");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DECISIONTREEDEPTH,
-				"The depth to which the decision tree is built");
+				"The depth to which the decision tree is built (NOT YET IMPLEMENTED)");
 		this.getPropertyDescriptions().put(PROPERTYKEY_BUFFERLENGTH,
-				"Length of the I/O buffer (streamed input)");
+				"Length of the I/O buffer (streamed input) and minimal depth of the decision tree");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DIVIDER,
 				"Divider that is inserted in between the tokens on output");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DEPTHFACTOR,
+				"Factor to multiply the tree depth with for decision tree node score calculation (double precision)");
 
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,
@@ -73,8 +76,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_USEGZIP, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ENCODING, "UTF-8");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DECISIONTREEDEPTH, "10");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "8192");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "10");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DIVIDER, "\t");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_DEPTHFACTOR, "2.0");
 
 		// Add module description
 		this.setDescription("Reads contents from a suffix tree file (JSON-encoded) and based on that data marks paradigm borders in the streamed input. Outputs segmented input data. Can handle GZIP compressed suffix tree files.");
@@ -141,29 +145,46 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			}
 				
 			
-			// Construct trie from buffer and attach it to the root node (skip this until the buffer is full)
-			if (buffer.size()==this.bufferLength){
+			// Construct trie from buffer and attach it to the root node (skip this until the buffer is full and we got at least one symbol in head)
+			if (head.length()>0 && buffer.size()==this.bufferLength){
 				
-				// Puffer in Zeichenkette umwandeln (TODO Leistungsfaehigere Loesung implementieren)
-				StringBuffer tail = new StringBuffer();
-				Iterator<Character> characters = buffer.iterator();
-				while (characters.hasNext()){
-					tail.append(characters.next());
+				// Aktuellen Knoten im Suffixbaum ermitteln
+				Knoten aktuellerKnoten = suffixTreeRootNode;
+				if (head.length()>1){
+					for (int i=0; i<head.length()-1; i++){
+						if (aktuellerKnoten != null)
+							aktuellerKnoten = aktuellerKnoten.getKinder().get(head.substring(i, i+1));
+					}
 				}
 				
-				// Entscheidungsbaum konstruieren
-				SplitDecisionNode entscheidungsbaumWurzelknoten = this.entscheidungsBaumKonstruieren(head.toString()+tail.toString(), head.length(), suffixTreeRootNode);
-				
-				String test = entscheidungsbaumWurzelknoten.toString();
-				
-				// Entscheidungsbaum auswerten
-				boolean trennen = this.trennen(entscheidungsbaumWurzelknoten);
-				
-				if (trennen){
+				// Falls der aktuelle Knoten im Suffixbaum nicht existiert, wird der Kopfteil als Segment abgespalten
+				if (aktuellerKnoten == null){
 					this.outputToAllCharPipes(head.toString().concat(this.divider));
 					head.delete(0, head.length());
+				} else {
+					
+					// Puffer in Zeichenkette umwandeln (TODO Leistungsfaehigere Loesung implementieren)
+					StringBuffer tail = new StringBuffer();
+					Iterator<Character> characters = buffer.iterator();
+					while (characters.hasNext()){
+						tail.append(characters.next());
+					}
+					
+					// Entscheidungsbaum konstruieren
+					SplitDecisionNode entscheidungsbaumWurzelknoten = this.entscheidungsBaumKonstruieren(new Character(head.charAt(head.length()-1)), tail.toString(), suffixTreeRootNode, 1);
+					
+					// DEBUG
+					String test = entscheidungsbaumWurzelknoten.toString();
+					//System.out.println(test);
+					
+					// Entscheidungsbaum auswerten
+					boolean trennen = this.trennen(entscheidungsbaumWurzelknoten);
+					
+					if (trennen){
+						this.outputToAllCharPipes(head.toString().concat(this.divider));
+						head.delete(0, head.length());
+					}
 				}
-				
 			}
 			
 			// Read next char
@@ -194,87 +215,60 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	 * @return Wahr, wenn abgetrennt werden soll
 	 */
 	private boolean trennen(SplitDecisionNode entscheidungsbaumWurzelknoten) {
-		return this.hoechsteKantenbewertungErmitteln(entscheidungsbaumWurzelknoten.getSplit())>this.hoechsteKantenbewertungErmitteln(entscheidungsbaumWurzelknoten.getJoin());
+		double splitValue = this.hoechsteZweigBewertungsErmitteln(entscheidungsbaumWurzelknoten.getSplit());
+		double joinValue = this.hoechsteZweigBewertungsErmitteln(entscheidungsbaumWurzelknoten.getJoin());
+		return splitValue>joinValue;
 	}
 	
 	/**
-	 * Gibt die hoechste Bewertung einer Kante zurueck.
+	 * Gibt die hoechste Bewertung eines Zweiges zurueck.
 	 * @param entscheidungsbaumWurzelknoten
 	 * @return
 	 */
-	private double hoechsteKantenbewertungErmitteln(SplitDecisionNode entscheidungsbaumWurzelknoten) {
+	private double hoechsteZweigBewertungsErmitteln(SplitDecisionNode entscheidungsbaumWurzelknoten) {
+
+		// Falls der Entscheidungsbaumknoten null ist, wird 0 zurueckgegeben
+		if (entscheidungsbaumWurzelknoten == null)
+			return 0d;
 
 		// Bewertungsvariable festlegen
-		double hoechsteBewertung = 0d;
+		double bewertung = entscheidungsbaumWurzelknoten.getValue();
 
-		// Falls Kindknoten vorhanden sind, wird deren Wert verwendet
-		if (entscheidungsbaumWurzelknoten != null)
-			if (entscheidungsbaumWurzelknoten.getJoin() != null) {
-				hoechsteBewertung = this
-						.hoechsteKantenbewertungErmitteln(entscheidungsbaumWurzelknoten
-								.getJoin());
-			} else if (entscheidungsbaumWurzelknoten.getSplit() != null) {
-				double trennenBewertung = this
-						.hoechsteKantenbewertungErmitteln(entscheidungsbaumWurzelknoten
-								.getSplit());
-				if (trennenBewertung > hoechsteBewertung)
-					hoechsteBewertung = trennenBewertung;
-			} else {
-				// Keine Kindknoten vorhanden, wir verwenden die Bewertung des
-				// aktuellen Knotens
-				hoechsteBewertung = entscheidungsbaumWurzelknoten.getValue();
-			}
+		// Entscheidungswert der Kindzweige ermitteln
+		double trennWert = hoechsteZweigBewertungsErmitteln(entscheidungsbaumWurzelknoten.getSplit());
+		double bindeWert = hoechsteZweigBewertungsErmitteln(entscheidungsbaumWurzelknoten.getJoin());
+
+		// Hoechsten Wert ermitteln (bei Gleichstand wird der Bindewert
+		// bevorzugt)
+		if (trennWert > bindeWert)
+			bewertung += trennWert;
+		else
+			bewertung += bindeWert;
 
 		// Hoechste gefundene Kantenbewertung zurueckgeben
-		return hoechsteBewertung;
+		return bewertung;
 	}
 	
-	private SplitDecisionNode entscheidungsBaumKonstruieren(String eingabe, int rumpfIndex, Knoten suffixbaumWurzelknoten){
-		
-		// Falls die Eingabe leer oder die Maximallaenge zu gering ist, wird abgebrochen
-		if (eingabe == null || eingabe.isEmpty())
-			return null;
+	private SplitDecisionNode entscheidungsBaumKonstruieren(Character kopf, String rumpf, Knoten suffixbaumWurzelknoten, int ebenenTiefe){
 		
 		// Neuen Entscheidungsknoten beginnen
 		SplitDecisionNode entscheidungsKnoten = new SplitDecisionNode();
 		
-		// Rumpfteil der Eingabe abtrennen
-		String kopf = eingabe.substring(0, rumpfIndex);
-		String rumpf = eingabe.substring(rumpfIndex);
+		// Bewertung ermitteln
+		entscheidungsKnoten.setValue(this.symbolBewerten(kopf, suffixbaumWurzelknoten, new Double(ebenenTiefe)));
 		
-		// Knoten des letzten Kopfsymbols ermitteln
-		Knoten aktuellerKnoten = suffixbaumWurzelknoten;
-		for (int i=0; i<kopf.length(); i++){
-			
-			// Kindknoten des naechsten Symbols ermitteln
-			Knoten kindKnoten = aktuellerKnoten.getKinder().get(kopf.substring(i, i+1));
-			
-			// Falls kein Kindknoten gefunden wurde, wird der Entscheidungsknoten mit Wert null zurueckgegeben
-			if (kindKnoten == null){
-				entscheidungsKnoten.setValue(0d);
-				return entscheidungsKnoten;
-			}
-			
-			// Kindknoten als aktuellen Knoten einsetzen
-			aktuellerKnoten = kindKnoten;
-		}
+		// Notiz anfuegen (nur zur Information)
+		if (suffixbaumWurzelknoten != null && kopf != null)
+			entscheidungsKnoten.setNotiz(suffixbaumWurzelknoten.getName()+"-"+kopf.toString());
 		
-		// Ebenenfaktor fuer die Bewertung festlegen
-		double ebenenFaktor = new Double(rumpfIndex);
-		
-		// Bewertung des ersten Symbols errechnen
-		double bewertung = this.symbolBewerten(rumpf.substring(0, 1), aktuellerKnoten, ebenenFaktor);
-		
-		// Bewertung in Entscheidungsknoten einfuegen
-		entscheidungsKnoten.setValue(bewertung);
-		
-		// Falls der Rumpf der Eingabezeichenkette noch weitere (>2) Symbole hat, werden rekursiv Kindknoten erstellt
-		if (rumpf.length()>2){
-			// Teilen
-			entscheidungsKnoten.setSplit(this.entscheidungsBaumKonstruieren(eingabe, rumpfIndex+1, suffixbaumWurzelknoten));
-			
-			// Nicht teilen
-			entscheidungsKnoten.setJoin(this.entscheidungsBaumKonstruieren(eingabe, rumpfIndex+2, suffixbaumWurzelknoten));
+		if (!rumpf.isEmpty()){
+			// Kindknoten fuer Trennaktion
+			entscheidungsKnoten.setSplit(this.entscheidungsBaumKonstruieren(rumpf.charAt(0), rumpf.substring(1), suffixbaumWurzelknoten, ebenenTiefe+1));
+			// Kindknoten fuer Bindeaktion
+			if (suffixbaumWurzelknoten != null)
+				entscheidungsKnoten.setJoin(this.entscheidungsBaumKonstruieren(rumpf.charAt(0), rumpf.substring(1), suffixbaumWurzelknoten.getKinder().get(kopf.toString()), ebenenTiefe+1));
+			else
+				entscheidungsKnoten.setJoin(new SplitDecisionNode(0d,kopf.toString()));
 		}
 		
 		// Rueckgabe des erstellten Entscheidungsknotens
@@ -288,15 +282,15 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	 * @param ebenenFaktor Faktor, mit welchem die Bewertung multipliziert werden soll (=Baumtiefe des Kindknotens)
 	 * @return Bewertung 0 <= X <= ebenenFaktor
 	 */
-	private double symbolBewerten(String symbol, Knoten elternKnoten, double ebenenFaktor){
+	private double symbolBewerten(Character symbol, Knoten elternKnoten, double ebenenFaktor){
 		// Variable fuer das Gesamtergebnis
 		double bewertung = 0d;
 		
 		// Pruefen, ob der aktuelle Knoten des Suffixbaumes unter dem aktuellen Symbol der Zeichenkette einen Kindknoten fuehrt.
-		if (elternKnoten.getKinder().containsKey(symbol)){
+		if (symbol != null && elternKnoten != null && elternKnoten.getKinder().containsKey(symbol.toString())){
 			
 			// Knoten ermitteln
-			Knoten kindKnoten = elternKnoten.getKinder().get(symbol);
+			Knoten kindKnoten = elternKnoten.getKinder().get(symbol.toString());
 			
 			// Ermitteln, welchen Wert der aktuelle Knoten hat
 			int gesamtwert = elternKnoten.getZaehler();
@@ -390,6 +384,11 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_DIVIDER))
 				this.divider = this.getPropertyDefaultValues().get(PROPERTYKEY_DIVIDER);
 		
+		if (this.getProperties().containsKey(PROPERTYKEY_DEPTHFACTOR))
+			this.depthFactor = Double.parseDouble(this.getProperties().getProperty(PROPERTYKEY_DEPTHFACTOR));
+		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_DEPTHFACTOR))
+			this.depthFactor = Double.parseDouble(this.getPropertyDefaultValues().get(PROPERTYKEY_DEPTHFACTOR));
+			
 		super.applyProperties();
 	}
 
