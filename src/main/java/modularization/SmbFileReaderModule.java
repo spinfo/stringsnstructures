@@ -156,6 +156,8 @@ public class SmbFileReaderModule extends ModuleImpl {
 			// close relevant I/O instances
 			fileInputStream.close();
 			this.closeAllOutputWriters();
+			
+			wroteToChars = true;
 		}
 
 		if (!wroteToStream && !wroteToChars)
