@@ -171,13 +171,14 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 					}
 					
 					// Entscheidungsbaum konstruieren
-					SplitDecisionNode entscheidungsbaumWurzelknoten = this.entscheidungsBaumKonstruieren(new Character(head.charAt(head.length()-1)), tail.toString(), suffixTreeRootNode, 1);
+					SplitDecisionNode entscheidungsbaumWurzelknoten = this.entscheidungsBaumKonstruieren(new Character(head.charAt(head.length()-1)), tail.toString(), suffixTreeRootNode, aktuellerKnoten, 1);
 					
 					// DEBUG
 					String test = entscheidungsbaumWurzelknoten.toString();
 					//System.out.println(test);
 					
 					// Entscheidungsbaum auswerten
+					System.out.println(head.toString()+":"+tail.toString());
 					boolean trennen = this.trennen(entscheidungsbaumWurzelknoten);
 					
 					if (trennen){
@@ -217,6 +218,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	private boolean trennen(SplitDecisionNode entscheidungsbaumWurzelknoten) {
 		double splitValue = this.hoechsteZweigBewertungsErmitteln(entscheidungsbaumWurzelknoten.getSplit());
 		double joinValue = this.hoechsteZweigBewertungsErmitteln(entscheidungsbaumWurzelknoten.getJoin());
+		System.out.println(Math.round(joinValue*10000d)+":"+Math.round(splitValue*10000d));
 		return splitValue>joinValue;
 	}
 	
@@ -227,9 +229,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	 */
 	private double hoechsteZweigBewertungsErmitteln(SplitDecisionNode entscheidungsbaumWurzelknoten) {
 
-		// Falls der Entscheidungsbaumknoten null ist, wird 0 zurueckgegeben
-		if (entscheidungsbaumWurzelknoten == null)
-			return 0d;
+		// Falls der Entscheidungsbaumknoten null ist, wird 1 zurueckgegeben
+		if (entscheidungsbaumWurzelknoten == null || entscheidungsbaumWurzelknoten.getSplit() == null || entscheidungsbaumWurzelknoten.getJoin() == null)
+			return 1d;
 
 		// Bewertungsvariable festlegen
 		double bewertung = entscheidungsbaumWurzelknoten.getValue();
@@ -241,32 +243,32 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		// Hoechsten Wert ermitteln (bei Gleichstand wird der Bindewert
 		// bevorzugt)
 		if (trennWert > bindeWert)
-			bewertung += trennWert;
+			bewertung = bewertung*trennWert;
 		else
-			bewertung += bindeWert;
+			bewertung = bewertung*bindeWert;
 
 		// Hoechste gefundene Kantenbewertung zurueckgeben
 		return bewertung;
 	}
 	
-	private SplitDecisionNode entscheidungsBaumKonstruieren(Character kopf, String rumpf, Knoten suffixbaumWurzelknoten, int ebenenTiefe){
+	private SplitDecisionNode entscheidungsBaumKonstruieren(Character kopf, String rumpf, Knoten wurzelKnoten, Knoten elternKnoten, int ebenenTiefe){
 		
 		// Neuen Entscheidungsknoten beginnen
 		SplitDecisionNode entscheidungsKnoten = new SplitDecisionNode();
 		
 		// Bewertung ermitteln
-		entscheidungsKnoten.setValue(this.symbolBewerten(kopf, suffixbaumWurzelknoten, new Double(ebenenTiefe)));
+		entscheidungsKnoten.setValue(this.symbolBewerten(kopf, elternKnoten, new Double(ebenenTiefe)));
 		
 		// Notiz anfuegen (nur zur Information)
-		if (suffixbaumWurzelknoten != null && kopf != null)
-			entscheidungsKnoten.setNotiz(suffixbaumWurzelknoten.getName()+"-"+kopf.toString());
+		if (elternKnoten != null && kopf != null)
+			entscheidungsKnoten.setNotiz(elternKnoten.getName()+"-"+kopf.toString());
 		
 		if (!rumpf.isEmpty()){
 			// Kindknoten fuer Trennaktion
-			entscheidungsKnoten.setSplit(this.entscheidungsBaumKonstruieren(rumpf.charAt(0), rumpf.substring(1), suffixbaumWurzelknoten, ebenenTiefe+1));
+			entscheidungsKnoten.setSplit(this.entscheidungsBaumKonstruieren(rumpf.charAt(0), rumpf.substring(1), wurzelKnoten, wurzelKnoten, ebenenTiefe));
 			// Kindknoten fuer Bindeaktion
-			if (suffixbaumWurzelknoten != null)
-				entscheidungsKnoten.setJoin(this.entscheidungsBaumKonstruieren(rumpf.charAt(0), rumpf.substring(1), suffixbaumWurzelknoten.getKinder().get(kopf.toString()), ebenenTiefe+1));
+			if (elternKnoten != null)
+				entscheidungsKnoten.setJoin(this.entscheidungsBaumKonstruieren(rumpf.charAt(0), rumpf.substring(1), wurzelKnoten, elternKnoten.getKinder().get(kopf.toString()), ebenenTiefe+1));
 			else
 				entscheidungsKnoten.setJoin(new SplitDecisionNode(0d,kopf.toString()));
 		}
@@ -302,7 +304,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			double anteil = new Double(teilwert)/new Double(gesamtwert); // 0 < anteil <= 1
 			
 			// Bewertung fuer diesen Kindknoten errechnen und auf das Gesamtergebnis addieren
-			bewertung += ebenenFaktor*anteil;
+			bewertung += anteil;
 			
 		}
 		
