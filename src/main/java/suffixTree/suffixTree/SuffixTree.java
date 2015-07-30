@@ -262,9 +262,8 @@ public class SuffixTree {
 					active_length++;
 
 					if (ch == '$') {
-						nodes[child_node]
-								.addStartPositionOfSuffix(new TextStartPosInfo(
-										unit, textNr, ++leafCount));
+						nodes[child_node].addStartPositionOfSuffix
+								(new TextStartPosInfo(unit, textNr, ++leafCount));
 						active_length--;
 						write(1, messageFrom, "new startposition ");
 						// int x = 0;

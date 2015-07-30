@@ -25,10 +25,10 @@ public class SimpleSuffixTreeMain {
 		// phases
 		st.phases(text, 0, text.length(), null);
 		System.out.println("\n");
-		if (st.search("anana$", 0, 1/* root */))
-			LOGGER.info("\nsearch true");
+		if (st.search("anana$", 0, 1/* root */)!=null)
+			LOGGER.info("\nsearch found");
 		else
-			LOGGER.info("\nsearch false");
+			LOGGER.info("\nsearch not found");
 		System.out.println();
 		ExtActivePoint activePoint = st.longestPath("nanyx", 0, 1, 0, false);
 		if (activePoint == null)

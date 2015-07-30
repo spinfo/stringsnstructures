@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import suffixTree.suffixTree.SuffixTree;
+import suffixTree.suffixTree.applications.SearchResult;
 import suffixTree.suffixTree.applications.SuffixTreeAppl;
 import suffixTree.suffixTree.node.Node;
 import suffixTree.suffixTree.node.activePoint.ExtActivePoint;
@@ -27,7 +28,9 @@ public class SearchTest {
 
 		String search = "Test";
 
-		boolean found = st.search(search, startPos, startNode);
+		SearchResult searchResult = st.search(search, startPos, startNode);
+		
+		boolean found = searchResult != null;
 
 		Assert.assertTrue("Didn't find search text", found);
 

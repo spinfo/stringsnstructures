@@ -20,34 +20,43 @@ public class SuffixTreeAppl extends SuffixTree {
 		super(len, nodeFactory);
 	}
 
-	public boolean search(String str, int pos, int node) {
-		if (str.length() == 0)
-			return true;
-		else if (!nodes[node].children.containsKey(str.charAt(pos)))
-			return false;
+	// returns searchResult null if not found, 
+	// 1 if found, 2 if found at end of edge, 3 if found at end of text before
+	// '$'
+	public SearchResult search(String pattern, int posInPattern, int node) {
+		if (pattern.length() == 0) {			
+			return new SearchResult(node,1);
+		}
+		else if (!nodes[node].children.containsKey(pattern.charAt(posInPattern)))
+			return null;
 		else {
-			int child_node = this.nodes[node].children.get(str.charAt(pos));
-			write(1, "SuffixTreeAppl.search ", "search str: " + str
+			int child_node = this.nodes[node].children.get(pattern.charAt(posInPattern));
+			
+			write(1, "SuffixTreeAppl.search ", "search pattern: " + pattern
 					+ " child_node: " + child_node + " start: "
 					+ this.nodes[child_node].getStart() + " end: "
-					+ this.nodes[child_node].getNodeInfo().getEnd() + " pos: "
-					+ pos);
+					+ this.nodes[child_node].getNodeInfo().getEnd() + " posInPattern: "
+					+ posInPattern);
 			// this.nodes[child_node].getEnd(this.getPosition()));
 			for (int i = this.nodes[child_node].getStart(); i < this.nodes[child_node]
 					.getNodeInfo().getEnd(); i++) {
-				LOGGER.info(this.text[i] + " " + str.charAt(pos));
-				if (this.text[i] == str.charAt(pos)) {
-					pos++;
-					if (pos >= str.length())
-						return true;
+				LOGGER.info(this.text[i] + " " + pattern.charAt(posInPattern));
+				if (this.text[i] == pattern.charAt(posInPattern)) {
+					posInPattern++;
+					if (posInPattern >= pattern.length())
+						if (i+1==this.nodes[child_node].getNodeInfo().getEnd())
+							return new SearchResult(child_node,2);
+						else if (this.text[i+1]=='$')
+							return new SearchResult(child_node,3);
+						else return new SearchResult(child_node,1);
 				} else {
-					LOGGER.info("" + str.charAt(pos));
-					return false;
+					LOGGER.info("" + pattern.charAt(posInPattern));
+					return null;
 				}
 			}// for
-			LOGGER.fine(str.substring(pos));
+			LOGGER.fine(pattern.substring(posInPattern));
 			// recursion
-			return search(str, pos, child_node);
+			return search(pattern, posInPattern, child_node);
 
 		}
 
