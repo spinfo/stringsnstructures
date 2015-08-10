@@ -1,7 +1,5 @@
 package modularization.workbench;
 
-import helpers.ListLoggingHandler;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -22,6 +20,12 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+
+import artificialSeqs.CreateArtificialSeqs;
+import helpers.ListLoggingHandler;
 import modularization.ConsoleWriterModule;
 import modularization.ExampleModule;
 import modularization.FileReaderModule;
@@ -42,10 +46,6 @@ import treeBuilder.AtomicRangeSuffixTreeBuilder;
 import treeBuilder.TreeBuilder;
 import visualizationModules.ASCIIGraph;
 import visualizationModules.ColourGraph;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
 
 public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
 	
@@ -179,6 +179,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		paradigmenErmittlerModulProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, paradigmenErmittlerModul.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		paradigmenErmittlerModul.applyProperties();
 		
+		// Prepare CreateArtificialSeqs module
+				Properties createArtificialSeqsProperties = new Properties();
+				CreateArtificialSeqs createArtificialSeqs = new CreateArtificialSeqs(moduleTree,
+						createArtificialSeqsProperties);
+				createArtificialSeqsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, createArtificialSeqs.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+				createArtificialSeqs.applyProperties();
+		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
 		availableModules.add(fileReader);
@@ -194,6 +201,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(colourGraphModule);
 		availableModules.add(asciiGraphModule);
 		availableModules.add(paradigmenErmittlerModul);
+		availableModules.add(createArtificialSeqs);
 		
 		// Sort list
 		availableModules.sort(new ModuleComparator());
@@ -266,7 +274,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		// New module to create
 		Module newModule;
 		
-		// Set properties
+		// Set propertiesErmittlerModul
 		Properties properties = new Properties();
 		Iterator<String> propertyKeys = this.selectedModulesProperties.keySet().iterator();
 		while(propertyKeys.hasNext()){
@@ -308,6 +316,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new SmbFileWriterModule(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(ParadigmenErmittlerModul.class)){
 			newModule = new ParadigmenErmittlerModul(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(CreateArtificialSeqs.class)){
+			newModule = new CreateArtificialSeqs(moduleTree, properties);
 		}
 		
 		else {
