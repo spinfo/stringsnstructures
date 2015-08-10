@@ -3,6 +3,7 @@ package artificialSeqs;
 import java.util.Properties;
 import parallelization.CallbackReceiver;
 import modularization.CharPipe;
+import modularization.ModuleImpl;
 
 public class CreateArtificialSeqs extends modularization.ModuleImpl {
 	//property keys:
@@ -22,11 +23,13 @@ public class CreateArtificialSeqs extends modularization.ModuleImpl {
 				"Length of the randomly composed DNA sequence");
 				
 		//Add default values
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,
+				"Artificial Sequence Generator");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_SEQLEN,
 				"1024");
 		
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
+		this.getSupportedOutputs().add(CharPipe.class);
 		
 		// Add module description
 		this.setDescription("Creates a randomly composed DNA sequences of defined length.");	
@@ -102,6 +105,8 @@ public class CreateArtificialSeqs extends modularization.ModuleImpl {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		// close outputs 
+		this.closeAllOutputs();
 		
 		//success
 		return true;
