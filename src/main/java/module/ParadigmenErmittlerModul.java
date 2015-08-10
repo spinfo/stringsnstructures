@@ -38,6 +38,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	private int bufferLength = 10;
 	private String divider = "\t";
 	private double depthFactor = 2d;
+	
+	private int anzahlDerSymbole;
 
 	public ParadigmenErmittlerModul(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -115,14 +117,20 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		fileReader.close();
 		fileInputStream.close();
 		
-		// Initialize stream input buffer
-		LinkedList<Character> buffer = new LinkedList<Character>();
+		// Anzahl der vorhandenen Symbole (Types) ermitteln (entspricht der Anzahl der Suffixbaum-Kindknoten der ersten Ebene)
+		this.anzahlDerSymbole = suffixTreeRootNode.getKinder().size();
 		
 		// Read first characters
 		int charCode = this.getInputCharPipe().getInput().read();
 		
 		// Variable for the head
 		StringBuffer head = new StringBuffer();
+		
+		// Aktuellen Knoten merken
+		Knoten aktuellerKnoten = suffixTreeRootNode;
+		
+		// Letzte Bewertung merken
+		double letzteBewertung = 0d;
 
 		// Loop until no more data can be read
 		while (charCode != -1) {
@@ -133,75 +141,39 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				throw new InterruptedException("Thread has been interrupted.");
 			}
 
-			// Add read char code to buffer
-			buffer.add(Character.valueOf((char) charCode));
+			// Token als Zeichenkette einlesen
+			Character symbol = Character.valueOf((char) charCode);
 			
-			// If the buffer exceeds the set maximum length, remove the oldest (first) element
-			if (buffer.size()>this.bufferLength){
-				Character removed = buffer.removeFirst();
-				
-				// Append it to the head
-				head.append(removed);
-			}
-				
+			// Bewertung ermitteln
+			double bewertung = this.symbolBewerten(symbol, aktuellerKnoten);
 			
-			// Construct trie from buffer and attach it to the root node (skip this until the buffer is full and we got at least one symbol in head)
-			if (head.length()>0 && buffer.size()==this.bufferLength){
-				
-				// Aktuellen Knoten im Suffixbaum ermitteln
-				Knoten aktuellerKnoten = suffixTreeRootNode;
-				if (head.length()>1){
-					for (int i=0; i<head.length()-1; i++){
-						if (aktuellerKnoten != null)
-							aktuellerKnoten = aktuellerKnoten.getKinder().get(head.substring(i, i+1));
-					}
-				}
-				
-				// Falls der aktuelle Knoten im Suffixbaum nicht existiert, wird der Kopfteil als Segment abgespalten
-				if (aktuellerKnoten == null){
-					this.outputToAllCharPipes(head.toString().concat(this.divider));
-					head.delete(0, head.length());
-				} else {
-					
-					// Puffer in Zeichenkette umwandeln (TODO Leistungsfaehigere Loesung implementieren)
-					StringBuffer tail = new StringBuffer();
-					Iterator<Character> characters = buffer.iterator();
-					while (characters.hasNext()){
-						tail.append(characters.next());
-					}
-					
-					// Entscheidungsbaum konstruieren
-					SplitDecisionNode entscheidungsbaumWurzelknoten = this.entscheidungsBaumKonstruieren(new Character(head.charAt(head.length()-1)), tail.toString(), suffixTreeRootNode, aktuellerKnoten, 1);
-					
-					// DEBUG
-					String test = entscheidungsbaumWurzelknoten.toString();
-					//System.out.println(test);
-					
-					// Entscheidungsbaum auswerten
-					System.out.println(head.toString()+":"+tail.toString());
-					boolean trennen = this.trennen(entscheidungsbaumWurzelknoten);
-					
-					if (trennen){
-						this.outputToAllCharPipes(head.toString().concat(this.divider));
-						head.delete(0, head.length());
-					}
-				}
+			// DEBUG
+			System.out.println(head+" "+bewertung);
+			Thread.sleep(500l);
+			
+			// Trennen oder Verbinden?
+			if (bewertung > 0 && bewertung > letzteBewertung){
+				// Verbinden
+				letzteBewertung = bewertung;
+				aktuellerKnoten = aktuellerKnoten.getKinder().get(symbol.toString());
+				head.append(symbol);
+			//} else if (bewertung > 0){
+				// Pruefen, ob der Abfall in der Bewertung groesser ist, als
+			} else {
+				// Trennen
+				aktuellerKnoten = suffixTreeRootNode;
+				letzteBewertung = 0d;
+				this.outputToAllCharPipes(head.toString().concat(this.divider));
+				System.out.println(); // DEBUG
+				head.delete(0, head.length());
+				head.append(symbol);
 			}
+			
+			
 			
 			// Read next char
 			charCode = this.getInputCharPipe().getInput().read();
 		}
-		
-		// Read remaining buffer
-		if (!buffer.isEmpty())
-			buffer.removeFirst();
-		while (!buffer.isEmpty()){
-			// TODO process rest of data
-			
-			
-			buffer.removeFirst();
-		}
-		
 		
 		// Close relevant I/O instances
 		this.closeAllOutputs();
@@ -240,9 +212,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		double trennWert = hoechsteZweigBewertungsErmitteln(entscheidungsbaumWurzelknoten.getSplit());
 		double bindeWert = hoechsteZweigBewertungsErmitteln(entscheidungsbaumWurzelknoten.getJoin());
 
-		// Hoechsten Wert ermitteln (bei Gleichstand wird der Bindewert
+		// Hoechsten Wert ermitteln (bei Gleichstand wird der Trennwert
 		// bevorzugt)
-		if (trennWert > bindeWert)
+		if (trennWert >= bindeWert)
 			bewertung = bewertung*trennWert;
 		else
 			bewertung = bewertung*bindeWert;
@@ -257,7 +229,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		SplitDecisionNode entscheidungsKnoten = new SplitDecisionNode();
 		
 		// Bewertung ermitteln
-		entscheidungsKnoten.setValue(this.symbolBewerten(kopf, elternKnoten, new Double(ebenenTiefe)));
+		entscheidungsKnoten.setValue(this.symbolBewerten(kopf, elternKnoten));
 		
 		// Notiz anfuegen (nur zur Information)
 		if (elternKnoten != null && kopf != null)
@@ -281,10 +253,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	 * Bewertet ein einzelnes Symbol
 	 * @param symbol Symbol (Zeichenkette mit Laenge eins)
 	 * @param elternKnoten Elternknoten im Suffixbaum
-	 * @param ebenenFaktor Faktor, mit welchem die Bewertung multipliziert werden soll (=Baumtiefe des Kindknotens)
 	 * @return Bewertung 0 <= X <= ebenenFaktor
 	 */
-	private double symbolBewerten(Character symbol, Knoten elternKnoten, double ebenenFaktor){
+	private double symbolBewerten(Character symbol, Knoten elternKnoten){
 		// Variable fuer das Gesamtergebnis
 		double bewertung = 0d;
 		
@@ -303,8 +274,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			// Anteil des Kindknotenzaehlers am Zaehler seines Elternknoten ermitteln
 			double anteil = new Double(teilwert)/new Double(gesamtwert); // 0 < anteil <= 1
 			
-			// Bewertung fuer diesen Kindknoten errechnen und auf das Gesamtergebnis addieren
-			bewertung += anteil;
+			// Bewertung fuer diesen Kindknoten errechnen und mit Anzahl der Symbole justieren
+			bewertung = anteil*new Double(this.anzahlDerSymbole);
 			
 		}
 		
