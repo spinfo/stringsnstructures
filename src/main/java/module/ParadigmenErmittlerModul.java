@@ -148,7 +148,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			double bewertung = this.symbolBewerten(symbol, aktuellerKnoten);
 			
 			// DEBUG
-			System.out.println(head+" "+bewertung);
+			System.out.println(head+" "+symbol+" "+bewertung);
 			Thread.sleep(500l);
 			
 			// Trennen oder Verbinden?
