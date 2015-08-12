@@ -24,7 +24,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 
-import artificialSeqs.CreateArtificialSeqs;
 import helpers.ListLoggingHandler;
 import modularization.ConsoleWriterModule;
 import modularization.ExampleModule;
@@ -46,6 +45,8 @@ import treeBuilder.AtomicRangeSuffixTreeBuilder;
 import treeBuilder.TreeBuilder;
 import visualizationModules.ASCIIGraph;
 import visualizationModules.ColourGraph;
+import artificialSeqs.CreateArtificialSeqs;
+import seqSplitting.SeqMemory;
 
 public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
 	
@@ -180,11 +181,18 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		paradigmenErmittlerModul.applyProperties();
 		
 		// Prepare CreateArtificialSeqs module
-				Properties createArtificialSeqsProperties = new Properties();
-				CreateArtificialSeqs createArtificialSeqs = new CreateArtificialSeqs(moduleTree,
-						createArtificialSeqsProperties);
-				createArtificialSeqsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, createArtificialSeqs.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-				createArtificialSeqs.applyProperties();
+		Properties createArtificialSeqsProperties = new Properties();
+		CreateArtificialSeqs createArtificialSeqs = new CreateArtificialSeqs(moduleTree,
+				createArtificialSeqsProperties);
+		createArtificialSeqsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, createArtificialSeqs.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		createArtificialSeqs.applyProperties();
+		
+		// Prepare SeqMemory module
+		Properties SeqMemoryProperties = new Properties();
+		SeqMemory seqMemory = new SeqMemory(moduleTree,
+				SeqMemoryProperties);
+		SeqMemoryProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqMemory.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		seqMemory.applyProperties();
 		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
@@ -202,6 +210,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(asciiGraphModule);
 		availableModules.add(paradigmenErmittlerModul);
 		availableModules.add(createArtificialSeqs);
+		availableModules.add(seqMemory);
 		
 		// Sort list
 		availableModules.sort(new ModuleComparator());
@@ -318,6 +327,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new ParadigmenErmittlerModul(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(CreateArtificialSeqs.class)){
 			newModule = new CreateArtificialSeqs(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(SeqMemory.class)){
+			newModule = new SeqMemory(moduleTree, properties);
 		}
 		
 		else {
