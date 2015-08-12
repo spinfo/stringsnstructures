@@ -4,7 +4,8 @@ import treeBuilder.Knoten;
 
 public class SplitDecisionNode {
 	
-	private double value;
+	private double bewertung;
+	private double aktivierungsPotential;
 	private SplitDecisionNode split;
 	private SplitDecisionNode join;
 	private Knoten suffixTrieKnoten;
@@ -15,19 +16,22 @@ public class SplitDecisionNode {
 	public SplitDecisionNode() {
 		super();
 	}
-	public SplitDecisionNode(double value) {
+	public SplitDecisionNode(double bewertung) {
 		super();
-		this.value = value;
+		this.bewertung = bewertung;
+		this.aktivierungsPotential = bewertung;
 	}
-	public SplitDecisionNode(double value, String notiz) {
+	public SplitDecisionNode(double bewertung, String notiz) {
 		super();
-		this.value = value;
+		this.bewertung = bewertung;
+		this.aktivierungsPotential = bewertung;
 		this.notiz = notiz;
 	}
-	public SplitDecisionNode(double value, Knoten suffixTrieKnoten,
+	public SplitDecisionNode(double bewertung, Knoten suffixTrieKnoten,
 			SplitDecisionNode elternKnoten, Character symbol) {
 		super();
-		this.value = value;
+		this.bewertung = bewertung;
+		this.aktivierungsPotential = bewertung;
 		this.suffixTrieKnoten = suffixTrieKnoten;
 		this.elternKnoten = elternKnoten;
 		this.symbol = symbol;
@@ -45,16 +49,16 @@ public class SplitDecisionNode {
 		this.notiz = notiz;
 	}
 	/**
-	 * @return the value
+	 * @return the bewertung
 	 */
-	public double getValue() {
-		return value;
+	public double getBewertung() {
+		return bewertung;
 	}
 	/**
-	 * @param value the value to set
+	 * @param bewertung the bewertung to set
 	 */
-	public void setValue(double value) {
-		this.value = value;
+	public void setBewertung(double bewertung) {
+		this.bewertung = bewertung;
 	}
 	/**
 	 * @return the split
@@ -96,8 +100,11 @@ public class SplitDecisionNode {
 		
 		if (this.notiz != null && !this.notiz.isEmpty())
 			sb.append(this.notiz+":");
+		if (this.symbol != null)
+			sb.append(this.symbol+":");
 		
-		sb.append(this.getValue());
+		sb.append(this.getAktivierungsPotential());
+		sb.append(" ["+this.getBewertung()+"]");
 		
 		// Recurse for child nodes
 		if (this.getJoin()!=null)
@@ -136,9 +143,38 @@ public class SplitDecisionNode {
 	 * @param huerdenWert
 	 */
 	public void addiereHuerdenWert(double huerdenWert) {
-		this.value += huerdenWert;
+		// Aktivierungspotential auf das minimal notwenige erhoehen
+		if (this.getJoin()!=null && this.getSplit()!=null){
+			
+			double minimalwert;
+			
+			// Falls dieser Knoten der oberste ist, ist keine Trennung moeglich!
+			if (this.elternKnoten == null)
+				minimalwert = this.getJoin().getAktivierungsPotential();
+			else
+				minimalwert = Math.max(Math.min(this.getJoin().getAktivierungsPotential(), this.getSplit().getAktivierungsPotential()),this.getBewertung());
+			
+			
+			// Falls der Wert sich nicht aendert, wird die Rekursion abgebrochen
+			if (minimalwert==this.aktivierungsPotential)
+				return;
+			this.aktivierungsPotential = minimalwert;
+		} else
+			this.aktivierungsPotential += huerdenWert;
 		if (this.elternKnoten != null)
 			this.elternKnoten.addiereHuerdenWert(huerdenWert);
+	}
+	/**
+	 * @return the aktivierungsPotential
+	 */
+	public double getAktivierungsPotential() {
+		return aktivierungsPotential;
+	}
+	/**
+	 * @param aktivierungsPotential the aktivierungsPotential to set
+	 */
+	public void setAktivierungsPotential(double aktivierungsPotential) {
+		this.aktivierungsPotential = aktivierungsPotential;
 	}
 
 }

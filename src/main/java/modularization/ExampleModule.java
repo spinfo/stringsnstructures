@@ -53,7 +53,7 @@ public class ExampleModule extends ModuleImpl {
 			}
 			
 			// Convert char array to string
-			String inputChunk = new String(buffer);
+			String inputChunk = new String(buffer).substring(0, readChars);
 			
 			// Process data
 			String outputChunk = inputChunk.replaceAll(this.regex, this.replacement);

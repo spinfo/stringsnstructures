@@ -27,6 +27,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	public static final String PROPERTYKEY_ENCODING = "Encoding";
 	public static final String PROPERTYKEY_BUFFERLENGTH = "Buffer length";
 	public static final String PROPERTYKEY_DIVIDER = "Token divider";
+	public static final String PROPERTYKEY_MINDESTKOSTENPROEBENE = "Minimal cost";
+	public static final String PROPERTYKEY_BEWERTUNGSABFALLFAKTOR = "Bewertungsabfallfaktor";
 
 	// Local variables
 	private File file;
@@ -34,6 +36,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	private String encoding = "UTF-8";
 	private int pufferGroesse = 12;
 	private String divider = "\t";
+	private double mindestKostenProSymbolEbene;
+	private double bewertungsAbfallFaktor;
 
 	public ParadigmenErmittlerModul(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -59,6 +63,10 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				"Groesse des Eingabepuffers (sollte nicht die Tiefe des Suffixbaumes ueberschreiten!)");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DIVIDER,
 				"Divider that is inserted in between the tokens on output");
+		this.getPropertyDescriptions().put(PROPERTYKEY_MINDESTKOSTENPROEBENE,
+				"Minimalkosten fuer jeden Verknuepfungsschritt; hoehere Werte erhoehen stark die vom Bewertungsalgorithmus durchgefuehrten Berechnungsdurchlaufe [double]");
+		this.getPropertyDescriptions().put(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR,
+				"Faktor zur Gewichtung eines Abfalls der Bewertung von einem auf das naechste Symbol [double, >0, kleiner gewichtet staerker]");
 
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,
@@ -69,6 +77,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ENCODING, "UTF-8");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "10");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DIVIDER, "\t");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MINDESTKOSTENPROEBENE, "5");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR, "1");
 
 		// Add module description
 		this.setDescription("Reads contents from a suffix tree file (JSON-encoded) and based on that data marks paradigm borders in the streamed input. Outputs segmented input data. Can handle GZIP compressed suffix tree files.");
@@ -114,7 +124,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		 */
 		
 		// Symbolbewerter instanziieren
-		SymbolBewerter symbolBewerter = new SymbolBewerter();
+		SymbolBewerter symbolBewerter = new SymbolBewerter(this.mindestKostenProSymbolEbene, this.bewertungsAbfallFaktor);
 		
 		// Erstes Zeichen einlesen
 		int zeichenCode = this.getInputCharPipe().getInput().read();
@@ -155,7 +165,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				SplitDecisionNode letzteTrennstelle = blattBesterWeg;
 				while (blattBesterWeg.getElternKnoten() != null){
 					blattBesterWeg = blattBesterWeg.getElternKnoten();
-					if (blattBesterWeg.getSplit().getValue()<blattBesterWeg.getJoin().getValue())
+					if (blattBesterWeg.getSplit().getAktivierungsPotential()<blattBesterWeg.getJoin().getAktivierungsPotential())
 						letzteTrennstelle = blattBesterWeg;
 				}
 				
@@ -176,6 +186,11 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				// Entscheidungsbaum stutzen
 				letzteTrennstelle.setElternKnoten(null);
 				entscheidungsbaumWurzelknoten = letzteTrennstelle;
+				
+				// Trennknoten zu Verbindungsknoten machen
+				entscheidungsbaumWurzelknoten.setJoin(entscheidungsbaumWurzelknoten.getSplit());
+				// Trennknoten blockieren
+				entscheidungsbaumWurzelknoten.setSplit(new SplitDecisionNode(Double.MAX_VALUE));
 				
 				// Segment ausgeben
 				this.outputToAllCharPipes(segment.concat(this.divider));
@@ -217,6 +232,16 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			this.divider = this.getProperties().getProperty(PROPERTYKEY_DIVIDER);
 		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_DIVIDER))
 				this.divider = this.getPropertyDefaultValues().get(PROPERTYKEY_DIVIDER);
+		
+		if (this.getProperties().containsKey(PROPERTYKEY_MINDESTKOSTENPROEBENE))
+			this.mindestKostenProSymbolEbene = Double.parseDouble(this.getProperties().getProperty(PROPERTYKEY_MINDESTKOSTENPROEBENE));
+		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_MINDESTKOSTENPROEBENE))
+			this.mindestKostenProSymbolEbene = Double.parseDouble(this.getPropertyDefaultValues().get(PROPERTYKEY_MINDESTKOSTENPROEBENE));
+	
+		if (this.getProperties().containsKey(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR))
+			this.bewertungsAbfallFaktor = Double.parseDouble(this.getProperties().getProperty(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR));
+		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR))
+			this.bewertungsAbfallFaktor = Double.parseDouble(this.getPropertyDefaultValues().get(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR));
 			
 		super.applyProperties();
 	}

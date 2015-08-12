@@ -25,6 +25,7 @@ public class EntscheidungsAeffchen {
 		// Rueckkehr zur Wurzel des Entscheidungsbaumes
 		aktuellerEntscheidungsKnoten = entscheidungsbaumWurzelknoten;
 		aktuellerKnoten = suffixbaumWurzelknoten;
+		double letzteBewertung = Double.MAX_VALUE;
 		
 		// Schleife ueber alle Zeichen
 		for (int index=0; index<zeichenkette.length();){
@@ -32,11 +33,13 @@ public class EntscheidungsAeffchen {
 			// Pruefen, ob der aktuelle Entscheidungsknoten bereits Kindelemente hat
 			if (aktuellerEntscheidungsKnoten.getSplit() != null && aktuellerEntscheidungsKnoten.getJoin() != null){
 				
-				// Kindelement mit dem geringsten Widerstand auswaehlen
-				if (aktuellerEntscheidungsKnoten.getSplit().getValue()<aktuellerEntscheidungsKnoten.getJoin().getValue()){
+				// Kindelement mit dem geringsten Widerstand auswaehlen (auf der ersten Ebene des Suffixbaumes kann keine Trennung gewaehlt werden)
+				if (aktuellerEntscheidungsKnoten.getSplit().getAktivierungsPotential()<aktuellerEntscheidungsKnoten.getJoin().getAktivierungsPotential() && !aktuellerEntscheidungsKnoten.equals(entscheidungsbaumWurzelknoten)){
+					letzteBewertung = aktuellerEntscheidungsKnoten.getSplit().getBewertung();
 					aktuellerEntscheidungsKnoten = aktuellerEntscheidungsKnoten.getSplit();
 					aktuellerKnoten = suffixbaumWurzelknoten;
 				} else {
+					letzteBewertung = aktuellerEntscheidungsKnoten.getJoin().getBewertung();
 					aktuellerEntscheidungsKnoten = aktuellerEntscheidungsKnoten.getJoin();
 					aktuellerKnoten = aktuellerKnoten.getKinder().get(new Character(zeichenkette.charAt(index)).toString());
 				}
@@ -45,12 +48,12 @@ public class EntscheidungsAeffchen {
 				
 			} else {
 				// Der aktuelle Entscheidungsbaumknoten hat noch KEINE Kindelemente, daher muessen zunaechst die Bewertungen ermittelt werden
-				double bewertungVerbinde = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), aktuellerKnoten);
+				double bewertungVerbinde = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), aktuellerKnoten, letzteBewertung);
 				double bewertungTrenne;
-				if (aktuellerKnoten.equals(suffixbaumWurzelknoten))
+				if (aktuellerEntscheidungsKnoten.equals(entscheidungsbaumWurzelknoten))
 					bewertungTrenne = Double.MAX_VALUE;
 				else
-					bewertungTrenne = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), suffixbaumWurzelknoten);
+					bewertungTrenne = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), suffixbaumWurzelknoten, Double.MAX_VALUE);
 				
 				SplitDecisionNode entscheidungsknotenVerbinde = new SplitDecisionNode(bewertungVerbinde, aktuellerKnoten, aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
 				SplitDecisionNode entscheidungsknotenTrenne = new SplitDecisionNode(bewertungTrenne, suffixbaumWurzelknoten, aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
@@ -63,6 +66,7 @@ public class EntscheidungsAeffchen {
 				// Rueckkehr zur Wurzel des Entscheidungsbaumes, um erneut den Weg des geringsten Widerstands zu ermitteln
 				aktuellerEntscheidungsKnoten = entscheidungsbaumWurzelknoten;
 				aktuellerKnoten = suffixbaumWurzelknoten;
+				letzteBewertung = Double.MAX_VALUE;
 				index = 0;
 			}
 			
