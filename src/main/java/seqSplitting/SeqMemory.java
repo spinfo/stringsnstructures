@@ -46,6 +46,7 @@ public class SeqMemory extends modularization.ModuleImpl {
 		// Define I/O
 		this.getSupportedInputs().add(CharPipe.class);
 		this.getSupportedOutputs().add(CharPipe.class);
+		
 		// Add module description
 		this.setDescription("Splits a DNA sequences (or any other continuous string) into a defined number of fragments with random length.");		
 	}
