@@ -5,6 +5,13 @@ import parallelization.CallbackReceiver;
 import modularization.CharPipe;
 import modularization.ModuleImpl;
 
+/**
+ * Creates a random sequence of 'ATGC' of defined length
+ * 
+ * @author Christopher Kraus
+ *
+ */
+
 public class CreateArtificialSeqs extends modularization.ModuleImpl {
 	//property keys:
 	public static final String PROPERTYKEY_SEQLEN = "Length of the randomly composed DNA sequence";
@@ -85,7 +92,7 @@ public class CreateArtificialSeqs extends modularization.ModuleImpl {
 					break;
 			}
 
-			for (int i = 0; i < this.getSeqLength(); i++) {
+			for (int i = 0; i < (this.getSeqLength() - 1); i++) {
 				character = (int) (Math.random()*4);
 				switch (character) {
 					case 0: this.setSeqString("A");
