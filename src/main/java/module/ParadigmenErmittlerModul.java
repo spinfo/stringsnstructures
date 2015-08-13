@@ -130,7 +130,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		int zeichenCode = this.getInputCharPipe().getInput().read();
 		
 		// Entscheidungsbaum starten
-		SplitDecisionNode entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d);
+		SplitDecisionNode entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d, suffixbaumWurzelknoten, null, '^');
 
 		// EntscheidungsAeffchen initialisieren
 		EntscheidungsAeffchen aeffchen = new EntscheidungsAeffchen(symbolBewerter, suffixbaumWurzelknoten);
@@ -186,6 +186,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				// Entscheidungsbaum stutzen
 				letzteTrennstelle.setElternKnoten(null);
 				entscheidungsbaumWurzelknoten = letzteTrennstelle;
+				entscheidungsbaumWurzelknoten.setSymbol('^');
 				
 				// Trennknoten zu Verbindungsknoten machen
 				entscheidungsbaumWurzelknoten.setJoin(entscheidungsbaumWurzelknoten.getSplit());

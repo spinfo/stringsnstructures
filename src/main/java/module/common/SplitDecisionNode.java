@@ -1,8 +1,12 @@
 package module.common;
 
+import java.text.DecimalFormat;
+
 import treeBuilder.Knoten;
 
 public class SplitDecisionNode {
+	
+	private static final DecimalFormat NUMMERNFORMAT = new DecimalFormat("###,###.###");
 	
 	private double bewertung;
 	private double aktivierungsPotential;
@@ -11,8 +15,20 @@ public class SplitDecisionNode {
 	private Knoten suffixTrieKnoten;
 	private SplitDecisionNode elternKnoten;
 	private String notiz;
-	public Character symbol;
+	private Character symbol;
 	
+	/**
+	 * @return the symbol
+	 */
+	public Character getSymbol() {
+		return symbol;
+	}
+	/**
+	 * @param symbol the symbol to set
+	 */
+	public void setSymbol(Character symbol) {
+		this.symbol = symbol;
+	}
 	public SplitDecisionNode() {
 		super();
 	}
@@ -98,13 +114,18 @@ public class SplitDecisionNode {
 			sb.append("\t");
 		}
 		
-		if (this.notiz != null && !this.notiz.isEmpty())
-			sb.append(this.notiz+":");
 		if (this.symbol != null)
 			sb.append(this.symbol+":");
-		
-		sb.append(this.getAktivierungsPotential());
-		sb.append(" ["+this.getBewertung()+"]");
+		if (this.getAktivierungsPotential()==Double.MAX_VALUE)
+			sb.append("X");
+		else
+			sb.append(NUMMERNFORMAT.format(this.getAktivierungsPotential()));
+		if (this.getBewertung()==Double.MAX_VALUE)
+			sb.append(" [X]");
+		else
+			sb.append(" ["+NUMMERNFORMAT.format(this.getBewertung())+"]");
+		if (this.notiz != null && !this.notiz.isEmpty())
+			sb.append(this.notiz);
 		
 		// Recurse for child nodes
 		if (this.getJoin()!=null)
@@ -138,11 +159,16 @@ public class SplitDecisionNode {
 	public void setSuffixTrieKnoten(Knoten suffixTrieKnoten) {
 		this.suffixTrieKnoten = suffixTrieKnoten;
 	}
+	
+
 	/**
-	 * Fuegt diesem Entscheidungsknoten und seinen Ahnen rekursiv den uebergebenen Huerdenwert hinzu.
-	 * @param huerdenWert
+	 * Hebt das Aktivierungspotential dieses Entscheidungsknotens auf den minimal
+	 * notwenigen Wert, um das Niveau eines der Kindelemente zu erreichen.
+	 * Gibt true zurueck, falls sich das Aktivierungspotential nicht aendert.
+	 * @param potentialWert
+	 * @return
 	 */
-	public void addiereHuerdenWert(double huerdenWert) {
+	public boolean hebeAktivierungsPotentialAufMinimumAn() {
 		// Aktivierungspotential auf das minimal notwenige erhoehen
 		if (this.getJoin()!=null && this.getSplit()!=null){
 			
@@ -155,14 +181,12 @@ public class SplitDecisionNode {
 				minimalwert = Math.max(Math.min(this.getJoin().getAktivierungsPotential(), this.getSplit().getAktivierungsPotential()),this.getBewertung());
 			
 			
-			// Falls der Wert sich nicht aendert, wird die Rekursion abgebrochen
-			if (minimalwert==this.aktivierungsPotential)
-				return;
+			// Falls der Wert sich nicht erhoeht, wird die Rekursion abgebrochen
+			if (minimalwert<=this.aktivierungsPotential)
+				return false;
 			this.aktivierungsPotential = minimalwert;
-		} else
-			this.aktivierungsPotential += huerdenWert;
-		if (this.elternKnoten != null)
-			this.elternKnoten.addiereHuerdenWert(huerdenWert);
+		}
+		return true;
 	}
 	/**
 	 * @return the aktivierungsPotential
