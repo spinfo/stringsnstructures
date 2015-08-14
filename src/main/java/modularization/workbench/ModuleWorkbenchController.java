@@ -47,6 +47,7 @@ import visualizationModules.ASCIIGraph;
 import visualizationModules.ColourGraph;
 import artificialSeqs.CreateArtificialSeqs;
 import seqSplitting.SeqMemory;
+import seqTreeProperties.SeqTreePropController;
 
 public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
 	
@@ -193,6 +194,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				SeqMemoryProperties);
 		SeqMemoryProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqMemory.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqMemory.applyProperties();
+
+		// Prepare SeqTreePropController module
+		Properties SeqTreePropControllerProperties = new Properties();
+		SeqTreePropController seqTreePropController = new SeqTreePropController(moduleTree,
+				SeqTreePropControllerProperties);
+		SeqTreePropControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqTreePropController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		seqTreePropController.applyProperties();
 		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
@@ -211,6 +219,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(paradigmenErmittlerModul);
 		availableModules.add(createArtificialSeqs);
 		availableModules.add(seqMemory);
+		availableModules.add(seqTreePropController);
 		
 		// Sort list
 		availableModules.sort(new ModuleComparator());
@@ -329,6 +338,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new CreateArtificialSeqs(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(SeqMemory.class)){
 			newModule = new SeqMemory(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(SeqTreePropController.class)){
+			newModule = new SeqTreePropController(moduleTree, properties);
 		}
 		
 		else {
