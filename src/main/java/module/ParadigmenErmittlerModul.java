@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
@@ -130,13 +132,16 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		int zeichenCode = this.getInputCharPipe().getInput().read();
 		
 		// Entscheidungsbaum starten
-		SplitDecisionNode entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d, suffixbaumWurzelknoten, null, '^');
+		SplitDecisionNode entscheidungsbaumWurzelknoten = null;
 
 		// EntscheidungsAeffchen initialisieren
 		EntscheidungsAeffchen aeffchen = new EntscheidungsAeffchen(symbolBewerter, suffixbaumWurzelknoten);
 		
 		// Eingabepuffer initialisieren
 		StringBuffer puffer = new StringBuffer();
+		
+		// HashMap zur Zwischenspeicherung von Ergebnisbaumzweigen
+		//Map<Character,SplitDecisionNode> entscheidungsBaumZweige = new HashMap<Character,SplitDecisionNode>();
 		
 		// Daten Zeichen fuer Zeichen einlesen
 		while (zeichenCode != -1) {
@@ -156,10 +161,16 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			// Puffergroesse pruefen
 			if (puffer.length() == this.pufferGroesse){
 				
+				// Ggf. Entscheidungsbaum beginnen
+				if (entscheidungsbaumWurzelknoten == null){
+					entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(new Character(puffer.charAt(0)).toString()), null, puffer.charAt(0));
+					//entscheidungsBaumZweige.put(symbol, entscheidungsbaumWurzelknoten);
+				}
+				
 				// Wenn der Eingabepuffer die erforderliche Groesse erreicht hat, wird er segmentiert
 				SplitDecisionNode blattBesterWeg = aeffchen.konstruiereEntscheidungsbaum(puffer, entscheidungsbaumWurzelknoten);
 				
-				// TODO erstes Segment (erster Entscheidungsknoten, der trennt) ermitteln, Entscheidungsbaum stutzen, Puffer kuerzen
+				// Erstes Segment (erster Entscheidungsknoten, der trennt) ermitteln, Entscheidungsbaum stutzen, Puffer kuerzen
 				
 				// Zuletzt trennenden Entscheidungsbaumknoten ermitteln
 				SplitDecisionNode letzteTrennstelle = blattBesterWeg;
@@ -170,7 +181,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				}
 				
 				// Tiefe der letzten Trennstelle ermitteln
-				int tiefe = 0;
+				int tiefe = 1;
 				SplitDecisionNode entscheidungsbaumKnoten = letzteTrennstelle;
 				while (entscheidungsbaumKnoten.getElternKnoten() != null){
 					entscheidungsbaumKnoten = entscheidungsbaumKnoten.getElternKnoten();
@@ -184,14 +195,16 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				puffer.delete(0, tiefe);
 				
 				// Entscheidungsbaum stutzen
-				letzteTrennstelle.setElternKnoten(null);
-				entscheidungsbaumWurzelknoten = letzteTrennstelle;
-				entscheidungsbaumWurzelknoten.setSymbol('^');
+				//letzteTrennstelle.setElternKnoten(null);
+				entscheidungsbaumWurzelknoten = letzteTrennstelle.getSplit();
+				if (entscheidungsbaumWurzelknoten != null)
+					entscheidungsbaumWurzelknoten.setElternKnoten(null);
+				//entscheidungsbaumWurzelknoten.setSymbol('^');
 				
 				// Trennknoten zu Verbindungsknoten machen
-				entscheidungsbaumWurzelknoten.setJoin(entscheidungsbaumWurzelknoten.getSplit());
+				//entscheidungsbaumWurzelknoten.setJoin(entscheidungsbaumWurzelknoten.getSplit());
 				// Trennknoten blockieren
-				entscheidungsbaumWurzelknoten.setSplit(new SplitDecisionNode(Double.MAX_VALUE));
+				//entscheidungsbaumWurzelknoten.setSplit(new SplitDecisionNode(Double.MAX_VALUE));
 				
 				// Segment ausgeben
 				this.outputToAllCharPipes(segment.concat(this.divider));

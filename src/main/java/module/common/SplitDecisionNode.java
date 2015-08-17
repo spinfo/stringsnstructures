@@ -12,23 +12,12 @@ public class SplitDecisionNode {
 	private double aktivierungsPotential;
 	private SplitDecisionNode split;
 	private SplitDecisionNode join;
-	private Knoten suffixTrieKnoten;
+	private Knoten suffixTrieElternKnoten;
+	private Knoten suffixTrieKindKnoten;
 	private SplitDecisionNode elternKnoten;
 	private String notiz;
 	private Character symbol;
 	
-	/**
-	 * @return the symbol
-	 */
-	public Character getSymbol() {
-		return symbol;
-	}
-	/**
-	 * @param symbol the symbol to set
-	 */
-	public void setSymbol(Character symbol) {
-		this.symbol = symbol;
-	}
 	public SplitDecisionNode() {
 		super();
 	}
@@ -37,32 +26,28 @@ public class SplitDecisionNode {
 		this.bewertung = bewertung;
 		this.aktivierungsPotential = bewertung;
 	}
+	
+	public SplitDecisionNode(double bewertung, Knoten suffixTrieElternKnoten, Knoten suffixTrieKindKnoten,
+			SplitDecisionNode elternKnoten, Character symbol) {
+		super();
+		this.bewertung = bewertung;
+		this.aktivierungsPotential = bewertung;
+		this.suffixTrieElternKnoten = suffixTrieElternKnoten;
+		this.suffixTrieKindKnoten = suffixTrieKindKnoten;
+		this.elternKnoten = elternKnoten;
+		this.symbol = symbol;
+	}
 	public SplitDecisionNode(double bewertung, String notiz) {
 		super();
 		this.bewertung = bewertung;
 		this.aktivierungsPotential = bewertung;
 		this.notiz = notiz;
 	}
-	public SplitDecisionNode(double bewertung, Knoten suffixTrieKnoten,
-			SplitDecisionNode elternKnoten, Character symbol) {
-		super();
-		this.bewertung = bewertung;
-		this.aktivierungsPotential = bewertung;
-		this.suffixTrieKnoten = suffixTrieKnoten;
-		this.elternKnoten = elternKnoten;
-		this.symbol = symbol;
-	}
 	/**
-	 * @return the notiz
+	 * @return the aktivierungsPotential
 	 */
-	public String getNotiz() {
-		return notiz;
-	}
-	/**
-	 * @param notiz the notiz to set
-	 */
-	public void setNotiz(String notiz) {
-		this.notiz = notiz;
+	public double getAktivierungsPotential() {
+		return aktivierungsPotential;
 	}
 	/**
 	 * @return the bewertung
@@ -71,22 +56,10 @@ public class SplitDecisionNode {
 		return bewertung;
 	}
 	/**
-	 * @param bewertung the bewertung to set
+	 * @return the elternKnoten
 	 */
-	public void setBewertung(double bewertung) {
-		this.bewertung = bewertung;
-	}
-	/**
-	 * @return the split
-	 */
-	public SplitDecisionNode getSplit() {
-		return split;
-	}
-	/**
-	 * @param split the split to set
-	 */
-	public void setSplit(SplitDecisionNode split) {
-		this.split = split;
+	public SplitDecisionNode getElternKnoten() {
+		return elternKnoten;
 	}
 	/**
 	 * @return the join
@@ -95,72 +68,35 @@ public class SplitDecisionNode {
 		return join;
 	}
 	/**
-	 * @param join the join to set
+	 * @return the notiz
 	 */
-	public void setJoin(SplitDecisionNode join) {
-		this.join = join;
-	}
-	
-	@Override
-	public String toString(){
-		return this.toString(0);
-	}
-	
-	public String toString(int indentLevel){
-		StringBuffer sb = new StringBuffer();
-		
-		// Value of this node
-		for (int i=0; i<indentLevel; i++){
-			sb.append("\t");
-		}
-		
-		if (this.symbol != null)
-			sb.append(this.symbol+":");
-		if (this.getAktivierungsPotential()==Double.MAX_VALUE)
-			sb.append("X");
-		else
-			sb.append(NUMMERNFORMAT.format(this.getAktivierungsPotential()));
-		if (this.getBewertung()==Double.MAX_VALUE)
-			sb.append(" [X]");
-		else
-			sb.append(" ["+NUMMERNFORMAT.format(this.getBewertung())+"]");
-		if (this.notiz != null && !this.notiz.isEmpty())
-			sb.append(this.notiz);
-		
-		// Recurse for child nodes
-		if (this.getJoin()!=null)
-			sb.append("\n"+this.getJoin().toString(indentLevel+1));
-		if (this.getSplit()!=null)
-			sb.append("\n"+this.getSplit().toString(indentLevel+1));
-		
-		return sb.toString();
+	public String getNotiz() {
+		return notiz;
 	}
 	/**
-	 * @return the elternKnoten
+	 * @return the split
 	 */
-	public SplitDecisionNode getElternKnoten() {
-		return elternKnoten;
+	public SplitDecisionNode getSplit() {
+		return split;
 	}
 	/**
-	 * @param elternKnoten the elternKnoten to set
+	 * @return the suffixTrieElternKnoten
 	 */
-	public void setElternKnoten(SplitDecisionNode elternKnoten) {
-		this.elternKnoten = elternKnoten;
+	public Knoten getSuffixTrieElternKnoten() {
+		return suffixTrieElternKnoten;
 	}
 	/**
-	 * @return the suffixTrieKnoten
+	 * @return the suffixTrieKindKnoten
 	 */
-	public Knoten getSuffixTrieKnoten() {
-		return suffixTrieKnoten;
+	public Knoten getSuffixTrieKindKnoten() {
+		return suffixTrieKindKnoten;
 	}
 	/**
-	 * @param suffixTrieKnoten the suffixTrieKnoten to set
+	 * @return the symbol
 	 */
-	public void setSuffixTrieKnoten(Knoten suffixTrieKnoten) {
-		this.suffixTrieKnoten = suffixTrieKnoten;
+	public Character getSymbol() {
+		return symbol;
 	}
-	
-
 	/**
 	 * Hebt das Aktivierungspotential dieses Entscheidungsknotens auf den minimal
 	 * notwenigen Wert, um das Niveau eines der Kindelemente zu erreichen.
@@ -189,16 +125,95 @@ public class SplitDecisionNode {
 		return true;
 	}
 	/**
-	 * @return the aktivierungsPotential
-	 */
-	public double getAktivierungsPotential() {
-		return aktivierungsPotential;
-	}
-	/**
 	 * @param aktivierungsPotential the aktivierungsPotential to set
 	 */
 	public void setAktivierungsPotential(double aktivierungsPotential) {
 		this.aktivierungsPotential = aktivierungsPotential;
+	}
+	/**
+	 * @param bewertung the bewertung to set
+	 */
+	public void setBewertung(double bewertung) {
+		this.bewertung = bewertung;
+	}
+	
+	/**
+	 * @param elternKnoten the elternKnoten to set
+	 */
+	public void setElternKnoten(SplitDecisionNode elternKnoten) {
+		this.elternKnoten = elternKnoten;
+	}
+	
+	/**
+	 * @param join the join to set
+	 */
+	public void setJoin(SplitDecisionNode join) {
+		this.join = join;
+	}
+	/**
+	 * @param notiz the notiz to set
+	 */
+	public void setNotiz(String notiz) {
+		this.notiz = notiz;
+	}
+	/**
+	 * @param split the split to set
+	 */
+	public void setSplit(SplitDecisionNode split) {
+		this.split = split;
+	}
+	/**
+	 * @param suffixTrieElternKnoten the suffixTrieElternKnoten to set
+	 */
+	public void setSuffixTrieElternKnoten(Knoten suffixTrieKnoten) {
+		this.suffixTrieElternKnoten = suffixTrieKnoten;
+	}
+	/**
+	 * @param suffixTrieKindKnoten the suffixTrieKindKnoten to set
+	 */
+	public void setSuffixTrieKindKnoten(Knoten suffixTrieKindKnoten) {
+		this.suffixTrieKindKnoten = suffixTrieKindKnoten;
+	}
+	
+
+	/**
+	 * @param symbol the symbol to set
+	 */
+	public void setSymbol(Character symbol) {
+		this.symbol = symbol;
+	}
+	@Override
+	public String toString(){
+		return this.toString(0);
+	}
+	public String toString(int indentLevel){
+		StringBuffer sb = new StringBuffer();
+		
+		// Value of this node
+		for (int i=0; i<indentLevel; i++){
+			sb.append("\t");
+		}
+		
+		if (this.symbol != null)
+			sb.append(this.symbol+":");
+		if (this.getAktivierungsPotential()==Double.MAX_VALUE)
+			sb.append("X");
+		else
+			sb.append(NUMMERNFORMAT.format(this.getAktivierungsPotential()));
+		if (this.getBewertung()==Double.MAX_VALUE)
+			sb.append(" [X]");
+		else
+			sb.append(" ["+NUMMERNFORMAT.format(this.getBewertung())+"]");
+		if (this.notiz != null && !this.notiz.isEmpty())
+			sb.append(this.notiz);
+		
+		// Recurse for child nodes
+		if (this.getJoin()!=null)
+			sb.append("\n"+this.getJoin().toString(indentLevel+1));
+		if (this.getSplit()!=null)
+			sb.append("\n"+this.getSplit().toString(indentLevel+1));
+		
+		return sb.toString();
 	}
 
 }

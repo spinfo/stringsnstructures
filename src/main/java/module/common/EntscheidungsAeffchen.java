@@ -4,6 +4,7 @@ import treeBuilder.Knoten;
 
 public class EntscheidungsAeffchen {
 
+	public static boolean debug = false;
 	private SymbolBewerter symbolBewerter;
 	private SplitDecisionNode aktuellerEntscheidungsKnoten;
 	private Knoten suffixbaumWurzelknoten;
@@ -23,57 +24,44 @@ public class EntscheidungsAeffchen {
 	public SplitDecisionNode konstruiereEntscheidungsbaum(StringBuffer zeichenkette, SplitDecisionNode entscheidungsbaumWurzelknoten) throws Exception {
 		
 		// Rueckkehr zur Wurzel des Entscheidungsbaumes
-		if (aktuellerEntscheidungsKnoten != null)
+		if (debug && aktuellerEntscheidungsKnoten != null)
 			aktuellerEntscheidungsKnoten.setNotiz(null);
 		aktuellerEntscheidungsKnoten = entscheidungsbaumWurzelknoten;
-		aktuellerEntscheidungsKnoten.setNotiz(" {A}");// TODO Zur Veranschaulichung; Zeile kann entfernt werden
-		aktuellerKnoten = suffixbaumWurzelknoten;
+		if (debug) aktuellerEntscheidungsKnoten.setNotiz(" {A}");
+		aktuellerKnoten = aktuellerEntscheidungsKnoten.getSuffixTrieKindKnoten();
 		double letzteBewertung = Double.MAX_VALUE;
 		
-		// Schleife ueber alle Zeichen
-		for (int index=0; index<zeichenkette.length();){
+		// Schleife ueber alle Zeichen (das erste ist bereits im Entsche4idungsbaumwurzelknoten hinterlegt)
+		for (int index=1; index<zeichenkette.length();){
 			
 			// Pruefen, ob der aktuelle Entscheidungsknoten bereits Kindelemente hat
 			if (aktuellerEntscheidungsKnoten.getSplit() != null && aktuellerEntscheidungsKnoten.getJoin() != null){
 				
-				// Suffixbaum-Kindknoten ermitteln, der die Zeichenkette fortfuehren wuerde
-				Knoten kindKnoten = aktuellerKnoten.getKinder().get(new Character(zeichenkette.charAt(index)).toString());
-				// Falls der Kindknoten nicht existiert, ist eine Verbindung unmoeglich
-				/*if (kindKnoten==null)
-					aktuellerEntscheidungsKnoten.getJoin().setAktivierungsPotential(Double.MAX_VALUE);*/
-				
-				// Kindelement mit dem geringsten Widerstand auswaehlen (auf der ersten Ebene des Suffixbaumes kann keine Trennung gewaehlt werden)
-				if (kindKnoten==null || aktuellerEntscheidungsKnoten.getSplit().getAktivierungsPotential()<aktuellerEntscheidungsKnoten.getJoin().getAktivierungsPotential() && !aktuellerEntscheidungsKnoten.equals(entscheidungsbaumWurzelknoten)){
+				// Kindelement mit dem geringsten Widerstand auswaehlen
+				if (aktuellerEntscheidungsKnoten.getSplit().getAktivierungsPotential()<aktuellerEntscheidungsKnoten.getJoin().getAktivierungsPotential()){
 					letzteBewertung = aktuellerEntscheidungsKnoten.getSplit().getBewertung();
-					aktuellerEntscheidungsKnoten.setNotiz(null);// TODO Zur Veranschaulichung; Zeile kann entfernt werden
+					if (debug) aktuellerEntscheidungsKnoten.setNotiz(null);
 					aktuellerEntscheidungsKnoten = aktuellerEntscheidungsKnoten.getSplit();
-					aktuellerEntscheidungsKnoten.setNotiz(" {A}");// TODO Zur Veranschaulichung; Zeile kann entfernt werden
-					aktuellerKnoten = suffixbaumWurzelknoten;
+					if (debug) aktuellerEntscheidungsKnoten.setNotiz(" {A}");
+					aktuellerKnoten = aktuellerEntscheidungsKnoten.getSuffixTrieKindKnoten();
 				} else {
 					letzteBewertung = aktuellerEntscheidungsKnoten.getJoin().getBewertung();
-					aktuellerEntscheidungsKnoten.setNotiz(null);// TODO Zur Veranschaulichung; Zeile kann entfernt werden
+					if (debug) aktuellerEntscheidungsKnoten.setNotiz(null);
 					aktuellerEntscheidungsKnoten = aktuellerEntscheidungsKnoten.getJoin();
-					aktuellerEntscheidungsKnoten.setNotiz(" {A}");// TODO Zur Veranschaulichung; Zeile kann entfernt werden
-					aktuellerKnoten = kindKnoten;
+					if (debug) aktuellerEntscheidungsKnoten.setNotiz(" {A}");
+					aktuellerKnoten = aktuellerEntscheidungsKnoten.getSuffixTrieKindKnoten();
 				}
 				
 				index++;
 				
 			} else {
 				
-				if (index ==9)
-					System.out.println(9);
-				
 				// Der aktuelle Entscheidungsbaumknoten hat noch KEINE Kindelemente, daher muessen zunaechst die Bewertungen ermittelt werden
 				double bewertungVerbinde = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), aktuellerKnoten, letzteBewertung);
-				double bewertungTrenne;
-				if (aktuellerEntscheidungsKnoten.equals(entscheidungsbaumWurzelknoten))
-					bewertungTrenne = Double.MAX_VALUE;
-				else
-					bewertungTrenne = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), suffixbaumWurzelknoten, Double.MAX_VALUE);
+				double bewertungTrenne = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), suffixbaumWurzelknoten, Double.MAX_VALUE);
 				
-				SplitDecisionNode entscheidungsknotenVerbinde = new SplitDecisionNode(bewertungVerbinde, aktuellerKnoten, aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
-				SplitDecisionNode entscheidungsknotenTrenne = new SplitDecisionNode(bewertungTrenne, suffixbaumWurzelknoten, aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
+				SplitDecisionNode entscheidungsknotenVerbinde = new SplitDecisionNode(bewertungVerbinde, aktuellerKnoten, aktuellerKnoten.getKinder().get(new Character(zeichenkette.charAt(index)).toString()), aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
+				SplitDecisionNode entscheidungsknotenTrenne = new SplitDecisionNode(bewertungTrenne, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(new Character(zeichenkette.charAt(index)).toString()), aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
 				aktuellerEntscheidungsKnoten.setJoin(entscheidungsknotenVerbinde);
 				aktuellerEntscheidungsKnoten.setSplit(entscheidungsknotenTrenne);
 				
@@ -94,12 +82,10 @@ public class EntscheidungsAeffchen {
 						break;
 					
 					// Elternknoten im Entscheidungs- und Suffixbaum ermitteln
-					aktuellerEntscheidungsKnoten.setNotiz(null);// TODO Zur Veranschaulichung; Zeile kann entfernt werden
+					if (debug) aktuellerEntscheidungsKnoten.setNotiz(null);
 					aktuellerEntscheidungsKnoten = aktuellerEntscheidungsKnoten.getElternKnoten();
-					aktuellerEntscheidungsKnoten.setNotiz(" {A}");// TODO Zur Veranschaulichung; Zeile kann entfernt werden
-					if (aktuellerEntscheidungsKnoten.getSuffixTrieKnoten() == null)
-						throw new Exception("Aktueller Knoten ist null");
-					aktuellerKnoten = aktuellerEntscheidungsKnoten.getSuffixTrieKnoten(); // FIXME Hier landet man irgendwo beim falschen Knoten ...
+					if (debug) aktuellerEntscheidungsKnoten.setNotiz(" {A}");
+					aktuellerKnoten = aktuellerEntscheidungsKnoten.getSuffixTrieElternKnoten();
 					
 					// Index der Position im Zeichenpuffer reduzieren
 					index--;
