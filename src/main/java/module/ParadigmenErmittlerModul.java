@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
@@ -31,6 +29,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	public static final String PROPERTYKEY_DIVIDER = "Token divider";
 	public static final String PROPERTYKEY_MINDESTKOSTENPROEBENE = "Minimal cost";
 	public static final String PROPERTYKEY_BEWERTUNGSABFALLFAKTOR = "Bewertungsabfallfaktor";
+	public static final String PROPERTYKEY_BEWERTUNGAUSGEBEN = "Bewertung mit in Ausgabe schreiben";
 
 	// Local variables
 	private File file;
@@ -40,6 +39,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	private String divider = "\t";
 	private double mindestKostenProSymbolEbene;
 	private double bewertungsAbfallFaktor;
+	private boolean bewertungAusgeben = false;
 
 	public ParadigmenErmittlerModul(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -68,7 +68,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINDESTKOSTENPROEBENE,
 				"Minimalkosten fuer jeden Verknuepfungsschritt; hoehere Werte erhoehen stark die vom Bewertungsalgorithmus durchgefuehrten Berechnungsdurchlaufe [double]");
 		this.getPropertyDescriptions().put(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR,
-				"Faktor zur Gewichtung eines Abfalls der Bewertung von einem auf das naechste Symbol [double, >0, kleiner gewichtet staerker]");
+				"Faktor zur Gewichtung eines Abfalls der Bewertung von einem auf das naechste Symbol [double, >0, 1=neutral]");
+		this.getPropertyDescriptions().put(PROPERTYKEY_BEWERTUNGAUSGEBEN,
+				"Uebergangsbewertungen mit in die Ausgabe schreiben");
 
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,
@@ -79,8 +81,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ENCODING, "UTF-8");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "10");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DIVIDER, "\t");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_MINDESTKOSTENPROEBENE, "5");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MINDESTKOSTENPROEBENE, "1");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR, "1");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_BEWERTUNGAUSGEBEN, "false");
 
 		// Add module description
 		this.setDescription("Reads contents from a suffix tree file (JSON-encoded) and based on that data marks paradigm borders in the streamed input. Outputs segmented input data. Can handle GZIP compressed suffix tree files.");
@@ -140,6 +143,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		// Eingabepuffer initialisieren
 		StringBuffer puffer = new StringBuffer();
 		
+		// Sekundaeren Eingabepuffer fuer nicht segmentierbare Zeichenketten initialisieren
+		StringBuffer sekundaerPuffer = new StringBuffer();
+		
 		// HashMap zur Zwischenspeicherung von Ergebnisbaumzweigen
 		//Map<Character,SplitDecisionNode> entscheidungsBaumZweige = new HashMap<Character,SplitDecisionNode>();
 		
@@ -173,41 +179,58 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				// Erstes Segment (erster Entscheidungsknoten, der trennt) ermitteln, Entscheidungsbaum stutzen, Puffer kuerzen
 				
 				// Zuletzt trennenden Entscheidungsbaumknoten ermitteln
-				SplitDecisionNode letzteTrennstelle = blattBesterWeg;
-				while (blattBesterWeg.getElternKnoten() != null){
-					blattBesterWeg = blattBesterWeg.getElternKnoten();
-					if (blattBesterWeg.getSplit().getAktivierungsPotential()<blattBesterWeg.getJoin().getAktivierungsPotential())
-						letzteTrennstelle = blattBesterWeg;
+				SplitDecisionNode letzteTrennstelle = null;
+				SplitDecisionNode letztesBlatt = blattBesterWeg;
+				double letzteTrennstellenBewertung = 0d;
+				while (letztesBlatt.getElternKnoten() != null){
+					letztesBlatt = letztesBlatt.getElternKnoten();
+					double trennstellenBewertung = letztesBlatt.getJoin().getAktivierungsPotential()-letztesBlatt.getSplit().getAktivierungsPotential();
+					if (trennstellenBewertung>0){
+						letzteTrennstelle = letztesBlatt;
+						letzteTrennstellenBewertung = trennstellenBewertung;
+					}
 				}
 				
-				// Tiefe der letzten Trennstelle ermitteln
-				int tiefe = 1;
-				SplitDecisionNode entscheidungsbaumKnoten = letzteTrennstelle;
-				while (entscheidungsbaumKnoten.getElternKnoten() != null){
-					entscheidungsbaumKnoten = entscheidungsbaumKnoten.getElternKnoten();
-					tiefe ++;
-				}
-				
-				// Segment ermitteln
-				String segment = puffer.substring(0, tiefe);
-				
-				// Segment aus Puffer loeschen
-				puffer.delete(0, tiefe);
-				
-				// Entscheidungsbaum stutzen
-				//letzteTrennstelle.setElternKnoten(null);
-				entscheidungsbaumWurzelknoten = letzteTrennstelle.getSplit();
-				if (entscheidungsbaumWurzelknoten != null)
+				// Pruefen, ob eine Trennstelle gefunden wurde
+				if (letzteTrennstelle == null){
+					// Wenn gar keine Trennstelle gefunden wurde, wird der Puffer mit Ausnahme des letzten Zeichens in den Sekundaerpuffer uebertragen
+					sekundaerPuffer.append(puffer.substring(0, puffer.length()-1));
+					puffer.delete(0, puffer.length()-1);
+					// Entscheidungsbaum stutzen
+					entscheidungsbaumWurzelknoten = blattBesterWeg;
 					entscheidungsbaumWurzelknoten.setElternKnoten(null);
-				//entscheidungsbaumWurzelknoten.setSymbol('^');
-				
-				// Trennknoten zu Verbindungsknoten machen
-				//entscheidungsbaumWurzelknoten.setJoin(entscheidungsbaumWurzelknoten.getSplit());
-				// Trennknoten blockieren
-				//entscheidungsbaumWurzelknoten.setSplit(new SplitDecisionNode(Double.MAX_VALUE));
-				
-				// Segment ausgeben
-				this.outputToAllCharPipes(segment.concat(this.divider));
+				} else {
+					
+					// Trennstelle gefunden, Segment abloesen und ausgeben
+					
+					// Tiefe der letzten Trennstelle ermitteln
+					int tiefe = 1;
+					SplitDecisionNode entscheidungsbaumKnoten = letzteTrennstelle;
+					while (entscheidungsbaumKnoten.getElternKnoten() != null){
+						entscheidungsbaumKnoten = entscheidungsbaumKnoten.getElternKnoten();
+						tiefe ++;
+					}
+					
+					// Segment ermitteln (Sekundaerpuffer + Puffer bis zur ermittelten Tiefe)
+					String segment = sekundaerPuffer.toString().concat(puffer.substring(0, tiefe));
+					
+					// Segment aus Puffer loeschen
+					puffer.delete(0, tiefe);
+					
+					// Sekundaerpuffer loeschen
+					sekundaerPuffer.delete(0, sekundaerPuffer.length());
+					
+					// Entscheidungsbaum stutzen
+					entscheidungsbaumWurzelknoten = letzteTrennstelle.getSplit();
+					if (entscheidungsbaumWurzelknoten != null)
+						entscheidungsbaumWurzelknoten.setElternKnoten(null);
+					
+					// Segment ausgeben
+					this.outputToAllCharPipes(segment.concat(this.divider));
+					
+					if (bewertungAusgeben)
+						this.outputToAllCharPipes(letzteTrennstellenBewertung+this.divider);
+				}
 				
 			}
 			
@@ -256,6 +279,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			this.bewertungsAbfallFaktor = Double.parseDouble(this.getProperties().getProperty(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR));
 		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR))
 			this.bewertungsAbfallFaktor = Double.parseDouble(this.getPropertyDefaultValues().get(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR));
+		
+		if (this.getProperties().containsKey(PROPERTYKEY_BEWERTUNGAUSGEBEN))
+			this.bewertungAusgeben = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_BEWERTUNGAUSGEBEN));
 			
 		super.applyProperties();
 	}
