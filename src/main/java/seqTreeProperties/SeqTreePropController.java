@@ -4,13 +4,16 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import treeBuilder.Knoten; //necessary to read the objects form JSON
 import modularization.CharPipe;
+import java.io.PipedReader;
 import modularization.ModuleImpl;
 import parallelization.CallbackReceiver;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Reads trees from I/O pipe via JSON format.
@@ -40,7 +43,8 @@ public class SeqTreePropController extends ModuleImpl {
 		private String json = "";
 		private Knoten mainNode;
 		private Gson gson;
-		//private HashMap<String, SeqPropertyNode> seqProperties;
+		private SeqPropertyNode rootNode;
+		//private HashMap<String, SeqPropertyNode> seqNodes;
 		//end variables
 		
 		//constructors:
@@ -67,9 +71,9 @@ public class SeqTreePropController extends ModuleImpl {
 			json += str;
 		}
 		
-		public void setGson() {
+		public void setGson(PipedReader reader) {
 			gson = new Gson();
-			mainNode = gson.fromJson(json, Knoten.class);
+			mainNode = gson.fromJson(reader, Knoten.class);
 		}
 		//end setters
 		
@@ -82,42 +86,22 @@ public class SeqTreePropController extends ModuleImpl {
 		@Override
 		public boolean process() throws Exception {
 			
-			// Variables used for input data
-			int bufferSize = 1024;
-			char[] buffer = new char[bufferSize];
-			
-			// Read first chunk of data
-			int readChars = this.getInputCharPipe().read(buffer, 0, bufferSize);
-			
-			// Loop until no more data can be read
-			while (readChars != -1){
-				
-				// Check for interrupt signal
-				if (Thread.interrupted()) {
-					this.closeAllOutputs();
-					throw new InterruptedException("Thread has been interrupted.");
-				}
-				
-				// Convert char array to string
-				String inputChunk = new String(buffer).substring(0, readChars);
-				this.addJson(inputChunk);
-				
-				// Read next chunk of data
-				readChars = this.getInputCharPipe().read(buffer, 0, bufferSize);
-			}
-			
 			//create mainNode by reading JSON input
-			this.setGson();
-			
-			//iterate over the tree and get parameters
+			this.setGson(this.getInputCharPipe().getInput());
+						
+			//iterate over the tree and get paraStringmeters
 			this.iterateMainNode();
 			
 			
 			// Write to outputs
-			//this.outputToAllCharPipes(this.getJson());
-			
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			Iterator<CharPipe> charPipes = this.getOutputCharPipes().iterator();
+			while (charPipes.hasNext()){
+				gson.toJson(rootNode, charPipes.next().getOutput());
+			}
+						
 			// Close outputs (important!)
-			//this.closeAllOutputs();
+			this.closeAllOutputs();
 			
 			// Done
 			return true;
@@ -137,11 +121,81 @@ public class SeqTreePropController extends ModuleImpl {
 		}
 		
 		public void iterateMainNode() {
+			
+			//set root for SeqPropertyNode seqNodes
+			
+			rootNode = new SeqPropertyNode("^", 1);
+			//seqNodes = new HashMap<String, SeqPropertyNode> ();
+			//seqNodes.put("^", rootNode);
+			
 			Iterator<Entry<String, Knoten>> it = mainNode.getKinder().entrySet().iterator();
+			
 			while (it.hasNext()) {
 				HashMap.Entry<String, Knoten> pair = (HashMap.Entry<String, Knoten>)it.next();
-			    System.out.println(pair.getKey() + " = " + pair.getValue());
+				//endNode.add(deepIteration(pair.getValue()));
+				if(pair.getValue().getKinder().isEmpty()) {
+					//end node on first level reached. Create terminal node at tree height 0.
+					SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getZaehler());
+					rootNode.addNode(pair.getKey(), node);
+				} else {
+						if (pair.getValue().getKinder().size() == 1) {
+								SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getZaehler());
+								SeqPropertyNode childNode = deepIteration(pair.getValue(), node);
+								//node.addNode(childNode.getValue(), childNode);
+								rootNode.addNode(node.getValue(), childNode.getNodeHash().get(node.getValue())); //get node directly beneath childnode
+						} else if(pair.getValue().getKinder().size() > 1) {
+								Iterator<Entry<String, Knoten>> subIt = pair.getValue().getKinder().entrySet().iterator();
+								SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getZaehler());
+								while (subIt.hasNext()) {
+									HashMap.Entry<String, Knoten> subPair = (HashMap.Entry<String, Knoten>)subIt.next();
+									SeqPropertyNode subNode = new SeqPropertyNode(subPair.getKey(), subPair.getValue().getZaehler());
+									SeqPropertyNode childNode = deepIteration(subPair.getValue(), subNode);
+									//subNode.addNode(childNode.getValue(), childNode);
+									node.addNode(childNode.getValue(), childNode);
+									subIt.remove(); // avoids a ConcurrentModificationException
+								}
+								rootNode.addNode(node.getValue(), node);
+						}
+				}
 			    it.remove(); // avoids a ConcurrentModificationException
+			}
+		}
+		
+		private SeqPropertyNode deepIteration(Knoten Node, SeqPropertyNode propNode) {
+			Knoten currentNode = Node;
+			SeqPropertyNode lastPropNode = propNode;
+			SeqPropertyNode currPropNode = new SeqPropertyNode(currentNode.getName(), currentNode.getZaehler());
+			// reaching a terminal node adds the sequence to the previous node
+			if (currentNode.getKinder().isEmpty()) {
+				return lastPropNode;
+			} else {
+				Iterator<Entry<String, Knoten>> deepIt = currentNode.getKinder().entrySet().iterator();
+				while (deepIt.hasNext()) {
+					HashMap.Entry<String, Knoten> deepPair = (HashMap.Entry<String, Knoten>)deepIt.next();
+					//SeqPropertyNode currPropNode = new SeqPropertyNode(deepPair.getKey(), deepPair.getValue().getZaehler());
+					if(deepPair.getValue().getKinder().size() == 0) {
+						SeqPropertyNode newPropNode = new SeqPropertyNode(deepPair.getKey(),deepPair.getValue().getZaehler());
+						currPropNode.addNode(newPropNode.getValue(), newPropNode);
+						//return currPropNode;
+						//lastPropNode.addNode(currPropNode.getValue(), currPropNode);
+					} else if(deepPair.getValue().getKinder().size() == 1) { //if there is only one node beneath then merge with previous
+						SeqPropertyNode newPropNode = deepIteration(deepPair.getValue(),currPropNode);
+						//TODO: here is the problem I cannot merge nodes yet, as beneath layers are invisible to me
+						//currPropNode.concatValue(newPropNode.getValue());
+						lastPropNode.addNode(newPropNode.getValue(), newPropNode);
+						//return lastPropNode;
+					} else if (deepPair.getValue().getKinder().size() > 1) { // if there are more nodes remember the zaehler value
+						SeqPropertyNode newNode = deepIteration(deepPair.getValue(),currPropNode);
+						currPropNode.addNode(newNode.getValue(), newNode);
+					}
+				}
+				deepIt.remove(); // avoids a ConcurrentModificationException
+				if ((currPropNode.getNodeHash().size() == 1) || (currPropNode.getNodeHash().size() == 0)) {
+					lastPropNode.addNode(currPropNode.getValue(), currPropNode);
+					return lastPropNode;
+				} else {
+					return currPropNode;
+				}
 			}
 		}
 }
