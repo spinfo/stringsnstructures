@@ -15,10 +15,14 @@ public class ModuleTreeTest {
 	@Test
 	public void test() throws Exception {
 		
-		String oancLoc0 = System.getProperty("user.home")+File.separator+"Dropbox"+File.separator+"Strings_and_Structures"+File.separator+"ANC"+File.separator+"XCES Format"+File.separator+"written"+File.separator;
-		//String oancLoc0 = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/written_1/journal/slate/8/";
-		//String oancLoc0 = "/home/marcel/Daten/OANC/OANC-1.0.1-UTF8/data/spoken/face-to-face/charlotte/";
+		String oancLoc0 = "src"+File.separator+"test"+File.separator+"data"+File.separator;
+		
+		File eingabeVerzeichnis = new File(oancLoc0);
+		assertTrue(eingabeVerzeichnis.exists() && eingabeVerzeichnis.isDirectory());
+		System.out.println("Eingabeverzeichnis "+oancLoc0+" existiert.");
+		
 		String outputFileLocation = System.getProperty("java.io.tmpdir")+File.separator+"test.txt";
+		System.out.println("Schreibe Testausgabe nach "+outputFileLocation);
 		
 		// Set up module tree
 		ModuleTree moduleTree = new ModuleTree();
@@ -35,6 +39,7 @@ public class ModuleTreeTest {
 		Properties fileWriterProperties = new Properties();
 		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileWriter");
 		fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_OUTPUTFILE, outputFileLocation);
+		fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_ENCODING, "UTF-8");
 		FileWriterModule fileWriter = new FileWriterModule(moduleTree,fileWriterProperties);
 		
 		// Prepare OANC parser module
@@ -48,10 +53,10 @@ public class ModuleTreeTest {
 		OANCXMLParser oancParser = new OANCXMLParser(moduleTree,oancParserProperties);
 		
 		// Prepare FileReader module
-		Properties fileReaderProperties = new Properties();
+		/*Properties fileReaderProperties = new Properties();
 		fileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileReader");
 		fileReaderProperties.setProperty(FileReaderModule.PROPERTYKEY_INPUTFILE, outputFileLocation);
-		FileReaderModule fileReader = new FileReaderModule(moduleTree,fileReaderProperties);
+		FileReaderModule fileReader = new FileReaderModule(moduleTree,fileReaderProperties);*/
 		
 		// Prepare ConsoleWriter module
 		Properties consoleWriterProperties = new Properties();
@@ -59,11 +64,11 @@ public class ModuleTreeTest {
 		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleTree,consoleWriterProperties);
 		
 		// Prepare ExampleModule module
-		Properties exampleModuleProperties = new Properties();
+		/*Properties exampleModuleProperties = new Properties();
 		exampleModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "Example Module");
 		exampleModuleProperties.setProperty(ExampleModule.PROPERTYKEY_REGEX, "[aeiu]");
 		exampleModuleProperties.setProperty(ExampleModule.PROPERTYKEY_REPLACEMENT, "o");
-		ExampleModule exampleModule = new ExampleModule(moduleTree, exampleModuleProperties);
+		ExampleModule exampleModule = new ExampleModule(moduleTree, exampleModuleProperties);*/
 		
 		// Add modules to tree
 		moduleTree.addModule(oancParser, oanc);
@@ -78,7 +83,7 @@ public class ModuleTreeTest {
 		
 		// Run modules in tree
 		System.out.println("Attempting to run module tree");
-		moduleTree.runModules();
+		moduleTree.runModules(true);
 		
 		assertTrue(true);
 	}

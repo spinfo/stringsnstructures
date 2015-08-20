@@ -1,14 +1,10 @@
 package suffixTree.suffixTree.applications;
 
-import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import suffixTree.suffixTree.SuffixTree;
 import suffixTree.suffixTree.applications.event.MyEntryEvent;
 import suffixTree.suffixTree.applications.event.MyExitEvent;
 import suffixTree.suffixTree.node.Node;
-import suffixTree.suffixTree.node.GeneralisedSuffixTreeNode;
-import suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
 
 
 public class ResultListenerSuffixTreePath  implements ITreeWalkerListener{

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cesAna xmlns="http://www.xces.org/schema/2003" version="1.0.4">
+   <struct type="s" from="38" to="59"/>
+   <struct type="s" from="86" to="170">
+      <feat name="id" value="p1s1"/>
+   </struct>
+   <struct type="s" from="171" to="320">
+      <feat name="id" value="p1s2"/>
+   </struct>
+   <struct type="s" from="321" to="598">
+      <feat name="id" value="p1s3"/>
+   </struct>
+   <struct type="s" from="599" to="674">
+      <feat name="id" value="p1s4"/>
+   </struct>
+   <struct type="s" from="675" to="749">
+      <feat name="id" value="p1s5"/>
+   </struct>
+   <struct type="s" from="750" to="765">
+      <feat name="id" value="p1s6"/>
+   </struct>
+   <struct type="s" from="766" to="978">
+      <feat name="id" value="p1s7"/>
+   </struct>
+   <struct type="s" from="979" to="1228">
+      <feat name="id" value="p1s8"/>
+   </struct>
+   <struct type="s" from="1229" to="1842">
+      <feat name="id" value="p1s9"/>
+   </struct>
+   <struct type="s" from="1856" to="2035">
+      <feat name="id" value="p2s1"/>
+   </struct>
+   <struct type="s" from="2036" to="2269">
+      <feat name="id" value="p2s2"/>
+   </struct>
+   <struct type="s" from="2270" to="2441">
+      <feat name="id" value="p2s3"/>
+   </struct>
+   <struct type="s" from="2442" to="2668">
+      <feat name="id" value="p2s4"/>
+   </struct>
+   <struct type="s" from="2669" to="2850">
+      <feat name="id" value="p2s5"/>
+   </struct>
+   <struct type="s" from="2851" to="2965">
+      <feat name="id" value="p2s6"/>
+   </struct>
+   <struct type="s" from="2966" to="3075">
+      <feat name="id" value="p2s7"/>
+   </struct>
+   <struct type="s" from="3089" to="3320">
+      <feat name="id" value="p3s1"/>
+   </struct>
+   <struct type="s" from="3321" to="3516">
+      <feat name="id" value="p3s2"/>
+   </struct>
+   <struct type="s" from="3517" to="3639">
+      <feat name="id" value="p3s3"/>
+   </struct>
+</cesAna>

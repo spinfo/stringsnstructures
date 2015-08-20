@@ -1,9 +1,6 @@
 package suffixTree.suffixTree.applications;
 
-import java.util.ArrayList;
 import suffixTree.suffixMain.GeneralisedSuffixTreeMain;
-import suffixTree.suffixTree.applications.SuffixTreeAppl;
-import suffixTree.suffixTree.applications.SearchResult;
 
 public class CompressSuffixTree {
 	

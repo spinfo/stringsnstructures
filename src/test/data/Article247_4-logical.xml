@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cesAna xmlns="http://www.xces.org/schema/2003" version="1.0.4">
+   <struct type="cesDoc" from="0" to="3662">
+      <feat name="xmlns:xlink" value="http://www.w3.org/1999/xlink"/>
+      <feat name="xmlns:xsi" value="http://www.w3.org/2001/XMLSchema-instance"/>
+      <feat name="xmlns" value="http://www.xces.org/schema/2003"/>
+      <feat name="version" value="1.0.4"/>
+   </struct>
+   <struct type="text" from="8" to="3661"/>
+   <struct type="body" from="15" to="3657"/>
+   <struct type="head" from="38" to="59">
+      <feat name="type" value="headline"/>
+      <feat name="level" value="1"/>
+   </struct>
+   <struct type="p" from="86" to="1842">
+      <feat name="id" value="p1"/>
+   </struct>
+   <struct type="hi" from="100" to="105">
+      <feat name="rend" value="ital"/>
+      <feat name="type" value="title"/>
+   </struct>
+   <struct type="hi" from="237" to="244">
+      <feat name="rend" value="ital"/>
+      <feat name="type" value="null"/>
+   </struct>
+   <struct type="hi" from="366" to="373">
+      <feat name="rend" value="ital"/>
+      <feat name="type" value="title"/>
+   </struct>
+   <struct type="hi" from="675" to="680">
+      <feat name="rend" value="ital"/>
+      <feat name="type" value="title"/>
+   </struct>
+   <struct type="hi" from="1210" to="1215">
+      <feat name="rend" value="ital"/>
+      <feat name="type" value="title"/>
+   </struct>
+   <struct type="hi" from="1238" to="1242">
+      <feat name="rend" value="ital"/>
+      <feat name="type" value="title"/>
+   </struct>
+   <struct type="p" from="1856" to="3075">
+      <feat name="id" value="p2"/>
+   </struct>
+   <struct type="hi" from="2302" to="2307">
+      <feat name="rend" value="ital"/>
+      <feat name="type" value="title"/>
+   </struct>
+   <struct type="hi" from="2970" to="2975">
+      <feat name="rend" value="ital"/>
+      <feat name="type" value="title"/>
+   </struct>
+   <struct type="p" from="3089" to="3639">
+      <feat name="id" value="p3"/>
+   </struct>
+   <struct type="hi" from="3541" to="3545">
+      <feat name="rend" value="ital"/>
+      <feat name="type" value="emphasis"/>
+   </struct>
+</cesAna>

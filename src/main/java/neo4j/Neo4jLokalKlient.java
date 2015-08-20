@@ -1,5 +1,6 @@
 package neo4j;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -31,7 +32,7 @@ public class Neo4jLokalKlient {
 		super();
 		this.datenbankpfad = datenbankpfad;
 		if (Neo4jLokalKlient.graphDb == null)
-			Neo4jLokalKlient.graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( datenbankpfad );
+			Neo4jLokalKlient.graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( new File(datenbankpfad) );
 	}
 
 	public Neo4jLokalKlient(int transaktionsschwelle, String datenbankpfad) {
@@ -39,7 +40,7 @@ public class Neo4jLokalKlient {
 		this.transaktionsschwelle = transaktionsschwelle;
 		this.datenbankpfad = datenbankpfad;
 		if (Neo4jLokalKlient.graphDb == null)
-		Neo4jLokalKlient.graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( datenbankpfad );
+		Neo4jLokalKlient.graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( new File(datenbankpfad) );
 	}
 
 	public int getTransaktionsschwelle() {
@@ -186,7 +187,7 @@ public class Neo4jLokalKlient {
 	}
 
 	public static void main(String[] args) {
-		GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( "/home/marcel/opt/neo4j-community-2.0.1/data/graph.db" );
+		GraphDatabaseService graphDb = new GraphDatabaseFactory().newEmbeddedDatabase( new File ("/home/marcel/opt/neo4j-community-2.0.1/data/graph.db") );
 		
 		Transaction tx = graphDb.beginTx();
 		 try

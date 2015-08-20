@@ -2,9 +2,7 @@ package main;
 
 import keyWordInPhrase.KeyWordInPhrase;
 import preprocess.PreprocessMain;
-import suffixTree.suffixMain.GeneralisedSuffixTreeMain;
 import suffixTree.suffixTree.applications.CompressSuffixTree;
-import suffixTreeClustering.main.SuffixTreeClusteringMain;
 
 public class Application {
 

@@ -250,7 +250,7 @@ public class Neo4jRestKlient {
 			throw new Exception("Es muessen gleich viele Quellen, Ziele und Gewichte angegeben werden!");
 		}
 		
-		String jsonAttributes = "{}";
+		//String jsonAttributes = "{}";
 		Neo4JRestRequest request = new Neo4JRestRequest();
 		
 		for (int i=0; i<quellen.length; i++){

@@ -3,8 +3,6 @@ package modularization;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -95,7 +93,8 @@ public class ModuleTreeSerializationTest {
 			
 			//assertTrue(json.equals(json2)); // Order of fields in JSON is not fixed, so this will probably fail even if the JSON is functionally identical.
 
-			assertTrue(true);
+			assertTrue(json2.length()==json.length());
+			
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
