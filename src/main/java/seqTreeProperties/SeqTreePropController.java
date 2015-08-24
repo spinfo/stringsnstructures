@@ -31,7 +31,8 @@ import com.google.gson.GsonBuilder;
 public class SeqTreePropController extends ModuleImpl {
 		
 		//property keys:
-		//public static final String PROPERTYKEY_PROP = "PROP";
+		public static final String PROPERTYKEY_OUTPUT = "Output by Newick or JSON format";
+		public static final String PROPERTYKEY_NEWICK = "Newick branch length";
 		//end keys
 	
 		//variables:
@@ -39,8 +40,9 @@ public class SeqTreePropController extends ModuleImpl {
 		private double ratioSubtree;
 		private double averageSubtree;
 		private int sackinIndex;*/
-		
-		private String json = "";
+		private String newickOutput;
+		private boolean standardOut; //TODO: Apply properties for this variable!
+		private boolean outputForm;
 		private Knoten mainNode;
 		private Gson gson;
 		private SeqPropertyNode rootNode;
@@ -53,11 +55,16 @@ public class SeqTreePropController extends ModuleImpl {
 			super(callbackReceiver, properties);
 
 			// Add property descriptions
-			//this.getPropertyDescriptions().put(PROPERTYKEY_REGEX, "Regular expression to search for");
+			this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUT, "Choose output format: true = Newick; false = JSON");
+			this.getPropertyDescriptions().put(PROPERTYKEY_NEWICK, "Choose branch length in Newick: true = by string; false = by node occurence");
 			
 			// Add property defaults
 			this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Sequence Tree Properties");
-			//this.getPropertyDefaultValues().put(PROPERTYKEY_REGEX, "[aeiu]");
+			this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUT, "true");
+			this.getPropertyDefaultValues().put(PROPERTYKEY_NEWICK, "true");
+			
+			// set up newickOutput
+			this.newickOutput = new String();
 			
 			// Define I/O
 			this.getSupportedInputs().add(CharPipe.class);
@@ -67,19 +74,65 @@ public class SeqTreePropController extends ModuleImpl {
 		//end constructors
 		
 		//setters:
-		public void addJson(String str) {
-			json += str;
-		}
-		
+			
 		public void setGson(PipedReader reader) {
 			gson = new Gson();
 			mainNode = gson.fromJson(reader, Knoten.class);
 		}
+		
+		public void setRootNewickNode(String val, int count) {
+			String nodeVal = val;
+			int counter = count;
+			int newCount = nodeVal.length();
+			if (standardOut) {
+				String newNode = nodeVal + ":" + Integer.toString(newCount) + ",";
+				newickOutput += newNode;
+			} else {
+				String newNode = nodeVal +  ":" + Integer.toString(counter) + ",";
+				newickOutput += newNode;
+			}
+		}
+		public void addRootNewickEnd() {
+			newickOutput = newickOutput.substring(0, newickOutput.length()-1); //remove last comma at the end of last node
+			String endParenthesis = ");";
+			newickOutput += endParenthesis;
+		}
+		
+		public void setInnerNewickNode(String val, int count) {
+			String nodeVal = val;
+			int counter = count;
+			int newCount = nodeVal.length();
+			if (standardOut) {
+				String newNode = nodeVal + ")" + ":" + Integer.toString(newCount) + ",";
+				newickOutput += newNode;
+			} else {
+				String newNode = nodeVal + ")" +  ":" + Integer.toString(counter) + ",";
+				newickOutput += newNode;
+			}
+		}
+				
+		public void setTermNewickNode(String val, int count) {
+			String nodeVal = val;
+			int counter = count;
+			int newCount = nodeVal.length();
+			if (standardOut) {
+				String newNode = "(" + nodeVal + ")" + ":" + Integer.toString(newCount) + ",";
+				newickOutput += newNode;
+			} else {
+				String newNode ="(" + nodeVal + ")" + ":" + Integer.toString(counter) + ",";
+				newickOutput += newNode;
+			}
+		}
+		
+		public void addLeadingParenthesisNewick() {
+			String newParenthesis = "(";
+			newickOutput += newParenthesis;
+		}
 		//end setters
 		
 		//getters:
-		public String getJson() {
-			return json;
+		public String getNewick () {
+			return newickOutput;
 		}
 		//end getters
 		
@@ -92,12 +145,15 @@ public class SeqTreePropController extends ModuleImpl {
 			//iterate over the tree and get paraStringmeters
 			this.iterateMainNode();
 			
-			
-			// Write to outputs
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			Iterator<CharPipe> charPipes = this.getOutputCharPipes().iterator();
-			while (charPipes.hasNext()){
-				gson.toJson(rootNode, charPipes.next().getOutput());
+			if (outputForm) { // if 'outputForm' equals 'true' then write Newick, else write JSON
+				this.outputToAllCharPipes(this.getNewick()); // write Newick to output
+			} else {
+				// write JSON to output
+				Gson gson = new GsonBuilder().setPrettyPrinting().create();
+				Iterator<CharPipe> charPipes = this.getOutputCharPipes().iterator();
+				while (charPipes.hasNext()){
+					gson.toJson(rootNode, charPipes.next().getOutput());
+				}
 			}
 						
 			// Close outputs (important!)
@@ -111,22 +167,22 @@ public class SeqTreePropController extends ModuleImpl {
 		public void applyProperties() throws Exception {
 			
 			// Apply own properties
-			/*if (this.getProperties().containsKey(PROPERTYKEY_REGEX))
-				this.regex = this.getProperties().getProperty(PROPERTYKEY_REGEX, this.getPropertyDefaultValues().get(PROPERTYKEY_REGEX));
-			if (this.getProperties().containsKey(PROPERTYKEY_REPLACEMENT))
-				this.replacement = this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_REPLACEMENT));
-			*/
+			if (this.getProperties().containsKey(PROPERTYKEY_OUTPUT))
+				this.outputForm = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_OUTPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_OUTPUT)));
+			if (this.getProperties().containsKey(PROPERTYKEY_NEWICK))
+				this.standardOut = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_NEWICK, this.getPropertyDefaultValues().get(PROPERTYKEY_NEWICK)));
 			// Apply parent object's properties
 			super.applyProperties();
 		}
 		
 		public void iterateMainNode() {
 			
-			//set root for SeqPropertyNode seqNodes
+			// instantiate new root node
+			rootNode = new SeqPropertyNode("^", mainNode.getZaehler()); 
 			
-			rootNode = new SeqPropertyNode("^", 1);
-			//seqNodes = new HashMap<String, SeqPropertyNode> ();
-			//seqNodes.put("^", rootNode);
+			// add root node to Newick format
+			addLeadingParenthesisNewick();
+			setRootNewickNode(rootNode.getValue(), rootNode.getCounter()); 
 			
 			Iterator<Entry<String, Knoten>> it = mainNode.getKinder().entrySet().iterator();
 			
@@ -136,66 +192,120 @@ public class SeqTreePropController extends ModuleImpl {
 				if(pair.getValue().getKinder().isEmpty()) {
 					//end node on first level reached. Create terminal node at tree height 0.
 					SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getZaehler());
+					setTermNewickNode(node.getValue(), node.getCounter()); //new Newick terminal node
 					rootNode.addNode(pair.getKey(), node);
 				} else {
 						if (pair.getValue().getKinder().size() == 1) {
 								SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getZaehler());
-								SeqPropertyNode childNode = deepIteration(pair.getValue(), node);
-								//node.addNode(childNode.getValue(), childNode);
-								rootNode.addNode(node.getValue(), childNode.getNodeHash().get(node.getValue())); //get node directly beneath childnode
+								
+								// add child node to Newick format
+								addLeadingParenthesisNewick(); 
+								
+								SeqPropertyNode childNode = deepIteration(true, pair.getValue(), node);
+								
+								// add child node to Newick format
+								setInnerNewickNode(childNode.getValue(), childNode.getCounter());
+								
+								//get node directly beneath childnode
+								rootNode.addNode(childNode.getValue(), childNode); 
+								
 						} else if(pair.getValue().getKinder().size() > 1) {
 								Iterator<Entry<String, Knoten>> subIt = pair.getValue().getKinder().entrySet().iterator();
+								
 								SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getZaehler());
+								
+								//add node to Newick format
+								addLeadingParenthesisNewick(); 
+								
 								while (subIt.hasNext()) {
 									HashMap.Entry<String, Knoten> subPair = (HashMap.Entry<String, Knoten>)subIt.next();
 									SeqPropertyNode subNode = new SeqPropertyNode(subPair.getKey(), subPair.getValue().getZaehler());
-									SeqPropertyNode childNode = deepIteration(subPair.getValue(), subNode);
-									//subNode.addNode(childNode.getValue(), childNode);
+									
+									//add child node to Newick format
+									addLeadingParenthesisNewick(); 
+									
+									SeqPropertyNode childNode = deepIteration(false, subPair.getValue(), subNode);
+									
+									//add child node to Newick format
+									setInnerNewickNode(childNode.getValue(), childNode.getCounter());
+									
 									node.addNode(childNode.getValue(), childNode);
 									subIt.remove(); // avoids a ConcurrentModificationException
 								}
+								//add child node to Newick format
+								setInnerNewickNode(node.getValue(), node.getCounter());
+								
 								rootNode.addNode(node.getValue(), node);
 						}
 				}
 			    it.remove(); // avoids a ConcurrentModificationException
 			}
+			//end the Newick entry for the whole tree
+			addRootNewickEnd();
 		}
 		
-		private SeqPropertyNode deepIteration(Knoten Node, SeqPropertyNode propNode) {
+		private SeqPropertyNode deepIteration(boolean flag, Knoten Node, SeqPropertyNode propNode) {
+			boolean concatFlag = flag;
 			Knoten currentNode = Node;
 			SeqPropertyNode lastPropNode = propNode;
 			SeqPropertyNode currPropNode = new SeqPropertyNode(currentNode.getName(), currentNode.getZaehler());
+			
 			// reaching a terminal node adds the sequence to the previous node
 			if (currentNode.getKinder().isEmpty()) {
-				return lastPropNode;
+				setTermNewickNode(currPropNode.getValue(), currPropNode.getCounter()); //new Newick terminal node
+				if (concatFlag) {
+					return currPropNode;
+				} else {
+					return lastPropNode;
+				}
 			} else {
 				Iterator<Entry<String, Knoten>> deepIt = currentNode.getKinder().entrySet().iterator();
 				while (deepIt.hasNext()) {
 					HashMap.Entry<String, Knoten> deepPair = (HashMap.Entry<String, Knoten>)deepIt.next();
-					//SeqPropertyNode currPropNode = new SeqPropertyNode(deepPair.getKey(), deepPair.getValue().getZaehler());
+					
 					if(deepPair.getValue().getKinder().size() == 0) {
-						SeqPropertyNode newPropNode = new SeqPropertyNode(deepPair.getKey(),deepPair.getValue().getZaehler());
-						currPropNode.addNode(newPropNode.getValue(), newPropNode);
-						//return currPropNode;
-						//lastPropNode.addNode(currPropNode.getValue(), currPropNode);
-					} else if(deepPair.getValue().getKinder().size() == 1) { //if there is only one node beneath then merge with previous
-						SeqPropertyNode newPropNode = deepIteration(deepPair.getValue(),currPropNode);
-						//TODO: here is the problem I cannot merge nodes yet, as beneath layers are invisible to me
-						//currPropNode.concatValue(newPropNode.getValue());
-						lastPropNode.addNode(newPropNode.getValue(), newPropNode);
-						//return lastPropNode;
+						SeqPropertyNode newPropNode = new SeqPropertyNode(deepPair.getKey(),deepPair.getValue().getZaehler());				
+						
+						if (concatFlag) {
+							currPropNode = newPropNode;
+						} else {
+							setTermNewickNode(newPropNode.getValue(), newPropNode.getCounter()); //new Newick terminal node
+							currPropNode.addNode(newPropNode.getValue(), newPropNode);
+						}
+						
+						
+					} else if(deepPair.getValue().getKinder().size() == 1) { //if child has one grand child
+						boolean lastFlag = concatFlag; // remember the last concatenation status
+						concatFlag = true;
+						if(currentNode.getKinder().size() == 1) {
+							currPropNode.concatValue(deepPair.getValue().getName()); // remember the name of the child
+						}
+						Object[] key = deepPair.getValue().getKinder().keySet().toArray(); //What is the name of the grand child?
+						if (!lastFlag) { // if concatenation was false last time we were at a branching node, so write an inner Newick node
+							addLeadingParenthesisNewick(); //add a leading Parenthesis to the Newick output
+						}						
+						SeqPropertyNode newPropNode = deepIteration(concatFlag, deepPair.getValue().getKinder().get(key[0]),currPropNode); //Let's continue with the grand child
+						if (!lastFlag) {
+							setInnerNewickNode(newPropNode.getValue(), newPropNode.getCounter()); //write content of inner node
+						}
+						
+						if(newPropNode.getNodeHash().size() == 1) { //What the grand child also has only one child?
+							Object[] newChild = newPropNode.getNodeHash().keySet().toArray();//What is the name of this new child?
+							currPropNode.concatValue(newPropNode.getValue()); //remember the name of the grand child
+							currPropNode.addNode(newPropNode.getNodeHash().get(newChild[0]).getValue(), newPropNode.getNodeHash().get(newChild[0]));//continue with this new child
+						} else { // so the grand child several or no children, let's remember that
+							currPropNode.addNode(newPropNode.getValue(), newPropNode); 
+						}
 					} else if (deepPair.getValue().getKinder().size() > 1) { // if there are more nodes remember the zaehler value
-						SeqPropertyNode newNode = deepIteration(deepPair.getValue(),currPropNode);
+						concatFlag = false;
+						addLeadingParenthesisNewick(); //add a leading Parenthesis to the Newick output
+						SeqPropertyNode newNode = deepIteration(concatFlag, deepPair.getValue(),currPropNode);
+						setInnerNewickNode(newNode.getValue(), newNode.getCounter()); //write content of inner node
 						currPropNode.addNode(newNode.getValue(), newNode);
 					}
 				}
 				deepIt.remove(); // avoids a ConcurrentModificationException
-				if ((currPropNode.getNodeHash().size() == 1) || (currPropNode.getNodeHash().size() == 0)) {
-					lastPropNode.addNode(currPropNode.getValue(), currPropNode);
-					return lastPropNode;
-				} else {
-					return currPropNode;
-				}
+				return currPropNode;
 			}
 		}
 }
