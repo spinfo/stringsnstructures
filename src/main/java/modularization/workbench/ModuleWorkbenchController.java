@@ -38,7 +38,7 @@ import neo4j.Neo4jOutputModule;
 import parser.oanc.OANC;
 import parser.oanc.OANCXMLParser;
 import suffixNetBuilder.SuffixNetBuilderModule;
-import treeBuilder.AtomicRangeSuffixTreeBuilder;
+import treeBuilder.AtomicRangeSuffixTrieBuilder;
 import treeBuilder.TreeBuilder;
 import visualizationModules.ASCIIGraph;
 import visualizationModules.ColourGraph;
@@ -137,12 +137,12 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		treeBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilder.applyProperties();
 
-		// Prepare AtomicRangeSuffixTreeBuilder module
-		Properties atomicRangeSuffixTreeBuilderProperties = new Properties();
-		AtomicRangeSuffixTreeBuilder atomicRangeSuffixTreeBuilder = new AtomicRangeSuffixTreeBuilder(moduleTree,
-				atomicRangeSuffixTreeBuilderProperties);
-		atomicRangeSuffixTreeBuilderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, atomicRangeSuffixTreeBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		atomicRangeSuffixTreeBuilder.applyProperties();
+		// Prepare AtomicRangeSuffixTrieBuilder module
+		Properties atomicRangeSuffixTrieBuilderProperties = new Properties();
+		AtomicRangeSuffixTrieBuilder atomicRangeSuffixTrieBuilder = new AtomicRangeSuffixTrieBuilder(moduleTree,
+				atomicRangeSuffixTrieBuilderProperties);
+		atomicRangeSuffixTrieBuilderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, atomicRangeSuffixTrieBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		atomicRangeSuffixTrieBuilder.applyProperties();
 
 		// Prepare Neo4jOutputModule module
 		Properties neo4jOutputModuleProperties = new Properties();
@@ -188,7 +188,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(oanc);
 		availableModules.add(oancParser);
 		availableModules.add(treeBuilder);
-		availableModules.add(atomicRangeSuffixTreeBuilder);
+		availableModules.add(atomicRangeSuffixTrieBuilder);
 		availableModules.add(neo4jOutputModule);
 		availableModules.add(suffixNetBuilderModule);
 		availableModules.add(colourGraphModule);
@@ -292,8 +292,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new OANCXMLParser(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(TreeBuilder.class)){
 			newModule = new TreeBuilder(moduleTree, properties);
-		} else if (this.selectedModule.getClass().equals(AtomicRangeSuffixTreeBuilder.class)){
-			newModule = new AtomicRangeSuffixTreeBuilder(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(AtomicRangeSuffixTrieBuilder.class)){
+			newModule = new AtomicRangeSuffixTrieBuilder(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(Neo4jOutputModule.class)){
 			newModule = new Neo4jOutputModule(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(SuffixNetBuilderModule.class)){

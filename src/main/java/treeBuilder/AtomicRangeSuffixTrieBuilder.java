@@ -12,16 +12,16 @@ import parallelization.CallbackReceiver;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
+public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 	
 	// Property keys
 	public static final String PROPERTYKEY_MAXLENGTH = "Maximum length of branches";
-	public static final String PROPERTYKEY_REVERSE = "Reverse the tree";
+	public static final String PROPERTYKEY_REVERSE = "Reverse the trie";
 	
 	private int maxLaenge; // Maximale Laenge des zu bauenden Baums
 	private boolean umgekehrt; // Maximale Laenge des zu bauenden Baums
 
-	public AtomicRangeSuffixTreeBuilder(CallbackReceiver callbackReceiver, Properties properties)
+	public AtomicRangeSuffixTrieBuilder(CallbackReceiver callbackReceiver, Properties properties)
 			throws Exception {
 		super(callbackReceiver, properties);
 
@@ -30,16 +30,16 @@ public class AtomicRangeSuffixTreeBuilder extends ModuleImpl {
 		this.getSupportedOutputs().add(CharPipe.class);
 		
 		// Add description for properties
-		this.getPropertyDescriptions().put(PROPERTYKEY_MAXLENGTH,"Define the maximum length of any branch of the tree.");
-		this.getPropertyDescriptions().put(PROPERTYKEY_REVERSE,"Reverse the building of the tree (results in a prefix tree).");
+		this.getPropertyDescriptions().put(PROPERTYKEY_MAXLENGTH,"Define the maximum length of any branch of the trie.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_REVERSE,"Reverse the building of the trie (results in a prefix trie).");
 		
 		// Add default values
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "AtomicRangeSuffixTreeBuilder");
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "AtomicRangeSuffixTrieBuilder");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXLENGTH, "10");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_REVERSE, "false");
 		
 		// Add module description
-		this.setDescription("Iterates over a raw and unsegmented string input, building a suffix tree from the data of limited range with each step. Keeps track of how often each node of the suffix tree gets triggered.");
+		this.setDescription("Iterates over a raw and unsegmented string input, building a suffix trie from the data of limited range with each step. Keeps track of how often each node of the suffix trie gets triggered.");
 	}
 
 	@Override
