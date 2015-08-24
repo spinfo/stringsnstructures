@@ -74,7 +74,7 @@ public class OANCXMLParser extends ModuleImpl {
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_ADDSTARTSYMBOL, "Set to 'true' if '"+STARTSYMBOL+"' should be added as start symbol to each sentence");
-		this.getPropertyDescriptions().put(PROPERTYKEY_ADDTERMINALSYMBOL, "Set to 'true' if '"+TERMINIERSYMBOL+"' should be added as start symbol to each sentence");
+		this.getPropertyDescriptions().put(PROPERTYKEY_ADDTERMINALSYMBOL, "Set to 'true' if '"+TERMINIERSYMBOL+"' should be added as end symbol to each sentence");
 		this.getPropertyDescriptions().put(PROPERTYKEY_CONVERTTOLOWERCASE,"If set to 'true' the output will be all lowercase");
 		this.getPropertyDescriptions().put(PROPERTYKEY_KEEPPUNCTUATION,"If set to 'true' punctuation will not be discarded");
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTANNOTATEDJSON,"If this and \'"+PROPERTYKEY_OUTPUTJSON+"\' is set to 'true' the output will be annotated JSON.");
