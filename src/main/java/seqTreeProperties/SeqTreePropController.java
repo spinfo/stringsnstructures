@@ -4,7 +4,6 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 import treeBuilder.Knoten; //necessary to read the objects form JSON
 import modularization.CharPipe;
