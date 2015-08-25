@@ -108,13 +108,7 @@ public class SplitDecisionNode {
 		// Aktivierungspotential auf das minimal notwenige erhoehen
 		if (this.getJoin()!=null && this.getSplit()!=null){
 			
-			double minimalwert;
-			
-			// Falls dieser Knoten der oberste ist, ist keine Trennung moeglich!
-			if (this.elternKnoten == null)
-				minimalwert = this.getJoin().getAktivierungsPotential();
-			else
-				minimalwert = Math.max(Math.min(this.getJoin().getAktivierungsPotential(), this.getSplit().getAktivierungsPotential()),this.getBewertung());
+			double minimalwert = Math.max(Math.min(this.getJoin().getAktivierungsPotential(), this.getSplit().getAktivierungsPotential()),this.getBewertung());
 			
 			
 			// Falls der Wert sich nicht erhoeht, wird die Rekursion abgebrochen

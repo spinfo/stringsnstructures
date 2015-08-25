@@ -139,6 +139,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 
 		// EntscheidungsAeffchen initialisieren
 		EntscheidungsAeffchen aeffchen = new EntscheidungsAeffchen(symbolBewerter, suffixbaumWurzelknoten);
+		EntscheidungsAeffchen.debug = true;
 		
 		// Eingabepuffer initialisieren
 		StringBuffer puffer = new StringBuffer();
