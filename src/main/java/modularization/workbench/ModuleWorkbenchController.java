@@ -1,7 +1,5 @@
 package modularization.workbench;
 
-import helpers.ListLoggingHandler;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -22,6 +20,11 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+
+import helpers.ListLoggingHandler;
 import modularization.ConsoleWriterModule;
 import modularization.ExampleModule;
 import modularization.FileReaderModule;
@@ -42,10 +45,9 @@ import treeBuilder.AtomicRangeSuffixTrieBuilder;
 import treeBuilder.TreeBuilder;
 import visualizationModules.ASCIIGraph;
 import visualizationModules.ColourGraph;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
+import artificialSeqs.CreateArtificialSeqs;
+import seqSplitting.SeqMemory;
+import seqTreeProperties.SeqTreePropController;
 
 public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
 	
@@ -179,6 +181,27 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		paradigmenErmittlerModulProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, paradigmenErmittlerModul.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		paradigmenErmittlerModul.applyProperties();
 		
+		// Prepare CreateArtificialSeqs module
+		Properties createArtificialSeqsProperties = new Properties();
+		CreateArtificialSeqs createArtificialSeqs = new CreateArtificialSeqs(moduleTree,
+				createArtificialSeqsProperties);
+		createArtificialSeqsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, createArtificialSeqs.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		createArtificialSeqs.applyProperties();
+		
+		// Prepare SeqMemory module
+		Properties SeqMemoryProperties = new Properties();
+		SeqMemory seqMemory = new SeqMemory(moduleTree,
+				SeqMemoryProperties);
+		SeqMemoryProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqMemory.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		seqMemory.applyProperties();
+
+		// Prepare SeqTreePropController module
+		Properties SeqTreePropControllerProperties = new Properties();
+		SeqTreePropController seqTreePropController = new SeqTreePropController(moduleTree,
+				SeqTreePropControllerProperties);
+		SeqTreePropControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqTreePropController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		seqTreePropController.applyProperties();
+		
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
 		availableModules.add(fileReader);
@@ -194,6 +217,9 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(colourGraphModule);
 		availableModules.add(asciiGraphModule);
 		availableModules.add(paradigmenErmittlerModul);
+		availableModules.add(createArtificialSeqs);
+		availableModules.add(seqMemory);
+		availableModules.add(seqTreePropController);
 		
 		// Sort list
 		availableModules.sort(new ModuleComparator());
@@ -266,7 +292,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		// New module to create
 		Module newModule;
 		
-		// Set properties
+		// Set propertiesErmittlerModul
 		Properties properties = new Properties();
 		Iterator<String> propertyKeys = this.selectedModulesProperties.keySet().iterator();
 		while(propertyKeys.hasNext()){
@@ -308,6 +334,12 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new SmbFileWriterModule(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(ParadigmenErmittlerModul.class)){
 			newModule = new ParadigmenErmittlerModul(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(CreateArtificialSeqs.class)){
+			newModule = new CreateArtificialSeqs(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(SeqMemory.class)){
+			newModule = new SeqMemory(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(SeqTreePropController.class)){
+			newModule = new SeqTreePropController(moduleTree, properties);
 		}
 		
 		else {
