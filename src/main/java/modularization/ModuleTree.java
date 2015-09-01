@@ -465,6 +465,10 @@ public class ModuleTree extends CallbackReceiverImpl {
 
 		// Run modules
 		this.runModules(rootNode);
+		
+		// Laufzeitumgebung ermitteln
+		Runtime rt = Runtime.getRuntime();
+		long maxBelegterHauptspeicher = 0l;
 
 		// Wait for threads to finish, if requested
 		while (runUntilAllThreadsAreDone && !this.startedThreads.isEmpty()) {
@@ -475,6 +479,13 @@ public class ModuleTree extends CallbackReceiverImpl {
 				// Print pretty overview
 				Logger.getLogger(this.getClass().getSimpleName()).log(
 						Level.INFO, this.prettyPrint());
+				
+				// Speicherverbrauch ausgeben
+				
+			    long belegterHauptspeicher = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
+			    if (belegterHauptspeicher>maxBelegterHauptspeicher)
+			    	maxBelegterHauptspeicher = belegterHauptspeicher;
+			    Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Hauptspeicher belegt (MB):" + belegterHauptspeicher + "; bisheriges Max.:"+maxBelegterHauptspeicher);
 
 				// Test which threads are still active and remove the rest from
 				// the list
