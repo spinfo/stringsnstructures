@@ -18,6 +18,7 @@ public class SeqProperties {
 		pathLength = len;
 	}
 	
+	
 	public SeqProperties (String name, String seq, int len, double ratio) {
 		nodeName = name;
 		sequence = seq;

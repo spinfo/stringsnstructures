@@ -739,6 +739,7 @@ public class SeqTreePropController extends ModuleImpl {
 		avPathRatio = (double) totalPathRatio / (double) averagePathRatio.size();
 		
 		//calculate Sackin index
+		
 		int counter = 1;
 		double sackinSum = 0; 
 		int sackinIndexReady = 0;

@@ -7,6 +7,7 @@ public class SeqSackinIndex {
 	
 	//end variables
 	
+	
 	//constructors:
 		
 	public SeqSackinIndex (String seq, int num) {
