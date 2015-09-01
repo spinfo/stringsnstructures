@@ -14,8 +14,6 @@ import java.util.HashMap;
 
 public class SeqPropertyNode {
 	
-	//private static final long serialVersionUID = 1L; //I have no idea what to put here
-	
 	//variables:
 	private String nodeValue; //string saved in the node
 	private int nodeCounter; //Zaehler value
