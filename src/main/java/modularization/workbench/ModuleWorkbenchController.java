@@ -48,6 +48,7 @@ import visualizationModules.ColourGraph;
 import artificialSeqs.CreateArtificialSeqs;
 import seqSplitting.SeqMemory;
 import seqTreeProperties.SeqTreePropController;
+import seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
 
 public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
 	
@@ -202,6 +203,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		SeqTreePropControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqTreePropController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqTreePropController.applyProperties();
 		
+		// Prepare seqSuffixTrie2SuffixTree module
+		Properties seqSuffixTrie2SuffixTreeControllerProperties = new Properties();
+		SeqSuffixTrie2SuffixTreeController seqSuffixTrie2SuffixTreeController = new SeqSuffixTrie2SuffixTreeController(moduleTree,
+				seqSuffixTrie2SuffixTreeControllerProperties);
+		seqSuffixTrie2SuffixTreeControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqSuffixTrie2SuffixTreeController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		seqSuffixTrie2SuffixTreeController.applyProperties();
+				
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
 		availableModules.add(fileReader);
@@ -220,6 +228,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(createArtificialSeqs);
 		availableModules.add(seqMemory);
 		availableModules.add(seqTreePropController);
+		availableModules.add(seqSuffixTrie2SuffixTreeController);
 		
 		// Sort list
 		availableModules.sort(new ModuleComparator());
@@ -340,6 +349,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new SeqMemory(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(SeqTreePropController.class)){
 			newModule = new SeqTreePropController(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(SeqSuffixTrie2SuffixTreeController.class)){
+			newModule = new SeqSuffixTrie2SuffixTreeController(moduleTree, properties);
 		}
 		
 		else {
