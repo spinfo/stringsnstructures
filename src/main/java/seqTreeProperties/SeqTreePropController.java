@@ -15,6 +15,8 @@ import parallelization.CallbackReceiver;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+//TODO: split this module into three independent modules!!!
+
 /**
  * Reads trees from I/O pipe via JSON format.
  * Extracts tree properties such as 
@@ -161,6 +163,12 @@ public class SeqTreePropController extends ModuleImpl {
 			String newParenthesis = "(";
 			newickOutput += newParenthesis;
 		}
+		
+		//remove last open parenthesis
+		public void removeLeadingParenthesisNewick() {
+			newickOutput = newickOutput.substring(0, newickOutput.length()-1); 
+		}
+		
 		//end setters
 		
 		//getters:
@@ -417,7 +425,8 @@ public class SeqTreePropController extends ModuleImpl {
 						SeqPropertyNode newPropNode = new SeqPropertyNode(deepPair.getKey(),deepPair.getValue().getZaehler());				
 						
 						if (concatFlag) {
-							lastPropNode.concatValue(newPropNode.getValue());
+							currPropNode.concatValue(newPropNode.getValue());
+							lastPropNode.concatValue(currPropNode.getValue());
 							currPropNode = lastPropNode;
 						} else {
 							setTermNewickNode(newPropNode.getValue(), newPropNode.getCounter()); //new Newick terminal node
@@ -436,9 +445,11 @@ public class SeqTreePropController extends ModuleImpl {
 							addLeadingParenthesisNewick(); //add a leading Parenthesis to the Newick output
 						}					
 						SeqPropertyNode newPropNode = deepNewickIteration(concatFlag, deepPair.getValue().getKinder().get(key[0]),currPropNode); //Let's continue with the grand child
-						if (!lastFlag) {
+						if (!lastFlag && newPropNode.getNodeHash().size() > 1) {
 							//currPropNode.concatValue(newPropNode.getValue());
 							setConcatNewickNode(newPropNode.getValue(), newPropNode.getCounter()); //write content of inner node
+						} else if (!lastFlag && newPropNode.getNodeHash().size() < 1){
+							removeLeadingParenthesisNewick(); //in case that a terminal concatenated node follows a node with multiple leafs remove leading parthesis
 						}
 						
 						if(newPropNode.getNodeHash().size() == 1) { //What the grand child also has only one child?
@@ -446,7 +457,11 @@ public class SeqTreePropController extends ModuleImpl {
 							currPropNode.concatValue(newPropNode.getValue()); //remember the name of the grand child
 							currPropNode.addNode(newPropNode.getNodeHash().get(newChild[0]).getValue(), newPropNode.getNodeHash().get(newChild[0]));//continue with this new child
 						} else { // so the grand child several or no children, let's remember that
-							currPropNode.addNode(newPropNode.getValue(), newPropNode); 
+							if (!lastFlag && newPropNode.getNodeHash().size() > 1) {
+								currPropNode.addNode(newPropNode.getValue(), newPropNode);
+							} else {
+								currPropNode = newPropNode;
+							}
 						}
 					} else if (deepPair.getValue().getKinder().size() > 1) { // if there are more nodes remember the zaehler value
 						concatFlag = false;
