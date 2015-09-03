@@ -49,6 +49,7 @@ import artificialSeqs.CreateArtificialSeqs;
 import seqSplitting.SeqMemory;
 import seqTreeProperties.SeqTreePropController;
 import seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
+import seqNewickExporter.SeqNewickExproterController;
 
 public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
 	
@@ -209,6 +210,13 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 				seqSuffixTrie2SuffixTreeControllerProperties);
 		seqSuffixTrie2SuffixTreeControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqSuffixTrie2SuffixTreeController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqSuffixTrie2SuffixTreeController.applyProperties();
+			
+		// Prepare seqNewickExporter module
+		Properties SeqNewickExproterControllerProperties = new Properties();
+		SeqNewickExproterController seqNewickExproterController = new SeqNewickExproterController(moduleTree,
+				SeqNewickExproterControllerProperties);
+		SeqNewickExproterControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExproterController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		seqNewickExproterController.applyProperties();
 				
 		availableModules.add(consoleWriter);
 		availableModules.add(exampleModule);
@@ -229,6 +237,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		availableModules.add(seqMemory);
 		availableModules.add(seqTreePropController);
 		availableModules.add(seqSuffixTrie2SuffixTreeController);
+		availableModules.add(seqNewickExproterController);
 		
 		// Sort list
 		availableModules.sort(new ModuleComparator());
@@ -351,6 +360,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 			newModule = new SeqTreePropController(moduleTree, properties);
 		} else if (this.selectedModule.getClass().equals(SeqSuffixTrie2SuffixTreeController.class)){
 			newModule = new SeqSuffixTrie2SuffixTreeController(moduleTree, properties);
+		} else if (this.selectedModule.getClass().equals(SeqNewickExproterController.class)){
+			newModule = new SeqNewickExproterController(moduleTree, properties);
 		}
 		
 		else {
