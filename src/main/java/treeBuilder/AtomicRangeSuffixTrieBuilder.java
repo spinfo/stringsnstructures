@@ -78,7 +78,7 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 		}
 		
 		// Read remaining buffer
-		if (!buffer.isEmpty())
+		if (!buffer.isEmpty() && buffer.size()==this.maxLaenge)
 			buffer.removeFirst();
 		while (!buffer.isEmpty()){
 			// Construct trie from buffer and attach it to the root node
