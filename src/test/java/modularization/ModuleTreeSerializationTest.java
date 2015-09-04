@@ -5,10 +5,16 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
-import org.junit.Test;
+import modules.ModuleImpl;
+import modules.ModuleTree;
+import modules.ModuleTreeGsonDeserializer;
+import modules.ModuleTreeGsonSerializer;
+import modules.basemodules.ConsoleWriterModule;
+import modules.basemodules.FileWriterModule;
+import modules.oanc.OANC;
+import modules.oanc.OANCXMLParser;
 
-import parser.oanc.OANC;
-import parser.oanc.OANCXMLParser;
+import org.junit.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

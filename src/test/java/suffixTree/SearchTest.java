@@ -6,18 +6,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import modules.suffixTree.suffixTree.SuffixTree;
+import modules.suffixTree.suffixTree.applications.SearchResult;
+import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
+import modules.suffixTree.suffixTree.node.Node;
+import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
+import modules.suffixTree.suffixTree.node.info.End;
+import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import suffixTree.suffixTree.SuffixTree;
-import suffixTree.suffixTree.applications.SearchResult;
-import suffixTree.suffixTree.applications.SuffixTreeAppl;
-import suffixTree.suffixTree.node.Node;
-import suffixTree.suffixTree.node.activePoint.ExtActivePoint;
-import suffixTree.suffixTree.node.info.End;
-import suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
-import util.TextInfo;
+import common.TextInfo;
 
 public class SearchTest {
 

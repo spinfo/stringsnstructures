@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import modules.suffixTreeClustering.data.Type;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import suffixTreeClustering.data.Type;
 
 public class EqualityHashcodeTest {
 

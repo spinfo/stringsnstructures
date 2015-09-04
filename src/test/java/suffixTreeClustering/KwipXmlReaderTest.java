@@ -2,12 +2,13 @@ package suffixTreeClustering;
 
 import java.util.List;
 
+import modules.suffixTreeClustering.data.Token;
+import modules.suffixTreeClustering.data.Type;
+
 import org.junit.Test;
 
-import suffixTreeClustering.data.Token;
-import suffixTreeClustering.data.Type;
-import util.KwipXmlReader;
-import util.TextInfo;
+import common.KwipXmlReader;
+import common.TextInfo;
 
 public class KwipXmlReaderTest {
 

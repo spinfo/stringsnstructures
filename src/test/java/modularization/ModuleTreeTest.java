@@ -5,10 +5,14 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Properties;
 
-import org.junit.Test;
+import modules.ModuleImpl;
+import modules.ModuleTree;
+import modules.basemodules.ConsoleWriterModule;
+import modules.basemodules.FileWriterModule;
+import modules.oanc.OANC;
+import modules.oanc.OANCXMLParser;
 
-import parser.oanc.OANC;
-import parser.oanc.OANCXMLParser;
+import org.junit.Test;
 
 public class ModuleTreeTest {
 

@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import modules.preprocess.Preprocess;
+
 import org.junit.Assert;
 import org.junit.Test;
 

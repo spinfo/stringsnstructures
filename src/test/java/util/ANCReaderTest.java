@@ -12,6 +12,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import common.ANCXmlReader;
+import common.TextInfo;
+
 public class ANCReaderTest {
 
 	private String text;
