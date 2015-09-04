@@ -15,6 +15,8 @@ import com.google.gson.GsonBuilder;
 
 import common.parallelization.CallbackReceiver;
 
+//TODO: instead of different node classes I need to create different node classes which implement the interface "common.TreeNode"
+
 /**
  * This module reads JSON from an input pipe.
  * This module reduces suffix tries which then appear afterwards as suffix trees.

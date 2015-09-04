@@ -14,6 +14,8 @@ import com.google.gson.Gson;
 
 import common.parallelization.CallbackReceiver;
 
+//TODO: instead of different node classes I need to create different node classes which implement the interface "common.TreeNode"
+
 /**
  * Reads JSON format from I/O pipe.
  * JSON format must be in the format contributed by the package "modules.seqSuffixTrie2SuffixTree".
