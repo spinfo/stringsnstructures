@@ -23,7 +23,7 @@ public class OutputPort extends AbstractPort {
 	 * @see modules.AbstractPort#addSupportedPipe(java.lang.Class)
 	 */
 	@Override
-	protected void addSupportedPipe(Class<?> pipeClass) {
+	public void addSupportedPipe(Class<?> pipeClass) {
 		if (!super.supportsPipeClass(pipeClass)){
 			super.addSupportedPipe(pipeClass);
 			this.pipes.put(pipeClass, new ArrayList<Pipe>());

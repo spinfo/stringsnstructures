@@ -20,16 +20,16 @@ public interface Module extends CallbackProcess {
 	public static final int STATUSCODE_NOTYETRUN = 3;
 	
 	/**
-	 * Returns a list of available input ports.
+	 * Returns a map of available input ports (key=identifier).
 	 * @return List of ports
 	 */
-	public List<InputPort> getInputPorts();
+	public Map<String,InputPort> getInputPorts();
 	
 	/**
-	 * Returns a list of available output ports.
+	 * Returns a map of available output ports (key=identifier).
 	 * @return List of ports
 	 */
-	public List<OutputPort> getOutputPorts();
+	public Map<String,OutputPort> getOutputPorts();
 	
 	/**
 	 * Starts the process.

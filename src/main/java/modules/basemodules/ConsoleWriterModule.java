@@ -5,11 +5,12 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import common.parallelization.CallbackReceiver;
-
 import modules.BytePipe;
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+
+import common.parallelization.CallbackReceiver;
 
 /**
  * Writes any input to console
@@ -18,15 +19,19 @@ import modules.ModuleImpl;
  */
 public class ConsoleWriterModule extends ModuleImpl {
 	
+	private final String INPUTID = "input";
+	
 	public ConsoleWriterModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
 		
-		// Define I/O
-		this.getSupportedInputs().add(BytePipe.class);
-		this.getSupportedInputs().add(CharPipe.class);
+		// Define I/O Ports
+		InputPort inputPort = new InputPort("Input", "Accepts byte stream and character input.");
+		inputPort.addSupportedPipe(BytePipe.class);
+		inputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
 		
 		// Add default values
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Console Writer");
+		super.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Console Writer");
 	}
 
 	@Override
@@ -45,10 +50,10 @@ public class ConsoleWriterModule extends ModuleImpl {
 			byte[] buffer = new byte[1024];
 			
 			// Read file data into buffer and write to outputstream
-			int readBytes = this.getInputBytePipe().getInput().read(buffer);
+			int readBytes = this.getInputPorts().get(INPUTID).getInputStream().read(buffer);
 			while (readBytes>0){
 				out.write(buffer, 0, readBytes);
-				readBytes = this.getInputBytePipe().getInput().read(buffer);
+				readBytes = this.getInputPorts().get(INPUTID).getInputStream().read(buffer);
 			}
 			
 			// Log message
@@ -64,14 +69,14 @@ public class ConsoleWriterModule extends ModuleImpl {
 			char[] buffer = new char[1024];
 			
 			// Read file data into buffer and output to writer
-			int readChars = this.getInputCharPipe().getInput().read(buffer);
+			int readChars = this.getInputPorts().get(INPUTID).getInputReader().read(buffer);
 			while(readChars != -1){
 				for (int i=0; i<readChars; i++){
 					if (buffer[i]<0)
 						break;
 					out.print(buffer[i]);
 				}
-				readChars = this.getInputCharPipe().getInput().read(buffer);
+				readChars = this.getInputPorts().get(INPUTID).getInputReader().read(buffer);
 			}
 			
 			// Log message

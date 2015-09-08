@@ -9,6 +9,8 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.border.LineBorder;
 
+import modules.Module;
+
 public class DraggableModule extends JComponent {
 
 	/**
@@ -20,7 +22,7 @@ public class DraggableModule extends JComponent {
 	private volatile int myX = 0;
 	private volatile int myY = 0;
 
-	public DraggableModule() {
+	public DraggableModule(Module module) {
 		setBorder(new LineBorder(Color.BLUE, 3));
 		setBackground(Color.WHITE);
 		setBounds(0, 0, 100, 100);

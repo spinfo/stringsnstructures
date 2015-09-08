@@ -1,10 +1,8 @@
 package modules;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -22,8 +20,8 @@ public abstract class ModuleImpl implements Module {
 	private Map<String, String> propertyDefaultValues = new HashMap<String, String>();
 	private int status = Module.STATUSCODE_NOTYETRUN;
 	private String description = "(no description)";
-	private List<InputPort> inputPorts;
-	private List<OutputPort> outputPorts;
+	private Map<String,InputPort> inputPorts;
+	private Map<String,OutputPort> outputPorts;
 
 	public ModuleImpl(CallbackReceiver callbackReceiver, Properties properties)
 			throws Exception {
@@ -36,24 +34,24 @@ public abstract class ModuleImpl implements Module {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_NAME, "(unnamed module)");
 		
 		// IO ports
-		this.inputPorts = new ArrayList<InputPort>();
-		this.outputPorts = new ArrayList<OutputPort>();
+		this.inputPorts = new HashMap<String,InputPort>();
+		this.outputPorts = new HashMap<String,OutputPort>();
 	}
 	
 	/**
 	 * Adds the specified input port.
 	 * @param port
 	 */
-	public void addInputPort(InputPort port){
-		this.inputPorts.add(port);
+	public void addInputPort(String identifier, InputPort port){
+		this.inputPorts.put(identifier, port);
 	}
 	
 	/**
 	 * Adds the specified output port.
 	 * @param port
 	 */
-	public void addOutputPort(OutputPort port){
-		this.outputPorts.add(port);
+	public void addOutputPort(String identifier, OutputPort port){
+		this.outputPorts.put(identifier, port);
 	}
 
 	@Override
@@ -67,7 +65,7 @@ public abstract class ModuleImpl implements Module {
 	 * @throws IOException
 	 */
 	public void closeAllOutputs() throws IOException {
-		Iterator<OutputPort> outputPorts = this.outputPorts.iterator();
+		Iterator<OutputPort> outputPorts = this.outputPorts.values().iterator();
 		while (outputPorts.hasNext()){
 			outputPorts.next().close();
 		}
@@ -188,7 +186,7 @@ public abstract class ModuleImpl implements Module {
 	public void resetOutputs() throws IOException {
 		
 		// Cycle through all output pipes & reset them
-		Iterator<OutputPort> ports = this.getOutputPorts().iterator();
+		Iterator<OutputPort> ports = this.getOutputPorts().values().iterator();
 		while (ports.hasNext()){
 			ports.next().reset();
 		}
@@ -222,7 +220,7 @@ public abstract class ModuleImpl implements Module {
 	 * @see modules.Module#getInputPorts()
 	 */
 	@Override
-	public List<InputPort> getInputPorts() {
+	public Map<String,InputPort> getInputPorts() {
 		return this.inputPorts;
 	}
 
@@ -230,7 +228,7 @@ public abstract class ModuleImpl implements Module {
 	 * @see modules.Module#getOutputPorts()
 	 */
 	@Override
-	public List<OutputPort> getOutputPorts() {
+	public Map<String,OutputPort> getOutputPorts() {
 		return this.outputPorts;
 	}
 
