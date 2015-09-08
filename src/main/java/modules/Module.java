@@ -20,81 +20,16 @@ public interface Module extends CallbackProcess {
 	public static final int STATUSCODE_NOTYETRUN = 3;
 	
 	/**
-	 * Returns the pipe for character input.
-	 * @return Input pipe
+	 * Returns a list of available input ports.
+	 * @return List of ports
 	 */
-	public CharPipe getInputCharPipe();
+	public List<InputPort> getInputPorts();
 	
 	/**
-	 * Sets the pipe for character input.
-	 * @throws NotSupportedException Thrown if module does not support character input
+	 * Returns a list of available output ports.
+	 * @return List of ports
 	 */
-	public void setInputCharPipe(CharPipe pipe) throws NotSupportedException;
-	
-	/**
-	 * Returns the pipe for byte input.
-	 * @return Input pipe
-	 */
-	public BytePipe getInputBytePipe();
-	
-	/**
-	 * Sets the pipe for byte input.
-	 * @throws NotSupportedException Thrown if module does not support byte input
-	 */
-	public void setInputBytePipe(BytePipe pipe) throws NotSupportedException;
-	
-	/**
-	 * Sets the input pipe.
-	 * @throws NotSupportedException Thrown if module does not support the given input
-	 */
-	public void setInputPipe(Pipe pipe) throws NotSupportedException;
-	
-	/**
-	 * Returns a list of all character output pipes the module currently has.
-	 * @return list of output pipes
-	 */
-	public List<CharPipe> getOutputCharPipes();
-	
-	/**
-	 * Returns a list of all byte output pipes the module currently has.
-	 * @return list of output pipes
-	 */
-	public List<BytePipe> getOutputBytePipes();
-	
-	/**
-	 * Returns a list of all output pipes the module currently has.
-	 * @return list of output pipes
-	 */
-	public List<Pipe> getOutputPipes();
-	
-	/**
-	 * Adds a given pipe to the list of module outputs.
-	 * @param pipe Pipe
-	 * @return True if successful
-	 * @throws NotSupportedException Thrown if module does not support the given output pipe
-	 */
-	public boolean addOutputPipe(Pipe pipe) throws NotSupportedException;
-	
-	/**
-	 * Removes a given pipe from the list of module outputs.
-	 * @param pipe Pipe
-	 * @return True if successful
-	 */
-	public boolean removeOutputPipe(Pipe pipe);
-	
-	/**
-	 * Returns true if given pipe can be used as module input
-	 * @param pipe Pipe
-	 * @return true if pipe is supported
-	 */
-	public boolean supportsInputPipe(Pipe pipe);
-	
-	/**
-	 * Returns true if given pipe can be used as module output
-	 * @param pipe Pipe
-	 * @return true if pipe is supported
-	 */
-	public boolean supportsOutputPipe(Pipe pipe);
+	public List<OutputPort> getOutputPorts();
 	
 	/**
 	 * Starts the process.
@@ -174,17 +109,5 @@ public interface Module extends CallbackProcess {
 	 * @throws IOException
 	 */
 	public void resetOutputs() throws IOException;
-	
-	/**
-	 * Returns the supported input pipe classes
-	 * @return
-	 */
-	public List<Class<?>> getSupportedInputs();
-
-	/**
-	 * Returns the supported output pipe classes
-	 * @return
-	 */
-	public List<Class<?>> getSupportedOutputs();
 
 }

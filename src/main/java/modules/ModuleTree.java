@@ -28,27 +28,27 @@ public class ModuleTree extends CallbackReceiverImpl {
 	private List<Thread> startedThreads = new ArrayList<Thread>();
 
 	/**
-	 * Determines which pipe to use between both given modules (prefers byte
+	 * Determines which pipe to use between both given module ports (prefers byte
 	 * pipe).
 	 * 
-	 * @param outputProvider
-	 *            Module that provides the output
-	 * @param inputReceiver
-	 *            Module that receives the input
+	 * @param outputProviderPort
+	 *            Module port that provides the output
+	 * @param inputReceiverPort
+	 *            Module port that receives the input
 	 * @return Compatible pipe
 	 * @throws Exception
-	 *             Thrown if the modules' I/O is not compatible
+	 *             Thrown if the module ports' I/O is not compatible
 	 */
-	public static Pipe getCompatiblePipe(Module outputProvider,
-			Module inputReceiver) throws Exception {
+	public static Pipe getCompatiblePipe(OutputPort outputProviderPort,
+			InputPort inputReceiverPort) throws Exception {
 		Pipe pipe = new BytePipe();
-		if (!(inputReceiver.supportsInputPipe(pipe) && outputProvider
-				.supportsOutputPipe(pipe))) {
+		if (!(inputReceiverPort.supportsPipe(pipe) && outputProviderPort
+				.supportsPipe(pipe))) {
 			pipe = new CharPipe();
-			if (!(inputReceiver.supportsInputPipe(pipe) && outputProvider
-					.supportsOutputPipe(pipe))) {
+			if (!(inputReceiverPort.supportsPipe(pipe) && outputProviderPort
+					.supportsPipe(pipe))) {
 				throw new Exception(
-						"I'm very sorry, but the I/O of those two modules does not seem to be compatible.");
+						"The I/O of those two module ports does not seem to be compatible.");
 			}
 		}
 		return pipe;

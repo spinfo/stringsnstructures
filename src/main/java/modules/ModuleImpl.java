@@ -15,19 +15,15 @@ import common.parallelization.CallbackReceiver;
 public abstract class ModuleImpl implements Module {
 
 	public static final String PROPERTYKEY_NAME = "name";
-	private BytePipe byteInput = null;
-	private List<BytePipe> byteOutputs = new ArrayList<BytePipe>();
 	private CallbackReceiver callbackReceiver;
-	private CharPipe charInput = null;
-	private List<CharPipe> charOutputs = new ArrayList<CharPipe>();
 	private String name;
 	private Properties properties = new Properties();
 	private Map<String, String> propertyDescriptions = new HashMap<String, String>();
 	private Map<String, String> propertyDefaultValues = new HashMap<String, String>();
 	private int status = Module.STATUSCODE_NOTYETRUN;
-	private List<Class<?>> supportedInputs = new ArrayList<Class<?>>();
-	private List<Class<?>> supportedOutputs = new ArrayList<Class<?>>();
 	private String description = "(no description)";
+	private List<InputPort> inputPorts;
+	private List<OutputPort> outputPorts;
 
 	public ModuleImpl(CallbackReceiver callbackReceiver, Properties properties)
 			throws Exception {
@@ -38,19 +34,26 @@ public abstract class ModuleImpl implements Module {
 				"The module instance's name");
 		// Add default values
 		this.getPropertyDefaultValues().put(PROPERTYKEY_NAME, "(unnamed module)");
+		
+		// IO ports
+		this.inputPorts = new ArrayList<InputPort>();
+		this.outputPorts = new ArrayList<OutputPort>();
 	}
-
-	@Override
-	public boolean addOutputPipe(Pipe pipe) throws NotSupportedException {
-		if (!this.supportsOutputPipe(pipe))
-			throw new NotSupportedException("Excuse me, but this module cannot output to that pipe.");
-		if (pipe.getClass().equals(BytePipe.class))
-			this.byteOutputs.add((BytePipe) pipe);
-		else if (pipe.getClass().equals(CharPipe.class))
-			this.charOutputs.add((CharPipe) pipe);
-		else
-			throw new NotSupportedException("Excuse me, but I do not recognize the type of that pipe.");
-		return true;
+	
+	/**
+	 * Adds the specified input port.
+	 * @param port
+	 */
+	public void addInputPort(InputPort port){
+		this.inputPorts.add(port);
+	}
+	
+	/**
+	 * Adds the specified output port.
+	 * @param port
+	 */
+	public void addOutputPort(OutputPort port){
+		this.outputPorts.add(port);
 	}
 
 	@Override
@@ -59,38 +62,14 @@ public abstract class ModuleImpl implements Module {
 			this.name = this.getProperties().getProperty(PROPERTYKEY_NAME, "unnamed module");
 	}
 
+	/**
+	 * Closes all outputs on all output ports.
+	 * @throws IOException
+	 */
 	public void closeAllOutputs() throws IOException {
-		this.closeAllOutputStreams();
-		this.closeAllOutputWriters();
-	}
-
-	/**
-	 * Closes all output streams.
-	 * @throws IOException If an I/O error occurs
-	 */
-	public void closeAllOutputStreams() throws IOException {
-
-		// Loop over the defined outputs
-		Iterator<BytePipe> outputStreams = this.byteOutputs.iterator();
-		while (outputStreams.hasNext()) {
-
-			// Close output
-			outputStreams.next().writeClose();
-		}
-	}
-
-	/**
-	 * Closes all output writers.
-	 * @throws IOException If an I/O error occurs
-	 */
-	public void closeAllOutputWriters() throws IOException {
-
-		// Loop over the defined outputs
-		Iterator<CharPipe> outputWriters = this.charOutputs.iterator();
-		while (outputWriters.hasNext()) {
-
-			// Close output
-			outputWriters.next().writeClose();
+		Iterator<OutputPort> outputPorts = this.outputPorts.iterator();
+		while (outputPorts.hasNext()){
+			outputPorts.next().close();
 		}
 	}
 
@@ -103,39 +82,8 @@ public abstract class ModuleImpl implements Module {
 	}
 
 	@Override
-	public BytePipe getInputBytePipe() {
-		return this.byteInput;
-	}
-
-	@Override
-	public CharPipe getInputCharPipe() {
-		return this.charInput;
-	}
-
-	@Override
 	public String getName() {
 		return name;
-	}
-	
-	@Override
-	public List<BytePipe> getOutputBytePipes() {
-		return this.byteOutputs;
-	}
-	
-
-	
-	@Override
-	public List<CharPipe> getOutputCharPipes() {
-		return this.charOutputs;
-	}
-	
-	@Override
-	public List<Pipe> getOutputPipes() {
-		// Concatenate both output pipe lists and return the result
-		List<Pipe> pipes = new ArrayList<Pipe>();
-		pipes.addAll(charOutputs);
-		pipes.addAll(byteOutputs);
-		return pipes;
 	}
 	
 	@Override
@@ -159,84 +107,7 @@ public abstract class ModuleImpl implements Module {
 	}
 
 	@Override
-	public List<Class<?>> getSupportedInputs(){
-		return this.supportedInputs;
-	}
-
-	@Override
-	public List<Class<?>> getSupportedOutputs(){
-		return this.supportedOutputs;
-	}
-
-	/**
-	 * Writes the given byte array to all outputs.
-	 * @param data Data to write
-	 * @throws IOException Thrown if an I/O problem occurs
-	 */
-	public void outputToAllBytePipes(byte[] data) throws IOException {
-		this.outputToAllBytePipes(data, 0, data.length);
-	}
-
-	/**
-	 * Writes the given byte array to all stream outputs.
-	 * @param data Data to write
-	 * @param offset The start offset in the data
-	 * @param bytesToWrite The number of bytes to write
-	 * @throws IOException Thrown if an I/O problem occurs
-	 */
-	public void outputToAllBytePipes(byte[] data, int offset, int bytesToWrite) throws IOException {
-		// Loop over the defined outputs
-		Iterator<BytePipe> outputStreams = this.byteOutputs.iterator();
-		while (outputStreams.hasNext()) {
-
-			// Determine the next output on the list
-			BytePipe outputStream = outputStreams.next();
-
-			// Write file list JSON to output
-			outputStream.write(data, offset, bytesToWrite);
-		}
-	}
-
-	/**
-	 * Writes the given data to all char output pipes.
-	 * @param data Data to write
-	 * @param offset The start offset in the data
-	 * @param charsToWrite The number of chars to write
-	 * @throws IOException Thrown if an I/O problem occurs
-	 */
-	public void outputToAllCharPipes(char[] data, int offset, int charsToWrite) throws IOException {
-		// Loop over the defined outputs
-		Iterator<CharPipe> outputPipes = this.charOutputs.iterator();
-		while (outputPipes.hasNext()) {
-
-			// Determine the next output on the list
-			CharPipe outputPipe = outputPipes.next();
-
-			// Write file list JSON to output
-			outputPipe.write(data, offset, charsToWrite);
-		}
-	}
-
-	/**
-	 * Writes the given String to all char output pipes.
-	 * @param data Data to write
-	 * @throws IOException Thrown if an I/O problem occurs
-	 */
-	public void outputToAllCharPipes(String data) throws IOException {
-		this.outputToAllCharPipes(data.toCharArray(), 0, data.length());
-	}
-
-	@Override
 	public abstract boolean process() throws Exception;
-
-	@Override
-	public boolean removeOutputPipe(Pipe pipe) {
-		if (pipe.getClass().equals(BytePipe.class))
-			return this.byteOutputs.remove((BytePipe) pipe);
-		else if (pipe.getClass().equals(CharPipe.class))
-			return this.charOutputs.remove((CharPipe) pipe);
-		return false;
-	}
 
 	/*
 	 * @see java.lang.Runnable#run()
@@ -245,11 +116,6 @@ public abstract class ModuleImpl implements Module {
 	public void run() {
 		
 		try {
-			// Check whether expected inputs are present (and fail if they are not)
-			if (!this.getSupportedInputs().isEmpty()
-					&& (this.getInputCharPipe() == null || this.getInputCharPipe().getInput() == null)
-					&& (this.getInputBytePipe() == null || this.getInputBytePipe().getInput() == null))
-				throw new Exception("There does not seem to be any input for me.");
 			
 			// Update status
 			this.status = Module.STATUSCODE_RUNNING;
@@ -298,30 +164,6 @@ public abstract class ModuleImpl implements Module {
 	}
 
 	@Override
-	public void setInputBytePipe(BytePipe pipe) throws NotSupportedException {
-		if (!this.supportsInputPipe(pipe))
-			throw new NotSupportedException("Excuse me, but this module cannot take its input from that pipe.");
-		this.byteInput = pipe;
-	}
-
-	@Override
-	public void setInputCharPipe(CharPipe pipe) throws NotSupportedException {
-		if (!this.supportsInputPipe(pipe))
-			throw new NotSupportedException("Excuse me, but this module cannot take its input from that pipe.");
-		this.charInput = pipe;
-	}
-
-	@Override
-	public void setInputPipe(Pipe pipe) throws NotSupportedException {
-		if (pipe.getClass().equals(BytePipe.class))
-			this.setInputBytePipe((BytePipe) pipe);
-		else if (pipe.getClass().equals(CharPipe.class))
-			this.setInputCharPipe((CharPipe) pipe);
-		else
-			throw new NotSupportedException("Excuse me, but I do not recognize the type of that pipe.");
-	}
-
-	@Override
 	public void setName(String name) {
 		this.name = name;
 		if (this.name != null)
@@ -339,20 +181,6 @@ public abstract class ModuleImpl implements Module {
 		this.applyProperties();
 	}
 
-	@Override
-	public boolean supportsInputPipe(Pipe pipe) {
-		if (this.supportedInputs.contains(pipe.getClass()))
-			return true;
-		return false;
-	}
-
-	@Override
-	public boolean supportsOutputPipe(Pipe pipe) {
-		if (this.supportedOutputs.contains(pipe.getClass()))
-			return true;
-		return false;
-	}
-
 	/* (non-Javadoc)
 	 * @see modularization.Module#resetOutputs()
 	 */
@@ -360,9 +188,9 @@ public abstract class ModuleImpl implements Module {
 	public void resetOutputs() throws IOException {
 		
 		// Cycle through all output pipes & reset them
-		Iterator<Pipe> pipes = this.getOutputPipes().iterator();
-		while (pipes.hasNext()){
-			pipes.next().reset();
+		Iterator<OutputPort> ports = this.getOutputPorts().iterator();
+		while (ports.hasNext()){
+			ports.next().reset();
 		}
 	}
 
@@ -388,6 +216,22 @@ public abstract class ModuleImpl implements Module {
 	@Override
 	public void setDescription(String desc) {
 		this.description = desc;
+	}
+
+	/* (non-Javadoc)
+	 * @see modules.Module#getInputPorts()
+	 */
+	@Override
+	public List<InputPort> getInputPorts() {
+		return this.inputPorts;
+	}
+
+	/* (non-Javadoc)
+	 * @see modules.Module#getOutputPorts()
+	 */
+	@Override
+	public List<OutputPort> getOutputPorts() {
+		return this.outputPorts;
 	}
 
 }
