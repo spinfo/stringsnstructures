@@ -6,7 +6,7 @@ import static org.junit.Assert.fail;
 import java.util.Properties;
 
 import modules.ModuleImpl;
-import modules.ModuleTree;
+import modules.ModuleNetwork;
 import modules.ModuleTreeGsonDeserializer;
 import modules.ModuleTreeGsonSerializer;
 import modules.basemodules.ConsoleWriterModule;
@@ -27,16 +27,16 @@ public class ModuleTreeSerializationTest {
 		try {
 
 			// Set up module tree
-			ModuleTree moduleTree = new ModuleTree();
+			ModuleNetwork moduleNetwork = new ModuleNetwork();
 
 			// Prepare OANC module
 			Properties oancProperties = new Properties();
 			oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "OANC");
 			oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION,
 					"/tmp/oanc");
-			OANC oanc = new OANC(moduleTree, oancProperties);
+			OANC oanc = new OANC(moduleNetwork, oancProperties);
 
-			moduleTree.setRootModule(oanc); // Necessary before adding more
+			moduleNetwork.setRootModule(oanc); // Necessary before adding more
 											// modules!
 
 			// Prepare FileWriter module
@@ -45,7 +45,7 @@ public class ModuleTreeSerializationTest {
 					"FileWriter");
 			fileWriterProperties.setProperty(
 					FileWriterModule.PROPERTYKEY_OUTPUTFILE, "/tmp/out");
-			FileWriterModule fileWriter = new FileWriterModule(moduleTree,
+			FileWriterModule fileWriter = new FileWriterModule(moduleNetwork,
 					fileWriterProperties);
 
 			// Prepare OANC parser module
@@ -67,7 +67,7 @@ public class ModuleTreeSerializationTest {
 			oancParserProperties.setProperty(
 					OANCXMLParser.PROPERTYKEY_OUTPUTANNOTATEDJSON,
 					Boolean.toString(true));
-			OANCXMLParser oancParser = new OANCXMLParser(moduleTree,
+			OANCXMLParser oancParser = new OANCXMLParser(moduleNetwork,
 					oancParserProperties);
 
 			// Prepare ConsoleWriter module
@@ -75,24 +75,24 @@ public class ModuleTreeSerializationTest {
 			consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME,
 					"ConsoleWriter");
 			ConsoleWriterModule consoleWriter = new ConsoleWriterModule(
-					moduleTree, consoleWriterProperties);
+					moduleNetwork, consoleWriterProperties);
 
 			// Add modules to tree
-			moduleTree.addModule(oancParser, oanc);
-			moduleTree.addModule(fileWriter, oancParser);
-			moduleTree.addModule(consoleWriter, oancParser);
+			moduleNetwork.addConnection(oancParser, oanc);
+			moduleNetwork.addConnection(fileWriter, oancParser);
+			moduleNetwork.addConnection(consoleWriter, oancParser);
 
 			// Instantiate JSON converter
 			GsonBuilder gsonBuilder = new GsonBuilder();
-			gsonBuilder.registerTypeAdapter(ModuleTree.class,
+			gsonBuilder.registerTypeAdapter(ModuleNetwork.class,
 					new ModuleTreeGsonSerializer());
-			gsonBuilder.registerTypeAdapter(ModuleTree.class,
+			gsonBuilder.registerTypeAdapter(ModuleNetwork.class,
 					new ModuleTreeGsonDeserializer());
 			Gson gson = gsonBuilder.setPrettyPrinting().create();
 
-			String json = gson.toJson(moduleTree);
+			String json = gson.toJson(moduleNetwork);
 
-			ModuleTree moduleTree2 = gson.fromJson(json, ModuleTree.class);
+			ModuleNetwork moduleTree2 = gson.fromJson(json, ModuleNetwork.class);
 			String json2 = gson.toJson(moduleTree2);
 
 			//System.out.println(json+"\n-------\n"+json2);

@@ -13,8 +13,8 @@ public class OutputPort extends AbstractPort {
 	private Map<Class<?>, List<Pipe>> pipes;
 	
 	
-	public OutputPort(String name, String description) {
-		super(name, description);
+	public OutputPort(String name, String description, Module parent) {
+		super(name, description, parent);
 		this.pipes = new HashMap<Class<?>, List<Pipe>>();
 	}
 

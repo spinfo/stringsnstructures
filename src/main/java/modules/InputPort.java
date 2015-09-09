@@ -9,8 +9,8 @@ public class InputPort extends AbstractPort {
 	private Pipe pipe;
 	
 	
-	public InputPort(String name, String description) {
-		super(name, description);
+	public InputPort(String name, String description, Module parent) {
+		super(name, description, parent);
 		this.pipe = null;
 	}
 	

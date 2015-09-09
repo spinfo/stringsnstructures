@@ -4,12 +4,16 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.Properties;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.border.LineBorder;
 
 import modules.Module;
+import modules.ModuleImpl;
+import modules.ModuleNetwork;
+import modules.basemodules.ConsoleWriterModule;
 
 public class DraggableModule extends JComponent {
 
@@ -73,14 +77,21 @@ public class DraggableModule extends JComponent {
 		});
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		JFrame f = new JFrame("Swing Hello World");
 
 		// by doing this, we prevent Swing from resizing
 		// our nice component
 		f.setLayout(null);
 
-		DraggableModule mc = new DraggableModule();
+		// Set up module tree
+		ModuleNetwork moduleNetwork = new ModuleNetwork();
+		// Prepare ConsoleWriter module
+		Properties consoleWriterProperties = new Properties();
+		consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "ConsoleWriter");
+		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleNetwork,consoleWriterProperties);
+		
+		DraggableModule mc = new DraggableModule(consoleWriter);
 		f.add(mc);
 
 		f.setSize(500, 500);

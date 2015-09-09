@@ -8,14 +8,14 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 /**
- * JSON(Gson)-serializer for ModuleTree objects.
+ * JSON(Gson)-serializer for ModuleNetwork objects.
  * @author Marcel Boeing
  *
  */
-public class ModuleTreeGsonSerializer implements JsonSerializer<ModuleTree> {
+public class ModuleTreeGsonSerializer implements JsonSerializer<ModuleNetwork> {
 
 	@Override
-	public JsonElement serialize(ModuleTree arg0, Type arg1,
+	public JsonElement serialize(ModuleNetwork arg0, Type arg1,
 			JsonSerializationContext arg2) {
 		
 		SerializableModuleTreeNode serializableRootNode;

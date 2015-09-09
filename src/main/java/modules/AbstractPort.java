@@ -9,9 +9,11 @@ public abstract class AbstractPort implements Port {
 	private Map<String, Class<?>> supportedPipes = new HashMap<String, Class<?>>();
 	private String name;
 	private String description;
+	private Module parent;
 
-	public AbstractPort(String name, String description) {
+	public AbstractPort(String name, String description, Module parent) {
 		super();
+		this.parent = parent;
 		this.name = name;
 		this.description = description;
 	}
@@ -78,6 +80,14 @@ public abstract class AbstractPort implements Port {
 	 */
 	public void addSupportedPipe(Class<?> pipeClass) {
 		this.supportedPipes.put(pipeClass.getCanonicalName(),pipeClass);
+	}
+
+	/* (non-Javadoc)
+	 * @see modules.Port#getParent()
+	 */
+	@Override
+	public Module getParent() {
+		return this.parent;
 	}
 
 }

@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.Properties;
 
 import modules.ModuleImpl;
-import modules.ModuleTree;
+import modules.ModuleNetwork;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.FileWriterModule;
 import modules.oanc.OANC;
@@ -29,22 +29,22 @@ public class ModuleTreeTest {
 		System.out.println("Schreibe Testausgabe nach "+outputFileLocation);
 		
 		// Set up module tree
-		ModuleTree moduleTree = new ModuleTree();
+		ModuleNetwork moduleNetwork = new ModuleNetwork();
 		
 		// Prepare OANC module
 		Properties oancProperties = new Properties();
 		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "OANC");
 		oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION, oancLoc0);
-		OANC oanc = new OANC(moduleTree,oancProperties);
+		OANC oanc = new OANC(moduleNetwork,oancProperties);
 		
-		moduleTree.setRootModule(oanc); // Necessary before adding more modules!
+		moduleNetwork.setRootModule(oanc); // Necessary before adding more modules!
 		
 		// Prepare FileWriter module
 		Properties fileWriterProperties = new Properties();
 		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileWriter");
 		fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_OUTPUTFILE, outputFileLocation);
 		fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_ENCODING, "UTF-8");
-		FileWriterModule fileWriter = new FileWriterModule(moduleTree,fileWriterProperties);
+		FileWriterModule fileWriter = new FileWriterModule(moduleNetwork,fileWriterProperties);
 		
 		// Prepare OANC parser module
 		Properties oancParserProperties = new Properties();
@@ -54,7 +54,7 @@ public class ModuleTreeTest {
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_CONVERTTOLOWERCASE, Boolean.toString(true));
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_KEEPPUNCTUATION, Boolean.toString(true));
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_OUTPUTANNOTATEDJSON, Boolean.toString(true));
-		OANCXMLParser oancParser = new OANCXMLParser(moduleTree,oancParserProperties);
+		OANCXMLParser oancParser = new OANCXMLParser(moduleNetwork,oancParserProperties);
 		
 		// Prepare FileReader module
 		/*Properties fileReaderProperties = new Properties();
@@ -65,7 +65,7 @@ public class ModuleTreeTest {
 		// Prepare ConsoleWriter module
 		Properties consoleWriterProperties = new Properties();
 		consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "ConsoleWriter");
-		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleTree,consoleWriterProperties);
+		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleNetwork,consoleWriterProperties);
 		
 		// Prepare ExampleModule module
 		/*Properties exampleModuleProperties = new Properties();
@@ -75,19 +75,19 @@ public class ModuleTreeTest {
 		ExampleModule exampleModule = new ExampleModule(moduleTree, exampleModuleProperties);*/
 		
 		// Add modules to tree
-		moduleTree.addModule(oancParser, oanc);
-		moduleTree.addModule(fileWriter, oancParser);
-		moduleTree.addModule(consoleWriter, oancParser);
+		moduleNetwork.addConnection(oancParser, oanc);
+		moduleNetwork.addConnection(fileWriter, oancParser);
+		moduleNetwork.addConnection(consoleWriter, oancParser);
 		//moduleTree.addModule(exampleModule, oancParser);
 		//moduleTree.addModule(consoleWriter, exampleModule);
 		
 		// Print tree
-		System.out.println(moduleTree.prettyPrint());
+		System.out.println(moduleNetwork.prettyPrint());
 		
 		
 		// Run modules in tree
 		System.out.println("Attempting to run module tree");
-		moduleTree.runModules(true);
+		moduleNetwork.runModules(true);
 		
 		assertTrue(true);
 	}

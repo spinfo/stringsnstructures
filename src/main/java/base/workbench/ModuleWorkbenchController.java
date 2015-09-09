@@ -28,7 +28,7 @@ import common.ListLoggingHandler;
 import common.ModuleComparator;
 import modules.Module;
 import modules.ModuleImpl;
-import modules.ModuleTree;
+import modules.ModuleNetwork;
 import modules.ModuleTreeGsonDeserializer;
 import modules.ModuleTreeGsonSerializer;
 import modules.artificialSeqs.CreateArtificialSeqs;
@@ -55,8 +55,7 @@ import modules.visualizationModules.ColourGraph;
 public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
 	
 	protected List<Module> availableModules = new ArrayList<Module>();
-	private ModuleTree moduleTree;
-	private DefaultMutableTreeNode selectedTreeNode;
+	private ModuleNetwork moduleNetwork;
 	private Module selectedModule;
 	private Map<String, PropertyQuadrupel> selectedModulesProperties;
 	private ListLoggingHandler listLoggingHandler;
@@ -70,8 +69,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		
 		// Initialize JSON converter
 		GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.registerTypeAdapter(ModuleTree.class, new ModuleTreeGsonSerializer());
-		gsonBuilder.registerTypeAdapter(ModuleTree.class, new ModuleTreeGsonDeserializer());
+		gsonBuilder.registerTypeAdapter(ModuleNetwork.class, new ModuleTreeGsonSerializer());
+		gsonBuilder.registerTypeAdapter(ModuleNetwork.class, new ModuleTreeGsonDeserializer());
 		this.jsonConverter = gsonBuilder.setPrettyPrinting().create();
 		
 		// Add jlist handler to logger
@@ -82,139 +81,139 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		
 		// Prepare OANC module
 		Properties oancProperties = new Properties();
-		OANC oanc = new OANC(moduleTree, oancProperties);
+		OANC oanc = new OANC(moduleNetwork, oancProperties);
 		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, oanc.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		oanc.applyProperties();
 
 		// Prepare FileWriter module
 		Properties fileWriterProperties = new Properties();
-		FileWriterModule fileWriter = new FileWriterModule(moduleTree,
+		FileWriterModule fileWriter = new FileWriterModule(moduleNetwork,
 				fileWriterProperties);
 		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		fileWriter.applyProperties();
 
 		// Prepare SmbFileWriter module
 		Properties smbFileWriterProperties = new Properties();
-		SmbFileWriterModule smbFileWriter = new SmbFileWriterModule(moduleTree,
+		SmbFileWriterModule smbFileWriter = new SmbFileWriterModule(moduleNetwork,
 				smbFileWriterProperties);
 		smbFileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, smbFileWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		smbFileWriter.applyProperties();
 
 		// Prepare OANC parser module
 		Properties oancParserProperties = new Properties();
-		OANCXMLParser oancParser = new OANCXMLParser(moduleTree,
+		OANCXMLParser oancParser = new OANCXMLParser(moduleNetwork,
 				oancParserProperties);
 		oancParserProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, oancParser.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		oancParser.applyProperties();
 
 		// Prepare FileReader module
 		Properties fileReaderProperties = new Properties();
-		FileReaderModule fileReader = new FileReaderModule(moduleTree,
+		FileReaderModule fileReader = new FileReaderModule(moduleNetwork,
 				fileReaderProperties);
 		fileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileReader.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		fileReader.applyProperties();
 
 		// Prepare SmbFileReader module
 		Properties smbFileReaderProperties = new Properties();
-		SmbFileReaderModule smbFileReader = new SmbFileReaderModule(moduleTree,
+		SmbFileReaderModule smbFileReader = new SmbFileReaderModule(moduleNetwork,
 				smbFileReaderProperties);
 		smbFileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, smbFileReader.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		smbFileReader.applyProperties();
 
 		// Prepare ConsoleWriter module
 		Properties consoleWriterProperties = new Properties();
-		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleTree,
+		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleNetwork,
 				consoleWriterProperties);
 		consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, consoleWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		consoleWriter.applyProperties();
 
 		// Prepare ExampleModule module
 		Properties exampleModuleProperties = new Properties();
-		ExampleModule exampleModule = new ExampleModule(moduleTree,
+		ExampleModule exampleModule = new ExampleModule(moduleNetwork,
 				exampleModuleProperties);
 		exampleModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		exampleModule.applyProperties();
 
 		// Prepare TreeBuilder module
 		Properties treeBuilderModuleProperties = new Properties();
-		TreeBuilder treeBuilder = new TreeBuilder(moduleTree,
+		TreeBuilder treeBuilder = new TreeBuilder(moduleNetwork,
 				treeBuilderModuleProperties);
 		treeBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilder.applyProperties();
 
 		// Prepare AtomicRangeSuffixTrieBuilder module
 		Properties atomicRangeSuffixTrieBuilderProperties = new Properties();
-		AtomicRangeSuffixTrieBuilder atomicRangeSuffixTrieBuilder = new AtomicRangeSuffixTrieBuilder(moduleTree,
+		AtomicRangeSuffixTrieBuilder atomicRangeSuffixTrieBuilder = new AtomicRangeSuffixTrieBuilder(moduleNetwork,
 				atomicRangeSuffixTrieBuilderProperties);
 		atomicRangeSuffixTrieBuilderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, atomicRangeSuffixTrieBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		atomicRangeSuffixTrieBuilder.applyProperties();
 
 		// Prepare Neo4jOutputModule module
 		Properties neo4jOutputModuleProperties = new Properties();
-		Neo4jOutputModule neo4jOutputModule = new Neo4jOutputModule(moduleTree,
+		Neo4jOutputModule neo4jOutputModule = new Neo4jOutputModule(moduleNetwork,
 				neo4jOutputModuleProperties);
 		neo4jOutputModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, neo4jOutputModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		neo4jOutputModule.applyProperties();
 
 		// Prepare SuffixNetBuilderModule module
 		Properties suffixNetBuilderModuleProperties = new Properties();
-		SuffixNetBuilderModule suffixNetBuilderModule = new SuffixNetBuilderModule(moduleTree,
+		SuffixNetBuilderModule suffixNetBuilderModule = new SuffixNetBuilderModule(moduleNetwork,
 				suffixNetBuilderModuleProperties);
 		suffixNetBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixNetBuilderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		suffixNetBuilderModule.applyProperties();
 
 		// Prepare ColourGraph module
 		Properties colourGraphModuleProperties = new Properties();
-		ColourGraph colourGraphModule = new ColourGraph(moduleTree,
+		ColourGraph colourGraphModule = new ColourGraph(moduleNetwork,
 				colourGraphModuleProperties);
 		colourGraphModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, colourGraphModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		colourGraphModule.applyProperties();
 
 		// Prepare ASCIIGraph module
 		Properties asciiGraphModuleProperties = new Properties();
-		ASCIIGraph asciiGraphModule = new ASCIIGraph(moduleTree,
+		ASCIIGraph asciiGraphModule = new ASCIIGraph(moduleNetwork,
 				asciiGraphModuleProperties);
 		asciiGraphModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, asciiGraphModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		asciiGraphModule.applyProperties();
 
 		// Prepare ParadigmenErmittlerModul module
 		Properties paradigmenErmittlerModulProperties = new Properties();
-		ParadigmenErmittlerModul paradigmenErmittlerModul = new ParadigmenErmittlerModul(moduleTree,
+		ParadigmenErmittlerModul paradigmenErmittlerModul = new ParadigmenErmittlerModul(moduleNetwork,
 				paradigmenErmittlerModulProperties);
 		paradigmenErmittlerModulProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, paradigmenErmittlerModul.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		paradigmenErmittlerModul.applyProperties();
 		
 		// Prepare CreateArtificialSeqs module
 		Properties createArtificialSeqsProperties = new Properties();
-		CreateArtificialSeqs createArtificialSeqs = new CreateArtificialSeqs(moduleTree,
+		CreateArtificialSeqs createArtificialSeqs = new CreateArtificialSeqs(moduleNetwork,
 				createArtificialSeqsProperties);
 		createArtificialSeqsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, createArtificialSeqs.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		createArtificialSeqs.applyProperties();
 		
 		// Prepare SeqMemory module
 		Properties SeqMemoryProperties = new Properties();
-		SeqMemory seqMemory = new SeqMemory(moduleTree,
+		SeqMemory seqMemory = new SeqMemory(moduleNetwork,
 				SeqMemoryProperties);
 		SeqMemoryProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqMemory.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqMemory.applyProperties();
 
 		// Prepare SeqTreePropController module
 		Properties SeqTreePropControllerProperties = new Properties();
-		SeqTreePropController seqTreePropController = new SeqTreePropController(moduleTree,
+		SeqTreePropController seqTreePropController = new SeqTreePropController(moduleNetwork,
 				SeqTreePropControllerProperties);
 		SeqTreePropControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqTreePropController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqTreePropController.applyProperties();
 		
 		// Prepare modules.seqSuffixTrie2SuffixTree module
 		Properties seqSuffixTrie2SuffixTreeControllerProperties = new Properties();
-		SeqSuffixTrie2SuffixTreeController seqSuffixTrie2SuffixTreeController = new SeqSuffixTrie2SuffixTreeController(moduleTree,
+		SeqSuffixTrie2SuffixTreeController seqSuffixTrie2SuffixTreeController = new SeqSuffixTrie2SuffixTreeController(moduleNetwork,
 				seqSuffixTrie2SuffixTreeControllerProperties);
 		seqSuffixTrie2SuffixTreeControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqSuffixTrie2SuffixTreeController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqSuffixTrie2SuffixTreeController.applyProperties();
 			
 		// Prepare seqNewickExporter module
 		Properties SeqNewickExproterControllerProperties = new Properties();
-		SeqNewickExproterController seqNewickExproterController = new SeqNewickExproterController(moduleTree,
+		SeqNewickExproterController seqNewickExproterController = new SeqNewickExproterController(moduleNetwork,
 				SeqNewickExproterControllerProperties);
 		SeqNewickExproterControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExproterController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqNewickExproterController.applyProperties();
@@ -253,40 +252,40 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	 * @param rootModule Root module
 	 * @return The created module tree
 	 */
-	public ModuleTree startNewModuleTree(Module rootModule){
+	public ModuleNetwork startNewModuleTree(){
 		
-		// Determine if a module tree already exists
-		if (this.moduleTree != null && this.moduleTree.getModuleTreeModel() != null){
+		// Determine if a module network already exists
+		if (this.moduleNetwork != null){
 			// If so, we just need to set a new root module
-			this.moduleTree.getModuleTreeModel().setRoot(new DefaultMutableTreeNode(rootModule));
+			this.moduleNetwork.getModuleTreeModel().setRoot(new DefaultMutableTreeNode(rootModule));
 			// ... and make sure the root node knows its callback receiver
-			rootModule.setCallbackReceiver(this.moduleTree);
+			rootModule.setCallbackReceiver(this.moduleNetwork);
 		}
 			
 		else {
 			// Instantiate a new module tree
-			this.moduleTree = new ModuleTree(rootModule);
+			this.moduleNetwork = new ModuleNetwork(rootModule);
 		}
 			
 		
 		// Reset selected tree node
-		this.setSelectedTreeNode((DefaultMutableTreeNode) this.moduleTree.getModuleTreeModel().getRoot());
+		this.setSelectedTreeNode((DefaultMutableTreeNode) this.moduleNetwork.getModuleTreeModel().getRoot());
 		
-		return this.moduleTree;
+		return this.moduleNetwork;
 	}
 
 	/**
-	 * @return the moduleTree
+	 * @return the moduleNetwork
 	 */
-	public ModuleTree getModuleTree() {
-		return moduleTree;
+	public ModuleNetwork getModuleTree() {
+		return moduleNetwork;
 	}
 
 	/**
-	 * @param moduleTree the moduleTree to set
+	 * @param moduleNetwork the moduleNetwork to set
 	 */
-	public void setModuleTree(ModuleTree moduleTree) {
-		this.moduleTree = moduleTree;
+	public void setModuleTree(ModuleNetwork moduleNetwork) {
+		this.moduleNetwork = moduleNetwork;
 	}
 
 	/**
@@ -298,11 +297,11 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	
 	/**
 	 * Returns a new instance of the module currently selected in the available modules list.
-	 * @param moduleTree Module tree to set as callback receiver for the new module's instance
+	 * @param moduleNetwork Module tree to set as callback receiver for the new module's instance
 	 * @return new module instance
 	 * @throws Exception
 	 */
-	public Module getNewInstanceOfSelectedModule(ModuleTree moduleTree) throws Exception{
+	public Module getNewInstanceOfSelectedModule(ModuleNetwork moduleNetwork) throws Exception{
 		
 		// If no module is selected, throw exception
 		if (this.selectedModule == null)
@@ -324,45 +323,45 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		// Determine the type of the module and instanciate it accordingly
 		// TODO Use JarClassLoader to load module classes at runtime
 		if (this.selectedModule.getClass().equals(ConsoleWriterModule.class)){
-			newModule = new ConsoleWriterModule(moduleTree, properties);
+			newModule = new ConsoleWriterModule(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(ExampleModule.class)){
-			newModule = new ExampleModule(moduleTree, properties);
+			newModule = new ExampleModule(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(FileReaderModule.class)){
-			newModule = new FileReaderModule(moduleTree, properties);
+			newModule = new FileReaderModule(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(FileWriterModule.class)){
-			newModule = new FileWriterModule(moduleTree, properties);
+			newModule = new FileWriterModule(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(OANC.class)){
-			newModule = new OANC(moduleTree, properties);
+			newModule = new OANC(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(OANCXMLParser.class)){
-			newModule = new OANCXMLParser(moduleTree, properties);
+			newModule = new OANCXMLParser(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(TreeBuilder.class)){
-			newModule = new TreeBuilder(moduleTree, properties);
+			newModule = new TreeBuilder(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(AtomicRangeSuffixTrieBuilder.class)){
-			newModule = new AtomicRangeSuffixTrieBuilder(moduleTree, properties);
+			newModule = new AtomicRangeSuffixTrieBuilder(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(Neo4jOutputModule.class)){
-			newModule = new Neo4jOutputModule(moduleTree, properties);
+			newModule = new Neo4jOutputModule(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(SuffixNetBuilderModule.class)){
-			newModule = new SuffixNetBuilderModule(moduleTree, properties);
+			newModule = new SuffixNetBuilderModule(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(ColourGraph.class)){
-			newModule = new ColourGraph(moduleTree, properties);
+			newModule = new ColourGraph(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(ASCIIGraph.class)){
-			newModule = new ASCIIGraph(moduleTree, properties);
+			newModule = new ASCIIGraph(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(SmbFileReaderModule.class)){
-			newModule = new SmbFileReaderModule(moduleTree, properties);
+			newModule = new SmbFileReaderModule(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(SmbFileWriterModule.class)){
-			newModule = new SmbFileWriterModule(moduleTree, properties);
+			newModule = new SmbFileWriterModule(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(ParadigmenErmittlerModul.class)){
-			newModule = new ParadigmenErmittlerModul(moduleTree, properties);
+			newModule = new ParadigmenErmittlerModul(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(CreateArtificialSeqs.class)){
-			newModule = new CreateArtificialSeqs(moduleTree, properties);
+			newModule = new CreateArtificialSeqs(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(SeqMemory.class)){
-			newModule = new SeqMemory(moduleTree, properties);
+			newModule = new SeqMemory(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(SeqTreePropController.class)){
-			newModule = new SeqTreePropController(moduleTree, properties);
+			newModule = new SeqTreePropController(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(SeqSuffixTrie2SuffixTreeController.class)){
-			newModule = new SeqSuffixTrie2SuffixTreeController(moduleTree, properties);
+			newModule = new SeqSuffixTrie2SuffixTreeController(moduleNetwork, properties);
 		} else if (this.selectedModule.getClass().equals(SeqNewickExproterController.class)){
-			newModule = new SeqNewickExproterController(moduleTree, properties);
+			newModule = new SeqNewickExproterController(moduleNetwork, properties);
 		}
 		
 		else {
@@ -457,11 +456,11 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	 * @return Loaded module tree
 	 * @throws Exception 
 	 */
-	public ModuleTree loadModuleTreeFromFile(File file) throws Exception {
+	public ModuleNetwork loadModuleTreeFromFile(File file) throws Exception {
 				
 		// Read JSON representation of the current module tree from file
 		FileReader fileReader = new FileReader(file);
-		ModuleTree loadedModuleTree = this.jsonConverter.fromJson(fileReader, ModuleTree.class);
+		ModuleNetwork loadedModuleTree = this.jsonConverter.fromJson(fileReader, ModuleNetwork.class);
 		this.setModuleTree(loadedModuleTree);
 				
 		// Close file writer
@@ -493,7 +492,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		
 		// Write JSON representation of the current module tree to file
 		FileWriter fileWriter = new FileWriter(file);
-		this.jsonConverter.toJson(this.moduleTree, fileWriter);
+		this.jsonConverter.toJson(this.moduleNetwork, fileWriter);
 		
 		// Close file writer
 		fileWriter.close();

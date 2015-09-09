@@ -14,14 +14,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import common.parallelization.CallbackReceiver;
 
-public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleTree> {
+public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwork> {
 
 	@Override
-	public ModuleTree deserialize(JsonElement json, Type typeOfT,
+	public ModuleNetwork deserialize(JsonElement json, Type typeOfT,
 			JsonDeserializationContext context) throws JsonParseException {
 		
 		// Set up module tree
-		ModuleTree moduleTree = new ModuleTree();
+		ModuleNetwork moduleNetwork = new ModuleNetwork();
 		
 		// Instantiate new JSON parser
 		Gson gson = new Gson();
@@ -38,13 +38,13 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleTree> 
 			Constructor<?> ctor = moduleClass.getConstructor(CallbackReceiver.class, Properties.class);
 			
 			// Instantiate module and attach it to the module tree 
-			Module rootModule = (Module) ctor.newInstance(new Object[] { moduleTree, serializableNode.getProperties() });
-			moduleTree.setRootModule(rootModule);
+			Module rootModule = (Module) ctor.newInstance(new Object[] { moduleNetwork, serializableNode.getProperties() });
+			moduleNetwork.setRootModule(rootModule);
 			
 			// Recursively do the same with each child node
 			Iterator<SerializableModuleTreeNode> children = serializableNode.getChildren().iterator();
 			while (children.hasNext()){
-				this.attachToModuleTree(rootModule, moduleTree, children.next());
+				this.attachToModuleTree(rootModule, moduleNetwork, children.next());
 			}
 			
 		} catch (Exception e) {
@@ -53,17 +53,17 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleTree> 
 		}
 		
 		// Return the new module tree object
-		return moduleTree;
+		return moduleNetwork;
 	}
 
 	/**
 	 * Recursively attaches the given serializable module tree node and its children to the module tree.
 	 * @param parent
-	 * @param moduleTree
+	 * @param moduleNetwork
 	 * @param nodeToAttach
 	 * @throws Exception
 	 */
-	private void attachToModuleTree(Module parent, ModuleTree moduleTree, SerializableModuleTreeNode nodeToAttach) throws Exception {
+	private void attachToModuleTree(Module parent, ModuleNetwork moduleNetwork, SerializableModuleTreeNode nodeToAttach) throws Exception {
 		// Determine class of the module
 		Class<?> moduleClass = Class.forName(nodeToAttach.getModuleCanonicalClassName());
 					
@@ -71,13 +71,13 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleTree> 
 		Constructor<?> ctor = moduleClass.getConstructor(CallbackReceiver.class, Properties.class);
 					
 		// Instantiate module and attach it to the module tree 
-		Module module = (Module) ctor.newInstance(new Object[] { moduleTree, nodeToAttach.getProperties() });
-		moduleTree.addModule(module, parent);
+		Module module = (Module) ctor.newInstance(new Object[] { moduleNetwork, nodeToAttach.getProperties() });
+		moduleNetwork.addConnection(module, parent);
 		
 		// Recursively do the same with each child node
 		Iterator<SerializableModuleTreeNode> children = nodeToAttach.getChildren().iterator();
 		while (children.hasNext()){
-			this.attachToModuleTree(module, moduleTree, children.next());
+			this.attachToModuleTree(module, moduleNetwork, children.next());
 		}
 	}
 	

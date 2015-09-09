@@ -27,7 +27,7 @@ import javax.swing.tree.TreePath;
 import common.PrettyLogRecord;
 import common.parallelization.CallbackReceiverImpl;
 import modules.Module;
-import modules.ModuleTree;
+import modules.ModuleNetwork;
 
 /**
  * Provides a GUI to create/edit/run module trees.
@@ -280,8 +280,8 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 					throw new Exception("Please do select a module from the lefthand list first.");
 				rootModule = this.controller.getNewInstanceOfSelectedModule(null);
 				// Start new module tree and add this class as callback receiver to it
-				ModuleTree moduleTree = this.controller.startNewModuleTree(rootModule);
-				moduleTree.addCallbackReceiver(this);
+				ModuleNetwork moduleNetwork = this.controller.startNewModuleTree(rootModule);
+				moduleNetwork.addCallbackReceiver(this);
 				frame.setTitle(WINDOWTITLE+WINDOWTITLE_NEWTREESUFFIX);
 				
 			} catch (Exception e1) {
@@ -296,7 +296,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				Module newModule = this.controller.getNewInstanceOfSelectedModule(this.controller.getModuleTree());
 						
 				// Add new module to selected tree node
-				this.controller.getModuleTree().addModule(newModule, parentModule);
+				this.controller.getModuleTree().addConnection(newModule, parentModule);
 				
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
@@ -375,7 +375,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				
 				// If the return value indicates approval, load the selected file
 				if (returnVal==JFileChooser.APPROVE_OPTION){
-					ModuleTree loadedModuleTree = this.controller.loadModuleTreeFromFile(fileChooser.getSelectedFile());
+					ModuleNetwork loadedModuleTree = this.controller.loadModuleTreeFromFile(fileChooser.getSelectedFile());
 					loadedModuleTree.getModuleTreeModel().addTreeModelListener(this);
 					loadedModuleTree.addCallbackReceiver(this);
 					this.moduleJTree.setModel(loadedModuleTree.getModuleTreeModel());
