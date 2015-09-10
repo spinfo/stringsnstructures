@@ -8,14 +8,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
-import common.parallelization.CallbackReceiver;
-
-import modules.BytePipe;
-import modules.CharPipe;
-import modules.ModuleImpl;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileOutputStream;
+import modules.BytePipe;
+import modules.CharPipe;
+import modules.InputPort;
+import modules.ModuleImpl;
+
+import common.parallelization.CallbackReceiver;
 
 /**
  * Writes any input to file
@@ -35,6 +36,7 @@ public class SmbFileWriterModule extends ModuleImpl {
 	public static final String PROPERTYKEY_SMBDOMAIN = "SMB domain";
 
 	// Local variables
+	private final String INPUTID = "input";
 	private String smbUrl;
 	private boolean useGzip = false;
 	private String encoding;
@@ -75,8 +77,10 @@ public class SmbFileWriterModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_SMBDOMAIN, "WORKGROUP");
 
 		// Define I/O
-		this.getSupportedInputs().add(BytePipe.class);
-		this.getSupportedInputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "Byte or character input.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		inputPort.addSupportedPipe(BytePipe.class);
+		super.addInputPort(INPUTID,inputPort);
 
 		// Add module description
 		this.setDescription("Writes received input to a SMB/CIFS share. Can apply GZIP compression.");
@@ -108,7 +112,7 @@ public class SmbFileWriterModule extends ModuleImpl {
 			byte[] buffer = new byte[this.bufferLength];
 
 			// Read file data into buffer and write to outputstream
-			int readBytes = this.getInputBytePipe().getInput().read(buffer);
+			int readBytes = this.getInputPorts().get(INPUTID).getInputStream().read(buffer);
 			while (readBytes != -1) {
 
 				// Check for interrupt signal
@@ -119,7 +123,7 @@ public class SmbFileWriterModule extends ModuleImpl {
 				}
 
 				fileOutputStream.write(buffer, 0, readBytes);
-				readBytes = this.getInputBytePipe().getInput().read(buffer);
+				readBytes = this.getInputPorts().get(INPUTID).getInputStream().read(buffer);
 			}
 
 			// close output stream
@@ -150,7 +154,7 @@ public class SmbFileWriterModule extends ModuleImpl {
 			char[] buffer = new char[this.bufferLength];
 
 			// Read file data into buffer and output to writer
-			int readBytes = this.getInputCharPipe().getInput().read(buffer);
+			int readBytes = this.getInputPorts().get(INPUTID).getInputReader().read(buffer);
 			while (readBytes != -1) {
 
 				// Check for interrupt signal
@@ -162,7 +166,7 @@ public class SmbFileWriterModule extends ModuleImpl {
 				}
 
 				fileWriter.write(buffer, 0, readBytes);
-				readBytes = this.getInputCharPipe().getInput().read(buffer);
+				readBytes = this.getInputPorts().get(INPUTID).getInputReader().read(buffer);
 			}
 
 			// close outputs

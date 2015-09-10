@@ -11,9 +11,9 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 import common.parallelization.CallbackReceiver;
-
 import modules.BytePipe;
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
 
 /**
@@ -31,6 +31,7 @@ public class FileWriterModule extends ModuleImpl {
 	public static final String PROPERTYKEY_BUFFERLENGTH = "Buffer length";
 
 	// Local variables
+	private final String INPUTID = "input";
 	private String filePath;
 	private boolean useGzip = false;
 	private String encoding;
@@ -60,8 +61,10 @@ public class FileWriterModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "8192");
 
 		// Define I/O
-		this.getSupportedInputs().add(BytePipe.class);
-		this.getSupportedInputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "Byte or character input.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		inputPort.addSupportedPipe(BytePipe.class);
+		super.addInputPort(INPUTID,inputPort);
 
 		// Add module description
 		this.setDescription("Writes received input to a file. Can apply GZIP compression.");
@@ -88,7 +91,7 @@ public class FileWriterModule extends ModuleImpl {
 			byte[] buffer = new byte[this.bufferLength];
 
 			// Read file data into buffer and write to outputstream
-			int readBytes = this.getInputBytePipe().getInput().read(buffer);
+			int readBytes = this.getInputPorts().get(INPUTID).getInputStream().read(buffer);
 			while (readBytes != -1) {
 
 				// Check for interrupt signal
@@ -99,7 +102,7 @@ public class FileWriterModule extends ModuleImpl {
 				}
 
 				fileOutputStream.write(buffer, 0, readBytes);
-				readBytes = this.getInputBytePipe().getInput().read(buffer);
+				readBytes = this.getInputPorts().get(INPUTID).getInputStream().read(buffer);
 			}
 
 			// close output stream
@@ -131,7 +134,7 @@ public class FileWriterModule extends ModuleImpl {
 			char[] buffer = new char[this.bufferLength];
 
 			// Read file data into buffer and output to writer
-			int readBytes = this.getInputCharPipe().getInput().read(buffer);
+			int readBytes = this.getInputPorts().get(INPUTID).getInputReader().read(buffer);
 			while (readBytes != -1) {
 
 				// Check for interrupt signal
@@ -143,7 +146,7 @@ public class FileWriterModule extends ModuleImpl {
 				}
 
 				fileWriter.write(buffer, 0, readBytes);
-				readBytes = this.getInputCharPipe().getInput().read(buffer);
+				readBytes = this.getInputPorts().get(INPUTID).getInputReader().read(buffer);
 			}
 
 			// close outputs

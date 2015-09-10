@@ -11,11 +11,13 @@ public class OutputPort extends AbstractPort {
 	
 	// Maps a list of pipes to each of the supported pipe classes 
 	private Map<Class<?>, List<Pipe>> pipes;
+	private Map<Pipe, Port> connectedPorts;
 	
 	
 	public OutputPort(String name, String description, Module parent) {
 		super(name, description, parent);
 		this.pipes = new HashMap<Class<?>, List<Pipe>>();
+		this.connectedPorts = new HashMap<Pipe, Port>();
 	}
 
 
@@ -32,10 +34,14 @@ public class OutputPort extends AbstractPort {
 
 
 	@Override
-	public void addPipe(Pipe pipe) throws NotSupportedException {
+	public void addPipe(Pipe pipe, Port connectedPort) throws NotSupportedException, OccupiedException {
 		if (super.supportsPipe(pipe))
-			this.pipes.get(pipe.getClass()).add(pipe);
-		else throw new NotSupportedException("That pipe is not supported by this port.");
+			if (InputPort.class.isAssignableFrom(connectedPort.getClass())){
+				this.pipes.get(pipe.getClass()).add(pipe);
+				this.connectedPorts.put(pipe, connectedPort);
+			} else
+				throw new NotSupportedException("This port ("+this.toString()+") can only be connected to an input port.");
+		else throw new NotSupportedException("That pipe is not supported by this port ("+this.toString()+").");
 	}
 
 	/**
@@ -54,12 +60,23 @@ public class OutputPort extends AbstractPort {
 	public List<Pipe> getPipes(Class<?> pipeClass) {
 		return pipes.get(pipeClass);
 	}
+	
+	/**
+	 * Returns the port the specified pipe is connected to.
+	 * @param pipe
+	 * @return Port
+	 */
+	public Port getConnectedPort(Pipe pipe){
+		return this.connectedPorts.get(pipe);
+	}
 
 
 	@Override
 	public void removePipe(Pipe pipe) throws NotFoundException {
 		if (!this.pipes.containsKey(pipe.getClass()) || !this.pipes.get(pipe.getClass()).remove(pipe))
 			throw new NotFoundException("The specified pipe could not be found.");
+		if (this.connectedPorts.get(pipe) != null)
+			this.connectedPorts.remove(pipe);
 	}
 	
 	/**
@@ -73,7 +90,7 @@ public class OutputPort extends AbstractPort {
 		
 		// Check whether this port does support byte stream output
 		if (!this.supportsPipeClass(BytePipe.class))
-			throw new IOException("This port does not support byte stream output.");
+			throw new IOException("This port ("+this.toString()+") does not support byte stream output.");
 		
 		// Loop over the defined outputs
 		Iterator<Pipe> outputStreams = this.pipes.get(BytePipe.class).iterator();
@@ -98,7 +115,7 @@ public class OutputPort extends AbstractPort {
 		
 		// Check whether this port does support byte stream output
 		if (!this.supportsPipeClass(CharPipe.class))
-			throw new IOException("This port does not support character stream output.");
+			throw new IOException("This port ("+this.toString()+") does not support character stream output.");
 		
 		// Loop over the defined outputs
 		Iterator<Pipe> outputPipes = this.pipes.get(CharPipe.class).iterator();

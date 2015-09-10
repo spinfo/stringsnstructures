@@ -30,7 +30,7 @@ import modules.Module;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
 import modules.ModuleTreeGsonDeserializer;
-import modules.ModuleTreeGsonSerializer;
+import modules.ModuleNetworkGsonSerializer;
 import modules.artificialSeqs.CreateArtificialSeqs;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
@@ -69,7 +69,7 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		
 		// Initialize JSON converter
 		GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.registerTypeAdapter(ModuleNetwork.class, new ModuleTreeGsonSerializer());
+		gsonBuilder.registerTypeAdapter(ModuleNetwork.class, new ModuleNetworkGsonSerializer());
 		gsonBuilder.registerTypeAdapter(ModuleNetwork.class, new ModuleTreeGsonDeserializer());
 		this.jsonConverter = gsonBuilder.setPrettyPrinting().create();
 		
@@ -248,11 +248,9 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	}
 	
 	/**
-	 * Creates a new module tree with the given module as root.
-	 * @param rootModule Root module
-	 * @return The created module tree
+	 * Clears the current module network.
 	 */
-	public ModuleNetwork startNewModuleTree(){
+	public void clearModuleNetwork(){
 		
 		// Determine if a module network already exists
 		if (this.moduleNetwork != null){

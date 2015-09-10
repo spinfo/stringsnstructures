@@ -8,10 +8,10 @@ import java.util.Properties;
 
 import modules.CharPipe;
 import modules.ModuleImpl;
+import modules.OutputPort;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import common.RegAusdruckDateiFilter;
 import common.VerzeichnisFilter;
 import common.parallelization.CallbackReceiver;
@@ -24,6 +24,7 @@ import common.parallelization.CallbackReceiver;
 public class OANC extends ModuleImpl {
 
 	public static final String PROPERTYKEY_OANCLOCATION = "oanc-location";
+	private final String OUTPUTID = "output";
 	private String[] oancSpeicherorte;
 	private FileFilter verzeichnisFilter = new VerzeichnisFilter();
 	private FileFilter quellDateiFilter = new RegAusdruckDateiFilter(".+\\.txt$");
@@ -32,7 +33,9 @@ public class OANC extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Define I/O
-		this.getSupportedOutputs().add(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "JSON-encoded list of source file locations.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_OANCLOCATION, "The directory containing OANC-Files (subdirectories are used, too)");
@@ -131,10 +134,10 @@ public class OANC extends ModuleImpl {
 		String fileListJson = gson.toJson(fileList);
 		
 		// Write the file list JSON to all output character pipes
-		this.outputToAllCharPipes(fileListJson);
+		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(fileListJson);
 		
 		// Close outputs
-		this.closeAllOutputWriters();
+		this.closeAllOutputs();
 		
 		// Processing ended successfully
 		return true;

@@ -7,10 +7,10 @@ import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
 import common.parallelization.CallbackReceiver;
-
 import modules.BytePipe;
 import modules.CharPipe;
 import modules.ModuleImpl;
+import modules.OutputPort;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
@@ -27,6 +27,7 @@ public class SmbFileReaderModule extends ModuleImpl {
 	public static final String PROPERTYKEY_SMBDOMAIN = "SMB domain";
 
 	// Local variables
+	private final String OUTPUTID = "output";
 	private boolean useGzip = false;
 	private String encoding;
 	private int bufferLength = 8192;
@@ -40,8 +41,10 @@ public class SmbFileReaderModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// set I/O -- no inputs allowed here (we'll read the file)
-		this.getSupportedOutputs().add(BytePipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "Byte or character output.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		outputPort.addSupportedPipe(BytePipe.class);
+		super.addOutputPort(OUTPUTID,outputPort);
 
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_SMBURL,
@@ -87,7 +90,7 @@ public class SmbFileReaderModule extends ModuleImpl {
 		 * write to both output channels (stream/writer)
 		 */
 		boolean wroteToStream = false;
-		if (!this.getOutputBytePipes().isEmpty()) {
+		if (!this.getOutputPorts().get(OUTPUTID).getPipes().get(BytePipe.class).isEmpty()) {
 			// Instantiate a new input stream
 			InputStream fileInputStream = new SmbFileInputStream(smbFile);
 
@@ -110,18 +113,17 @@ public class SmbFileReaderModule extends ModuleImpl {
 							"Thread has been interrupted.");
 				}
 
-				this.outputToAllBytePipes(buffer, 0, readBytes);
+				this.getOutputPorts().get(OUTPUTID).outputToAllBytePipes(buffer, 0, readBytes);
 				readBytes = fileInputStream.read(buffer);
 			}
 
 			// close relevant I/O instances
 			fileInputStream.close();
-			this.closeAllOutputStreams();
 			wroteToStream = true;
 		}
 
 		boolean wroteToChars = false;
-		if (!this.getOutputCharPipes().isEmpty()) {
+		if (!this.getOutputPorts().get(OUTPUTID).getPipes().get(CharPipe.class).isEmpty()) {
 			// Instantiate a new input stream
 			InputStream fileInputStream = new SmbFileInputStream(smbFile);
 
@@ -149,7 +151,7 @@ public class SmbFileReaderModule extends ModuleImpl {
 						throw new InterruptedException(
 								"Thread has been interrupted.");
 					}
-					this.outputToAllCharPipes(buffer, 0, readChars);
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(buffer, 0, readChars);
 					readChars = fileReader.read(buffer);
 				}
 
@@ -159,10 +161,12 @@ public class SmbFileReaderModule extends ModuleImpl {
 
 			// close relevant I/O instances
 			fileInputStream.close();
-			this.closeAllOutputWriters();
 			
 			wroteToChars = true;
 		}
+		
+		// Close output port
+		this.getOutputPorts().get(OUTPUTID).close();
 
 		if (!wroteToStream && !wroteToChars)
 			throw new Exception(

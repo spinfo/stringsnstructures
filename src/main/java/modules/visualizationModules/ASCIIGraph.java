@@ -13,12 +13,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
 import modules.treeBuilder.Knoten;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import common.parallelization.CallbackReceiver;
 
 /**
@@ -34,6 +35,8 @@ public class ASCIIGraph extends ModuleImpl {
 	public static final String PROPERTYKEY_USEPARENTSYMBOL = "Biggest child uses parent symbol";
 	
 	// Instance variables
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	KnotenKomparator knotenKomparator = new KnotenKomparator();
 	boolean elternZeichenUebernehmen;
 
@@ -47,8 +50,12 @@ public class ASCIIGraph extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "ASCII visualization.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_USEPARENTSYMBOL,
@@ -87,7 +94,7 @@ public class ASCIIGraph extends ModuleImpl {
 		Gson gson = new GsonBuilder().create();
 				
 		// Wurzelknoten einlesen
-		Knoten wurzelKnoten = gson.fromJson(this.getInputCharPipe().getInput(), Knoten.class);
+		Knoten wurzelKnoten = gson.fromJson(this.getInputPorts().get(INPUTID).getInputReader(), Knoten.class);
 		
 		// Baummodell initialisieren
 		DefaultTreeModel baum = this.insertIntoTreeModel(wurzelKnoten, null, null);
@@ -136,14 +143,14 @@ public class ASCIIGraph extends ModuleImpl {
 				if (metaKnoten.getPosition()>zeichenInAktuellerZeile){
 					int leerZeichenEinfuegen = metaKnoten.getPosition()-zeichenInAktuellerZeile;
 					for (int i=0; i<leerZeichenEinfuegen; i++){
-						this.outputToAllCharPipes(" ");
+						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(" ");
 						zeichenInAktuellerZeile++;
 					}
 				}
 			}
 			
 			for (int i=0; i<kindKnoten.getZaehler(); i++)
-				this.outputToAllCharPipes(kindKnoten.getName());
+				this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(kindKnoten.getName());
 			
 			// Position merken (etwas unelegant)
 			baumKindKnoten.setUserObject(new MetaKnoten(kindKnoten, zeichenInAktuellerZeile, 0, 0, 0));
@@ -151,7 +158,7 @@ public class ASCIIGraph extends ModuleImpl {
 			
 			// Ggf. Zeilenumbruch einfuegen
 			if (zeichenInAktuellerZeile >= zeichenProZeile){
-				this.outputToAllCharPipes(" ["+zeichenInAktuellerZeile+"]\n");
+				this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(" ["+zeichenInAktuellerZeile+"]\n");
 				zeichenInAktuellerZeile = 0;
 			}
 		}

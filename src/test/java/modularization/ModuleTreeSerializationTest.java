@@ -8,7 +8,7 @@ import java.util.Properties;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
 import modules.ModuleTreeGsonDeserializer;
-import modules.ModuleTreeGsonSerializer;
+import modules.ModuleNetworkGsonSerializer;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.FileWriterModule;
 import modules.oanc.OANC;
@@ -85,7 +85,7 @@ public class ModuleTreeSerializationTest {
 			// Instantiate JSON converter
 			GsonBuilder gsonBuilder = new GsonBuilder();
 			gsonBuilder.registerTypeAdapter(ModuleNetwork.class,
-					new ModuleTreeGsonSerializer());
+					new ModuleNetworkGsonSerializer());
 			gsonBuilder.registerTypeAdapter(ModuleNetwork.class,
 					new ModuleTreeGsonDeserializer());
 			Gson gson = gsonBuilder.setPrettyPrinting().create();

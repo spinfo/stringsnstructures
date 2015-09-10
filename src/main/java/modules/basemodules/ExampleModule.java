@@ -2,10 +2,11 @@ package modules.basemodules;
 
 import java.util.Properties;
 
-import common.parallelization.CallbackReceiver;
-
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
+import common.parallelization.CallbackReceiver;
 
 public class ExampleModule extends ModuleImpl {
 	
@@ -14,6 +15,8 @@ public class ExampleModule extends ModuleImpl {
 	public static final String PROPERTYKEY_REPLACEMENT = "replacement";
 	
 	// Module variables
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	private String regex;
 	private String replacement;
 
@@ -31,8 +34,12 @@ public class ExampleModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_REPLACEMENT, "o");
 		
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "Plain text character input.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "Plain text character output.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 	}
 
@@ -44,7 +51,7 @@ public class ExampleModule extends ModuleImpl {
 		char[] buffer = new char[bufferSize];
 		
 		// Read first chunk of data
-		int readChars = this.getInputCharPipe().read(buffer, 0, bufferSize);
+		int readChars = this.getInputPorts().get(INPUTID).read(buffer, 0, bufferSize);
 		
 		// Loop until no more data can be read
 		while (readChars != -1){
@@ -62,10 +69,10 @@ public class ExampleModule extends ModuleImpl {
 			String outputChunk = inputChunk.replaceAll(this.regex, this.replacement);
 			
 			// Write to outputs
-			this.outputToAllCharPipes(outputChunk);
+			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(outputChunk);
 			
 			// Read next chunk of data
-			readChars = this.getInputCharPipe().read(buffer, 0, bufferSize);
+			readChars = this.getInputPorts().get(INPUTID).read(buffer, 0, bufferSize);
 		}
 		
 		// Close outputs (important!)

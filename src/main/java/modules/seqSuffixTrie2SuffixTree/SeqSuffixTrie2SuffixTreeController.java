@@ -1,13 +1,16 @@
 package modules.seqSuffixTrie2SuffixTree;
 
-import java.util.Properties;
-import java.util.Map.Entry;
+import java.io.PipedReader;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.io.PipedReader;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
+import modules.Pipe;
 import modules.treeBuilder.Knoten;
 
 import com.google.gson.Gson;
@@ -34,7 +37,9 @@ public class SeqSuffixTrie2SuffixTreeController extends ModuleImpl {
 	//end keys
 
 	//variables:
-	
+
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	private Knoten mainNode;
 	private Gson gson;
 	private SeqReducedTrieNode rootNode;
@@ -54,8 +59,12 @@ public class SeqSuffixTrie2SuffixTreeController extends ModuleImpl {
 			/*no further property keys! the output is always JSON!*/
 				
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "JSON-encoded suffix tree.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 	}
 	//end constructors
@@ -77,16 +86,16 @@ public class SeqSuffixTrie2SuffixTreeController extends ModuleImpl {
 	public boolean process() throws Exception {
 		
 		//create mainNode by reading JSON input
-		this.setGson(this.getInputCharPipe().getInput());
+		this.setGson(this.getInputPorts().get(INPUTID).getInputReader());
 					
 		//iterate over the tree and get parameters
 		this.iterateMainNode();
 			
 		// write JSON to output
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		Iterator<CharPipe> charPipes = this.getOutputCharPipes().iterator();
+		Iterator<Pipe> charPipes = this.getOutputPorts().get(OUTPUTID).getPipes(CharPipe.class).iterator();
 		while (charPipes.hasNext()){
-			gson.toJson(rootNode, charPipes.next().getOutput());
+			gson.toJson(rootNode, ((CharPipe)charPipes.next()).getOutput());
 		}
 							
 		// Close outputs (important!)

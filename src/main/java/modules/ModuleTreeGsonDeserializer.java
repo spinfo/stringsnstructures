@@ -2,7 +2,11 @@ package modules;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,30 +31,57 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 		Gson gson = new Gson();
 		
 		// Get the serializable object from the JSON input
-		SerializableModuleTreeNode serializableNode = gson.fromJson(json, SerializableModuleTreeNode.class);
+		List<SerializableModule> serializableModuleList = gson.fromJson(json, new ArrayList<SerializableModule>().getClass());
+		
+		// Keep track of the modules and ports
+		Map<Integer,Module> moduleIds = new HashMap<Integer,Module>();
+		Map<Integer,Port> inputPortIds = new HashMap<Integer,Port>();
+		Map<Integer,Port> outputPortIds = new HashMap<Integer,Port>();
 
-		try {
-			
-			// Determine class of the root module
-			Class<?> moduleClass = Class.forName(serializableNode.getModuleCanonicalClassName());
-			
-			// Determine the constructor of that class
-			Constructor<?> ctor = moduleClass.getConstructor(CallbackReceiver.class, Properties.class);
-			
-			// Instantiate module and attach it to the module tree 
-			Module rootModule = (Module) ctor.newInstance(new Object[] { moduleNetwork, serializableNode.getProperties() });
-			moduleNetwork.setRootModule(rootModule);
-			
-			// Recursively do the same with each child node
-			Iterator<SerializableModuleTreeNode> children = serializableNode.getChildren().iterator();
-			while (children.hasNext()){
-				this.attachToModuleTree(rootModule, moduleNetwork, children.next());
+		Iterator<SerializableModule> serializableModules = serializableModuleList.iterator();
+		while (serializableModules.hasNext()){
+			try {
+				
+				// Determine the next serializable module within the list
+				SerializableModule serializableModule = serializableModules.next();
+				
+				// Determine class of the root module
+				Class<?> moduleClass = Class.forName(serializableModule.getModuleCanonicalClassName());
+				
+				// Determine the constructor of that class
+				Constructor<?> constructor = moduleClass.getConstructor(CallbackReceiver.class, Properties.class);
+				
+				// Instantiate module and attach it to the module tree 
+				Module newModuleInstance = (Module) constructor.newInstance(new Object[] { moduleNetwork, serializableModule.getProperties() });
+				
+				// Add module to corresponding id list
+				moduleIds.put(serializableModule.getModuleInstanceHashCode(), newModuleInstance);
+				
+				// Add module input ports to corresponding id list
+				Iterator<SerializablePort> serializableInputPorts = serializableModule.getSerializableInputPortList().values().iterator();
+				while (serializableInputPorts.hasNext()){
+					SerializablePort serializableInputPort = serializableInputPorts.next();
+					inputPortIds.put(serializableInputPort.getInstanceHashCode(), newModuleInstance.getInputPorts().get(serializableInputPort.getName()));
+				}
+				
+				// Add module output ports to corresponding id list
+				Iterator<SerializablePort> serializableOutputPorts = serializableModule.getSerializableOutputPortList().values().iterator();
+				while (serializableOutputPorts.hasNext()){
+					SerializablePort serializableOutputPort = serializableOutputPorts.next();
+					outputPortIds.put(serializableOutputPort.getInstanceHashCode(), newModuleInstance.getOutputPorts().get(serializableOutputPort.getName()));
+				} XXX//TODO Ein port kann auf mehrere andere verweisen (oder andersherum) 
+
+				
+				// Add module to network
+				moduleNetwork.addModule(newModuleInstance);
+				
+			} catch (Exception e) {
+				Logger.getLogger("").log(Level.WARNING, "Error deserializing module tree object from JSON.", e);
+				e.printStackTrace();
 			}
-			
-		} catch (Exception e) {
-			Logger.getLogger("").log(Level.WARNING, "Error deserializing module tree object from JSON.", e);
-			e.printStackTrace();
 		}
+		
+		// TODO connect ports
 		
 		// Return the new module tree object
 		return moduleNetwork;
@@ -63,7 +94,7 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 	 * @param nodeToAttach
 	 * @throws Exception
 	 */
-	private void attachToModuleTree(Module parent, ModuleNetwork moduleNetwork, SerializableModuleTreeNode nodeToAttach) throws Exception {
+	private void attachToModuleTree(Module parent, ModuleNetwork moduleNetwork, SerializableModule nodeToAttach) throws Exception {
 		// Determine class of the module
 		Class<?> moduleClass = Class.forName(nodeToAttach.getModuleCanonicalClassName());
 					
@@ -75,7 +106,7 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 		moduleNetwork.addConnection(module, parent);
 		
 		// Recursively do the same with each child node
-		Iterator<SerializableModuleTreeNode> children = nodeToAttach.getChildren().iterator();
+		Iterator<SerializableModule> children = nodeToAttach.getChildren().iterator();
 		while (children.hasNext()){
 			this.attachToModuleTree(module, moduleNetwork, children.next());
 		}

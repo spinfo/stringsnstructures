@@ -18,12 +18,15 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
 
 import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import common.parallelization.CallbackReceiver;
 
 public class OANCXMLParser extends ModuleImpl {
@@ -52,6 +55,8 @@ public class OANCXMLParser extends ModuleImpl {
 	public static final String PROPERTYKEY_OUTPUTJSON = "output JSON";
 	public static final String PROPERTYKEY_SPACE = "word divider";
 	// local variables
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	private File quellDatei;
 	private File satzGrenzenXMLDatei;
 	private File annotationsXMLDatei;
@@ -68,8 +73,12 @@ public class OANCXMLParser extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "JSON-encoded list of source file locations.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "Character output based on settings.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_ADDSTARTSYMBOL, "Set to 'true' if '"+STARTSYMBOL+"' should be added as start symbol to each sentence");
@@ -404,7 +413,7 @@ public class OANCXMLParser extends ModuleImpl {
 		// Read list of files from input
 		File[] inputFileList;
 		try {
-			inputFileList = gson.fromJson(this.getInputCharPipe().getInput(), new File[0].getClass());
+			inputFileList = gson.fromJson(this.getInputPorts().get(INPUTID).getInputReader(), new File[0].getClass());
 		} catch (Exception e) {
 			throw new Exception("Error parsing the input -- it does not seem to be the expected list of files.", e);
 		}
@@ -454,7 +463,7 @@ public class OANCXMLParser extends ModuleImpl {
 				String annotatedTupelListJson = gson.toJson(annotatedTupelList);
 				
 				// Output the result
-				this.outputToAllCharPipes(annotatedTupelListJson+"\n");
+				this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(annotatedTupelListJson+"\n");
 				
 			} else {
 				// The output format is plain sentences, cleaned up a bit
@@ -500,13 +509,13 @@ public class OANCXMLParser extends ModuleImpl {
 					}
 
 					// Output the result
-					this.outputToAllCharPipes(outputString);
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(outputString);
 				}
 			}
 		}
 
 		// Close outputs
-		this.closeAllOutputWriters();
+		this.closeAllOutputs();
 		
 		return true;
 	}

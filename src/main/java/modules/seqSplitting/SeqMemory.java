@@ -3,10 +3,12 @@ package modules.seqSplitting;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import common.parallelization.CallbackReceiver;
-
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
+
+import common.parallelization.CallbackReceiver;
 
 /**
  * Reads input sequences from I/O pipes.
@@ -20,6 +22,8 @@ import modules.ModuleImpl;
 
 public class SeqMemory extends modules.ModuleImpl {
 	//variables:
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	private int splitNum;
 	private String wholeSequence = "";
 	private int seqLength;
@@ -45,8 +49,12 @@ public class SeqMemory extends modules.ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_SPLITS, "100");
 						
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "Plain text character input.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "Plain text character output.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 		
 		// Add module description
@@ -89,7 +97,7 @@ public class SeqMemory extends modules.ModuleImpl {
 				char[] buffer = new char[bufferSize];
 				
 				// Read first sequence chunk
-				int readChars = this.getInputCharPipe().read(buffer, 0, bufferSize);
+				int readChars = this.getInputPorts().get(INPUTID).read(buffer, 0, bufferSize);
 				
 				//String initialChunk = new String(buffer);
 				//this.initializeWholeSeq(initialChunk);
@@ -111,7 +119,7 @@ public class SeqMemory extends modules.ModuleImpl {
 					this.addWholeSeq(inputChunk);
 												
 					// Read next chunk of data
-					readChars = this.getInputCharPipe().read(buffer, 0, bufferSize);
+					readChars = this.getInputPorts().get(INPUTID).read(buffer, 0, bufferSize);
 				}
 				
 				//writing split output as single string with spaces in between
@@ -121,8 +129,8 @@ public class SeqMemory extends modules.ModuleImpl {
 				
 				//writing split sequence by fragments into the I/O pipe for other modules
 				for (int i = 0; i < (seqSplits.size() - 1); i ++) {
-					this.outputToAllCharPipes(seqSplits.get(i).getSubsequence());
-					this.outputToAllCharPipes(" ");
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(seqSplits.get(i).getSubsequence());
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(" ");
 				}
 										
 				// Close outputs (important!)

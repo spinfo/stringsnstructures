@@ -10,10 +10,10 @@ import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
 import common.parallelization.CallbackReceiver;
-
 import modules.BytePipe;
 import modules.CharPipe;
 import modules.ModuleImpl;
+import modules.OutputPort;
 
 public class FileReaderModule extends ModuleImpl {
 
@@ -24,6 +24,7 @@ public class FileReaderModule extends ModuleImpl {
 	public static final String PROPERTYKEY_BUFFERLENGTH = "Buffer length";
 
 	// Local variables
+	private final String OUTPUTID = "output";
 	private File file;
 	private boolean useGzip = false;
 	private String encoding;
@@ -39,8 +40,10 @@ public class FileReaderModule extends ModuleImpl {
 		String homedir = System.getProperty("user.home");
 
 		// set I/O -- no inputs allowed here (we'll read the file)
-		this.getSupportedOutputs().add(BytePipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "Byte or character output.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		outputPort.addSupportedPipe(BytePipe.class);
+		super.addOutputPort(OUTPUTID,outputPort);
 
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTFILE,
@@ -96,13 +99,12 @@ public class FileReaderModule extends ModuleImpl {
 							"Thread has been interrupted.");
 				}
 
-				this.outputToAllBytePipes(buffer, 0, readBytes);
+				this.getOutputPorts().get(OUTPUTID).outputToAllBytePipes(buffer, 0, readBytes);
 				readBytes = fileInputStream.read(buffer);
 			}
 
 			// close relevant I/O instances
 			fileInputStream.close();
-			this.closeAllOutputStreams();
 			wroteToStream = true;
 		} catch (IOException e) {
 			/*
@@ -140,7 +142,7 @@ public class FileReaderModule extends ModuleImpl {
 						throw new InterruptedException(
 								"Thread has been interrupted.");
 					}
-					this.outputToAllCharPipes(buffer, 0, readChars);
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(buffer, 0, readChars);
 					readChars = fileReader.read(buffer);
 				}
 
@@ -150,13 +152,14 @@ public class FileReaderModule extends ModuleImpl {
 
 			// close relevant I/O instances
 			fileInputStream.close();
-			this.closeAllOutputWriters();
 		} catch (IOException e) {
 			/*
 			 * The inputstream does not seem to be connected or another
 			 * I/O-error occurred
 			 */
 		}
+		
+		this.getOutputPorts().get(OUTPUTID).close();
 
 		if (!wroteToStream && !wroteToChars)
 			throw new Exception("Sorry, but I could not write to any output (please connect a module to my output, else I am of little use).");

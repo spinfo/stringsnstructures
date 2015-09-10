@@ -2,8 +2,10 @@ package modules;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +24,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	private List<Module> moduleList;
 
 	// List of started threads
-	private List<Thread> startedThreads = new ArrayList<Thread>();
+	private Map<Module,Thread> startedThreads = new HashMap<Module,Thread>();
 
 	/**
 	 * Determines which pipe to use between both given module ports (prefers
@@ -62,35 +64,43 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	}
 
 	/**
-	 * @return Returns a list of running threads
+	 * @return Returns a map of the running module threads
 	 */
-	public List<Thread> getStartedThreads() {
+	public Map<Module,Thread> getStartedThreads() {
 		return startedThreads;
 	}
 	
 	/**
 	 * Adds a thread to the list of the ones started in a thread-safe manner.
+	 * If there already is a thread associated to the specified module, it will be interrupted.
+	 * @param module Module that the thread is associated to
 	 * @param thread Thread to add
-	 * @return true if successful
 	 */
-	public synchronized boolean addStartedThread(Thread thread){
-		return this.startedThreads.add(thread);
+	public synchronized void addStartedThread(Module module, Thread thread){
+		
+		// Put thread in map and get the currently associated value
+		Thread replacedThread = this.startedThreads.put(module, thread);
+		
+		// Check whether there already was a thread associated to the specified module and interrupt it if it's still running
+		if (replacedThread != null && replacedThread.isAlive() && !replacedThread.isInterrupted())
+			replacedThread.interrupt();
 	}
 	
 	/**
 	 * Removes a thread from the list of the ones started in a thread-safe manner.
 	 * @param thread Thread to remove
-	 * @return true if successful
+	 * @return True if successful
 	 */
 	public synchronized boolean removeStartedThread(Thread thread){
-		return this.startedThreads.remove(thread);
+		thread.interrupt();
+		return (this.startedThreads.remove(thread) != null);
 	}
 	
 	/**
 	 * Removes dead threads from the list of the ones started in a thread-safe manner.
 	 */
 	public synchronized void removeDeadThreads(){
-		Iterator<Thread> threads = this.startedThreads.iterator();
+		Iterator<Thread> threads = this.startedThreads.values().iterator();
 		while (threads.hasNext()) {
 			Thread thread = threads.next();
 			if (!thread.isAlive()) {
@@ -103,7 +113,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	
 	public synchronized void interruptAllThreads(){
 		
-		Iterator<Thread> threads = this.startedThreads.iterator();
+		Iterator<Thread> threads = this.startedThreads.values().iterator();
 		while (threads.hasNext()) {
 			Thread thread = threads.next();
 			if (thread.isAlive()) {
@@ -164,8 +174,8 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 					"This pipe cannot be used for I/O between those ports.");
 
 		// Connect modules
-		outputPort.addPipe(pipe);
-		inputPort.addPipe(pipe);
+		outputPort.addPipe(pipe, inputPort);
+		inputPort.addPipe(pipe, outputPort);
 
 		return true;
 	}
@@ -336,7 +346,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		};
 
 		// Add module thread to list of the ones started
-		this.addStartedThread(moduleThread);
+		this.addStartedThread(module, moduleThread);
 
 		// Register callback actions
 		this.registerSuccessCallback(moduleThread, successAction);
@@ -381,7 +391,65 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * @return True if successful
 	 */
 	public boolean removeModule(Module module){
+		
+		// Iterate over input ports
+		Iterator<InputPort> inputPorts = module.getInputPorts().values().iterator();
+		while (inputPorts.hasNext()){
+			InputPort inputPort = inputPorts.next();
+			Port connectedPort = inputPort.getConnectedPort();
+			// If the input port is connected, remove the pipe from the other port
+			if (connectedPort != null)
+				try {
+					connectedPort.removePipe(inputPort.getPipe());
+				} catch (NotFoundException e) {
+					e.printStackTrace();
+				}
+		}
+		
+		// Iterate over output ports
+		Iterator<OutputPort> outputPorts = module.getOutputPorts().values().iterator();
+		while (outputPorts.hasNext()){
+			OutputPort outputPort = outputPorts.next();
+			
+			// Iterate over that output port's pipe lists
+			Iterator<List<Pipe>> connectedPipeLists = outputPort.getPipes().values().iterator();
+			while (connectedPipeLists.hasNext()){
+				List<Pipe> connectedPipeList = connectedPipeLists.next();
+				
+				// Iterate over the pipe list's items
+				Iterator<Pipe> connectedPipes = connectedPipeList.iterator();
+				while (connectedPipes.hasNext()){
+					Pipe connectedPipe = connectedPipes.next();
+					Port connectedPort = outputPort.getConnectedPort(connectedPipe);
+					
+					// If that port is connected to another port, remove the pipe from it
+					if (connectedPort != null)
+						try {
+							connectedPort.removePipe(connectedPipe);
+						} catch (NotFoundException e) {
+							e.printStackTrace();
+						}
+				}
+			}
+		}
+		
+		// Remove module
 		return this.moduleList.remove(module);
+	}
+	
+	/**
+	 * Removes all modules.
+	 * @return True if successful
+	 */
+	public boolean removeAllModules(){
+		// Loop over all modules
+		Iterator<Module> modules = this.moduleList.iterator();
+		boolean allRemoved = true;
+		while (modules.hasNext()) {
+			if (!this.removeModule(modules.next()))
+				allRemoved = false;
+		}
+		return allRemoved;
 	}
 
 	/**
@@ -401,6 +469,13 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		}
 
 		return result.toString();
+	}
+
+	/**
+	 * @return the moduleList
+	 */
+	protected List<Module> getModuleList() {
+		return moduleList;
 	}
 
 }

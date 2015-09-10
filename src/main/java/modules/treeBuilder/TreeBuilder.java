@@ -9,7 +9,10 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
+import modules.Pipe;
 import modules.oanc.WortAnnotationTupel;
 
 import com.google.gson.Gson;
@@ -23,7 +26,10 @@ public class TreeBuilder extends ModuleImpl {
 	public static final String PROPERTYKEY_BUILDTRIE = "Build trie instead of tree";
 	public static final String PROPERTYKEY_MAXLENGTH = "Maximum length of branches";
 	public static final String PROPERTYKEY_REVERSE = "Reverse order";
-	
+
+	// Local variables
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	private boolean baueTrie; // Zeigt an, ob ein Trie oder ein Tree gebaut werden soll
 	private int maxLaenge; // Maximale Laenge des zu bauenden Baums
 	private boolean umgekehrt; // Zeigt an, ob der Baum umgekehrt (als Praefix-Baum) konstruiert werden soll
@@ -33,8 +39,12 @@ public class TreeBuilder extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "JSON-encoded OANC data.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "JSON-encoded suffix trie.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_BUILDTRIE,"Set to true if you want to construct a trie instead of a tree.");
@@ -65,7 +75,7 @@ public class TreeBuilder extends ModuleImpl {
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
 		// Eingabe puffern
-		BufferedReader eingabe = new BufferedReader(this.getInputCharPipe().getInput());
+		BufferedReader eingabe = new BufferedReader(this.getInputPorts().get(INPUTID).getInputReader());
 		
 		// Eingabe einlesen
 		String jsonObjekt = eingabe.readLine();
@@ -105,9 +115,9 @@ public class TreeBuilder extends ModuleImpl {
 		}
 		
 		// Letztlich wird der Wurzelknoten (und damit der gesamte erstellte Baum) in JSON umgewandelt und ausgegeben
-		Iterator<CharPipe> charPipes = this.getOutputCharPipes().iterator();
-		while (charPipes.hasNext()) {
-			gson.toJson(wurzelKnoten, charPipes.next().getOutput());
+		Iterator<Pipe> charPipes = this.getOutputPorts().get(OUTPUTID).getPipes(CharPipe.class).iterator();
+		while (charPipes.hasNext()){
+			gson.toJson(wurzelKnoten, ((CharPipe)charPipes.next()).getOutput());
 		}
 		
 		// Ausgabekanaele schliessen

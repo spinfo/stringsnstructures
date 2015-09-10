@@ -9,7 +9,9 @@ import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
 import modules.treeBuilder.Knoten;
 
 import com.google.gson.Gson;
@@ -30,6 +32,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	public static final String PROPERTYKEY_BEWERTUNGAUSGEBEN = "Bewertung mit in Ausgabe schreiben";
 
 	// Local variables
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	private File file;
 	private boolean useGzip = false;
 	private String encoding = "UTF-8";
@@ -49,8 +53,12 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		String homedir = System.getProperty("user.home");
 
 		// define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "Plain text character input.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "Plain text character output.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTFILE,
@@ -130,7 +138,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		SymbolBewerter symbolBewerter = new SymbolBewerter(this.mindestKostenProSymbolEbene, this.bewertungsAbfallFaktor);
 		
 		// Erstes Zeichen einlesen
-		int zeichenCode = this.getInputCharPipe().getInput().read();
+		int zeichenCode = this.getInputPorts().get(INPUTID).getInputReader().read();
 		
 		// Entscheidungsbaum starten
 		SplitDecisionNode entscheidungsbaumWurzelknoten = null;
@@ -225,17 +233,17 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 						entscheidungsbaumWurzelknoten.setElternKnoten(null);
 					
 					// Segment ausgeben
-					this.outputToAllCharPipes(segment.concat(this.divider));
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(segment.concat(this.divider));
 					
 					if (bewertungAusgeben)
-						this.outputToAllCharPipes(letzteTrennstellenBewertung+this.divider);
+						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(letzteTrennstellenBewertung+this.divider);
 				}
 				
 			}
 			
 			
 			// Read next char
-			zeichenCode = this.getInputCharPipe().getInput().read();
+			zeichenCode = this.getInputPorts().get(INPUTID).getInputReader().read();
 		}
 		
 		// Close relevant I/O instances

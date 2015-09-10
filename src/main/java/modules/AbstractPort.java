@@ -90,4 +90,14 @@ public abstract class AbstractPort implements Port {
 		return this.parent;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return this.parent.getName()+":"+this.name;
+	}
+	
+	
+
 }

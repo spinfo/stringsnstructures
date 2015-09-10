@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.io.PipedReader;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
 import modules.seqSuffixTrie2SuffixTree.SeqReducedTrieNode;
 
 import com.google.gson.Gson;
@@ -75,6 +77,8 @@ public class SeqTreePropController extends ModuleImpl {
 	private SeqReducedTrieNode mainNode;
 	private Gson gson;
 	private SeqPropertyNode rootNode;
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	//private HashMap<String, SeqPropertyNode> seqNodes;
 	//end variables
 	
@@ -94,8 +98,12 @@ public class SeqTreePropController extends ModuleImpl {
 		this.seqPropertiesOutput = new String();
 		
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "TODO.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "TODO.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 	}
 	//end constructors
@@ -121,13 +129,13 @@ public class SeqTreePropController extends ModuleImpl {
 	public boolean process() throws Exception {
 		
 		//create mainNode by reading JSON input
-		this.setGson(this.getInputCharPipe().getInput());
+		this.setGson(this.getInputPorts().get(INPUTID).getInputReader());
 					
 		//iterate over the tree and get parameters
 		this.displayAllTreeProperties();
 		
 		//write the tree properties into the output
-		this.outputToAllCharPipes(this.getSeqProperties());
+		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.getSeqProperties());
 								
 		// Close outputs (important!)
 		this.closeAllOutputs();

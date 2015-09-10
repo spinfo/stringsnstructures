@@ -6,7 +6,10 @@ import java.util.Properties;
 import java.util.TreeSet;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
+import modules.Pipe;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -17,7 +20,10 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 	// Property keys
 	public static final String PROPERTYKEY_MAXLENGTH = "Maximum length of branches";
 	public static final String PROPERTYKEY_REVERSE = "Reverse the trie";
-	
+
+	// Local variables
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	private int maxLaenge; // Maximale Laenge des zu bauenden Baums
 	private boolean umgekehrt; // Maximale Laenge des zu bauenden Baums
 
@@ -26,8 +32,12 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "Plain text character input.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "JSON-encoded suffix trie.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_MAXLENGTH,"Define the maximum length of any branch of the trie.");
@@ -51,7 +61,7 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 		LinkedList<Character> buffer = new LinkedList<Character>();
 		
 		// Read first characters
-		int charCode = this.getInputCharPipe().getInput().read();
+		int charCode = this.getInputPorts().get(INPUTID).getInputReader().read();
 
 		// Loop until no more data can be read
 		while (charCode != -1) {
@@ -74,7 +84,7 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 				this.baueTrie(buffer, wurzelKnoten, this.umgekehrt, -1);
 			
 			// Read next char
-			charCode = this.getInputCharPipe().getInput().read();
+			charCode = this.getInputPorts().get(INPUTID).getInputReader().read();
 		}
 		
 		// Read remaining buffer
@@ -88,9 +98,9 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 		
 		// Letztlich wird der Wurzelknoten (und damit der gesamte erstellte Baum) in JSON umgewandelt und ausgegeben
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		Iterator<CharPipe> charPipes = this.getOutputCharPipes().iterator();
+		Iterator<Pipe> charPipes = this.getOutputPorts().get(OUTPUTID).getPipes(CharPipe.class).iterator();
 		while (charPipes.hasNext()){
-			gson.toJson(wurzelKnoten, charPipes.next().getOutput());
+			gson.toJson(wurzelKnoten, ((CharPipe)charPipes.next()).getOutput());
 		}
 		
 		// Ausgabekanaele schliessen

@@ -7,7 +7,9 @@ import java.util.Iterator;
 import java.io.PipedReader;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
+import modules.OutputPort;
 import modules.seqSuffixTrie2SuffixTree.SeqReducedTrieNode;
 
 import com.google.gson.Gson;
@@ -30,7 +32,9 @@ public class SeqNewickExproterController extends ModuleImpl {
 	//end keys
 
 	//variables:
-	
+
+	private final String INPUTID = "input";
+	private final String OUTPUTID = "output";
 	private String newickOutput;
 	private boolean standardOut;
 	private SeqReducedTrieNode mainNode;
@@ -55,8 +59,12 @@ public class SeqNewickExproterController extends ModuleImpl {
 		this.newickOutput = new String();
 		
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
-		this.getSupportedOutputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "Newick-encoded suffix trie.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 	}
 	//end constructors
@@ -166,13 +174,13 @@ public class SeqNewickExproterController extends ModuleImpl {
 	public boolean process() throws Exception {
 		
 		//create mainNode by reading JSON input
-		this.setGson(this.getInputCharPipe().getInput());
+		this.setGson(this.getInputPorts().get(INPUTID).getInputReader());
 					
 		//create Newick output format
 		this.iterateNewickMainNode();
 		
 		// write Newick to output
-		this.outputToAllCharPipes(this.getNewick()); 
+		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.getNewick()); 
 					
 		// Close outputs (important!)
 		this.closeAllOutputs();

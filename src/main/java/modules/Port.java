@@ -12,7 +12,7 @@ public interface Port {
 	public boolean supportsPipe(Pipe pipe);
 	public boolean supportsPipeClass(Class<?> pipeClass);
 	public Map<String, Class<?>> getSupportedPipeClasses();
-	public void addPipe(Pipe pipe) throws NotSupportedException, OccupiedException;
+	public void addPipe(Pipe pipe, Port connectingPort) throws NotSupportedException, OccupiedException;
 	public void removePipe(Pipe pipe) throws NotFoundException;
 	public void reset() throws IOException;
 	public Module getParent();

@@ -6,12 +6,12 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
 import modules.treeBuilder.Knoten;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import common.parallelization.CallbackReceiver;
 
 public class Neo4jOutputModule extends ModuleImpl {
@@ -21,6 +21,9 @@ public class Neo4jOutputModule extends ModuleImpl {
 	public static final String PROPERTYKEY_NEO4JURI = "URI of Neo4J DB";
 	public static final String PROPERTYKEY_NEO4JUSR = "Username for Neo4J access";
 	public static final String PROPERTYKEY_NEO4JPWD = "Password for Neo4J access";
+	
+	// Local variables
+	private final String INPUTID = "input";
 	private String neo4jUri = "";
 	private String neo4jUsr = "";
 	private String neo4jPwd = "";
@@ -30,7 +33,9 @@ public class Neo4jOutputModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie character input.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_NEO4JURI, "URI of the Neo4j DB.");
@@ -55,7 +60,7 @@ public class Neo4jOutputModule extends ModuleImpl {
 		Gson gson = new GsonBuilder().create();
 		
 		// Wurzelknoten einlesen
-		Knoten rootNode = gson.fromJson(this.getInputCharPipe().getInput(), Knoten.class);
+		Knoten rootNode = gson.fromJson(this.getInputPorts().get(INPUTID).getInputReader(), Knoten.class);
 		
 		// Wurzelknoten zu Graph hinzufuegen
 		//Node graphRootNode = graph.fuegeKnotenErstellungZurWarteschlangeHinzu(rootNode.getName(), rootNode.getZaehler()).get(rootNode.getName());

@@ -3,7 +3,6 @@
  */
 package modules.visualizationModules;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -25,12 +24,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import modules.CharPipe;
+import modules.InputPort;
 import modules.ModuleImpl;
 import modules.treeBuilder.Knoten;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import common.parallelization.CallbackReceiver;
 
 /**
@@ -52,6 +51,7 @@ public class ColourGraph extends ModuleImpl {
 	public static final String PROPERTYKEY_GLEICHVERTEILUNGSSCHWELLWERT = "Schwellwert fuer Gleichverteilung";
 	
 	// Instance variables
+	private final String INPUTID = "input";
 	private KnotenKomparator knotenKomparator = new KnotenKomparator();
 	private String outputFilePath;
 	private int outputImageWidth;
@@ -73,7 +73,9 @@ public class ColourGraph extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O
-		this.getSupportedInputs().add(CharPipe.class);
+		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie.", this);
+		inputPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(INPUTID,inputPort);
 
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTFILE,
@@ -184,7 +186,7 @@ public class ColourGraph extends ModuleImpl {
 		Graphics2D graphik = bild.createGraphics();
 				
 		// Wurzelknoten einlesen
-		Knoten wurzelKnoten = gson.fromJson(this.getInputCharPipe().getInput(), Knoten.class);
+		Knoten wurzelKnoten = gson.fromJson(this.getInputPorts().get(INPUTID).getInputReader(), Knoten.class);
 		
 		// Skalierung ermitteln
 		this.horizontalePixelProKnoten = new Double(this.outputImageWidth)/new Double(wurzelKnoten.getZaehler());
@@ -433,11 +435,6 @@ public class ColourGraph extends ModuleImpl {
 		
 		return baum;
 		
-	}
-	
-	private AlphaComposite makeComposite(float alpha) {
-		int type = AlphaComposite.SRC_OVER;
-		return (AlphaComposite.getInstance(type, alpha));
 	}
 
 }
