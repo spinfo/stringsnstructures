@@ -3,9 +3,9 @@ package modules.artificialSeqs;
 import java.util.Properties;
 
 import common.parallelization.CallbackReceiver;
-
 import modules.CharPipe;
 import modules.ModuleImpl;
+import modules.OutputPort;
 
 /**
  * Creates a random sequence of 'ATGC' of defined length
@@ -21,6 +21,7 @@ public class CreateArtificialSeqs extends modules.ModuleImpl {
 	//variables:
 	private String seqString;
 	private int seqLength;
+	private final String OUTPUTID = "output";
 
 	//constructors:
 	public CreateArtificialSeqs(CallbackReceiver callbackReceiver,
@@ -38,7 +39,9 @@ public class CreateArtificialSeqs extends modules.ModuleImpl {
 				"1024");
 		
 		// Define I/O
-		this.getSupportedOutputs().add(CharPipe.class);
+		OutputPort outputPort = new OutputPort("Output", "Generated sequences.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(OUTPUTID,outputPort);
 		
 		// Add module description
 		this.setDescription("Creates a randomly composed DNA sequences of defined length.");	
@@ -109,7 +112,7 @@ public class CreateArtificialSeqs extends modules.ModuleImpl {
 			}
 			
 			//write random sequence
-			this.outputToAllCharPipes(this.getSeqString());
+			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.getSeqString());
 		
 		} catch (Exception e) {
 			e.printStackTrace();

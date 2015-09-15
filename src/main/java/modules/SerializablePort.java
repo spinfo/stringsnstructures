@@ -1,12 +1,18 @@
 package modules;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class SerializablePort {
 
 	private Integer instanceHashCode;
 	private String name;
-	private Map<String,Integer> connectedPipesDestinationHashCodes;
+	private Map<Integer,String> connectedPipesDestinationHashCodes; // Key: Destination pipe instance hashcode, value: canonical class name of pipe
+	
+	public SerializablePort() {
+		super();
+		this.connectedPipesDestinationHashCodes = new HashMap<Integer,String>();
+	}
 	/**
 	 * @return the instanceHashCode
 	 */
@@ -34,14 +40,14 @@ public class SerializablePort {
 	/**
 	 * @return the connectedPipesDestinationHashCodes
 	 */
-	protected Map<String, Integer> getConnectedPipesDestinationHashCodes() {
+	protected Map<Integer, String> getConnectedPipesDestinationHashCodes() {
 		return connectedPipesDestinationHashCodes;
 	}
 	/**
 	 * @param connectedPipesDestinationHashCodes the connectedPipesDestinationHashCodes to set
 	 */
 	protected void setConnectedPipesDestinationHashCodes(
-			Map<String, Integer> connectedPipesDestinationHashCodes) {
+			Map<Integer, String> connectedPipesDestinationHashCodes) {
 		this.connectedPipesDestinationHashCodes = connectedPipesDestinationHashCodes;
 	}
 	

@@ -472,10 +472,11 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	}
 
 	/**
+	 * Returns the module list. Don't modify.
 	 * @return the moduleList
 	 */
-	protected List<Module> getModuleList() {
-		return moduleList;
+	public List<Module> getModuleList() {
+		return this.moduleList;
 	}
 
 }

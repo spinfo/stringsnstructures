@@ -27,7 +27,7 @@ public class SerializableModule {
 		this.reflectModule(module);
 	}
 	
-	public void reflectModule(Module module){
+	public void reflectModule(Module module) {
 		this.properties = module.getProperties();
 		this.setModuleInstanceHashCode(module.hashCode());
 		this.moduleCanonicalClassName = module.getClass().getCanonicalName();
@@ -41,11 +41,10 @@ public class SerializableModule {
 			SerializablePort serializablePort = new SerializablePort();
 			serializablePort.setName(inputPort.getName());
 			serializablePort.setInstanceHashCode(inputPort.hashCode());
-			serializablePort.setConnectedPipesDestinationHashCodes(new HashMap<String,Integer>());
 			
 			Pipe pipe = inputPort.getPipe();
 			if (pipe != null){
-				serializablePort.getConnectedPipesDestinationHashCodes().put(pipe.getClass().getCanonicalName(), inputPort.getConnectedPort().hashCode());
+				serializablePort.getConnectedPipesDestinationHashCodes().put(inputPort.getConnectedPort().hashCode(), pipe.getClass().getCanonicalName());
 			}
 			
 			this.serializableInputPortList.put(inputPort.getName(), serializablePort);
@@ -60,7 +59,6 @@ public class SerializableModule {
 			SerializablePort serializablePort = new SerializablePort();
 			serializablePort.setName(outputPort.getName());
 			serializablePort.setInstanceHashCode(outputPort.hashCode());
-			serializablePort.setConnectedPipesDestinationHashCodes(new HashMap<String,Integer>());
 			
 			Iterator<List<Pipe>> outputPipeLists = outputPort.getPipes().values().iterator();
 			while (outputPipeLists.hasNext()){
@@ -68,7 +66,7 @@ public class SerializableModule {
 				Iterator<Pipe> outputPipes = outputPipeList.iterator();
 				while (outputPipes.hasNext()){
 					Pipe outputPipe = outputPipes.next();
-					serializablePort.getConnectedPipesDestinationHashCodes().put(outputPipe.getClass().getCanonicalName(), outputPort.getConnectedPort(outputPipe).hashCode());
+					serializablePort.getConnectedPipesDestinationHashCodes().put(outputPort.getConnectedPort(outputPipe).hashCode(), outputPipe.getClass().getCanonicalName());
 				}
 			}
 			

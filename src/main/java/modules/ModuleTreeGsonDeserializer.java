@@ -11,11 +11,14 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.ClassUtils;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+
 import common.parallelization.CallbackReceiver;
 
 public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwork> {
@@ -31,12 +34,15 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 		Gson gson = new Gson();
 		
 		// Get the serializable object from the JSON input
+		@SuppressWarnings("unchecked")
 		List<SerializableModule> serializableModuleList = gson.fromJson(json, new ArrayList<SerializableModule>().getClass());
 		
 		// Keep track of the modules and ports
-		Map<Integer,Module> moduleIds = new HashMap<Integer,Module>();
-		Map<Integer,Port> inputPortIds = new HashMap<Integer,Port>();
-		Map<Integer,Port> outputPortIds = new HashMap<Integer,Port>();
+		Map<Integer,Module> moduleIdMap = new HashMap<Integer,Module>();
+		Map<Integer,Port> inputPortIdMap = new HashMap<Integer,Port>();
+		Map<Integer,Port> outputPortIdMap = new HashMap<Integer,Port>();
+		Map<Integer,Integer> portConnectionMap = new HashMap<Integer,Integer>(); // Key: InputPort-hashcode, Value: OutputPort-hashcode
+		Map<Integer,String> inputPortPipeClassMap = new HashMap<Integer,String>(); // Key: InputPort-hashcode, Value: Canonical class name of pipe
 
 		Iterator<SerializableModule> serializableModules = serializableModuleList.iterator();
 		while (serializableModules.hasNext()){
@@ -55,21 +61,29 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 				Module newModuleInstance = (Module) constructor.newInstance(new Object[] { moduleNetwork, serializableModule.getProperties() });
 				
 				// Add module to corresponding id list
-				moduleIds.put(serializableModule.getModuleInstanceHashCode(), newModuleInstance);
+				moduleIdMap.put(serializableModule.getModuleInstanceHashCode(), newModuleInstance);
 				
 				// Add module input ports to corresponding id list
 				Iterator<SerializablePort> serializableInputPorts = serializableModule.getSerializableInputPortList().values().iterator();
 				while (serializableInputPorts.hasNext()){
 					SerializablePort serializableInputPort = serializableInputPorts.next();
-					inputPortIds.put(serializableInputPort.getInstanceHashCode(), newModuleInstance.getInputPorts().get(serializableInputPort.getName()));
+					inputPortIdMap.put(serializableInputPort.getInstanceHashCode(), newModuleInstance.getInputPorts().get(serializableInputPort.getName()));
+					
+					// Check whether the input port is connected
+					if (!serializableInputPort.getConnectedPipesDestinationHashCodes().isEmpty()){
+						// Map connection
+						portConnectionMap.put(serializableInputPort.getInstanceHashCode(), serializableInputPort.getConnectedPipesDestinationHashCodes().keySet().iterator().next());
+						inputPortPipeClassMap.put(serializableInputPort.getInstanceHashCode(), serializableInputPort.getConnectedPipesDestinationHashCodes().values().iterator().next());
+					}
+					
 				}
 				
 				// Add module output ports to corresponding id list
 				Iterator<SerializablePort> serializableOutputPorts = serializableModule.getSerializableOutputPortList().values().iterator();
 				while (serializableOutputPorts.hasNext()){
 					SerializablePort serializableOutputPort = serializableOutputPorts.next();
-					outputPortIds.put(serializableOutputPort.getInstanceHashCode(), newModuleInstance.getOutputPorts().get(serializableOutputPort.getName()));
-				} XXX//TODO Ein port kann auf mehrere andere verweisen (oder andersherum) 
+					outputPortIdMap.put(serializableOutputPort.getInstanceHashCode(), newModuleInstance.getOutputPorts().get(serializableOutputPort.getName()));
+				} 
 
 				
 				// Add module to network
@@ -81,35 +95,50 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 			}
 		}
 		
-		// TODO connect ports
+		// When all modules are present, restore the connections between the ports (we will just loop over the established port connection map for this)
+		Iterator<Integer> inputPortIds = portConnectionMap.keySet().iterator();
+		while (inputPortIds.hasNext()){
+			
+			// Determine the input port
+			Integer inputPortId = inputPortIds.next();
+			Port inputPort = inputPortIdMap.get(inputPortId);
+			
+			// Determine the output port it is connected to
+			Integer outputPortId = portConnectionMap.get(inputPort);
+			Port outputPort = outputPortIdMap.get(outputPortId);
+			
+			// Next up there are some exceptions we need to handle locally (on
+			// appearance they will provoke a JsonParseException though)
+			try {
+
+				// Determine the pipe class through which they are connected
+				Class<?> pipeClass = ClassUtils.getClass(inputPortPipeClassMap
+						.get(inputPortId));
+
+				// Check whether all values are present (and throw an exception
+				// if they are not)
+				if (inputPort == null || outputPort == null
+						|| pipeClass == null)
+					throw new JsonParseException(
+							"The port connection mapping seems to be inconsistent. Please check the serialized input.");
+
+				// All is well, instantiate the pipe ...
+				Constructor<?> constructor = pipeClass.getConstructor();
+				Pipe pipe = (Pipe) constructor.newInstance(new Object[] {});
+
+				// ... and connect the ports with it
+				inputPort.addPipe(pipe, outputPort);
+
+			} catch (Exception e) {
+				// If something goes wrong, throw an appropriate exception
+				throw new JsonParseException(
+						"Error reestablishing the deserialized intermodule connections.",
+						e);
+			}
+		}
 		
 		// Return the new module tree object
 		return moduleNetwork;
-	}
-
-	/**
-	 * Recursively attaches the given serializable module tree node and its children to the module tree.
-	 * @param parent
-	 * @param moduleNetwork
-	 * @param nodeToAttach
-	 * @throws Exception
-	 */
-	private void attachToModuleTree(Module parent, ModuleNetwork moduleNetwork, SerializableModule nodeToAttach) throws Exception {
-		// Determine class of the module
-		Class<?> moduleClass = Class.forName(nodeToAttach.getModuleCanonicalClassName());
-					
-		// Determine the constructor of that class
-		Constructor<?> ctor = moduleClass.getConstructor(CallbackReceiver.class, Properties.class);
-					
-		// Instantiate module and attach it to the module tree 
-		Module module = (Module) ctor.newInstance(new Object[] { moduleNetwork, nodeToAttach.getProperties() });
-		moduleNetwork.addConnection(module, parent);
-		
-		// Recursively do the same with each child node
-		Iterator<SerializableModule> children = nodeToAttach.getChildren().iterator();
-		while (children.hasNext()){
-			this.attachToModuleTree(module, moduleNetwork, children.next());
-		}
 	}
 	
 }

@@ -66,7 +66,7 @@ public class ModuleBatchRunner {
 		
 		// Load module tree config file
 		try {
-			controller.loadModuleTreeFromFile(new File(configFilePath));
+			controller.loadModuleNetworkFromFile(new File(configFilePath));
 		} catch (Exception e) {
 			Logger.getLogger("").log(Level.SEVERE, "Could not load module tree from given config file.", e);
 			System.exit(1);
@@ -74,7 +74,7 @@ public class ModuleBatchRunner {
 		
 		// Finally: Run the module tree
 		try {
-			controller.getModuleTree().runModules(true);
+			controller.getModuleNetwork().runModules(true);
 		} catch (Exception e) {
 			Logger.getLogger("").log(Level.SEVERE, "Error running the module tree.", e);
 			System.exit(1);

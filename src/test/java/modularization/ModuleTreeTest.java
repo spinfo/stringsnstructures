@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Properties;
 
+import modules.CharPipe;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
 import modules.basemodules.ConsoleWriterModule;
@@ -37,7 +38,7 @@ public class ModuleTreeTest {
 		oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION, oancLoc0);
 		OANC oanc = new OANC(moduleNetwork,oancProperties);
 		
-		moduleNetwork.setRootModule(oanc); // Necessary before adding more modules!
+		//moduleNetwork.setRootModule(oanc); // Necessary before adding more modules!
 		
 		// Prepare FileWriter module
 		Properties fileWriterProperties = new Properties();
@@ -75,14 +76,36 @@ public class ModuleTreeTest {
 		ExampleModule exampleModule = new ExampleModule(moduleTree, exampleModuleProperties);*/
 		
 		// Add modules to tree
-		moduleNetwork.addConnection(oancParser, oanc);
-		moduleNetwork.addConnection(fileWriter, oancParser);
-		moduleNetwork.addConnection(consoleWriter, oancParser);
+		moduleNetwork.addModule(oanc);
+		moduleNetwork.addModule(oancParser);
+		moduleNetwork.addModule(fileWriter);
+		moduleNetwork.addModule(consoleWriter);
+
+		// Connect module ports
+		oanc.getOutputPorts()
+				.get("output")
+				.addPipe(new CharPipe(),
+						oancParser.getInputPorts().get("input"));
+		oancParser
+				.getOutputPorts()
+				.get("output")
+				.addPipe(new CharPipe(),
+						fileWriter.getInputPorts().get("input"));
+		oancParser
+				.getOutputPorts()
+				.get("output")
+				.addPipe(new CharPipe(),
+						consoleWriter.getInputPorts().get("input"));
+		
+		// Add modules to tree
+		//moduleNetwork.addConnection(oancParser, oanc);
+		//moduleNetwork.addConnection(fileWriter, oancParser);
+		//moduleNetwork.addConnection(consoleWriter, oancParser);
 		//moduleTree.addModule(exampleModule, oancParser);
 		//moduleTree.addModule(consoleWriter, exampleModule);
 		
 		// Print tree
-		System.out.println(moduleNetwork.prettyPrint());
+		System.out.println(moduleNetwork.toString());
 		
 		
 		// Run modules in tree

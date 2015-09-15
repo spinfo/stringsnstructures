@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -18,23 +19,25 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.InternalFrameListener;
 import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
-import common.PrettyLogRecord;
-import common.parallelization.CallbackReceiverImpl;
 import modules.Module;
 import modules.ModuleNetwork;
+
+import common.PrettyLogRecord;
+import common.parallelization.CallbackReceiverImpl;
 
 /**
  * Provides a GUI to create/edit/run module trees.
  * @author Marcel Boeing
  *
  */
-public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeModelListener, ActionListener {
+public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener {
 	
 	protected static final String ACTION_STARTNEWMODULETREE = "ACTION_STARTNEWMODULETREE";
 	protected static final String ACTION_ADDMODULETOTREE = "ACTION_ADDMODULETOTREE";
@@ -61,7 +64,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	
 	private JFrame frame;
 	private ModuleWorkbenchController controller;
-	private JTree moduleJTree;
+	private JDesktopPane moduleJDesktopPane;
 
 	/**
 	 * Launch the application.
@@ -72,7 +75,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				try {
 					ModuleWorkbenchController controller = new ModuleWorkbenchController();
 					ModuleWorkbenchGui window = new ModuleWorkbenchGui(controller);
-					controller.getModuleTree().addCallbackReceiver(window);
+					controller.getModuleNetwork().addCallbackReceiver(window);
 					window.frame.setIconImage(ICON_APP.getImage());
 					window.frame.setVisible(true);
 					
@@ -126,13 +129,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		splitPane.setRightComponent(moduleTreePanel);
 		moduleTreePanel.setLayout(new BorderLayout(0, 0));
 		
-		// Instantiate new JTree with a custom TreeCellRenderer
-		this.moduleJTree = new JTree(this.controller.getModuleTree().getModuleTreeModel());
-		TreeCellRenderer moduleTreeCellRenderer = new ModuleTreeCellRenderer();
-		this.moduleJTree.setCellRenderer(moduleTreeCellRenderer);
-		this.moduleJTree.addTreeSelectionListener(this.controller);
-		this.moduleJTree.getModel().addTreeModelListener(this);
-		moduleTreePanel.add(this.moduleJTree);
+		// Instantiate new JDesktopPane
+		this.moduleJDesktopPane = new JDesktopPane();
+		moduleTreePanel.add(this.moduleJDesktopPane);
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.setOrientation(JToolBar.VERTICAL);
@@ -230,10 +229,10 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	@Override
 	public void receiveCallback(Thread process, Object processingResult, boolean repeat) {
 		// Inserting a hook here -- update the GUI tree display
-		this.moduleJTree.invalidate();
+		/*this.moduleJTree.invalidate();
 		this.moduleJTree.validate();
 		this.moduleJTree.repaint();
-		this.expandAllNodes(this.moduleJTree);
+		this.expandAllNodes(this.moduleJTree);*/ // TODO check whether this needs updating
 	}
 
 	/* (non-Javadoc)
@@ -242,61 +241,23 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 	@Override
 	public void receiveException(Thread process, Throwable exception) {
 		// Inserting a hook here -- update the GUI tree display
-		this.moduleJTree.invalidate();
+		/*this.moduleJTree.invalidate();
 		this.moduleJTree.validate();
 		this.moduleJTree.repaint();
-		this.expandAllNodes(this.moduleJTree);
-	}
-
-	@Override
-	public void treeNodesChanged(TreeModelEvent e) {
-	}
-
-	@Override
-	public void treeNodesInserted(TreeModelEvent e) {
-		Object[] children = e.getChildren();
-		if (children.length>0 && DefaultMutableTreeNode.class.isAssignableFrom(children[0].getClass())){
-			TreePath newNodePath = new TreePath(((DefaultMutableTreeNode)children[0]).getPath());
-			this.moduleJTree.setSelectionPath(newNodePath);
-		}
-	}
-
-	@Override
-	public void treeNodesRemoved(TreeModelEvent e) {
-	}
-
-	@Override
-	public void treeStructureChanged(TreeModelEvent e) {
+		this.expandAllNodes(this.moduleJTree);*/ // TODO check whether this needs updating
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals(ACTION_STARTNEWMODULETREE)){
 			
-			// New module to create
-			Module rootModule;
-			try {
-				if (this.controller.getSelectedModule() == null)
-					throw new Exception("Please do select a module from the lefthand list first.");
-				rootModule = this.controller.getNewInstanceOfSelectedModule(null);
-				// Start new module tree and add this class as callback receiver to it
-				ModuleNetwork moduleNetwork = this.controller.startNewModuleTree(rootModule);
-				moduleNetwork.addCallbackReceiver(this);
-				frame.setTitle(WINDOWTITLE+WINDOWTITLE_NEWTREESUFFIX);
-				
-			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Could not create a new module tree.", e1);
-			}
+			this.controller.clearModuleNetwork();
 			
 		} else if (e.getActionCommand().equals(ACTION_ADDMODULETOTREE)){
 			
 			try {
-				// Determine module that is currently selected within the module tree
-				Module parentModule = (Module) this.controller.getSelectedTreeNode().getUserObject();
-				Module newModule = this.controller.getNewInstanceOfSelectedModule(this.controller.getModuleTree());
-						
-				// Add new module to selected tree node
-				this.controller.getModuleTree().addConnection(newModule, parentModule);
+				Module newModule = this.controller.getNewInstanceOfSelectedModule(this.controller.getModuleNetwork());
+				this.controller.getModuleNetwork().addModule(newModule);
 				
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
@@ -306,26 +267,26 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 			
 			try {
 				// Determine node that is currently selected within the module tree
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.controller.getSelectedTreeNode();
+				Module module = this.controller.getSelectedModule();
 						
 				// Remove module from tree
-				boolean removed = this.controller.getModuleTree().removeModule(node);
+				boolean removed = this.controller.getModuleNetwork().removeModule(module);
 				
 				// Log message
 				if (removed)
-					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO, "The selected module has been removed from the tree.");
+					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO, "The selected module has been removed from the network.");
 				else
-					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be removed from the tree.");
+					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be removed from the network.");
 				
 			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be removed from the tree.", e1);
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be removed from the network.", e1);
 			}
 			
 		} else if (e.getActionCommand().equals(ACTION_EDITMODULE)){
 			
 			try {
 				// Determine module that is currently selected within the module tree
-				final Module selectedModule = (Module) this.controller.getSelectedTreeNode().getUserObject();
+				final Module selectedModule = this.controller.getSelectedModule();
 						
 				// Create new editor dialogue in separate thread
 				EventQueue.invokeLater(new Runnable() {
@@ -348,8 +309,8 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		} else if (e.getActionCommand().equals(ACTION_RUNMODULES)){
 			
 			try {
-				this.controller.getModuleTree().runModules();
-				this.moduleJTree.revalidate();
+				this.controller.getModuleNetwork().runModules();
+				//this.moduleJTree.revalidate();
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to run the modules.", e1);
 			}
@@ -357,8 +318,8 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 		} else if (e.getActionCommand().equals(ACTION_STOPMODULES)){
 			
 			try {
-				this.controller.getModuleTree().stopModules();
-				this.moduleJTree.revalidate();
+				this.controller.getModuleNetwork().stopModules();
+				//this.moduleJTree.revalidate();
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to stop the modules.", e1);
 			}
@@ -375,12 +336,12 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 				
 				// If the return value indicates approval, load the selected file
 				if (returnVal==JFileChooser.APPROVE_OPTION){
-					ModuleNetwork loadedModuleTree = this.controller.loadModuleTreeFromFile(fileChooser.getSelectedFile());
-					loadedModuleTree.getModuleTreeModel().addTreeModelListener(this);
-					loadedModuleTree.addCallbackReceiver(this);
-					this.moduleJTree.setModel(loadedModuleTree.getModuleTreeModel());
-					this.moduleJTree.revalidate();
-					this.expandAllNodes(this.moduleJTree);
+					ModuleNetwork loadedModuleNetwork = this.controller.loadModuleNetworkFromFile(fileChooser.getSelectedFile());
+					//loadedModuleNetwork.getModuleTreeModel().addTreeModelListener(this);
+					loadedModuleNetwork.addCallbackReceiver(this);
+					//this.moduleJTree.setModel(loadedModuleNetwork.getModuleTreeModel());
+					//this.moduleJTree.revalidate();
+					//this.expandAllNodes(this.moduleJTree);
 					frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
 				}
 				
@@ -422,6 +383,48 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements TreeMode
 			tree.expandRow(row);
 			row++;
 		}
+	}
+
+	@Override
+	public void internalFrameOpened(InternalFrameEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void internalFrameClosing(InternalFrameEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void internalFrameClosed(InternalFrameEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void internalFrameIconified(InternalFrameEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void internalFrameDeiconified(InternalFrameEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void internalFrameActivated(InternalFrameEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void internalFrameDeactivated(InternalFrameEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	/**

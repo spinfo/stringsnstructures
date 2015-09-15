@@ -26,14 +26,16 @@ public class ToolTipJList<E> extends JList<Module> {
 	    tip.append("<p>"+insertNewlines(module.getDescription(), 50)+"<p>");
 	    tip.append("<ul><li>Inputs:</li><ul>");
 	    
-	    Iterator<Class<?>> inputs = module.getSupportedInputs().iterator();
-	    while (inputs.hasNext()){
-	    	tip.append("<li>"+inputs.next().getName()+"</li>");
+	    Iterator<String> inputNames = module.getInputPorts().keySet().iterator();
+	    while (inputNames.hasNext()){
+	    	String inputName = inputNames.next();
+	    	tip.append("<li>"+inputName+" ("+module.getInputPorts().get(inputName).getClass().getSimpleName()+")</li>");
 	    }
 	    tip.append("</ul><li>Outputs:</li><ul>");
-	    Iterator<Class<?>> outputs = module.getSupportedOutputs().iterator();
-	    while (outputs.hasNext()){
-	    	tip.append("<li>"+outputs.next().getName()+"</li>");
+	    Iterator<String> outputNames = module.getOutputPorts().keySet().iterator();
+	    while (outputNames.hasNext()){
+	    	String outputName = outputNames.next();
+	    	tip.append("<li>"+outputName+" ("+module.getOutputPorts().get(outputName).getClass().getSimpleName()+")</li>");
 	    }
 	    tip.append("</ul></ul></html>");
 	    

@@ -5,10 +5,11 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
+import modules.CharPipe;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
-import modules.ModuleTreeGsonDeserializer;
 import modules.ModuleNetworkGsonSerializer;
+import modules.ModuleTreeGsonDeserializer;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.FileWriterModule;
 import modules.oanc.OANC;
@@ -36,7 +37,7 @@ public class ModuleTreeSerializationTest {
 					"/tmp/oanc");
 			OANC oanc = new OANC(moduleNetwork, oancProperties);
 
-			moduleNetwork.setRootModule(oanc); // Necessary before adding more
+			//moduleNetwork.setRootModule(oanc); // Necessary before adding more
 											// modules!
 
 			// Prepare FileWriter module
@@ -78,9 +79,15 @@ public class ModuleTreeSerializationTest {
 					moduleNetwork, consoleWriterProperties);
 
 			// Add modules to tree
-			moduleNetwork.addConnection(oancParser, oanc);
-			moduleNetwork.addConnection(fileWriter, oancParser);
-			moduleNetwork.addConnection(consoleWriter, oancParser);
+			moduleNetwork.addModule(oanc);
+			moduleNetwork.addModule(oancParser);
+			moduleNetwork.addModule(fileWriter);
+			moduleNetwork.addModule(consoleWriter);
+
+			// Connect module ports
+			oanc.getOutputPorts().get("output").addPipe(new CharPipe(), oancParser.getInputPorts().get("input"));
+			oancParser.getOutputPorts().get("output").addPipe(new CharPipe(), fileWriter.getInputPorts().get("input"));
+			oancParser.getOutputPorts().get("output").addPipe(new CharPipe(), consoleWriter.getInputPorts().get("input"));
 
 			// Instantiate JSON converter
 			GsonBuilder gsonBuilder = new GsonBuilder();

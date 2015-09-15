@@ -4,6 +4,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -38,6 +39,7 @@ public class ModuleNetworkGsonSerializer implements JsonSerializer<ModuleNetwork
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			Logger.getLogger("").warning("Sorry, but there has been an error serializing the module network: "+e.getMessage());
 			return null;
 		}
 	}

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -16,21 +15,12 @@ import java.util.logging.Logger;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-
-import common.ListLoggingHandler;
-import common.ModuleComparator;
 import modules.Module;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
-import modules.ModuleTreeGsonDeserializer;
 import modules.ModuleNetworkGsonSerializer;
+import modules.ModuleTreeGsonDeserializer;
 import modules.artificialSeqs.CreateArtificialSeqs;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
@@ -52,7 +42,13 @@ import modules.treeBuilder.TreeBuilder;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
 
-public class ModuleWorkbenchController implements TreeSelectionListener, ListSelectionListener {
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import common.ListLoggingHandler;
+import common.ModuleComparator;
+
+public class ModuleWorkbenchController implements ListSelectionListener { // TODO anderer Listener
 	
 	protected List<Module> availableModules = new ArrayList<Module>();
 	private ModuleNetwork moduleNetwork;
@@ -242,9 +238,6 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		// Sort list
 		availableModules.sort(new ModuleComparator());
 		
-		// Instantiate default module tree
-		this.startNewModuleTree(oanc);
-		
 	}
 	
 	/**
@@ -252,37 +245,24 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	 */
 	public void clearModuleNetwork(){
 		
-		// Determine if a module network already exists
-		if (this.moduleNetwork != null){
-			// If so, we just need to set a new root module
-			this.moduleNetwork.getModuleTreeModel().setRoot(new DefaultMutableTreeNode(rootModule));
-			// ... and make sure the root node knows its callback receiver
-			rootModule.setCallbackReceiver(this.moduleNetwork);
-		}
-			
-		else {
-			// Instantiate a new module tree
-			this.moduleNetwork = new ModuleNetwork(rootModule);
-		}
-			
+		// Remove all module nodes
+		this.moduleNetwork.removeAllModules();
 		
 		// Reset selected tree node
-		this.setSelectedTreeNode((DefaultMutableTreeNode) this.moduleNetwork.getModuleTreeModel().getRoot());
-		
-		return this.moduleNetwork;
+		this.setSelectedModule(null);
 	}
 
 	/**
 	 * @return the moduleNetwork
 	 */
-	public ModuleNetwork getModuleTree() {
+	public ModuleNetwork getModuleNetwork() {
 		return moduleNetwork;
 	}
 
 	/**
 	 * @param moduleNetwork the moduleNetwork to set
 	 */
-	public void setModuleTree(ModuleNetwork moduleNetwork) {
+	public void setModuleNetwork(ModuleNetwork moduleNetwork) {
 		this.moduleNetwork = moduleNetwork;
 	}
 
@@ -370,17 +350,6 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	}
 
 	@Override
-	public void valueChanged(TreeSelectionEvent e) {
-		try {
-			// Determine which node is selected within the module tree
-			this.setSelectedTreeNode((DefaultMutableTreeNode) e.getPath().getLastPathComponent());
-		} catch (ClassCastException ex){
-			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I am afraid there was an error processing the selected element.", ex);
-		}
-		
-	}
-
-	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		try {
 			
@@ -433,12 +402,8 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 		return listLoggingHandler;
 	}
 
-	public DefaultMutableTreeNode getSelectedTreeNode() {
-		return selectedTreeNode;
-	}
-
-	public void setSelectedTreeNode(DefaultMutableTreeNode selectedTreeNode) {
-		this.selectedTreeNode = selectedTreeNode;
+	public void setSelectedModule(Module selectedModule) {
+		this.selectedModule = selectedModule;
 	}
 
 	/**
@@ -454,30 +419,27 @@ public class ModuleWorkbenchController implements TreeSelectionListener, ListSel
 	 * @return Loaded module tree
 	 * @throws Exception 
 	 */
-	public ModuleNetwork loadModuleTreeFromFile(File file) throws Exception {
+	public ModuleNetwork loadModuleNetworkFromFile(File file) throws Exception {
 				
 		// Read JSON representation of the current module tree from file
 		FileReader fileReader = new FileReader(file);
-		ModuleNetwork loadedModuleTree = this.jsonConverter.fromJson(fileReader, ModuleNetwork.class);
-		this.setModuleTree(loadedModuleTree);
+		ModuleNetwork loadedModuleNetwork = this.jsonConverter.fromJson(fileReader, ModuleNetwork.class);
+		this.setModuleNetwork(loadedModuleNetwork);
 				
 		// Close file writer
 		fileReader.close();
 		
 		// Apply properties to modules
-		DefaultMutableTreeNode rootNode = loadedModuleTree.getRootNode();
-		((Module)rootNode.getUserObject()).applyProperties();
-		@SuppressWarnings("unchecked")
-		Enumeration<DefaultMutableTreeNode> children = rootNode.breadthFirstEnumeration();
-		while (children.hasMoreElements()){
-			((Module)children.nextElement().getUserObject()).applyProperties();
+		Iterator<Module> modules = loadedModuleNetwork.getModuleList().iterator();
+		while (modules.hasNext()){
+			modules.next().applyProperties();
 		}
 		
         // Write log message
-        Logger.getLogger("").log(Level.INFO, "Successfully loaded the module tree from the file "+file.getPath());
+        Logger.getLogger("").log(Level.INFO, "Successfully loaded the module network from the file "+file.getPath());
         
-        // Return the loaded tree
-		return loadedModuleTree;
+        // Return the loaded network
+		return loadedModuleNetwork;
 	}
 	
 	/**
