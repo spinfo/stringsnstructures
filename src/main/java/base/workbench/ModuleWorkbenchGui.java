@@ -107,7 +107,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 550, 400);
+		frame.setBounds(100, 100, 750, 500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setTitle(WINDOWTITLE+WINDOWTITLE_NEWTREESUFFIX);
 		
@@ -136,8 +136,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		splitPane.setRightComponent(moduleTreePanel);
 		moduleTreePanel.setLayout(new BorderLayout(0, 0));
 		
-		// Instantiate new JDesktopPane
+		// Module desktop pane
 		this.moduleJDesktopPane = new JDesktopPane();
+		
 		moduleTreePanel.add(this.moduleJDesktopPane);
 		
 		JToolBar toolBar = new JToolBar();
@@ -215,14 +216,14 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
 		
-		JScrollPane scrollPane = new JScrollPane();
+		JScrollPane messageListScrollPane = new JScrollPane();
 		
 		DefaultListModel<PrettyLogRecord> messageListModel = new DefaultListModel<PrettyLogRecord>();
 		JList<PrettyLogRecord> messageList = new JList<PrettyLogRecord>(messageListModel);
 		this.controller.getListLoggingHandler().setListModel(messageListModel);
 		this.controller.getListLoggingHandler().getAutoScrollLists().add(messageList);
-		scrollPane.setViewportView(messageList);
-		panel.add(scrollPane, BorderLayout.CENTER);
+		messageListScrollPane.setViewportView(messageList);
+		panel.add(messageListScrollPane, BorderLayout.CENTER);
 		
 		topSplitPane.setLeftComponent(splitPane);
 		topSplitPane.setRightComponent(panel);
@@ -259,45 +260,22 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		if (e.getActionCommand().equals(ACTION_STARTNEWMODULETREE)){
 			
 			this.controller.clearModuleNetwork();
-			
-			Iterator<ModuleInternalFrame> moduleFrames = this.moduleFrameMap.values().iterator();
-			while (moduleFrames.hasNext()){
-				moduleFrames.next().dispose();
+
+			try {
+				// Loop over module frames
+				Iterator<ModuleInternalFrame> moduleFrames = this.moduleFrameMap.values().iterator();
+				while (moduleFrames.hasNext()) {
+					moduleFrames.next().setClosed(true);
+				}
+				// Clear module frame map
+				this.moduleFrameMap.clear();
+			} catch (PropertyVetoException e1) {
+				e1.printStackTrace();
 			}
-			this.moduleFrameMap.clear();
 			
 		} else if (e.getActionCommand().equals(ACTION_ADDMODULETOTREE)){
 			
-			try {
-				Module newModule = this.controller.getNewInstanceOfModule(this.selectedModuleTemplate);
-				
-				// Add module to network
-				if (this.controller.getModuleNetwork().addModule(newModule)){
-					
-					// Instantiate module frame
-					ModuleInternalFrame moduleFrame = new ModuleInternalFrame(newModule);
-					
-					// Add frame listener
-					moduleFrame.addInternalFrameListener(this);
-			        
-					// Add to map
-					this.moduleFrameMap.put(newModule,moduleFrame);
-					
-					// Add module frame to workbench gui
-					this.moduleJDesktopPane.add(moduleFrame);
-					moduleFrame.setVisible(true);
-					
-					// Select module frame
-					try {
-						moduleFrame.setSelected(true);
-			        } catch (java.beans.PropertyVetoException e1) {
-			        }
-					
-				}
-				
-			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
-			}
+			this.actionAddModule();
 			
 		} else if (e.getActionCommand().equals(ACTION_DELETEMODULEFROMTREE)){
 			
@@ -399,6 +377,39 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		}
 	}
 	
+	private void actionAddModule() {
+		try {
+			Module newModule = this.controller.getNewInstanceOfModule(this.selectedModuleTemplate);
+			
+			// Add module to network
+			if (this.controller.getModuleNetwork().addModule(newModule)){
+				
+				// Instantiate module frame
+				ModuleInternalFrame moduleFrame = new ModuleInternalFrame(newModule);
+				
+				// Add frame listener
+				moduleFrame.addInternalFrameListener(this);
+		        
+				// Add to map
+				this.moduleFrameMap.put(newModule,moduleFrame);
+				
+				// Add module frame to workbench gui
+				this.moduleJDesktopPane.add(moduleFrame);
+				moduleFrame.setVisible(true);
+				
+				// Select module frame
+				try {
+					moduleFrame.setSelected(true);
+		        } catch (java.beans.PropertyVetoException e1) {
+		        }
+				
+			}
+			
+		} catch (Exception e1) {
+			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
+		}
+	}
+
 	private void actionDeleteModule(ModuleInternalFrame moduleFrame) {
 		try {
 			if (moduleFrame == null)
@@ -431,6 +442,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 
 	@Override
 	public void internalFrameClosed(InternalFrameEvent e) {
+		this.moduleFrameMap.remove(((ModuleInternalFrame) e.getInternalFrame()).getModule());
 		this.actionDeleteModule((ModuleInternalFrame) e.getInternalFrame());
 	}
 
@@ -444,13 +456,11 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 
 	@Override
 	public void internalFrameActivated(InternalFrameEvent e) {
-		System.out.println("activated");
 		this.selectedModuleFrame = (ModuleInternalFrame) e.getInternalFrame();
 	}
 
 	@Override
 	public void internalFrameDeactivated(InternalFrameEvent e) {
-		System.out.println("deactivated");
 		this.selectedModuleFrame = null;
 	}
 
