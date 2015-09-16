@@ -10,11 +10,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
-import common.parallelization.CallbackReceiver;
 import modules.BytePipe;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
+import modules.NotSupportedException;
+
+import common.parallelization.CallbackReceiver;
 
 /**
  * Writes any input to file
@@ -61,10 +63,11 @@ public class FileWriterModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "8192");
 
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "Byte or character input.", this);
+		InputPort inputPort = new InputPort("Input",
+				"Byte or character input.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		inputPort.addSupportedPipe(BytePipe.class);
-		super.addInputPort(INPUTID,inputPort);
+		super.addInputPort(INPUTID, inputPort);
 
 		// Add module description
 		this.setDescription("Writes received input to a file. Can apply GZIP compression.");
@@ -73,90 +76,117 @@ public class FileWriterModule extends ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 
+		// Determine input port
+		InputPort inputPort = this.getInputPorts().get(INPUTID);
+		
+		// Keep track of whether an input has been successfully read
+		boolean successfullyReadInput = false;
+
 		/*
-		 * read from both input channels (reader/inputstream) -- if the first
-		 * one is not connected to another module's output, it will throw an
-		 * exception (that we will catch)
+		 * try to read from the stream input channel
 		 */
 		try {
-			// Instantiate a new output stream
-			OutputStream fileOutputStream = new FileOutputStream(new File(
-					this.filePath));
+			if (inputPort.getInputStream() != null) {
+				// Instantiate a new output stream
+				OutputStream fileOutputStream = new FileOutputStream(new File(
+						this.filePath));
 
-			// Use GZIP if requested
-			if (this.useGzip)
-				fileOutputStream = new GZIPOutputStream(fileOutputStream);
+				// Use GZIP if requested
+				if (this.useGzip)
+					fileOutputStream = new GZIPOutputStream(fileOutputStream);
 
-			// Define input buffer
-			byte[] buffer = new byte[this.bufferLength];
+				// Define input buffer
+				byte[] buffer = new byte[this.bufferLength];
 
-			// Read file data into buffer and write to outputstream
-			int readBytes = this.getInputPorts().get(INPUTID).getInputStream().read(buffer);
-			while (readBytes != -1) {
+				// Read file data into buffer and write to outputstream
+				int readBytes = inputPort.getInputStream().read(buffer);
+				while (readBytes != -1) {
 
-				// Check for interrupt signal
-				if (Thread.interrupted()) {
-					fileOutputStream.close();
-					throw new InterruptedException(
-							"Thread has been interrupted.");
+					// Check for interrupt signal
+					if (Thread.interrupted()) {
+						fileOutputStream.close();
+						throw new InterruptedException(
+								"Thread has been interrupted.");
+					}
+
+					fileOutputStream.write(buffer, 0, readBytes);
+					readBytes = inputPort.getInputStream().read(buffer);
 				}
 
-				fileOutputStream.write(buffer, 0, readBytes);
-				readBytes = this.getInputPorts().get(INPUTID).getInputStream().read(buffer);
+				// close output stream
+				fileOutputStream.close();
+
+				// Log message
+				Logger.getLogger(this.getClass().getSimpleName()).log(
+						Level.INFO,
+						"Wrote byte stream input into " + this.filePath);
+				
+				// Keep track of whether an input has been successfully read
+				successfullyReadInput = true;
+
 			}
+		} catch (NotSupportedException e) {
 
-			// close output stream
-			fileOutputStream.close();
-
-			// Log message
-			Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO,
-					"Wrote byte stream input into " + this.filePath);
-
-		} catch (Exception e) {
-			/*
-			 * The inputstream does not seem to be connected -- try inputreader
-			 * instead
-			 */
-
-			// Instantiate a new output stream
-			OutputStream fileOutputStream = new FileOutputStream(new File(
-					this.filePath));
-
-			// Use GZIP if requested
-			if (this.useGzip)
-				fileOutputStream = new GZIPOutputStream(fileOutputStream);
-
-			// Instantiate a new file writer
-			Writer fileWriter = new OutputStreamWriter(fileOutputStream,
-					this.encoding);
-
-			// Define input buffer
-			char[] buffer = new char[this.bufferLength];
-
-			// Read file data into buffer and output to writer
-			int readBytes = this.getInputPorts().get(INPUTID).getInputReader().read(buffer);
-			while (readBytes != -1) {
-
-				// Check for interrupt signal
-				if (Thread.interrupted()) {
-					fileWriter.close();
-					fileOutputStream.close();
-					throw new InterruptedException(
-							"Thread has been interrupted.");
-				}
-
-				fileWriter.write(buffer, 0, readBytes);
-				readBytes = this.getInputPorts().get(INPUTID).getInputReader().read(buffer);
-			}
-
-			// close outputs
-			fileWriter.close();
-			fileOutputStream.close();
-
-			// Log message
-			Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO,
-					"Wrote character input to " + this.filePath);
 		}
+
+		try {
+			if (!successfullyReadInput && inputPort.getInputReader() != null) {
+				/*
+				 * The inputstream does not seem to be connected -- try
+				 * inputreader instead
+				 */
+
+				// Instantiate a new output stream
+				OutputStream fileOutputStream = new FileOutputStream(new File(
+						this.filePath));
+
+				// Use GZIP if requested
+				if (this.useGzip)
+					fileOutputStream = new GZIPOutputStream(fileOutputStream);
+
+				// Instantiate a new file writer
+				Writer fileWriter = new OutputStreamWriter(fileOutputStream,
+						this.encoding);
+
+				// Define input buffer
+				char[] buffer = new char[this.bufferLength];
+
+				// Read file data into buffer and output to writer
+				int readBytes = inputPort.getInputReader().read(buffer);
+				while (readBytes != -1) {
+
+					// Check for interrupt signal
+					if (Thread.interrupted()) {
+						fileWriter.close();
+						fileOutputStream.close();
+						throw new InterruptedException(
+								"Thread has been interrupted.");
+					}
+
+					fileWriter.write(buffer, 0, readBytes);
+					readBytes = inputPort.getInputReader().read(buffer);
+				}
+
+				// close outputs
+				fileWriter.close();
+				fileOutputStream.close();
+
+				// Log message
+				Logger.getLogger(this.getClass().getSimpleName())
+						.log(Level.INFO,
+								"Wrote character input to " + this.filePath);
+				
+				// Keep track of whether an input has been successfully read
+				successfullyReadInput = true;
+			}
+		} catch (NotSupportedException e) {
+
+		}
+
+		// If no input has been successfully read throw an exception
+		if (!successfullyReadInput)
+			throw new Exception(
+					"The input of this module does not seem to be connected to anything.");
 
 		// Success
 		return true;

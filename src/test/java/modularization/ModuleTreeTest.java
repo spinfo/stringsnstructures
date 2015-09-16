@@ -82,20 +82,9 @@ public class ModuleTreeTest {
 		moduleNetwork.addModule(consoleWriter);
 
 		// Connect module ports
-		oanc.getOutputPorts()
-				.get("output")
-				.addPipe(new CharPipe(),
-						oancParser.getInputPorts().get("input"));
-		oancParser
-				.getOutputPorts()
-				.get("output")
-				.addPipe(new CharPipe(),
-						fileWriter.getInputPorts().get("input"));
-		oancParser
-				.getOutputPorts()
-				.get("output")
-				.addPipe(new CharPipe(),
-						consoleWriter.getInputPorts().get("input"));
+		ModuleNetwork.connectPorts(oanc.getOutputPorts().get("output"), oancParser.getInputPorts().get("input"), new CharPipe());
+		ModuleNetwork.connectPorts(oancParser.getOutputPorts().get("output"), fileWriter.getInputPorts().get("input"), new CharPipe());
+		ModuleNetwork.connectPorts(oancParser.getOutputPorts().get("output"), consoleWriter.getInputPorts().get("input"), new CharPipe());
 		
 		// Add modules to tree
 		//moduleNetwork.addConnection(oancParser, oanc);

@@ -35,7 +35,7 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 		
 		// Get the serializable object from the JSON input
 		@SuppressWarnings("unchecked")
-		List<SerializableModule> serializableModuleList = gson.fromJson(json, new ArrayList<SerializableModule>().getClass());
+		SerializableModule[] serializableModuleList = gson.fromJson(json, new SerializableModule[0].getClass());
 		
 		// Keep track of the modules and ports
 		Map<Integer,Module> moduleIdMap = new HashMap<Integer,Module>();
@@ -44,12 +44,11 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 		Map<Integer,Integer> portConnectionMap = new HashMap<Integer,Integer>(); // Key: InputPort-hashcode, Value: OutputPort-hashcode
 		Map<Integer,String> inputPortPipeClassMap = new HashMap<Integer,String>(); // Key: InputPort-hashcode, Value: Canonical class name of pipe
 
-		Iterator<SerializableModule> serializableModules = serializableModuleList.iterator();
-		while (serializableModules.hasNext()){
+		for (int i=0; i<serializableModuleList.length; i++){
 			try {
 				
 				// Determine the next serializable module within the list
-				SerializableModule serializableModule = serializableModules.next();
+				SerializableModule serializableModule = serializableModuleList[i];
 				
 				// Determine class of the root module
 				Class<?> moduleClass = Class.forName(serializableModule.getModuleCanonicalClassName());

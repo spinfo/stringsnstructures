@@ -62,6 +62,19 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		super();
 		this.moduleList = new ArrayList<Module>();
 	}
+	
+	/**
+	 * Connects two ports.
+	 * @param outputPort
+	 * @param inputPort
+	 * @param pipe
+	 * @throws NotSupportedException
+	 * @throws OccupiedException
+	 */
+	public static void connectPorts(OutputPort outputPort, InputPort inputPort, Pipe pipe) throws NotSupportedException, OccupiedException {
+		outputPort.addPipe(pipe, inputPort);
+		inputPort.addPipe(pipe, outputPort);
+	}
 
 	/**
 	 * @return Returns a map of the running module threads

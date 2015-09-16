@@ -35,6 +35,7 @@ public class InputPort extends AbstractPort {
 	 * @throws NotSupportedException
 	 */
 	public PipedInputStream getInputStream() throws NotSupportedException {
+		if (this.pipe == null) return null;
 		if (!this.pipe.getClass().equals(BytePipe.class)){
 			throw new NotSupportedException("This port ("+this.toString()+") does not provide byte stream input.");
 		} else {
@@ -49,6 +50,7 @@ public class InputPort extends AbstractPort {
 	 * @throws NotSupportedException
 	 */
 	public PipedReader getInputReader() throws NotSupportedException {
+		if (this.pipe == null) return null;
 		if (!this.pipe.getClass().equals(CharPipe.class)){
 			throw new NotSupportedException("This port ("+this.toString()+") does not provide character stream input.");
 		} else {
@@ -63,6 +65,7 @@ public class InputPort extends AbstractPort {
 	 * @throws NotSupportedException Thrown if this port does not provide byte stream input after all
 	 */
 	public int read(byte[] buffer, int offset, int length) throws NotSupportedException, IOException {
+		if (this.pipe == null) throw new IOException("There is no pipe to read from.");
 		if (!this.pipe.getClass().equals(BytePipe.class)){
 			throw new NotSupportedException("This port ("+this.toString()+") does not provide byte stream input.");
 		} else {
@@ -77,6 +80,7 @@ public class InputPort extends AbstractPort {
 	 * @throws NotSupportedException Thrown if this port does not provide character stream input after all
 	 */
 	public int read(char[] buffer, int offset, int length) throws NotSupportedException, IOException {
+		if (this.pipe == null) throw new IOException("There is no pipe to read from.");
 		if (!this.pipe.getClass().equals(CharPipe.class)){
 			throw new NotSupportedException("This port ("+this.toString()+") does not provide character stream input.");
 		} else {

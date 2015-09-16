@@ -19,8 +19,10 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
-public class ModuleTreeSerializationTest {
+public class ModuleNetworkSerializationTest {
 
 	@Test
 	public void test() {
@@ -102,11 +104,15 @@ public class ModuleTreeSerializationTest {
 			ModuleNetwork moduleTree2 = gson.fromJson(json, ModuleNetwork.class);
 			String json2 = gson.toJson(moduleTree2);
 
-			//System.out.println(json+"\n-------\n"+json2);
-			
-			//assertTrue(json.equals(json2)); // Order of fields in JSON is not fixed, so this will probably fail even if the JSON is functionally identical.
-
-			assertTrue(json2.length()==json.length());
+			// Validate JSON
+			JsonParser parser = new JsonParser();
+			try {
+				parser.parse(json);
+				parser.parse(json2);
+				System.out.println("Successful parsed module network serialization test output.");
+			} catch (JsonSyntaxException e){
+				fail("Could not parse result.");
+			}
 			
 		} catch (Exception e) {
 			fail(e.getMessage());
