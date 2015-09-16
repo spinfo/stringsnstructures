@@ -84,7 +84,7 @@ public class InternalFrameDemo extends JFrame
 
     //Create a new internal frame.
     protected void createFrame() {
-        ModuleInternalFrame frame = new ModuleInternalFrame();
+        ModuleInternalFrame frame = new ModuleInternalFrame(null);
         frame.setVisible(true); //necessary as of 1.3
         frame.addInternalFrameListener(this);
         desktop.add(frame);

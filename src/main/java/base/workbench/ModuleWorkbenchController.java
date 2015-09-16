@@ -3,18 +3,13 @@ package base.workbench;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.ArrayList;
+import java.lang.reflect.Constructor;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.JList;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import modules.Module;
 import modules.ModuleImpl;
@@ -46,14 +41,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import common.ListLoggingHandler;
-import common.ModuleComparator;
+import common.parallelization.CallbackReceiver;
 
-public class ModuleWorkbenchController implements ListSelectionListener { // TODO anderer Listener
+public class ModuleWorkbenchController{ // TODO anderer Listener
 	
-	protected List<Module> availableModules = new ArrayList<Module>();
+	protected Map<String,Module> availableModules = new TreeMap<String,Module>(); // Key: module name
 	private ModuleNetwork moduleNetwork;
 	private Module selectedModule;
-	private Map<String, PropertyQuadrupel> selectedModulesProperties;
 	private ListLoggingHandler listLoggingHandler;
 	private Gson jsonConverter;
 
@@ -214,29 +208,26 @@ public class ModuleWorkbenchController implements ListSelectionListener { // TOD
 		SeqNewickExproterControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExproterController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqNewickExproterController.applyProperties();
 				
-		availableModules.add(consoleWriter);
-		availableModules.add(exampleModule);
-		availableModules.add(fileReader);
-		availableModules.add(smbFileReader);
-		availableModules.add(fileWriter);
-		availableModules.add(smbFileWriter);
-		availableModules.add(oanc);
-		availableModules.add(oancParser);
-		availableModules.add(treeBuilder);
-		availableModules.add(atomicRangeSuffixTrieBuilder);
-		availableModules.add(neo4jOutputModule);
-		availableModules.add(suffixNetBuilderModule);
-		availableModules.add(colourGraphModule);
-		availableModules.add(asciiGraphModule);
-		availableModules.add(paradigmenErmittlerModul);
-		availableModules.add(createArtificialSeqs);
-		availableModules.add(seqMemory);
-		availableModules.add(seqTreePropController);
-		availableModules.add(seqSuffixTrie2SuffixTreeController);
-		availableModules.add(seqNewickExproterController);
-		
-		// Sort list
-		availableModules.sort(new ModuleComparator());
+		availableModules.put(consoleWriter.getName(),consoleWriter);
+		availableModules.put(exampleModule.getName(),exampleModule);
+		availableModules.put(fileReader.getName(),fileReader);
+		availableModules.put(smbFileReader.getName(),smbFileReader);
+		availableModules.put(fileWriter.getName(),fileWriter);
+		availableModules.put(smbFileWriter.getName(),smbFileWriter);
+		availableModules.put(oanc.getName(),oanc);
+		availableModules.put(oancParser.getName(),oancParser);
+		availableModules.put(treeBuilder.getName(),treeBuilder);
+		availableModules.put(atomicRangeSuffixTrieBuilder.getName(),atomicRangeSuffixTrieBuilder);
+		availableModules.put(neo4jOutputModule.getName(),neo4jOutputModule);
+		availableModules.put(suffixNetBuilderModule.getName(),suffixNetBuilderModule);
+		availableModules.put(colourGraphModule.getName(),colourGraphModule);
+		availableModules.put(asciiGraphModule.getName(),asciiGraphModule);
+		availableModules.put(paradigmenErmittlerModul.getName(),paradigmenErmittlerModul);
+		availableModules.put(createArtificialSeqs.getName(),createArtificialSeqs);
+		availableModules.put(seqMemory.getName(),seqMemory);
+		availableModules.put(seqTreePropController.getName(),seqTreePropController);
+		availableModules.put(seqSuffixTrie2SuffixTreeController.getName(),seqSuffixTrie2SuffixTreeController);
+		availableModules.put(seqNewickExproterController.getName(),seqNewickExproterController);
 		
 	}
 	
@@ -265,91 +256,50 @@ public class ModuleWorkbenchController implements ListSelectionListener { // TOD
 	public void setModuleNetwork(ModuleNetwork moduleNetwork) {
 		this.moduleNetwork = moduleNetwork;
 	}
-
-	/**
-	 * @return the selectedModulesProperties
-	 */
-	public Map<String, PropertyQuadrupel> getSelectedModulesProperties() {
-		return selectedModulesProperties;
-	}
 	
 	/**
-	 * Returns a new instance of the module currently selected in the available modules list.
-	 * @param moduleNetwork Module tree to set as callback receiver for the new module's instance
+	 * Returns a new instance of the module with the specified name.
 	 * @return new module instance
 	 * @throws Exception
 	 */
-	public Module getNewInstanceOfSelectedModule(ModuleNetwork moduleNetwork) throws Exception{
+	public Module getNewInstanceOfModule(String moduleName) throws Exception{
+		return this.getNewInstanceOfModule(this.availableModules.get(moduleName));
+	}
+	
+	/**
+	 * Returns a new instance of the specified module.
+	 * @return new module instance
+	 * @throws Exception
+	 */
+	public Module getNewInstanceOfModule(Module module) throws Exception{
 		
-		// If no module is selected, throw exception
-		if (this.selectedModule == null)
-			throw new Exception("Excuse me, but no module is selected, therefor I cannot instanciate it as requested.");
+		// If there is no module network, throw an exception
+		if (this.moduleNetwork == null)
+			throw new Exception("There does not seem to be a module network I can bind a new module to.");
 		
-		// New module to create
-		Module newModule;
+		// If specified module is null, throw exception
+		if (module == null || !this.availableModules.containsKey(module.getName()))
+			throw new Exception("I do not know the specified module template.");
 		
-		// Set propertiesErmittlerModul
+		// Template module
+		Module templateModule = this.availableModules.get(module.getName());
+		
+		// Transfer module properties from template to new instance (via new properties instance)
 		Properties properties = new Properties();
-		Iterator<String> propertyKeys = this.selectedModulesProperties.keySet().iterator();
+		Iterator<Object> propertyKeys = templateModule.getProperties().keySet().iterator();
 		while(propertyKeys.hasNext()){
-			String propertyKey = propertyKeys.next();
-			String propertyValue = this.selectedModulesProperties.get(propertyKey).getValue();
+			String propertyKey = propertyKeys.next().toString();
+			Object propertyValue = templateModule.getProperties().get(propertyKey);
 			if (propertyValue != null)
-				properties.setProperty(propertyKey, propertyValue);
+				properties.setProperty(propertyKey, propertyValue.toString());
 		}
 		
-		// Determine the type of the module and instanciate it accordingly
-		// TODO Use JarClassLoader to load module classes at runtime
-		if (this.selectedModule.getClass().equals(ConsoleWriterModule.class)){
-			newModule = new ConsoleWriterModule(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(ExampleModule.class)){
-			newModule = new ExampleModule(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(FileReaderModule.class)){
-			newModule = new FileReaderModule(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(FileWriterModule.class)){
-			newModule = new FileWriterModule(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(OANC.class)){
-			newModule = new OANC(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(OANCXMLParser.class)){
-			newModule = new OANCXMLParser(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(TreeBuilder.class)){
-			newModule = new TreeBuilder(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(AtomicRangeSuffixTrieBuilder.class)){
-			newModule = new AtomicRangeSuffixTrieBuilder(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(Neo4jOutputModule.class)){
-			newModule = new Neo4jOutputModule(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(SuffixNetBuilderModule.class)){
-			newModule = new SuffixNetBuilderModule(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(ColourGraph.class)){
-			newModule = new ColourGraph(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(ASCIIGraph.class)){
-			newModule = new ASCIIGraph(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(SmbFileReaderModule.class)){
-			newModule = new SmbFileReaderModule(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(SmbFileWriterModule.class)){
-			newModule = new SmbFileWriterModule(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(ParadigmenErmittlerModul.class)){
-			newModule = new ParadigmenErmittlerModul(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(CreateArtificialSeqs.class)){
-			newModule = new CreateArtificialSeqs(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(SeqMemory.class)){
-			newModule = new SeqMemory(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(SeqTreePropController.class)){
-			newModule = new SeqTreePropController(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(SeqSuffixTrie2SuffixTreeController.class)){
-			newModule = new SeqSuffixTrie2SuffixTreeController(moduleNetwork, properties);
-		} else if (this.selectedModule.getClass().equals(SeqNewickExproterController.class)){
-			newModule = new SeqNewickExproterController(moduleNetwork, properties);
-		}
-		
-		else {
-			throw new Exception("Selected module is of unknown type.");
-		}
-		
-		return newModule;
+		// Determine the constructor of the module and return a new instance
+		Constructor <? extends Module> moduleConstructor = templateModule.getClass().getConstructor(CallbackReceiver.class, Properties.class);
+		return moduleConstructor.newInstance(this.moduleNetwork, properties);
 	}
 
-	@Override
+	/*@Override
 	public void valueChanged(ListSelectionEvent e) {
 		try {
 			
@@ -386,12 +336,12 @@ public class ModuleWorkbenchController implements ListSelectionListener { // TOD
 			Logger.getLogger(this.getClass().getCanonicalName()).log(
 					Level.WARNING, "Error processing selected element.", ex);
 		}
-	}
+	}*/
 
 	/**
 	 * @return the availableModules
 	 */
-	public List<Module> getAvailableModules() {
+	public Map<String,Module> getAvailableModules() {
 		return availableModules;
 	}
 

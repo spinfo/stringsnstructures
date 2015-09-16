@@ -4,6 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,13 +22,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
-import javax.swing.JTree;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreePath;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import modules.Module;
 import modules.ModuleNetwork;
@@ -37,7 +38,7 @@ import common.parallelization.CallbackReceiverImpl;
  * @author Marcel Boeing
  *
  */
-public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener {
+public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, ListSelectionListener {
 	
 	protected static final String ACTION_STARTNEWMODULETREE = "ACTION_STARTNEWMODULETREE";
 	protected static final String ACTION_ADDMODULETOTREE = "ACTION_ADDMODULETOTREE";
@@ -65,6 +66,10 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	private JFrame frame;
 	private ModuleWorkbenchController controller;
 	private JDesktopPane moduleJDesktopPane;
+	private Map<Module,ModuleInternalFrame> moduleFrameMap;
+	private ToolTipJList<Module> moduleTemplateList; // Module template moduleTemplateList
+	private Module selectedModuleTemplate = null;
+	private ModuleInternalFrame selectedModuleFrame = null;
 
 	/**
 	 * Launch the application.
@@ -74,6 +79,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			public void run() {
 				try {
 					ModuleWorkbenchController controller = new ModuleWorkbenchController();
+					controller.setModuleNetwork(new ModuleNetwork());
 					ModuleWorkbenchGui window = new ModuleWorkbenchGui(controller);
 					controller.getModuleNetwork().addCallbackReceiver(window);
 					window.frame.setIconImage(ICON_APP.getImage());
@@ -92,6 +98,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	 */
 	public ModuleWorkbenchGui(ModuleWorkbenchController controller) {
 		this.controller = controller;
+		this.moduleFrameMap = new HashMap<Module, ModuleInternalFrame>();
 		initialize();
 	}
 
@@ -114,14 +121,14 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		
 		availableModulesPanel.setLayout(new BorderLayout(0, 0));
 		
-		// Initialize available modules list
-		ToolTipJList<Module> list = new ToolTipJList<Module>(this.controller.getAvailableModules().toArray(new Module[this.controller.getAvailableModules().size()]));
-		list.addListSelectionListener(this.controller);
+		// Initialize available modules moduleTemplateList
+		moduleTemplateList = new ToolTipJList<Module>(this.controller.getAvailableModules().values().toArray(new Module[this.controller.getAvailableModules().size()]));
+		moduleTemplateList.addListSelectionListener(this);
 		
-		// Scrollpane for the module list
+		// Scrollpane for the module moduleTemplateList
 		JScrollPane availableModulesScrollPane = new JScrollPane();
-		availableModulesScrollPane.add(list);
-		availableModulesScrollPane.setViewportView(list);
+		availableModulesScrollPane.add(moduleTemplateList);
+		availableModulesScrollPane.setViewportView(moduleTemplateList);
 		
 		availableModulesPanel.add(availableModulesScrollPane);
 		
@@ -253,11 +260,40 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 			this.controller.clearModuleNetwork();
 			
+			Iterator<ModuleInternalFrame> moduleFrames = this.moduleFrameMap.values().iterator();
+			while (moduleFrames.hasNext()){
+				moduleFrames.next().dispose();
+			}
+			this.moduleFrameMap.clear();
+			
 		} else if (e.getActionCommand().equals(ACTION_ADDMODULETOTREE)){
 			
 			try {
-				Module newModule = this.controller.getNewInstanceOfSelectedModule(this.controller.getModuleNetwork());
-				this.controller.getModuleNetwork().addModule(newModule);
+				Module newModule = this.controller.getNewInstanceOfModule(this.selectedModuleTemplate);
+				
+				// Add module to network
+				if (this.controller.getModuleNetwork().addModule(newModule)){
+					
+					// Instantiate module frame
+					ModuleInternalFrame moduleFrame = new ModuleInternalFrame(newModule);
+					
+					// Add frame listener
+					moduleFrame.addInternalFrameListener(this);
+			        
+					// Add to map
+					this.moduleFrameMap.put(newModule,moduleFrame);
+					
+					// Add module frame to workbench gui
+					this.moduleJDesktopPane.add(moduleFrame);
+					moduleFrame.setVisible(true);
+					
+					// Select module frame
+					try {
+						moduleFrame.setSelected(true);
+			        } catch (java.beans.PropertyVetoException e1) {
+			        }
+					
+				}
 				
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
@@ -265,21 +301,15 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 		} else if (e.getActionCommand().equals(ACTION_DELETEMODULEFROMTREE)){
 			
-			try {
-				// Determine node that is currently selected within the module tree
-				Module module = this.controller.getSelectedModule();
-						
-				// Remove module from tree
-				boolean removed = this.controller.getModuleNetwork().removeModule(module);
-				
-				// Log message
-				if (removed)
-					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO, "The selected module has been removed from the network.");
-				else
-					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be removed from the network.");
-				
-			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be removed from the network.", e1);
+			if (this.selectedModuleFrame == null){
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I'm afraid I don't know which module to delete -- there is none selected.");
+			} else {
+				try {
+					this.selectedModuleFrame.setClosed(true);
+				} catch (PropertyVetoException e1) {
+					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Bugger! Could not close the selected module frame.", e1);
+					e1.printStackTrace();
+				}
 			}
 			
 		} else if (e.getActionCommand().equals(ACTION_EDITMODULE)){
@@ -337,11 +367,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				// If the return value indicates approval, load the selected file
 				if (returnVal==JFileChooser.APPROVE_OPTION){
 					ModuleNetwork loadedModuleNetwork = this.controller.loadModuleNetworkFromFile(fileChooser.getSelectedFile());
-					//loadedModuleNetwork.getModuleTreeModel().addTreeModelListener(this);
 					loadedModuleNetwork.addCallbackReceiver(this);
-					//this.moduleJTree.setModel(loadedModuleNetwork.getModuleTreeModel());
-					//this.moduleJTree.revalidate();
-					//this.expandAllNodes(this.moduleJTree);
 					frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
 				}
 				
@@ -373,69 +399,64 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		}
 	}
 	
-	/**
-	 * Expands all nodes on the given JTree
-	 * @param tree
-	 */
-	private void expandAllNodes(JTree tree) {
-		int row = 0;
-		while (row < tree.getRowCount()) {
-			tree.expandRow(row);
-			row++;
+	private void actionDeleteModule(ModuleInternalFrame moduleFrame) {
+		try {
+			if (moduleFrame == null)
+				throw new Exception("No module frame specified.");
+			
+			// Determine the module to delete
+			Module module = moduleFrame.getModule();
+					
+			// Remove module from tree
+			boolean removed = this.controller.getModuleNetwork().removeModule(module);
+			
+			// Log message
+			if (removed)
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO, "The module '"+module.getName()+"' has been removed from the network.");
+			else
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but the selected module could not be removed from the network.");
+			
+		} catch (Exception e1) {
+			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but due to an error the selected module could not be removed from the network.", e1);
 		}
 	}
 
 	@Override
 	public void internalFrameOpened(InternalFrameEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void internalFrameClosing(InternalFrameEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void internalFrameClosed(InternalFrameEvent e) {
-		// TODO Auto-generated method stub
-		
+		this.actionDeleteModule((ModuleInternalFrame) e.getInternalFrame());
 	}
 
 	@Override
 	public void internalFrameIconified(InternalFrameEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void internalFrameDeiconified(InternalFrameEvent e) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void internalFrameActivated(InternalFrameEvent e) {
-		// TODO Auto-generated method stub
-		
+		System.out.println("activated");
+		this.selectedModuleFrame = (ModuleInternalFrame) e.getInternalFrame();
 	}
 
 	@Override
 	public void internalFrameDeactivated(InternalFrameEvent e) {
-		// TODO Auto-generated method stub
-		
+		System.out.println("deactivated");
+		this.selectedModuleFrame = null;
 	}
-	
-	/**
-	 * Collapses all nodes on the given JTree
-	 * @param tree
-	 */
-	/*private void collapseAllNodes(JTree tree) {
-		int row = tree.getRowCount() - 1;
-	    while (row >= 0) {
-	      tree.collapseRow(row);
-	      row--;
-	    }
-	}*/
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		this.selectedModuleTemplate = ((ToolTipJList<Module>)e.getSource()).getSelectedValue();
+	}
 }
