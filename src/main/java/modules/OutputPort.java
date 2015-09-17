@@ -10,13 +10,13 @@ import java.util.Map;
 public class OutputPort extends AbstractPort {
 	
 	// Maps a list of pipes to each of the supported pipe classes 
-	private Map<Class<?>, List<Pipe>> pipes;
+	private Map<Class<? extends Pipe>, List<Pipe>> pipes;
 	private Map<Pipe, Port> connectedPorts;
 	
 	
 	public OutputPort(String name, String description, Module parent) {
 		super(name, description, parent);
-		this.pipes = new HashMap<Class<?>, List<Pipe>>();
+		this.pipes = new HashMap<Class<? extends Pipe>, List<Pipe>>();
 		this.connectedPorts = new HashMap<Pipe, Port>();
 	}
 
@@ -25,7 +25,7 @@ public class OutputPort extends AbstractPort {
 	 * @see modules.AbstractPort#addSupportedPipe(java.lang.Class)
 	 */
 	@Override
-	public void addSupportedPipe(Class<?> pipeClass) {
+	public void addSupportedPipe(Class<? extends Pipe> pipeClass) {
 		if (!super.supportsPipeClass(pipeClass)){
 			super.addSupportedPipe(pipeClass);
 			this.pipes.put(pipeClass, new ArrayList<Pipe>());
@@ -48,7 +48,7 @@ public class OutputPort extends AbstractPort {
 	 * Returns a map containing lists of pipe instances for each supported class of pipe.
 	 * @return the pipes
 	 */
-	public Map<Class<?>, List<Pipe>> getPipes() {
+	public Map<Class<? extends Pipe>, List<Pipe>> getPipes() {
 		return pipes;
 	}
 	
@@ -57,7 +57,7 @@ public class OutputPort extends AbstractPort {
 	 * @param pipeClass
 	 * @return List of pipes
 	 */
-	public List<Pipe> getPipes(Class<?> pipeClass) {
+	public List<Pipe> getPipes(Class<? extends Pipe> pipeClass) {
 		return pipes.get(pipeClass);
 	}
 	

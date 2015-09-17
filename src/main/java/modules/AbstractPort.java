@@ -6,7 +6,7 @@ import java.util.Map;
 
 public abstract class AbstractPort implements Port {
 	
-	private Map<String, Class<?>> supportedPipes = new HashMap<String, Class<?>>();
+	private Map<String, Class<? extends Pipe>> supportedPipes = new HashMap<String, Class<? extends Pipe>>();
 	private String name;
 	private String description;
 	private Module parent;
@@ -62,7 +62,7 @@ public abstract class AbstractPort implements Port {
 	 * @see modules.Port#supportsPipeClass(Class<Pipe> pipeClass)
 	 */
 	@Override
-	public boolean supportsPipeClass(Class<?> pipeClass) {
+	public boolean supportsPipeClass(Class<? extends Pipe> pipeClass) {
 		return this.supportedPipes.containsKey(pipeClass.getCanonicalName());
 	}
 
@@ -70,7 +70,7 @@ public abstract class AbstractPort implements Port {
 	 * @see modules.Port#getSupportedPipeClasses()
 	 */
 	@Override
-	public Map<String, Class<?>> getSupportedPipeClasses() {
+	public Map<String, Class<? extends Pipe>> getSupportedPipeClasses() {
 		return this.supportedPipes;
 	}
 
@@ -78,7 +78,7 @@ public abstract class AbstractPort implements Port {
 	 * Adds a class of pipe to the list of the ones supported.
 	 * @param pipeClass
 	 */
-	public void addSupportedPipe(Class<?> pipeClass) {
+	public void addSupportedPipe(Class<? extends Pipe> pipeClass) {
 		this.supportedPipes.put(pipeClass.getCanonicalName(),pipeClass);
 	}
 

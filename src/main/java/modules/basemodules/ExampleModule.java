@@ -17,6 +17,7 @@ public class ExampleModule extends ModuleImpl {
 	// Module variables
 	private final String INPUTID = "input";
 	private final String OUTPUTID = "output";
+	private final String CAPSOUTPUTID = "output-caps";
 	private String regex;
 	private String replacement;
 
@@ -38,8 +39,11 @@ public class ExampleModule extends ModuleImpl {
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort("Output", "Plain text character output.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
+		OutputPort capsOutputPort = new OutputPort("Uppercase", "Plain text character output (all uppercase).", this);
+		capsOutputPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(INPUTID,inputPort);
 		super.addOutputPort(OUTPUTID,outputPort);
+		super.addOutputPort(CAPSOUTPUTID,capsOutputPort);
 		
 	}
 
@@ -70,6 +74,7 @@ public class ExampleModule extends ModuleImpl {
 			
 			// Write to outputs
 			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(outputChunk);
+			this.getOutputPorts().get(CAPSOUTPUTID).outputToAllCharPipes(outputChunk.toUpperCase());
 			
 			// Read next chunk of data
 			readChars = this.getInputPorts().get(INPUTID).read(buffer, 0, bufferSize);

@@ -1,12 +1,15 @@
 package base.workbench;
 
 import java.awt.BorderLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.TransferHandler;
 
 import modules.InputPort;
 import modules.Module;
@@ -45,53 +48,69 @@ public class ModuleInternalFrame extends JInternalFrame {
         //Set the window's location.
         setLocation(xOffset*openFrameCount, yOffset*openFrameCount);
         
-        // Add I/O port labels
+        // Set layout and create different subpanels
         this.getContentPane().setLayout(new BorderLayout());
+        JPanel inputPortPanel = new JPanel();
+        JPanel outputPortPanel = new JPanel();
+        inputPortPanel.setLayout(new BoxLayout(inputPortPanel,BoxLayout.PAGE_AXIS));
+        outputPortPanel.setLayout(new BoxLayout(outputPortPanel,BoxLayout.PAGE_AXIS));
+        this.getContentPane().add(inputPortPanel, BorderLayout.WEST);
+        this.getContentPane().add(outputPortPanel, BorderLayout.EAST);
+        
+        
+        // Create transfer handler
+        ModulePortLabelTransferhandler transferhanlder = new ModulePortLabelTransferhandler();
+        
+        // Create mouse adapter
+		MouseAdapter mouseAdapter = new MouseAdapter() {
+			public void mousePressed(MouseEvent evt) {
+				System.out.println("pressed:"+evt.getSource().getClass().getSimpleName());
+				JComponent comp = (JComponent) evt.getSource();
+				TransferHandler th = comp.getTransferHandler();
+
+				th.exportAsDrag(comp, evt, TransferHandler.LINK);
+			}
+
+			/* (non-Javadoc)
+			 * @see java.awt.event.MouseAdapter#mouseReleased(java.awt.event.MouseEvent)
+			 */
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				System.out.println("released:"+e.getSource().getClass().getSimpleName());
+				//((AbstractModulePortLabel)e.getSource()).getTransferHandler().exportAsDrag((AbstractModulePortLabel)e.getSource(), e, TransferHandler.LINK);
+				super.mouseReleased(e);
+			}
+
+			/* (non-Javadoc)
+			 * @see java.awt.event.MouseAdapter#mouseDragged(java.awt.event.MouseEvent)
+			 */
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				System.out.println("dragged:"+e.getSource().getClass().getSimpleName());
+				// TODO Auto-generated method stub
+				super.mouseDragged(e);
+			}
+		};
+        
+        // Add I/O port labels
         
         // Loop over input ports
         Iterator<InputPort> inputPorts = module.getInputPorts().values().iterator();
-        /*while (inputPorts.hasNext()){
+        while (inputPorts.hasNext()){
         	InputPort inputPort = inputPorts.next();
-        	this.getContentPane().add(new JLabel(s, JLabel.LEFT), BorderLayout.WEST);
-        }*/
+        	ModuleInputPortLabel inputPortLabel = new ModuleInputPortLabel(inputPort);
+        	inputPortLabel.setTransferHandler(transferhanlder);
+        	inputPortLabel.addMouseListener(mouseAdapter);
+        	inputPortPanel.add(inputPortLabel);
+        }
         
         Iterator<OutputPort> outputPorts = module.getOutputPorts().values().iterator();
-        InputPort inputPort = null;
-        OutputPort outputPort = null;
-        try {
-            inputPort = inputPorts.next();
-        } catch (NoSuchElementException e){
-        }
-        try {
-        	outputPort = outputPorts.next();
-        } catch (NoSuchElementException e){
-        }
-        while (inputPort != null || outputPort != null){
-        	JLabel inputLabel;
-        	if (inputPort == null)
-        		inputLabel = new JLabel();
-        	else
-        		inputLabel = new ModuleInputPortLabel(inputPort);
-        	
-        	JLabel outputLabel;
-        	if (outputPort == null)
-        		outputLabel = new JLabel();
-        	else
-        		outputLabel = new ModuleOutputPortLabel(outputPort);
-        	
-        	this.getContentPane().add(inputLabel);
-        	this.getContentPane().add(outputLabel);
-        	
-        	try {
-                inputPort = inputPorts.next();
-            } catch (NoSuchElementException e){
-            	inputPort = null;
-            }
-            try {
-            	outputPort = outputPorts.next();
-            } catch (NoSuchElementException e){
-            	outputPort = null;
-            }
+        while (outputPorts.hasNext()){
+        	OutputPort outputPort = outputPorts.next();
+        	ModuleOutputPortLabel outputPortLabel = new ModuleOutputPortLabel(outputPort);
+        	outputPortLabel.setTransferHandler(transferhanlder);
+        	outputPortLabel.addMouseListener(mouseAdapter);
+        	outputPortPanel.add(outputPortLabel);
         }
     }
 
