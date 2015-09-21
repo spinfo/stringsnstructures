@@ -2,10 +2,8 @@ package modules;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -18,7 +16,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-
 import common.parallelization.CallbackReceiver;
 
 public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwork> {
@@ -34,7 +31,6 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 		Gson gson = new Gson();
 		
 		// Get the serializable object from the JSON input
-		@SuppressWarnings("unchecked")
 		SerializableModule[] serializableModuleList = gson.fromJson(json, new SerializableModule[0].getClass());
 		
 		// Keep track of the modules and ports

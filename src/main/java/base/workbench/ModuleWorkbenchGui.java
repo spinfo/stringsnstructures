@@ -269,15 +269,10 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals(ACTION_ACTIVATEPORT)){
 			
-			// DEBUG
-			System.out.println("activated port");
-			
 			// User clicked on a port button -- either to start a linking or to finish it.
 			
 			// Determine whether there is port label active (respectively a linking started)
 			if (this.activeModulePortButton != null){
-
-				System.out.println("receiving port is present");
 				
 				// Another label is already active -- make connection (if possible)
 				AbstractModulePortButton sourceButton = (AbstractModulePortButton) e.getSource();
@@ -303,8 +298,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 					this.moduleConnectionGlasspane.link(inputButton, outputButton);
 					// Reset the reference to the active port button
 					this.activeModulePortButton = null;
-					// Stop rendering the linking
-					// TODO this.linkingGlasspane.stopRendering();
+					// TODO button gfx etc.
 				} catch (NotSupportedException | OccupiedException
 						| ClassCastException | IOException e1 ) {
 					Logger.getLogger(this.getClass().getCanonicalName()).log(
@@ -316,12 +310,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				
 				
 			} else {
-
-				System.out.println("activated port is not present");
 				// No active port label present -- start new linking activity
 				this.activeModulePortButton = (AbstractModulePortButton) e.getSource();
-				// Start rendering the linking
-				// TODO this.linkingGlasspane.startRendering();
+				// TODO button gfx etc.
 			}
 			
 			
@@ -386,7 +377,6 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 			try {
 				this.controller.getModuleNetwork().runModules();
-				//this.moduleJTree.revalidate();
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to run the modules.", e1);
 			}
@@ -395,7 +385,6 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 			try {
 				this.controller.getModuleNetwork().stopModules();
-				//this.moduleJTree.revalidate();
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to stop the modules.", e1);
 			}
