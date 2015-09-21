@@ -50,12 +50,12 @@ public class ASCIIGraph extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded suffix trie.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort("Output", "ASCII visualization.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "ASCII visualization.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(INPUTID,inputPort);
-		super.addOutputPort(OUTPUTID,outputPort);
+		super.addInputPort(inputPort);
+		super.addOutputPort(outputPort);
 
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_USEPARENTSYMBOL,

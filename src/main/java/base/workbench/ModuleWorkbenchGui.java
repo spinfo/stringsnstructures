@@ -5,6 +5,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,7 +30,8 @@ import javax.swing.event.ListSelectionListener;
 
 import modules.Module;
 import modules.ModuleNetwork;
-
+import modules.NotSupportedException;
+import modules.OccupiedException;
 import common.PrettyLogRecord;
 import common.parallelization.CallbackReceiverImpl;
 
@@ -48,6 +50,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	protected static final String ACTION_EDITMODULE = "ACTION_EDITMODULE";
 	protected static final String ACTION_LOADTREE = "ACTION_LOADTREE";
 	protected static final String ACTION_SAVETREE = "ACTION_SAVETREE";
+	protected static final String ACTION_ACTIVATEPORT = "ACTION_ACTIVATEPORT";
 
 	// Icons
 	public static final ImageIcon ICON_APP = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/app.png"));
@@ -70,6 +73,8 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	private ToolTipJList<Module> moduleTemplateList; // Module template moduleTemplateList
 	private Module selectedModuleTemplate = null;
 	private ModuleInternalFrame selectedModuleFrame = null;
+	private AbstractModulePortButton activeModulePortButton = null;
+	private ModuleNetworkGlasspane moduleConnectionGlasspane;
 
 	/**
 	 * Launch the application.
@@ -138,8 +143,13 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		
 		// Module desktop pane
 		this.moduleJDesktopPane = new JDesktopPane();
-		
+		this.moduleJDesktopPane.setDesktopManager(new ModuleDesktopManager());
 		moduleTreePanel.add(this.moduleJDesktopPane);
+		
+		// Add glasspane (for drawing the port connections onto)
+		this.moduleConnectionGlasspane = new ModuleNetworkGlasspane(this.moduleJDesktopPane);
+		frame.setGlassPane(this.moduleConnectionGlasspane);
+		this.moduleConnectionGlasspane.setVisible(true);
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.setOrientation(JToolBar.VERTICAL);
@@ -257,7 +267,65 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getActionCommand().equals(ACTION_STARTNEWMODULETREE)){
+		if (e.getActionCommand().equals(ACTION_ACTIVATEPORT)){
+			
+			// DEBUG
+			System.out.println("activated port");
+			
+			// User clicked on a port button -- either to start a linking or to finish it.
+			
+			// Determine whether there is port label active (respectively a linking started)
+			if (this.activeModulePortButton != null){
+
+				System.out.println("receiving port is present");
+				
+				// Another label is already active -- make connection (if possible)
+				AbstractModulePortButton sourceButton = (AbstractModulePortButton) e.getSource();
+				
+				// Determine which is the input and which the output port button
+				try {
+					ModuleInputPortButton inputButton = null;
+					ModuleOutputPortButton outputButton = null;
+					if (ModuleInputPortButton.class
+							.isAssignableFrom(sourceButton.getClass())) {
+						inputButton = (ModuleInputPortButton) sourceButton;
+						outputButton = (ModuleOutputPortButton) this.activeModulePortButton;
+					} else {
+						outputButton = (ModuleOutputPortButton) sourceButton;
+						inputButton = (ModuleInputPortButton) this.activeModulePortButton;
+					}
+
+					// Connect the ports to each other
+					this.controller.getModuleNetwork().addConnection(
+							this.activeModulePortButton.getPort(),
+							sourceButton.getPort());
+					// Draw connection line on glasspane
+					this.moduleConnectionGlasspane.link(inputButton, outputButton);
+					// Reset the reference to the active port button
+					this.activeModulePortButton = null;
+					// Stop rendering the linking
+					// TODO this.linkingGlasspane.stopRendering();
+				} catch (NotSupportedException | OccupiedException
+						| ClassCastException | IOException e1 ) {
+					Logger.getLogger(this.getClass().getCanonicalName()).log(
+							Level.WARNING,
+							"Sorry, but I cannot connect those ports: "
+									+ e1.getMessage());
+					e1.printStackTrace();
+				}
+				
+				
+			} else {
+
+				System.out.println("activated port is not present");
+				// No active port label present -- start new linking activity
+				this.activeModulePortButton = (AbstractModulePortButton) e.getSource();
+				// Start rendering the linking
+				// TODO this.linkingGlasspane.startRendering();
+			}
+			
+			
+		} else if (e.getActionCommand().equals(ACTION_STARTNEWMODULETREE)){
 			
 			this.controller.clearModuleNetwork();
 
@@ -385,7 +453,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			if (this.controller.getModuleNetwork().addModule(newModule)){
 				
 				// Instantiate module frame
-				ModuleInternalFrame moduleFrame = new ModuleInternalFrame(newModule);
+				ModuleInternalFrame moduleFrame = new ModuleInternalFrame(newModule, this);
 				
 				// Add frame listener
 				moduleFrame.addInternalFrameListener(this);

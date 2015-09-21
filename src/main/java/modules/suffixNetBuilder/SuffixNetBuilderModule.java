@@ -49,12 +49,12 @@ public class SuffixNetBuilderModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "JSON-encoded OANC-data, with the parsed contents of one source file per line.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded OANC-data, with the parsed contents of one source file per line.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort("Output", "Suffix net in binary object form.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "Suffix net in binary object form.", this);
 		outputPort.addSupportedPipe(BytePipe.class);
-		super.addInputPort(INPUTID,inputPort);
-		super.addOutputPort(OUTPUTID,outputPort);
+		super.addInputPort(inputPort);
+		super.addOutputPort(outputPort);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_NEO4JURI, "URI of the Neo4j DB.");

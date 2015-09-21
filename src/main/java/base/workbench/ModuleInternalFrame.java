@@ -1,15 +1,12 @@
 package base.workbench;
 
 import java.awt.BorderLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionListener;
 import java.util.Iterator;
 
 import javax.swing.BoxLayout;
-import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
-import javax.swing.TransferHandler;
 
 import modules.InputPort;
 import modules.Module;
@@ -25,8 +22,9 @@ public class ModuleInternalFrame extends JInternalFrame {
     private static final int ROWSIZE=20; 
     
     private Module module;
+    private ActionListener actionListener;
 
-    public ModuleInternalFrame(Module module) {
+    public ModuleInternalFrame(Module module, ActionListener actionListener) {
         super("Document #" + (++openFrameCount), 
               true, //resizable
               true, //closable
@@ -34,6 +32,7 @@ public class ModuleInternalFrame extends JInternalFrame {
               false);//iconifiable
 
         this.module = module;
+        this.actionListener = actionListener;
         
         this.setTitle(module.getName());
         
@@ -57,60 +56,25 @@ public class ModuleInternalFrame extends JInternalFrame {
         this.getContentPane().add(inputPortPanel, BorderLayout.WEST);
         this.getContentPane().add(outputPortPanel, BorderLayout.EAST);
         
-        
-        // Create transfer handler
-        ModulePortLabelTransferhandler transferhanlder = new ModulePortLabelTransferhandler();
-        
-        // Create mouse adapter
-		MouseAdapter mouseAdapter = new MouseAdapter() {
-			public void mousePressed(MouseEvent evt) {
-				System.out.println("pressed:"+evt.getSource().getClass().getSimpleName());
-				JComponent comp = (JComponent) evt.getSource();
-				TransferHandler th = comp.getTransferHandler();
-
-				th.exportAsDrag(comp, evt, TransferHandler.LINK);
-			}
-
-			/* (non-Javadoc)
-			 * @see java.awt.event.MouseAdapter#mouseReleased(java.awt.event.MouseEvent)
-			 */
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				System.out.println("released:"+e.getSource().getClass().getSimpleName());
-				//((AbstractModulePortLabel)e.getSource()).getTransferHandler().exportAsDrag((AbstractModulePortLabel)e.getSource(), e, TransferHandler.LINK);
-				super.mouseReleased(e);
-			}
-
-			/* (non-Javadoc)
-			 * @see java.awt.event.MouseAdapter#mouseDragged(java.awt.event.MouseEvent)
-			 */
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				System.out.println("dragged:"+e.getSource().getClass().getSimpleName());
-				// TODO Auto-generated method stub
-				super.mouseDragged(e);
-			}
-		};
-        
         // Add I/O port labels
         
         // Loop over input ports
         Iterator<InputPort> inputPorts = module.getInputPorts().values().iterator();
         while (inputPorts.hasNext()){
         	InputPort inputPort = inputPorts.next();
-        	ModuleInputPortLabel inputPortLabel = new ModuleInputPortLabel(inputPort);
-        	inputPortLabel.setTransferHandler(transferhanlder);
-        	inputPortLabel.addMouseListener(mouseAdapter);
-        	inputPortPanel.add(inputPortLabel);
+        	ModuleInputPortButton inputPortButton = new ModuleInputPortButton(inputPort);
+        	inputPortButton.setActionCommand(ModuleWorkbenchGui.ACTION_ACTIVATEPORT);
+        	inputPortButton.addActionListener(this.actionListener);
+        	inputPortPanel.add(inputPortButton);
         }
         
         Iterator<OutputPort> outputPorts = module.getOutputPorts().values().iterator();
         while (outputPorts.hasNext()){
         	OutputPort outputPort = outputPorts.next();
-        	ModuleOutputPortLabel outputPortLabel = new ModuleOutputPortLabel(outputPort);
-        	outputPortLabel.setTransferHandler(transferhanlder);
-        	outputPortLabel.addMouseListener(mouseAdapter);
-        	outputPortPanel.add(outputPortLabel);
+        	ModuleOutputPortButton outputPortButton = new ModuleOutputPortButton(outputPort);
+        	outputPortButton.setActionCommand(ModuleWorkbenchGui.ACTION_ACTIVATEPORT);
+        	outputPortButton.addActionListener(this.actionListener);
+        	outputPortPanel.add(outputPortButton);
         }
     }
 

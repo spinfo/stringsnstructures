@@ -39,9 +39,9 @@ public class CreateArtificialSeqs extends modules.ModuleImpl {
 				"1024");
 		
 		// Define I/O
-		OutputPort outputPort = new OutputPort("Output", "Generated sequences.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "Generated sequences.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		super.addOutputPort(OUTPUTID,outputPort);
+		super.addOutputPort(outputPort);
 		
 		// Add module description
 		this.setDescription("Creates a randomly composed DNA sequences of defined length.");	

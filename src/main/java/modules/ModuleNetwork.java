@@ -30,23 +30,23 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * Determines which pipe to use between both given module ports (prefers
 	 * byte pipe).
 	 * 
-	 * @param outputProviderPort
-	 *            Module port that provides the output
-	 * @param inputReceiverPort
-	 *            Module port that receives the input
+	 * @param port1
+	 *            Module port 1
+	 * @param port2
+	 *            Module port 2
 	 * @return Compatible pipe
 	 * @throws IOException
 	 *             Thrown if an I/O error occurs
 	 * @throws NotSupportedException
 	 *             Thrown if the module ports' I/O is not compatible
 	 */
-	public static Pipe getCompatiblePipe(OutputPort outputProviderPort,
-			InputPort inputReceiverPort) throws NotSupportedException, IOException {
+	public static Pipe getCompatiblePipe(Port port1,
+			Port port2) throws NotSupportedException, IOException {
 		Pipe pipe = new BytePipe();
-		if (!(inputReceiverPort.supportsPipe(pipe) && outputProviderPort
+		if (!(port2.supportsPipe(pipe) && port1
 				.supportsPipe(pipe))) {
 			pipe = new CharPipe();
-			if (!(inputReceiverPort.supportsPipe(pipe) && outputProviderPort
+			if (!(port2.supportsPipe(pipe) && port1
 					.supportsPipe(pipe))) {
 				throw new NotSupportedException (
 						"The I/O of those two module ports does not seem to be compatible.");
@@ -61,19 +61,6 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	public ModuleNetwork() {
 		super();
 		this.moduleList = new ArrayList<Module>();
-	}
-	
-	/**
-	 * Connects two ports.
-	 * @param outputPort
-	 * @param inputPort
-	 * @param pipe
-	 * @throws NotSupportedException
-	 * @throws OccupiedException
-	 */
-	public static void connectPorts(OutputPort outputPort, InputPort inputPort, Pipe pipe) throws NotSupportedException, OccupiedException {
-		outputPort.addPipe(pipe, inputPort);
-		inputPort.addPipe(pipe, outputPort);
 	}
 
 	/**
@@ -140,26 +127,26 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	/**
 	 * Adds a connection between two I/O ports using a compatible pipe.
 	 * 
-	 * @param outputPort
-	 *            Outputport to connect
-	 * @param inputPort
-	 *            Inputport to connect
+	 * @param port1
+	 *            Port 1 to connect
+	 * @param port2
+	 *            Port 2 to connect
 	 * @return True if successful
 	 * @throws NotSupportedException
-	 *             Thrown if the pipe is not compatible with both ports
+	 *             Thrown if there is no pipe that is compatible with both ports
 	 * @throws OccupiedException
 	 *             Thrown if the input port is occupied
 	 * @throws IOException
 	 *             Thrown if an I/O error occurs
 	 */
-	public boolean addConnection(OutputPort outputPort, InputPort inputPort)
+	public boolean addConnection(Port port1, Port port2)
 			throws NotSupportedException, OccupiedException, IOException {
 
 		// Determine pipe that connects both modules
-		Pipe pipe = ModuleNetwork.getCompatiblePipe(outputPort, inputPort);
+		Pipe pipe = ModuleNetwork.getCompatiblePipe(port1, port2);
 
 		// Jump to more detailed method
-		return this.addConnection(outputPort, inputPort, pipe);
+		return this.addConnection(port1, port2, pipe);
 	}
 
 	/**
@@ -177,7 +164,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * @throws OccupiedException
 	 *             Thrown if the input port is occupied
 	 */
-	public boolean addConnection(OutputPort outputPort, InputPort inputPort, Pipe pipe)
+	public boolean addConnection(Port outputPort, Port inputPort, Pipe pipe)
 			throws NotSupportedException, OccupiedException {
 
 		// Make sure the I/O pipe is compatible to both ports
@@ -194,19 +181,25 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	}
 
 	/**
-	 * Removes the specified connection.
+	 * Removes the connection associated to the specified input port.
 	 * 
-	 * @param outputPort Output port
 	 * @param inputPort Input port
 	 * @return True if successful
 	 * @throws NotFoundException
-	 *             Thrown if there is no connecting pipe between the ports
+	 *             Thrown if there is no pipe associated to the specified input port
 	 */
-	public boolean removeConnection(OutputPort outputPort, InputPort inputPort) throws NotFoundException {
+	public boolean removeConnection(InputPort inputPort) throws NotFoundException {
 
+		// See whether the input variables are present
+		if (inputPort == null || inputPort.getConnectedPort() == null || inputPort.getPipe() == null)
+			throw new NotFoundException("That input port does not have a connection associated to it.");
+		
+		// Determine pipe to remove
+		Pipe pipe = inputPort.getPipe();
+		
 		// Remove pipe from both output and input port
-		outputPort.removePipe(inputPort.getPipe());
-		inputPort.removePipe(inputPort.getPipe());
+		inputPort.getConnectedPort().removePipe(pipe);
+		inputPort.removePipe(pipe);
 
 		// Exit with success
 		return true;

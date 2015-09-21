@@ -33,9 +33,9 @@ public class OANC extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Define I/O
-		OutputPort outputPort = new OutputPort("Output", "JSON-encoded list of source file locations.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "JSON-encoded list of source file locations.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		super.addOutputPort(OUTPUTID,outputPort);
+		super.addOutputPort(outputPort);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_OANCLOCATION, "The directory containing OANC-Files (subdirectories are used, too)");

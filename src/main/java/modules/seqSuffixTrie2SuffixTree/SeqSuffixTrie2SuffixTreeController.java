@@ -59,12 +59,12 @@ public class SeqSuffixTrie2SuffixTreeController extends ModuleImpl {
 			/*no further property keys! the output is always JSON!*/
 				
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded suffix trie.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort("Output", "JSON-encoded suffix tree.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "JSON-encoded suffix tree.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(INPUTID,inputPort);
-		super.addOutputPort(OUTPUTID,outputPort);
+		super.addInputPort(inputPort);
+		super.addOutputPort(outputPort);
 		
 	}
 	//end constructors

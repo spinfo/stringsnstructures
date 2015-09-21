@@ -73,12 +73,12 @@ public class OANCXMLParser extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "JSON-encoded list of source file locations.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded list of source file locations.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort("Output", "Character output based on settings.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "Character output based on settings.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(INPUTID,inputPort);
-		super.addOutputPort(OUTPUTID,outputPort);
+		super.addInputPort(inputPort);
+		super.addOutputPort(outputPort);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_ADDSTARTSYMBOL, "Set to 'true' if '"+STARTSYMBOL+"' should be added as start symbol to each sentence");

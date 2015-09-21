@@ -33,9 +33,9 @@ public class Neo4jOutputModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie character input.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded suffix trie character input.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(INPUTID,inputPort);
+		super.addInputPort(inputPort);
 		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_NEO4JURI, "URI of the Neo4j DB.");

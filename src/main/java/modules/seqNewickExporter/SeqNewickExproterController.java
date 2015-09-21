@@ -59,12 +59,12 @@ public class SeqNewickExproterController extends ModuleImpl {
 		this.newickOutput = new String();
 		
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded suffix trie.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort("Output", "Newick-encoded suffix trie.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "Newick-encoded suffix trie.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(INPUTID,inputPort);
-		super.addOutputPort(OUTPUTID,outputPort);
+		super.addInputPort(inputPort);
+		super.addOutputPort(outputPort);
 		
 	}
 	//end constructors

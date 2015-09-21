@@ -42,16 +42,16 @@ public abstract class ModuleImpl implements Module {
 	 * Adds the specified input port.
 	 * @param port
 	 */
-	public void addInputPort(String identifier, InputPort port){
-		this.inputPorts.put(identifier, port);
+	public void addInputPort(InputPort port){
+		this.inputPorts.put(port.getName(), port);
 	}
 	
 	/**
 	 * Adds the specified output port.
 	 * @param port
 	 */
-	public void addOutputPort(String identifier, OutputPort port){
-		this.outputPorts.put(identifier, port);
+	public void addOutputPort(OutputPort port){
+		this.outputPorts.put(port.getName(), port);
 	}
 
 	@Override

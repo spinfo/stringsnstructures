@@ -63,11 +63,11 @@ public class FileWriterModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "8192");
 
 		// Define I/O
-		InputPort inputPort = new InputPort("Input",
+		InputPort inputPort = new InputPort(INPUTID,
 				"Byte or character input.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		inputPort.addSupportedPipe(BytePipe.class);
-		super.addInputPort(INPUTID, inputPort);
+		super.addInputPort(inputPort);
 
 		// Add module description
 		this.setDescription("Writes received input to a file. Can apply GZIP compression.");

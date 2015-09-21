@@ -40,10 +40,10 @@ public class FileReaderModule extends ModuleImpl {
 		String homedir = System.getProperty("user.home");
 
 		// set I/O -- no inputs allowed here (we'll read the file)
-		OutputPort outputPort = new OutputPort("Output", "Byte or character output.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "Byte or character output.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 		outputPort.addSupportedPipe(BytePipe.class);
-		super.addOutputPort(OUTPUTID,outputPort);
+		super.addOutputPort(outputPort);
 
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTFILE,

@@ -103,7 +103,7 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 			Port inputPort = inputPortIdMap.get(inputPortId);
 			
 			// Determine the output port it is connected to
-			Integer outputPortId = portConnectionMap.get(inputPort);
+			Integer outputPortId = portConnectionMap.get(inputPortId);
 			Port outputPort = outputPortIdMap.get(outputPortId);
 			
 			// Next up there are some exceptions we need to handle locally (on

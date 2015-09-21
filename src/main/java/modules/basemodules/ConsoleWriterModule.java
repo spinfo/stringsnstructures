@@ -27,11 +27,11 @@ public class ConsoleWriterModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O Ports
-		InputPort inputPort = new InputPort("Input",
+		InputPort inputPort = new InputPort(INPUTID,
 				"Accepts byte stream and character input.", this);
 		inputPort.addSupportedPipe(BytePipe.class);
 		inputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(INPUTID, inputPort);
+		super.addInputPort(inputPort);
 
 		// Add default values
 		super.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,

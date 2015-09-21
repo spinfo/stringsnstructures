@@ -98,12 +98,12 @@ public class SeqTreePropController extends ModuleImpl {
 		this.seqPropertiesOutput = new String();
 		
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "TODO.", this);
+		InputPort inputPort = new InputPort(INPUTID, "TODO.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort("Output", "TODO.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "TODO.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(INPUTID,inputPort);
-		super.addOutputPort(OUTPUTID,outputPort);
+		super.addInputPort(inputPort);
+		super.addOutputPort(outputPort);
 		
 	}
 	//end constructors

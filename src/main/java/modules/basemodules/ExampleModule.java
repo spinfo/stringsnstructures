@@ -35,15 +35,15 @@ public class ExampleModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_REPLACEMENT, "o");
 		
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "Plain text character input.", this);
+		InputPort inputPort = new InputPort(INPUTID, "Plain text character input.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort("Output", "Plain text character output.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "Plain text character output.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		OutputPort capsOutputPort = new OutputPort("Uppercase", "Plain text character output (all uppercase).", this);
+		OutputPort capsOutputPort = new OutputPort(CAPSOUTPUTID, "Plain text character output (all uppercase).", this);
 		capsOutputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(INPUTID,inputPort);
-		super.addOutputPort(OUTPUTID,outputPort);
-		super.addOutputPort(CAPSOUTPUTID,capsOutputPort);
+		super.addInputPort(inputPort);
+		super.addOutputPort(outputPort);
+		super.addOutputPort(capsOutputPort);
 		
 	}
 

@@ -77,10 +77,10 @@ public class SmbFileWriterModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_SMBDOMAIN, "WORKGROUP");
 
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "Byte or character input.", this);
+		InputPort inputPort = new InputPort(INPUTID, "Byte or character input.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		inputPort.addSupportedPipe(BytePipe.class);
-		super.addInputPort(INPUTID,inputPort);
+		super.addInputPort(inputPort);
 
 		// Add module description
 		this.setDescription("Writes received input to a SMB/CIFS share. Can apply GZIP compression.");

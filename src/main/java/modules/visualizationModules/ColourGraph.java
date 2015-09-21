@@ -73,9 +73,9 @@ public class ColourGraph extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O
-		InputPort inputPort = new InputPort("Input", "JSON-encoded suffix trie.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded suffix trie.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(INPUTID,inputPort);
+		super.addInputPort(inputPort);
 
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTFILE,
