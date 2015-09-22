@@ -8,6 +8,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.JComponent;
@@ -37,9 +38,22 @@ public class ModuleNetworkGlasspane extends JComponent {
         desktopPane.repaint();
     }
 
-    public void unlink ( ModuleInputPortButton inputButton)
+    public void unlink ( ModuleInputPortButton inputButton )
     {
         linked.remove(inputButton);
+        repaint ();
+        desktopPane.repaint();
+    }
+
+    public void unlink ( ModuleOutputPortButton outputButton )
+    {
+        Iterator<ModuleInputPortButton> keys = this.linked.keySet().iterator();
+        while (keys.hasNext()){
+        	ModuleInputPortButton key = keys.next();
+        	if (this.linked.get(key).equals(outputButton)){
+        		this.linked.remove(key);
+        	}
+        }
         repaint ();
         desktopPane.repaint();
     }

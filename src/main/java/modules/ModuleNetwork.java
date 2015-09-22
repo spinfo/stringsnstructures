@@ -396,7 +396,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * @param module
 	 * @return True if successful
 	 */
-	public boolean removeModule(Module module){
+	public synchronized boolean removeModule(Module module){
 		
 		// Iterate over input ports
 		Iterator<InputPort> inputPorts = module.getInputPorts().values().iterator();

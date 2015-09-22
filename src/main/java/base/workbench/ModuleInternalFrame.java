@@ -2,7 +2,9 @@ package base.workbench;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JInternalFrame;
@@ -23,6 +25,8 @@ public class ModuleInternalFrame extends JInternalFrame {
     
     private Module module;
     private ActionListener actionListener;
+    private List<ModuleInputPortButton> inputButtons = new ArrayList<ModuleInputPortButton>();
+    private List<ModuleOutputPortButton> outputButtons = new ArrayList<ModuleOutputPortButton>();
 
     public ModuleInternalFrame(Module module, ActionListener actionListener) {
         super("Document #" + (++openFrameCount), 
@@ -66,6 +70,7 @@ public class ModuleInternalFrame extends JInternalFrame {
         	inputPortButton.setActionCommand(ModuleWorkbenchGui.ACTION_ACTIVATEPORT);
         	inputPortButton.addActionListener(this.actionListener);
         	inputPortPanel.add(inputPortButton);
+        	this.inputButtons.add(inputPortButton);
         }
         
         Iterator<OutputPort> outputPorts = module.getOutputPorts().values().iterator();
@@ -75,6 +80,7 @@ public class ModuleInternalFrame extends JInternalFrame {
         	outputPortButton.setActionCommand(ModuleWorkbenchGui.ACTION_ACTIVATEPORT);
         	outputPortButton.addActionListener(this.actionListener);
         	outputPortPanel.add(outputPortButton);
+        	this.outputButtons.add(outputPortButton);
         }
     }
 
@@ -83,6 +89,20 @@ public class ModuleInternalFrame extends JInternalFrame {
 	 */
 	public Module getModule() {
 		return module;
+	}
+
+	/**
+	 * @return the inputButtons
+	 */
+	public List<ModuleInputPortButton> getInputButtons() {
+		return inputButtons;
+	}
+
+	/**
+	 * @return the outputButtons
+	 */
+	protected List<ModuleOutputPortButton> getOutputButtons() {
+		return outputButtons;
 	}
 }
 

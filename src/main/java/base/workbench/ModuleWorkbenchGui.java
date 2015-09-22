@@ -472,6 +472,8 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			if (moduleFrame == null)
 				throw new Exception("No module frame specified.");
 			
+			this.removeConnectionsFromGlasspane(moduleFrame);
+			
 			// Determine the module to delete
 			Module module = moduleFrame.getModule();
 					
@@ -486,6 +488,21 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 		} catch (Exception e1) {
 			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but due to an error the selected module could not be removed from the network.", e1);
+		}
+	}
+	
+	private void removeConnectionsFromGlasspane(ModuleInternalFrame moduleFrame) {
+		// Remove connections from glasspane
+		Iterator<ModuleInputPortButton> inputButtons = moduleFrame
+				.getInputButtons().iterator();
+		while (inputButtons.hasNext()) {
+			this.moduleConnectionGlasspane.unlink(inputButtons.next());
+		}
+
+		Iterator<ModuleOutputPortButton> outputButtons = moduleFrame
+				.getOutputButtons().iterator();
+		while (outputButtons.hasNext()) {
+			this.moduleConnectionGlasspane.unlink(outputButtons.next());
 		}
 	}
 
