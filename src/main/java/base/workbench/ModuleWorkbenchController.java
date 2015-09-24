@@ -47,7 +47,6 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	
 	protected Map<String,Module> availableModules = new TreeMap<String,Module>(); // Key: module name
 	private ModuleNetwork moduleNetwork;
-	private Module selectedModule;
 	private ListLoggingHandler listLoggingHandler;
 	private Gson jsonConverter;
 
@@ -238,9 +237,6 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		
 		// Remove all module nodes
 		this.moduleNetwork.removeAllModules();
-		
-		// Reset selected tree node
-		this.setSelectedModule(null);
 	}
 
 	/**
@@ -350,17 +346,6 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	 */
 	public ListLoggingHandler getListLoggingHandler() {
 		return listLoggingHandler;
-	}
-
-	public void setSelectedModule(Module selectedModule) {
-		this.selectedModule = selectedModule;
-	}
-
-	/**
-	 * @return the selectedModule
-	 */
-	public Module getSelectedModule() {
-		return selectedModule;
 	}
 	
 	/**

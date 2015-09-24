@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,8 +35,8 @@ public abstract class ModuleImpl implements Module {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_NAME, "(unnamed module)");
 		
 		// IO ports
-		this.inputPorts = new HashMap<String,InputPort>();
-		this.outputPorts = new HashMap<String,OutputPort>();
+		this.inputPorts = new ConcurrentHashMap<String,InputPort>();
+		this.outputPorts = new ConcurrentHashMap<String,OutputPort>();
 	}
 	
 	/**

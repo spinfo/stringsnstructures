@@ -15,7 +15,6 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.NotSupportedException;
-
 import common.parallelization.CallbackReceiver;
 
 /**
@@ -55,12 +54,18 @@ public class FileWriterModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_BUFFERLENGTH,
 				"Length of the I/O buffer");
 
+		// Determine system properties (for setting default values that make
+				// sense)
+		String fs = System.getProperty("file.separator");
+		String homedir = System.getProperty("user.home");
+		
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,
 				"File Writer");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_USEGZIP, "false");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ENCODING, "UTF-8");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "8192");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTFILE, homedir + fs + "output.txt");
 
 		// Define I/O
 		InputPort inputPort = new InputPort(INPUTID,
@@ -197,6 +202,9 @@ public class FileWriterModule extends ModuleImpl {
 	public void applyProperties() throws Exception {
 		if (this.getProperties().containsKey(PROPERTYKEY_OUTPUTFILE))
 			this.filePath = this.getProperties().getProperty(
+					PROPERTYKEY_OUTPUTFILE);
+		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_OUTPUTFILE))
+			this.filePath = this.getPropertyDefaultValues().get(
 					PROPERTYKEY_OUTPUTFILE);
 		if (this.getProperties().containsKey(PROPERTYKEY_USEGZIP))
 			this.useGzip = Boolean.parseBoolean(this.getProperties()

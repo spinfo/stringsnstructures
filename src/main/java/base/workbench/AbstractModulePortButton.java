@@ -1,5 +1,6 @@
 package base.workbench;
 
+import java.awt.Font;
 import java.awt.datatransfer.DataFlavor;
 
 import javax.swing.ImageIcon;
@@ -24,8 +25,16 @@ public abstract class AbstractModulePortButton extends JButton {
 	 * @param alignment e.g. SwingConstants.LEFT
 	 * @param textposition e.g. SwingConstants.TRAILING
 	 */
-	public AbstractModulePortButton(Port port, ImageIcon icon, int alignment, int textposition) {
-		super(port.getName());
+	public AbstractModulePortButton(Port port, ImageIcon icon, int alignment, int textposition, int maxlength, Font font) {
+		super();
+		
+		// Shorten button text if need be
+		String buttonText = port.getName();
+		if (buttonText.length()>maxlength)
+			buttonText = buttonText.substring(0, maxlength)+"…";
+		super.setText(buttonText);
+		super.setFont(font);
+		super.setToolTipText(port.getName()+": "+port.getDescription());
 		this.setHorizontalTextPosition(textposition);
 		this.setAlignmentX(alignment);
 		this.setHorizontalAlignment(alignment);

@@ -91,10 +91,8 @@ public class ExampleModule extends ModuleImpl {
 	public void applyProperties() throws Exception {
 		
 		// Apply own properties
-		if (this.getProperties().containsKey(PROPERTYKEY_REGEX))
-			this.regex = this.getProperties().getProperty(PROPERTYKEY_REGEX, this.getPropertyDefaultValues().get(PROPERTYKEY_REGEX));
-		if (this.getProperties().containsKey(PROPERTYKEY_REPLACEMENT))
-			this.replacement = this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_REPLACEMENT));
+		this.regex = this.getProperties().getProperty(PROPERTYKEY_REGEX, this.getPropertyDefaultValues().get(PROPERTYKEY_REGEX));
+		this.replacement = this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_REPLACEMENT));
 		
 		// Apply parent object's properties
 		super.applyProperties();

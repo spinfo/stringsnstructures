@@ -6,9 +6,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +32,7 @@ import modules.Module;
 import modules.ModuleNetwork;
 import modules.NotSupportedException;
 import modules.OccupiedException;
+
 import common.PrettyLogRecord;
 import common.parallelization.CallbackReceiverImpl;
 
@@ -42,14 +43,14 @@ import common.parallelization.CallbackReceiverImpl;
  */
 public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, ListSelectionListener {
 	
-	protected static final String ACTION_STARTNEWMODULETREE = "ACTION_STARTNEWMODULETREE";
-	protected static final String ACTION_ADDMODULETOTREE = "ACTION_ADDMODULETOTREE";
-	protected static final String ACTION_DELETEMODULEFROMTREE = "ACTION_DELETEMODULEFROMTREE";
+	protected static final String ACTION_CLEARMODULENETWORK = "ACTION_CLEARMODULENETWORK";
+	protected static final String ACTION_ADDMODULETONETWORK = "ACTION_ADDMODULETONETWORK";
+	protected static final String ACTION_DELETEMODULEFROMNETWORK = "ACTION_DELETEMODULEFROMNETWORK";
 	protected static final String ACTION_RUNMODULES = "ACTION_RUNMODULES";
 	protected static final String ACTION_STOPMODULES = "ACTION_STOPMODULES";
 	protected static final String ACTION_EDITMODULE = "ACTION_EDITMODULE";
-	protected static final String ACTION_LOADTREE = "ACTION_LOADTREE";
-	protected static final String ACTION_SAVETREE = "ACTION_SAVETREE";
+	protected static final String ACTION_LOADNETWORK = "ACTION_LOADNETWORK";
+	protected static final String ACTION_SAVENETWORK = "ACTION_SAVENETWORK";
 	protected static final String ACTION_ACTIVATEPORT = "ACTION_ACTIVATEPORT";
 
 	// Icons
@@ -103,7 +104,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	 */
 	public ModuleWorkbenchGui(ModuleWorkbenchController controller) {
 		this.controller = controller;
-		this.moduleFrameMap = new HashMap<Module, ModuleInternalFrame>();
+		this.moduleFrameMap = new ConcurrentHashMap<Module, ModuleInternalFrame>();
 		initialize();
 	}
 
@@ -112,7 +113,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 750, 500);
+		frame.setBounds(100, 100, 850, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setTitle(WINDOWTITLE+WINDOWTITLE_NEWTREESUFFIX);
 		
@@ -143,11 +144,15 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		
 		// Module desktop pane
 		this.moduleJDesktopPane = new JDesktopPane();
-		this.moduleJDesktopPane.setDesktopManager(new ModuleDesktopManager());
+		ModuleDesktopManager moduleDesktopManager = new ModuleDesktopManager();
+		this.moduleJDesktopPane.setDesktopManager(moduleDesktopManager);
 		moduleTreePanel.add(this.moduleJDesktopPane);
 		
 		// Add glasspane (for drawing the port connections onto)
 		this.moduleConnectionGlasspane = new ModuleNetworkGlasspane(this.moduleJDesktopPane);
+		moduleDesktopManager.setGlasspane(this.moduleConnectionGlasspane);
+		//this.moduleConnectionGlasspane.setLayout(new BorderLayout());
+		//this.moduleConnectionGlasspane.setOpaque(false);
 		frame.setGlassPane(this.moduleConnectionGlasspane);
 		this.moduleConnectionGlasspane.setVisible(true);
 		
@@ -159,21 +164,21 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		// Define toolbar buttons
 		
 		JButton startNewModuleTreeButton = new JButton();
-		startNewModuleTreeButton.setActionCommand(ACTION_STARTNEWMODULETREE);
+		startNewModuleTreeButton.setActionCommand(ACTION_CLEARMODULENETWORK);
 		startNewModuleTreeButton.setIcon(ICON_NEW_TREE);
 		startNewModuleTreeButton.addActionListener(this);
 		//startNewModuleTreeButton.setText("new tree");
 		startNewModuleTreeButton.setToolTipText("Clears the current module tree and creates a new one based on the selected module type.");
 		
 		JButton addModuleButton = new JButton();
-		addModuleButton.setActionCommand(ACTION_ADDMODULETOTREE);
+		addModuleButton.setActionCommand(ACTION_ADDMODULETONETWORK);
 		addModuleButton.setIcon(ICON_ADD_MODULE);
 		addModuleButton.addActionListener(this);
 		//addModuleButton.setText("add module");
 		addModuleButton.setToolTipText("Adds a module as a child to the one currently selected in the tree.");
 		
 		JButton deleteModuleButton = new JButton();
-		deleteModuleButton.setActionCommand(ACTION_DELETEMODULEFROMTREE);
+		deleteModuleButton.setActionCommand(ACTION_DELETEMODULEFROMNETWORK);
 		deleteModuleButton.setIcon(ICON_DELETE_MODULE);
 		deleteModuleButton.addActionListener(this);
 		deleteModuleButton.setEnabled(true);
@@ -201,14 +206,14 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		editModuleButton.setToolTipText("Lets you edit or review the properties of the module that is currently chosen in the tree.");
 		
 		JButton saveTreeButton = new JButton();
-		saveTreeButton.setActionCommand(ACTION_SAVETREE);
+		saveTreeButton.setActionCommand(ACTION_SAVENETWORK);
 		saveTreeButton.setIcon(ICON_SAVE);
 		saveTreeButton.addActionListener(this);
 		//saveTreeButton.setText("save tree");
 		saveTreeButton.setToolTipText("Lets you choose a file to save the module tree to.");
 		
 		JButton loadTreeButton = new JButton();
-		loadTreeButton.setActionCommand(ACTION_LOADTREE);
+		loadTreeButton.setActionCommand(ACTION_LOADNETWORK);
 		loadTreeButton.setIcon(ICON_LOAD);
 		loadTreeButton.addActionListener(this);
 		//loadTreeButton.setText("load tree");
@@ -251,6 +256,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		this.moduleJTree.validate();
 		this.moduleJTree.repaint();
 		this.expandAllNodes(this.moduleJTree);*/ // TODO check whether this needs updating
+		super.receiveCallback(process, processingResult, repeat);
 	}
 
 	/* (non-Javadoc)
@@ -263,80 +269,32 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		this.moduleJTree.validate();
 		this.moduleJTree.repaint();
 		this.expandAllNodes(this.moduleJTree);*/ // TODO check whether this needs updating
+		super.receiveException(process, exception);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals(ACTION_ACTIVATEPORT)){
-			
-			// User clicked on a port button -- either to start a linking or to finish it.
-			
-			// Determine whether there is port label active (respectively a linking started)
-			if (this.activeModulePortButton != null){
-				
-				// Another label is already active -- make connection (if possible)
-				AbstractModulePortButton sourceButton = (AbstractModulePortButton) e.getSource();
-				
-				// Determine which is the input and which the output port button
+			this.actionActivatePortButton(e);
+		}
+		
+		else if (e.getActionCommand().equals(ACTION_CLEARMODULENETWORK)){
+			// Loop over module frames
+			Iterator<ModuleInternalFrame> moduleFrames = this.moduleFrameMap.values().iterator();
+			while (moduleFrames.hasNext()) {
+				// Close module frames
 				try {
-					ModuleInputPortButton inputButton = null;
-					ModuleOutputPortButton outputButton = null;
-					if (ModuleInputPortButton.class
-							.isAssignableFrom(sourceButton.getClass())) {
-						inputButton = (ModuleInputPortButton) sourceButton;
-						outputButton = (ModuleOutputPortButton) this.activeModulePortButton;
-					} else {
-						outputButton = (ModuleOutputPortButton) sourceButton;
-						inputButton = (ModuleInputPortButton) this.activeModulePortButton;
-					}
-
-					// Connect the ports to each other
-					this.controller.getModuleNetwork().addConnection(
-							this.activeModulePortButton.getPort(),
-							sourceButton.getPort());
-					// Draw connection line on glasspane
-					this.moduleConnectionGlasspane.link(inputButton, outputButton);
-					// Reset the reference to the active port button
-					this.activeModulePortButton = null;
-					// TODO button gfx etc.
-				} catch (NotSupportedException | OccupiedException
-						| ClassCastException | IOException e1 ) {
-					Logger.getLogger(this.getClass().getCanonicalName()).log(
-							Level.WARNING,
-							"Sorry, but I cannot connect those ports: "
-									+ e1.getMessage());
-					e1.printStackTrace();
-				}
-				
-				
-			} else {
-				// No active port label present -- start new linking activity
-				this.activeModulePortButton = (AbstractModulePortButton) e.getSource();
-				// TODO button gfx etc.
-			}
-			
-			
-		} else if (e.getActionCommand().equals(ACTION_STARTNEWMODULETREE)){
-			
-			this.controller.clearModuleNetwork();
-
-			try {
-				// Loop over module frames
-				Iterator<ModuleInternalFrame> moduleFrames = this.moduleFrameMap.values().iterator();
-				while (moduleFrames.hasNext()) {
 					moduleFrames.next().setClosed(true);
+				} catch (PropertyVetoException e1) {
+					e1.printStackTrace();
+					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I could not close this module frame.", e1);
 				}
-				// Clear module frame map
-				this.moduleFrameMap.clear();
-			} catch (PropertyVetoException e1) {
-				e1.printStackTrace();
 			}
 			
-		} else if (e.getActionCommand().equals(ACTION_ADDMODULETOTREE)){
-			
+		} else if (e.getActionCommand().equals(ACTION_ADDMODULETONETWORK)){
 			this.actionAddModule();
 			
-		} else if (e.getActionCommand().equals(ACTION_DELETEMODULEFROMTREE)){
+		} else if (e.getActionCommand().equals(ACTION_DELETEMODULEFROMNETWORK)){
 			
 			if (this.selectedModuleFrame == null){
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I'm afraid I don't know which module to delete -- there is none selected.");
@@ -351,20 +309,24 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 		} else if (e.getActionCommand().equals(ACTION_EDITMODULE)){
 			
+			if (this.selectedModuleFrame == null){
+				Logger.getLogger("").log(Level.WARNING, "Please select a module frame first.");
+			}
+			
 			try {
-				// Determine module that is currently selected within the module tree
-				final Module selectedModule = this.controller.getSelectedModule();
+				// Determine module that is currently selected within the module network
+				final ModuleInternalFrame selectedModuleFrame = this.selectedModuleFrame;
 						
 				// Create new editor dialogue in separate thread
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						try {
-							ModulePropertyEditor modulePropertyEditor = new ModulePropertyEditor(selectedModule);
+							ModulePropertyEditor modulePropertyEditor = new ModulePropertyEditor(selectedModuleFrame.getModule());
+							modulePropertyEditor.setLocation(selectedModuleFrame.getLocationOnScreen().x, selectedModuleFrame.getLocationOnScreen().y);
 							modulePropertyEditor.setVisible(true);
 							
-							//Logger.getGlobal().log(Level.INFO, "Opened editor for "+selectedModule.getName()+".");
 						} catch (Exception e) {
-							Logger.getLogger("").log(Level.WARNING, "Could not open editor for module "+selectedModule.getName()+".", e);
+							Logger.getLogger("").log(Level.WARNING, "Could not open editor for module "+selectedModuleFrame.getModule().getName()+".", e);
 						}
 					}
 				});
@@ -389,7 +351,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to stop the modules.", e1);
 			}
 			
-		} else if (e.getActionCommand().equals(ACTION_LOADTREE)){
+		} else if (e.getActionCommand().equals(ACTION_LOADNETWORK)){
 			
 			try {
 				
@@ -410,7 +372,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to load the module tree.", e1);
 			}
 			
-		} else if (e.getActionCommand().equals(ACTION_SAVETREE)){
+		} else if (e.getActionCommand().equals(ACTION_SAVENETWORK)){
 			
 			try {
 				// Instantiate a new file chooser
@@ -434,63 +396,120 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		}
 	}
 	
-	private void actionAddModule() {
-		try {
-			Module newModule = this.controller.getNewInstanceOfModule(this.selectedModuleTemplate);
-			
-			// Add module to network
-			if (this.controller.getModuleNetwork().addModule(newModule)){
-				
-				// Instantiate module frame
-				ModuleInternalFrame moduleFrame = new ModuleInternalFrame(newModule, this);
-				
-				// Add frame listener
-				moduleFrame.addInternalFrameListener(this);
-		        
-				// Add to map
-				this.moduleFrameMap.put(newModule,moduleFrame);
-				
-				// Add module frame to workbench gui
-				this.moduleJDesktopPane.add(moduleFrame);
-				moduleFrame.setVisible(true);
-				
-				// Select module frame
-				try {
-					moduleFrame.setSelected(true);
-		        } catch (java.beans.PropertyVetoException e1) {
-		        }
-				
+	/**
+	 * Links ports to each other based on which port buttons have been activated.
+	 * @param e
+	 */
+	private void actionActivatePortButton(ActionEvent e) {
+		// User clicked on a port button -- either to start a linking or to
+		// finish it.
+
+		// Ensure glasspane is visible
+		this.moduleConnectionGlasspane.setVisible(true);
+
+		// Determine whether there is port label active (respectively a linking
+		// started)
+		if (this.activeModulePortButton != null) {
+
+			// Another label is already active -- make connection (if possible)
+			AbstractModulePortButton sourceButton = (AbstractModulePortButton) e
+					.getSource();
+
+			// Determine which is the input and which the output port button
+			try {
+				ModuleInputPortButton inputButton = null;
+				ModuleOutputPortButton outputButton = null;
+				if (ModuleInputPortButton.class.isAssignableFrom(sourceButton
+						.getClass())) {
+					inputButton = (ModuleInputPortButton) sourceButton;
+					outputButton = (ModuleOutputPortButton) this.activeModulePortButton;
+				} else {
+					outputButton = (ModuleOutputPortButton) sourceButton;
+					inputButton = (ModuleInputPortButton) this.activeModulePortButton;
+				}
+
+				// Connect the ports to each other
+				this.controller.getModuleNetwork().addConnection(
+						this.activeModulePortButton.getPort(),
+						sourceButton.getPort());
+				// Draw connection line on glasspane
+				this.moduleConnectionGlasspane.link(inputButton, outputButton);
+				// Reset the reference to the active port button
+				this.activeModulePortButton = null;
+			} catch (NotSupportedException | OccupiedException
+					| ClassCastException | IOException e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(
+						Level.WARNING,
+						"Sorry, but I cannot connect those ports: "
+								+ e1.getMessage());
+				e1.printStackTrace();
 			}
-			
-		} catch (Exception e1) {
-			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The selected module could not be added to the tree.", e1);
+
+		} else {
+			// No active port label present -- start new linking activity
+			this.activeModulePortButton = (AbstractModulePortButton) e
+					.getSource();
 		}
 	}
 
-	private void actionDeleteModule(ModuleInternalFrame moduleFrame) {
+	/**
+	 * Adds a module to the network (and a corresponding frame to the GUI) based
+	 * on what template is currently selected.
+	 */
+	private void actionAddModule() {
 		try {
-			if (moduleFrame == null)
-				throw new Exception("No module frame specified.");
+			// Check whether there is no template selected
+			if (this.selectedModuleTemplate == null)
+				throw new Exception("There is no template selected -- please do so beforehand.");
 			
-			this.removeConnectionsFromGlasspane(moduleFrame);
+			// Instantiate new module from selected template
+			Module newModule = this.controller.getNewInstanceOfModule(this.selectedModuleTemplate);
 			
-			// Determine the module to delete
-			Module module = moduleFrame.getModule();
-					
-			// Remove module from tree
-			boolean removed = this.controller.getModuleNetwork().removeModule(module);
-			
-			// Log message
-			if (removed)
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO, "The module '"+module.getName()+"' has been removed from the network.");
-			else
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but the selected module could not be removed from the network.");
-			
-		} catch (Exception e1) {
-			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but due to an error the selected module could not be removed from the network.", e1);
+			// Add module to network
+			if (this.controller.getModuleNetwork().addModule(newModule)) {
+				
+				// Add corresponding module frame
+				this.addModuleFrame(newModule);
+				
+				// Apply module (default) properties
+				newModule.applyProperties();
+				
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The module could not be added to the network.", e);
 		}
 	}
 	
+	/**
+	 * Adds an internal frame for the specified module to the GUI.
+	 * @param module Module
+	 */
+	private void addModuleFrame(Module module) {
+		// Instantiate module frame
+		ModuleInternalFrame moduleFrame = new ModuleInternalFrame(module, this);
+
+		// Add frame listener
+		moduleFrame.addInternalFrameListener(this);
+
+		// Add to map
+		this.moduleFrameMap.put(module, moduleFrame);
+
+		// Add module frame to workbench gui
+		this.moduleJDesktopPane.add(moduleFrame);
+		moduleFrame.setVisible(true);
+
+		// Select module frame
+		try {
+			moduleFrame.setSelected(true);
+		} catch (java.beans.PropertyVetoException e1) {
+		}
+	}
+	
+	/**
+	 * Removes all connections drawn on the glass pane for the specified module frame.
+	 * @param moduleFrame Module frame
+	 */
 	private void removeConnectionsFromGlasspane(ModuleInternalFrame moduleFrame) {
 		// Remove connections from glasspane
 		Iterator<ModuleInputPortButton> inputButtons = moduleFrame
@@ -512,12 +531,37 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 
 	@Override
 	public void internalFrameClosing(InternalFrameEvent e) {
+		ModuleInternalFrame moduleFrame = (ModuleInternalFrame) e.getInternalFrame();
+		try {
+			// Check whether there is no module frame selected
+			if (moduleFrame == null)
+				throw new Exception("There is no module frame selected -- please do so beforehand.");
+			
+			// Remove connections from glass pane
+			this.removeConnectionsFromGlasspane(moduleFrame);
+			
+			// Determine the module to delete
+			Module module = moduleFrame.getModule();
+			
+			// Remove from frame map
+			this.moduleFrameMap.remove(moduleFrame.getModule());
+					
+			// Remove module from tree
+			boolean removed = this.controller.getModuleNetwork().removeModule(module);
+			
+			// Log message
+			if (removed)
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO, "The module '"+module.getName()+"' has been removed from the network.");
+			else
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but the selected module could not be removed from the network.");
+			
+		} catch (Exception e1) {
+			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but due to an error the module could not be removed from the network.", e1);
+		}
 	}
 
 	@Override
 	public void internalFrameClosed(InternalFrameEvent e) {
-		this.moduleFrameMap.remove(((ModuleInternalFrame) e.getInternalFrame()).getModule());
-		this.actionDeleteModule((ModuleInternalFrame) e.getInternalFrame());
 	}
 
 	@Override
@@ -531,11 +575,14 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	@Override
 	public void internalFrameActivated(InternalFrameEvent e) {
 		this.selectedModuleFrame = (ModuleInternalFrame) e.getInternalFrame();
+		
+		this.moduleConnectionGlasspane.setVisible(true);
 	}
 
 	@Override
 	public void internalFrameDeactivated(InternalFrameEvent e) {
 		this.selectedModuleFrame = null;
+		this.moduleConnectionGlasspane.setVisible(true);
 	}
 
 	@SuppressWarnings("unchecked")

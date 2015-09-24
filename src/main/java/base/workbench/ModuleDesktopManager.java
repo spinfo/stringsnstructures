@@ -15,6 +15,7 @@ import javax.swing.JInternalFrame;
 public class ModuleDesktopManager extends DefaultDesktopManager {
 
 	private static final long serialVersionUID = 3915844154537065196L;
+	private ModuleNetworkGlasspane glasspane;
 
 	/* (non-Javadoc)
 	 * @see javax.swing.DefaultDesktopManager#dragFrame(javax.swing.JComponent, int, int)
@@ -44,14 +45,36 @@ public class ModuleDesktopManager extends DefaultDesktopManager {
 					// bottom
 				}
 			}
-			//System.out.println("revalidate");
-			//desk.revalidate();
 		}
 
 		// Pass along the (possibly cropped) values to the normal drag handler.
 		super.dragFrame(f, x, y);
 		if (desk!=null)
 			desk.repaint();
+	}
+
+	/* (non-Javadoc)
+	 * @see javax.swing.DefaultDesktopManager#endResizingFrame(javax.swing.JComponent)
+	 */
+	@Override
+	public void endResizingFrame(JComponent f) {
+		super.endResizingFrame(f);
+		this.glasspane.setVisible(true);
+		
+	}
+
+	/**
+	 * @return the glasspane
+	 */
+	protected ModuleNetworkGlasspane getGlasspane() {
+		return glasspane;
+	}
+
+	/**
+	 * @param glasspane the glasspane to set
+	 */
+	protected void setGlasspane(ModuleNetworkGlasspane glasspane) {
+		this.glasspane = glasspane;
 	}
 
 }

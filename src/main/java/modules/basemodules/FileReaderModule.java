@@ -173,13 +173,18 @@ public class FileReaderModule extends ModuleImpl {
 		if (this.getProperties().containsKey(PROPERTYKEY_INPUTFILE))
 			this.file = new File(this.getProperties().getProperty(
 					PROPERTYKEY_INPUTFILE));
+		else if (this.getPropertyDefaultValues().containsKey(
+				PROPERTYKEY_INPUTFILE))
+			this.file = new File(this.getPropertyDefaultValues().get(
+					PROPERTYKEY_INPUTFILE));
 		if (this.getProperties().containsKey(PROPERTYKEY_USEGZIP))
 			this.useGzip = Boolean.parseBoolean(this.getProperties()
 					.getProperty(PROPERTYKEY_USEGZIP));
 		if (this.getProperties().containsKey(PROPERTYKEY_ENCODING))
 			this.encoding = this.getProperties().getProperty(
 					PROPERTYKEY_ENCODING);
-		else
+		else if (this.getPropertyDefaultValues().containsKey(
+				PROPERTYKEY_ENCODING))
 			this.encoding = this.getPropertyDefaultValues().get(
 					PROPERTYKEY_ENCODING);
 		if (this.getProperties().containsKey(PROPERTYKEY_BUFFERLENGTH))

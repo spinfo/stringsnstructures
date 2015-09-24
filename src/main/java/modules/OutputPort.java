@@ -1,11 +1,11 @@
 package modules;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class OutputPort extends AbstractPort {
 	
@@ -16,8 +16,8 @@ public class OutputPort extends AbstractPort {
 	
 	public OutputPort(String name, String description, Module parent) {
 		super(name, description, parent);
-		this.pipes = new HashMap<Class<? extends Pipe>, List<Pipe>>();
-		this.connectedPorts = new HashMap<Pipe, Port>();
+		this.pipes = new ConcurrentHashMap<Class<? extends Pipe>, List<Pipe>>();
+		this.connectedPorts = new ConcurrentHashMap<Pipe, Port>();
 	}
 
 
@@ -28,7 +28,7 @@ public class OutputPort extends AbstractPort {
 	public void addSupportedPipe(Class<? extends Pipe> pipeClass) {
 		if (!super.supportsPipeClass(pipeClass)){
 			super.addSupportedPipe(pipeClass);
-			this.pipes.put(pipeClass, new ArrayList<Pipe>());
+			this.pipes.put(pipeClass, new CopyOnWriteArrayList<Pipe>());
 		}
 	}
 

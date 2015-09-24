@@ -1,5 +1,6 @@
 package base.workbench;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -27,22 +28,22 @@ public class ModuleNetworkGlasspane extends JComponent {
     public ModuleNetworkGlasspane (JDesktopPane desktopPane)
     {
         super ();
-        linked = new HashMap<ModuleInputPortButton, ModuleOutputPortButton> ();
+        this.linked = new HashMap<ModuleInputPortButton, ModuleOutputPortButton> ();
         this.desktopPane = desktopPane;
     }
 
     public void link ( ModuleInputPortButton inputButton, ModuleOutputPortButton outputButton )
     {
-        linked.put ( inputButton, outputButton );
+    	this.linked.put ( inputButton, outputButton );
         repaint ();
-        desktopPane.repaint();
+        this.desktopPane.repaint();
     }
 
     public void unlink ( ModuleInputPortButton inputButton )
     {
-        linked.remove(inputButton);
+    	this.linked.remove(inputButton);
         repaint ();
-        desktopPane.repaint();
+        this.desktopPane.repaint();
     }
 
     public void unlink ( ModuleOutputPortButton outputButton )
@@ -55,12 +56,13 @@ public class ModuleNetworkGlasspane extends JComponent {
         	}
         }
         repaint ();
-        desktopPane.repaint();
+        this.desktopPane.repaint();
     }
 
     protected void paintComponent ( Graphics g )
     {
         Graphics2D g2d = ( Graphics2D ) g;
+        g2d.setStroke(new BasicStroke(3));
         g2d.setRenderingHint ( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
         g2d.setPaint ( Color.GREEN );
@@ -70,8 +72,6 @@ public class ModuleNetworkGlasspane extends JComponent {
             Point p2 = getRectCenter ( getBoundsInWindow ( this.linked.get ( c1 ) ) );
             g2d.drawLine ( p1.x, p1.y, p2.x, p2.y );
         }
-
-        //desktopPane.repaint();
     }
 
     private Point getRectCenter ( Rectangle rect )
@@ -81,7 +81,6 @@ public class ModuleNetworkGlasspane extends JComponent {
 
     private Rectangle getBoundsInWindow ( Component component )
     {
-        //return getRelativeBounds ( component, getRootPaneAncestor ( component ) );
         return getRelativeBounds ( component, this.desktopPane.getRootPane() );
     }
 
