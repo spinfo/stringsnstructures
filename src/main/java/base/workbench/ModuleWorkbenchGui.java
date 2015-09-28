@@ -338,6 +338,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		} else if (e.getActionCommand().equals(ACTION_RUNMODULES)){
 			
 			try {
+				this.controller.getModuleNetwork().resetModuleIO();
 				this.controller.getModuleNetwork().runModules();
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to run the modules.", e1);
