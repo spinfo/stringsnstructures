@@ -28,10 +28,12 @@ import javax.swing.event.InternalFrameListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import modules.InputPort;
 import modules.Module;
 import modules.ModuleNetwork;
 import modules.NotSupportedException;
 import modules.OccupiedException;
+import modules.OutputPort;
 
 import common.PrettyLogRecord;
 import common.parallelization.CallbackReceiverImpl;
@@ -354,24 +356,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 		} else if (e.getActionCommand().equals(ACTION_LOADNETWORK)){
 			
-			try {
-				
-				// Instantiate a new file chooser
-				final JFileChooser fileChooser = new JFileChooser();
-				
-				// Determine return value
-				int returnVal = fileChooser.showOpenDialog(this.frame);
-				
-				// If the return value indicates approval, load the selected file
-				if (returnVal==JFileChooser.APPROVE_OPTION){
-					ModuleNetwork loadedModuleNetwork = this.controller.loadModuleNetworkFromFile(fileChooser.getSelectedFile());
-					loadedModuleNetwork.addCallbackReceiver(this);
-					frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
-				}
-				
-			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to load the module tree.", e1);
-			}
+			this.actionLoadModuleNetwork();
 			
 		} else if (e.getActionCommand().equals(ACTION_SAVENETWORK)){
 			
@@ -397,6 +382,81 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		}
 	}
 	
+	private void actionLoadModuleNetwork() {
+		try {
+			
+			// Instantiate a new file chooser
+			final JFileChooser fileChooser = new JFileChooser();
+			
+			// Determine return value
+			int returnVal = fileChooser.showOpenDialog(this.frame);
+			
+			// If the return value indicates approval, load the selected file
+			if (returnVal==JFileChooser.APPROVE_OPTION){
+				ModuleNetwork loadedModuleNetwork = this.controller.loadModuleNetworkFromFile(fileChooser.getSelectedFile());
+				loadedModuleNetwork.addCallbackReceiver(this);
+				
+				// Loop over loaded modules and add graphical representation for each
+				Iterator<Module> modules = loadedModuleNetwork.getModuleList().iterator();
+				while (modules.hasNext()){
+					
+					// Determine next module within the list
+					Module module = modules.next();
+					
+					// Add corresponding module frame
+					this.addModuleFrame(module);
+				}
+				
+				// Loop over constructed module frames (in order to draw port connection lines)
+				Iterator<ModuleInternalFrame> moduleFrames = this.moduleFrameMap.values().iterator();
+				while (moduleFrames.hasNext()){
+					
+					// Determine next frame in list
+					ModuleInternalFrame moduleFrame = moduleFrames.next();
+					
+					// Loop over input port buttons
+					Iterator<ModuleInputPortButton> inputButtons = moduleFrame.getInputButtons().iterator();
+					while (inputButtons.hasNext()){
+						
+						// Determine next input port button in list
+						ModuleInputPortButton inputButton = inputButtons.next();
+						
+						// Determine connected output port
+						OutputPort outputPort = (OutputPort)((InputPort)inputButton.getPort()).getConnectedPort();
+						
+						// Not-so-elegant way to get to the respective output button (if present)
+						Module connectedModule = outputPort.getParent();
+						ModuleInternalFrame connectedModuleFrame = this.moduleFrameMap.get(connectedModule);
+						
+						// Check whether there is a connection to be drawn at all
+						if (connectedModuleFrame != null){
+
+							// Loop over the connected module's output buttons
+							Iterator<ModuleOutputPortButton> connectedModuleOutputButtons = connectedModuleFrame.getOutputButtons().iterator();
+							while (connectedModuleOutputButtons.hasNext()){
+								ModuleOutputPortButton connectedModuleOutputButton = connectedModuleOutputButtons.next();
+								
+								// Check whether the output button's port is the one connected to our input port
+								if (connectedModuleOutputButton.getPort().equals(outputPort)){
+									// Have lines drawn between linked ports
+									this.moduleConnectionGlasspane.link(inputButton, connectedModuleOutputButton);
+									break;
+								}
+							}
+							
+						}
+						
+					}
+				}
+				
+				frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
+			}
+			
+		} catch (Exception e1) {
+			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to load the module tree.", e1);
+		}
+	}
+
 	/**
 	 * Links ports to each other based on which port buttons have been activated.
 	 * @param e

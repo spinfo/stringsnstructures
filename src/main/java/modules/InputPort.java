@@ -25,7 +25,7 @@ public class InputPort extends AbstractPort {
 	/**
 	 * @return the connectedPort
 	 */
-	protected Port getConnectedPort() {
+	public Port getConnectedPort() {
 		return connectedPort;
 	}
 	

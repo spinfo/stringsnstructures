@@ -367,7 +367,9 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		// Apply properties to modules
 		Iterator<Module> modules = loadedModuleNetwork.getModuleList().iterator();
 		while (modules.hasNext()){
-			modules.next().applyProperties();
+			Module module = modules.next();
+			module.applyProperties();
+			Logger.getLogger("").log(Level.INFO, "Loaded module "+module.getName());
 		}
 		
         // Write log message
