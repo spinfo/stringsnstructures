@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
@@ -21,8 +22,12 @@ public class ModuleInternalFrame extends JInternalFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = -3148570615005814437L;
+	public static final ImageIcon ICON_MODULE_QUEUED = new ImageIcon(ModuleInternalFrame.class.getResource("/icons/idle.gif"));
+	public static final ImageIcon ICON_MODULE_RUNNING = new ImageIcon(ModuleInternalFrame.class.getResource("/icons/running.gif"));
+	public static final ImageIcon ICON_MODULE_SUCCESSFUL = new ImageIcon(ModuleInternalFrame.class.getResource("/icons/clean.png"));
+	public static final ImageIcon ICON_MODULE_FAILED = new ImageIcon(ModuleInternalFrame.class.getResource("/icons/error.png"));
 	private static int openFrameCount = 0;
-	private static final int xOffset = 30, yOffset = 30;
+	//private static final int xOffset = 30, yOffset = 30; // TODO Better placing of new/loaded module frames
     private static final int ROWSIZE=20; 
     private static final int MAXLENGTH=8; // Maximum length of button text
     
@@ -96,6 +101,24 @@ public class ModuleInternalFrame extends JInternalFrame {
         	outputPortPanel.add(outputPortButton);
         	this.outputButtons.add(outputPortButton);
         }
+        
+        this.updateStatusIcon();
+    }
+    
+    /**
+     * Checks the status of the module and sets the appropriate icon.
+     */
+    public void updateStatusIcon(){
+    	// Set icon depending on module status
+		if (this.module.getStatus() == Module.STATUSCODE_NOTYETRUN)
+			this.setFrameIcon(ICON_MODULE_QUEUED);
+		else if (this.module.getStatus() == Module.STATUSCODE_RUNNING) {
+			this.setFrameIcon(ICON_MODULE_RUNNING);
+			ICON_MODULE_RUNNING.setImageObserver(this.getParent().getParent());
+		} else if (this.module.getStatus() == Module.STATUSCODE_SUCCESS)
+			this.setFrameIcon(ICON_MODULE_SUCCESSFUL);
+		else if (this.module.getStatus() == Module.STATUSCODE_FAILURE)
+			this.setFrameIcon(ICON_MODULE_FAILED);
     }
 
 	/**

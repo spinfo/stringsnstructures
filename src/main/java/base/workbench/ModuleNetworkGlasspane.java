@@ -8,7 +8,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JComponent;
@@ -48,13 +47,6 @@ public class ModuleNetworkGlasspane extends JComponent {
     public void unlink ( ModuleOutputPortButton outputButton )
     {
     	this.linked.values().remove(outputButton);
-        /*Iterator<ModuleInputPortButton> keys = this.linked.keySet().iterator();
-        while (keys.hasNext()){
-        	ModuleInputPortButton key = keys.next();
-        	if (this.linked.get(key).equals(outputButton)){
-        		this.linked.remove(key);
-        	}
-        }*/
         repaint ();
         this.desktopPane.repaint();
     }

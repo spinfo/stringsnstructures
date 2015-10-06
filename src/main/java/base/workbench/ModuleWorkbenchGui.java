@@ -153,8 +153,6 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		// Add glasspane (for drawing the port connections onto)
 		this.moduleConnectionGlasspane = new ModuleNetworkGlasspane(this.moduleJDesktopPane);
 		moduleDesktopManager.setGlasspane(this.moduleConnectionGlasspane);
-		//this.moduleConnectionGlasspane.setLayout(new BorderLayout());
-		//this.moduleConnectionGlasspane.setOpaque(false);
 		frame.setGlassPane(this.moduleConnectionGlasspane);
 		this.moduleConnectionGlasspane.setVisible(true);
 		
@@ -169,14 +167,12 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		startNewModuleTreeButton.setActionCommand(ACTION_CLEARMODULENETWORK);
 		startNewModuleTreeButton.setIcon(ICON_NEW_TREE);
 		startNewModuleTreeButton.addActionListener(this);
-		//startNewModuleTreeButton.setText("new tree");
 		startNewModuleTreeButton.setToolTipText("Clears the current module tree and creates a new one based on the selected module type.");
 		
 		JButton addModuleButton = new JButton();
 		addModuleButton.setActionCommand(ACTION_ADDMODULETONETWORK);
 		addModuleButton.setIcon(ICON_ADD_MODULE);
 		addModuleButton.addActionListener(this);
-		//addModuleButton.setText("add module");
 		addModuleButton.setToolTipText("Adds a module as a child to the one currently selected in the tree.");
 		
 		JButton deleteModuleButton = new JButton();
@@ -184,14 +180,12 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		deleteModuleButton.setIcon(ICON_DELETE_MODULE);
 		deleteModuleButton.addActionListener(this);
 		deleteModuleButton.setEnabled(true);
-		//deleteModuleButton.setText("remove module");
 		deleteModuleButton.setToolTipText("Removes the selected module (and all its children) from the tree.");
 		
 		JButton runModulesButton = new JButton();
 		runModulesButton.setActionCommand(ACTION_RUNMODULES);
 		runModulesButton.setIcon(ICON_RUN);
 		runModulesButton.addActionListener(this);
-		//runModulesButton.setText("run");
 		runModulesButton.setToolTipText("Starts the processing of the module tree.");
 		
 		JButton stopModulesButton = new JButton();
@@ -204,21 +198,18 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		editModuleButton.setActionCommand(ACTION_EDITMODULE);
 		editModuleButton.setIcon(ICON_EDIT_MODULE);
 		editModuleButton.addActionListener(this);
-		//editModuleButton.setText("edit");
 		editModuleButton.setToolTipText("Lets you edit or review the properties of the module that is currently chosen in the tree.");
 		
 		JButton saveTreeButton = new JButton();
 		saveTreeButton.setActionCommand(ACTION_SAVENETWORK);
 		saveTreeButton.setIcon(ICON_SAVE);
 		saveTreeButton.addActionListener(this);
-		//saveTreeButton.setText("save tree");
 		saveTreeButton.setToolTipText("Lets you choose a file to save the module tree to.");
 		
 		JButton loadTreeButton = new JButton();
 		loadTreeButton.setActionCommand(ACTION_LOADNETWORK);
 		loadTreeButton.setIcon(ICON_LOAD);
 		loadTreeButton.addActionListener(this);
-		//loadTreeButton.setText("load tree");
 		loadTreeButton.setToolTipText("Lets you choose a file to load the module tree from.");
 		
 		toolBar.add(startNewModuleTreeButton);
@@ -247,6 +238,16 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		frame.getContentPane().add(topSplitPane, BorderLayout.CENTER);
 		
 	}
+	
+	/**
+	 * Updates the icon of all module frames according to their status.
+	 */
+	private void updateAllModuleFrameIcons(){
+		Iterator<ModuleInternalFrame> moduleFrames = this.moduleFrameMap.values().iterator();
+		while (moduleFrames.hasNext()){
+			moduleFrames.next().updateStatusIcon();
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see parallelization.CallbackReceiverImpl#receiveCallback(java.lang.Object, parallelization.CallbackProcess, boolean)
@@ -258,6 +259,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		this.moduleJTree.validate();
 		this.moduleJTree.repaint();
 		this.expandAllNodes(this.moduleJTree);*/ // TODO check whether this needs updating
+		this.updateAllModuleFrameIcons();
 		super.receiveCallback(process, processingResult, repeat);
 	}
 
@@ -271,6 +273,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		this.moduleJTree.validate();
 		this.moduleJTree.repaint();
 		this.expandAllNodes(this.moduleJTree);*/ // TODO check whether this needs updating
+		this.updateAllModuleFrameIcons();
 		super.receiveException(process, exception);
 	}
 
@@ -342,6 +345,8 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			try {
 				this.controller.getModuleNetwork().resetModuleIO();
 				this.controller.getModuleNetwork().runModules();
+				this.updateAllModuleFrameIcons();
+				
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to run the modules.", e1);
 			}
@@ -350,6 +355,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 			try {
 				this.controller.getModuleNetwork().stopModules();
+				this.updateAllModuleFrameIcons();
 			} catch (Exception e1) {
 				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to stop the modules.", e1);
 			}
@@ -357,6 +363,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		} else if (e.getActionCommand().equals(ACTION_LOADNETWORK)){
 			
 			this.actionLoadModuleNetwork();
+			this.updateAllModuleFrameIcons();
 			
 		} else if (e.getActionCommand().equals(ACTION_SAVENETWORK)){
 			

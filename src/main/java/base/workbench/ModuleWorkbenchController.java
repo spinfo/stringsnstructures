@@ -295,45 +295,6 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		return moduleConstructor.newInstance(this.moduleNetwork, properties);
 	}
 
-	/*@Override
-	public void valueChanged(ListSelectionEvent e) {
-		try {
-			
-			// Set selected module
-			@SuppressWarnings("unchecked")
-			JList<Module> list = (JList<Module>) e.getSource();
-			this.selectedModule = list.getSelectedValue();
-			
-			// Instantiate new map for module properties
-			this.selectedModulesProperties = new TreeMap<String, PropertyQuadrupel>();
-			
-			// Determine properties
-			Iterator<String> propertyDescriptionKeys = this.selectedModule.getPropertyDescriptions().keySet().iterator();
-			while(propertyDescriptionKeys.hasNext()){
-				
-				// Instantiate new property quadrupel
-				PropertyQuadrupel property = new PropertyQuadrupel();
-				
-				// Determine property key
-				String propertyKey = propertyDescriptionKeys.next();
-				
-				// Set values for the new property
-				property.setKey(propertyKey);
-				property.setDescription(this.selectedModule.getPropertyDescriptions().get(propertyKey));
-				property.setDefaultValue(this.selectedModule.getPropertyDefaultValues().get(propertyKey));
-				property.setValue(this.selectedModule.getPropertyDefaultValues().get(propertyKey));
-				
-				// Add property quadrupel to result list
-				this.selectedModulesProperties.put(propertyKey, property);
-			}
-			
-			
-		} catch (ClassCastException ex) {
-			Logger.getLogger(this.getClass().getCanonicalName()).log(
-					Level.WARNING, "Error processing selected element.", ex);
-		}
-	}*/
-
 	/**
 	 * @return the availableModules
 	 */
