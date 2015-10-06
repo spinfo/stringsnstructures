@@ -101,7 +101,7 @@
 								<manifest>
 									<addClasspath>true</addClasspath>
 									<classpathPrefix>lib/</classpathPrefix>
-									<mainClass>modularization.workbench.ModuleWorkbenchGui</mainClass>
+									<mainClass>base.workbench.ModuleWorkbenchGui</mainClass>
 								</manifest>
 							</archive>
 						</configuration>
@@ -121,7 +121,7 @@
 								<manifest>
 									<addClasspath>true</addClasspath>
 									<classpathPrefix>lib/</classpathPrefix>
-									<mainClass>modularization.workbench.ModuleBatchRunner</mainClass>
+									<mainClass>base.workbench.ModuleBatchRunner</mainClass>
 								</manifest>
 							</archive>
 						</configuration>
