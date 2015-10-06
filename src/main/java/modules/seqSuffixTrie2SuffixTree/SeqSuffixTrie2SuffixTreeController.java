@@ -107,6 +107,7 @@ public class SeqSuffixTrie2SuffixTreeController extends ModuleImpl {
 	
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		
 		// Apply own properties
 			/*no properties, no property keys! The output and the processing is not to be changed by the user.*/

@@ -125,48 +125,29 @@ public class ColourGraph extends ModuleImpl {
 	 */
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
+		
 		if (this.getProperties().containsKey(PROPERTYKEY_OUTPUTFILE))
 			this.outputFilePath = this.getProperties().getProperty(
-					PROPERTYKEY_OUTPUTFILE);
-		else
-			this.outputFilePath = this.getPropertyDefaultValues().get(
 					PROPERTYKEY_OUTPUTFILE);
 		if (this.getProperties().containsKey(PROPERTYKEY_IMAGEWIDTH))
 			this.outputImageWidth = Integer.valueOf(this.getProperties()
 					.getProperty(PROPERTYKEY_IMAGEWIDTH));
-		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_IMAGEWIDTH))
-			this.outputImageWidth = Integer.valueOf(this
-					.getPropertyDefaultValues().get(PROPERTYKEY_IMAGEWIDTH));
 		if (this.getProperties().containsKey(PROPERTYKEY_IMAGEHEIGHT))
 			this.outputImageHeight = Integer.valueOf(this.getProperties()
 					.getProperty(PROPERTYKEY_IMAGEHEIGHT));
-		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_IMAGEHEIGHT))
-			this.outputImageHeight = Integer.valueOf(this
-					.getPropertyDefaultValues().get(PROPERTYKEY_IMAGEHEIGHT));
 		if (this.getProperties().containsKey(PROPERTYKEY_PIXELPERLEVEL))
 			this.pixelsPerLevel = Integer.valueOf(this.getProperties()
 					.getProperty(PROPERTYKEY_PIXELPERLEVEL));
-		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_PIXELPERLEVEL))
-			this.pixelsPerLevel = Integer.valueOf(this
-					.getPropertyDefaultValues().get(PROPERTYKEY_PIXELPERLEVEL));
 		if (this.getProperties().containsKey(PROPERTYKEY_GLEICHVERTEILUNGBERECHNEN))
 			this.ungleichverteilungenMarkieren = Boolean.valueOf(this.getProperties()
 					.getProperty(PROPERTYKEY_GLEICHVERTEILUNGBERECHNEN));
-		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_GLEICHVERTEILUNGBERECHNEN))
-			this.ungleichverteilungenMarkieren = Boolean.valueOf(this
-					.getPropertyDefaultValues().get(PROPERTYKEY_GLEICHVERTEILUNGBERECHNEN));
 		if (this.getProperties().containsKey(PROPERTYKEY_UNGLEICHVERTEILUNGANZEIGEMETHODE))
 			this.ungleichverteilungsanzeigemethode = this.getProperties().getProperty(
-					PROPERTYKEY_UNGLEICHVERTEILUNGANZEIGEMETHODE);
-		else
-			this.ungleichverteilungsanzeigemethode = this.getPropertyDefaultValues().get(
 					PROPERTYKEY_UNGLEICHVERTEILUNGANZEIGEMETHODE);
 		if (this.getProperties().containsKey(PROPERTYKEY_GLEICHVERTEILUNGSSCHWELLWERT))
 			this.gleichverteilungsschwellwert = Double.valueOf(this.getProperties()
 					.getProperty(PROPERTYKEY_GLEICHVERTEILUNGSSCHWELLWERT));
-		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_GLEICHVERTEILUNGSSCHWELLWERT))
-			this.gleichverteilungsschwellwert = Double.valueOf(this
-					.getPropertyDefaultValues().get(PROPERTYKEY_GLEICHVERTEILUNGSSCHWELLWERT));
 		super.applyProperties();
 	}
 

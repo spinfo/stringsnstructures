@@ -142,6 +142,7 @@ public class SeqMemory extends modules.ModuleImpl {
 	
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		// Apply own properties
 		if (this.getProperties().containsKey(PROPERTYKEY_SPLITS))
 				this.splitNum = Integer.parseInt(this.getProperties().getProperty(PROPERTYKEY_SPLITS, 

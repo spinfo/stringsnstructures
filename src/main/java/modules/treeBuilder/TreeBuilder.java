@@ -133,6 +133,7 @@ public class TreeBuilder extends ModuleImpl {
 	 */
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		if (this.getProperties().containsKey(PROPERTYKEY_BUILDTRIE))
 			this.baueTrie = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_BUILDTRIE));
 		if (this.getProperties().containsKey(PROPERTYKEY_MAXLENGTH))

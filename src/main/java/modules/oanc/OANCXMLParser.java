@@ -525,6 +525,8 @@ public class OANCXMLParser extends ModuleImpl {
 	 */
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
+		
 		if (this.getProperties().containsKey(PROPERTYKEY_ADDSTARTSYMBOL))
 			this.fuegeStartSymbolHinzu = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_ADDSTARTSYMBOL));
 		if (this.getProperties().containsKey(PROPERTYKEY_ADDTERMINALSYMBOL))

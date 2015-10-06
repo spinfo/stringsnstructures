@@ -255,6 +255,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		
 		if (this.getProperties().containsKey(PROPERTYKEY_INPUTFILE))
 			this.file = new File(this.getProperties().getProperty(PROPERTYKEY_INPUTFILE));
@@ -264,28 +265,18 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		
 		if (this.getProperties().containsKey(PROPERTYKEY_ENCODING))
 			this.encoding = this.getProperties().getProperty(PROPERTYKEY_ENCODING);
-		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_ENCODING))
-				this.encoding = this.getPropertyDefaultValues().get(PROPERTYKEY_ENCODING);
 			
 		if (this.getProperties().containsKey(PROPERTYKEY_BUFFERLENGTH))
 			this.pufferGroesse = Integer.parseInt(this.getProperties().getProperty(PROPERTYKEY_BUFFERLENGTH));
-		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_BUFFERLENGTH))
-			this.pufferGroesse = Integer.parseInt(this.getPropertyDefaultValues().get(PROPERTYKEY_BUFFERLENGTH));
 		
 		if (this.getProperties().containsKey(PROPERTYKEY_DIVIDER))
 			this.divider = this.getProperties().getProperty(PROPERTYKEY_DIVIDER);
-		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_DIVIDER))
-				this.divider = this.getPropertyDefaultValues().get(PROPERTYKEY_DIVIDER);
 		
 		if (this.getProperties().containsKey(PROPERTYKEY_MINDESTKOSTENPROEBENE))
 			this.mindestKostenProSymbolEbene = Double.parseDouble(this.getProperties().getProperty(PROPERTYKEY_MINDESTKOSTENPROEBENE));
-		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_MINDESTKOSTENPROEBENE))
-			this.mindestKostenProSymbolEbene = Double.parseDouble(this.getPropertyDefaultValues().get(PROPERTYKEY_MINDESTKOSTENPROEBENE));
 	
 		if (this.getProperties().containsKey(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR))
 			this.bewertungsAbfallFaktor = Double.parseDouble(this.getProperties().getProperty(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR));
-		else if (this.getPropertyDefaultValues() != null && this.getPropertyDefaultValues().containsKey(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR))
-			this.bewertungsAbfallFaktor = Double.parseDouble(this.getPropertyDefaultValues().get(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR));
 		
 		if (this.getProperties().containsKey(PROPERTYKEY_BEWERTUNGAUSGEBEN))
 			this.bewertungAusgeben = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_BEWERTUNGAUSGEBEN));

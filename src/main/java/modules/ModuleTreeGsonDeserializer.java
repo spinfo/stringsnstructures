@@ -123,6 +123,7 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 
 				// ... and connect the ports with it
 				inputPort.addPipe(pipe, outputPort);
+				outputPort.addPipe(pipe, inputPort);
 
 			} catch (Exception e) {
 				// If something goes wrong, throw an appropriate exception

@@ -75,12 +75,10 @@ public class ASCIIGraph extends ModuleImpl {
 	 */
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		if (this.getProperties().containsKey(PROPERTYKEY_USEPARENTSYMBOL))
 			this.elternZeichenUebernehmen = Boolean.valueOf(this.getProperties()
 					.getProperty(PROPERTYKEY_USEPARENTSYMBOL));
-		else
-			this.elternZeichenUebernehmen = Boolean.valueOf(this
-					.getPropertyDefaultValues().get(PROPERTYKEY_USEPARENTSYMBOL));
 		super.applyProperties();
 	}
 

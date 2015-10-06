@@ -185,6 +185,8 @@ public class SmbFileWriterModule extends ModuleImpl {
 
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
+		
 		if (this.getProperties().containsKey(PROPERTYKEY_SMBURL))
 			this.smbUrl = this.getProperties().getProperty(
 					PROPERTYKEY_SMBURL);
@@ -194,16 +196,9 @@ public class SmbFileWriterModule extends ModuleImpl {
 		if (this.getProperties().containsKey(PROPERTYKEY_ENCODING))
 			this.encoding = this.getProperties().getProperty(
 					PROPERTYKEY_ENCODING);
-		else
-			this.encoding = this.getPropertyDefaultValues().get(
-					PROPERTYKEY_ENCODING);
 		if (this.getProperties().containsKey(PROPERTYKEY_BUFFERLENGTH))
 			this.bufferLength = Integer.parseInt(this.getProperties()
 					.getProperty(PROPERTYKEY_BUFFERLENGTH));
-		else if (this.getPropertyDefaultValues().containsKey(
-				PROPERTYKEY_BUFFERLENGTH))
-			this.bufferLength = Integer.parseInt(this
-					.getPropertyDefaultValues().get(PROPERTYKEY_BUFFERLENGTH));
 		if (this.getProperties().containsKey(PROPERTYKEY_SMBUSERNAME))
 			this.smbUsername = this.getProperties().getProperty(
 					PROPERTYKEY_SMBUSERNAME);

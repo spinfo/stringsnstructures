@@ -8,9 +8,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
@@ -22,13 +21,13 @@ import javax.swing.JDesktopPane;
 public class ModuleNetworkGlasspane extends JComponent {
 
 	private static final long serialVersionUID = -1423113285724582925L;
-	private Map<ModuleInputPortButton, ModuleOutputPortButton> linked; // InputPortButton - OutputPortButton
+	private ConcurrentHashMap<ModuleInputPortButton, ModuleOutputPortButton> linked; // InputPortButton - OutputPortButton
 	private JDesktopPane desktopPane;
 
     public ModuleNetworkGlasspane (JDesktopPane desktopPane)
     {
         super ();
-        this.linked = new HashMap<ModuleInputPortButton, ModuleOutputPortButton> ();
+        this.linked = new ConcurrentHashMap<ModuleInputPortButton, ModuleOutputPortButton> ();
         this.desktopPane = desktopPane;
     }
 
@@ -48,13 +47,14 @@ public class ModuleNetworkGlasspane extends JComponent {
 
     public void unlink ( ModuleOutputPortButton outputButton )
     {
-        Iterator<ModuleInputPortButton> keys = this.linked.keySet().iterator();
+    	this.linked.values().remove(outputButton);
+        /*Iterator<ModuleInputPortButton> keys = this.linked.keySet().iterator();
         while (keys.hasNext()){
         	ModuleInputPortButton key = keys.next();
         	if (this.linked.get(key).equals(outputButton)){
         		this.linked.remove(key);
         	}
-        }
+        }*/
         repaint ();
         this.desktopPane.repaint();
     }

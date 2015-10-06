@@ -89,6 +89,7 @@ public class ExampleModule extends ModuleImpl {
 	
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		
 		// Apply own properties
 		this.regex = this.getProperties().getProperty(PROPERTYKEY_REGEX, this.getPropertyDefaultValues().get(PROPERTYKEY_REGEX));

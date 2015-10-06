@@ -146,6 +146,7 @@ public class SeqTreePropController extends ModuleImpl {
 	
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		
 		// Apply own properties
 			/*no property keys*/

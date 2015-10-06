@@ -191,6 +191,7 @@ public class SeqNewickExproterController extends ModuleImpl {
 	
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		
 		// Apply own properties
 		if (this.getProperties().containsKey(PROPERTYKEY_NEWICK))

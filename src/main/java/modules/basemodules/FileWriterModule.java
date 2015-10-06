@@ -200,11 +200,10 @@ public class FileWriterModule extends ModuleImpl {
 
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
+		
 		if (this.getProperties().containsKey(PROPERTYKEY_OUTPUTFILE))
 			this.filePath = this.getProperties().getProperty(
-					PROPERTYKEY_OUTPUTFILE);
-		else if (this.getPropertyDefaultValues().containsKey(PROPERTYKEY_OUTPUTFILE))
-			this.filePath = this.getPropertyDefaultValues().get(
 					PROPERTYKEY_OUTPUTFILE);
 		if (this.getProperties().containsKey(PROPERTYKEY_USEGZIP))
 			this.useGzip = Boolean.parseBoolean(this.getProperties()
@@ -212,16 +211,9 @@ public class FileWriterModule extends ModuleImpl {
 		if (this.getProperties().containsKey(PROPERTYKEY_ENCODING))
 			this.encoding = this.getProperties().getProperty(
 					PROPERTYKEY_ENCODING);
-		else
-			this.encoding = this.getPropertyDefaultValues().get(
-					PROPERTYKEY_ENCODING);
 		if (this.getProperties().containsKey(PROPERTYKEY_BUFFERLENGTH))
 			this.bufferLength = Integer.parseInt(this.getProperties()
 					.getProperty(PROPERTYKEY_BUFFERLENGTH));
-		else if (this.getPropertyDefaultValues().containsKey(
-				PROPERTYKEY_BUFFERLENGTH))
-			this.bufferLength = Integer.parseInt(this
-					.getPropertyDefaultValues().get(PROPERTYKEY_BUFFERLENGTH));
 		super.applyProperties();
 	}
 

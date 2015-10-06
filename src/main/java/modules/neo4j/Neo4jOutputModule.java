@@ -107,6 +107,7 @@ public class Neo4jOutputModule extends ModuleImpl {
 	 */
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		if (this.getProperties().containsKey(PROPERTYKEY_NEO4JURI))
 			this.neo4jUri = this.getProperties().getProperty(PROPERTYKEY_NEO4JURI);
 		if (this.getProperties().containsKey(PROPERTYKEY_NEO4JUSR))

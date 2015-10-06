@@ -54,6 +54,26 @@ public abstract class ModuleImpl implements Module {
 	public void addOutputPort(OutputPort port){
 		this.outputPorts.put(port.getName(), port);
 	}
+	
+	/**
+	 * Inserts the default value into the property map
+	 * if the correspondent key is not present yet.
+	 */
+	public void setDefaultsIfMissing() {
+		// Apply default values if necessary
+		Iterator<String> propertyKeys = this.propertyDefaultValues.keySet()
+				.iterator();
+		while (propertyKeys.hasNext()) {
+			String propertyKey = propertyKeys.next();
+
+			// Check whether key is missing in property map
+			if (!this.properties.containsKey(propertyKey)) {
+				// Set property to default value
+				this.properties.put(propertyKey,
+						this.propertyDefaultValues.get(propertyKey));
+			}
+		}
+	}
 
 	@Override
 	public void applyProperties() throws Exception {

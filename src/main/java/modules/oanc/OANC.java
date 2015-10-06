@@ -145,6 +145,7 @@ public class OANC extends ModuleImpl {
 
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		
 		if (this.getProperties().containsKey(PROPERTYKEY_OANCLOCATION))
 			this.oancSpeicherorte = new String[]{this.getProperties().get(PROPERTYKEY_OANCLOCATION).toString()};

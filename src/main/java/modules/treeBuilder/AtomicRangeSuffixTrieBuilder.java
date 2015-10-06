@@ -116,6 +116,7 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 	 */
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		if (this.getProperties().containsKey(PROPERTYKEY_MAXLENGTH))
 			this.maxLaenge = Integer.parseInt(this.getProperties().getProperty(PROPERTYKEY_MAXLENGTH));
 		if (this.getProperties().containsKey(PROPERTYKEY_REVERSE))
