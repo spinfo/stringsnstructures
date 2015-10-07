@@ -15,7 +15,7 @@ import modules.oanc.OANCXMLParser;
 
 import org.junit.Test;
 
-public class ModuleTreeTest {
+public class ModuleNetworkTest {
 
 	@Test
 	public void test() throws Exception {
