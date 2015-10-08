@@ -171,4 +171,10 @@ public class OutputPort extends AbstractPort {
 		}
 	}
 
+
+	@Override
+	public boolean isConnected() {
+		return !this.connectedPorts.isEmpty();
+	}
+
 }

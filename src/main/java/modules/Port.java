@@ -16,4 +16,5 @@ public interface Port {
 	public void removePipe(Pipe pipe) throws NotFoundException;
 	public void reset() throws IOException;
 	public Module getParent();
+	public boolean isConnected();
 }

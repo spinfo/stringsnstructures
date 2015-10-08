@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -37,6 +38,7 @@ import modules.NotFoundException;
 import modules.NotSupportedException;
 import modules.OccupiedException;
 import modules.OutputPort;
+
 import common.PrettyLogRecord;
 import common.parallelization.CallbackReceiverImpl;
 
@@ -229,7 +231,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		JScrollPane messageListScrollPane = new JScrollPane();
 		
 		DefaultListModel<PrettyLogRecord> messageListModel = new DefaultListModel<PrettyLogRecord>();
+		LogListCellRenderer renderer = new LogListCellRenderer();
 		JList<PrettyLogRecord> messageList = new JList<PrettyLogRecord>(messageListModel);
+		messageList.setCellRenderer(renderer);
 		this.controller.getListLoggingHandler().setListModel(messageListModel);
 		this.controller.getListLoggingHandler().getAutoScrollLists().add(messageList);
 		messageListScrollPane.setViewportView(messageList);

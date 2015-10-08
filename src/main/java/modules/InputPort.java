@@ -118,6 +118,11 @@ public class InputPort extends AbstractPort {
 	public void reset() throws IOException {
 		this.pipe.reset();
 	}
+
+	@Override
+	public boolean isConnected() {
+		return this.connectedPort != null;
+	}
 	
 
 }

@@ -82,7 +82,9 @@ public class ExampleModule extends ModuleImpl {
 		
 		// Read first chunk of data from both inputs
 		int readCharsInput1 = this.getInputPorts().get(INPUT1ID).read(bufferInput1, 0, bufferSize);
-		int readCharsInput2 = this.getInputPorts().get(INPUT2ID).read(bufferInput2, 0, bufferSize);
+		int readCharsInput2 = -1;
+		if (this.getInputPorts().get(INPUT2ID).isConnected())
+			readCharsInput2 = this.getInputPorts().get(INPUT2ID).read(bufferInput2, 0, bufferSize);
 		
 		// Loop until no more data can be read from input 1
 		while (readCharsInput1 != -1){
@@ -115,7 +117,8 @@ public class ExampleModule extends ModuleImpl {
 			
 			// Read next chunk of data from both inputs
 			readCharsInput1 = this.getInputPorts().get(INPUT1ID).read(bufferInput1, 0, bufferSize);
-			readCharsInput2 = this.getInputPorts().get(INPUT2ID).read(bufferInput2, 0, bufferSize);
+			if (readCharsInput2 != -1)
+				readCharsInput2 = this.getInputPorts().get(INPUT2ID).read(bufferInput2, 0, bufferSize);
 		}
 		
 		// Close outputs (important!)
