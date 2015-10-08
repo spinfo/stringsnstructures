@@ -4,9 +4,9 @@ import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
 
 public class CompressSuffixTree {
 	
-	private static int nrSuccessors(int node,SuffixTreeAppl tree) {
+	/*private static int nrSuccessors(int node,SuffixTreeAppl tree) {
 		return tree.nodes[node].children.size();
-	}
+	}*/
 	
 	private static int checkContext(int suffixNode,SuffixTreeAppl tree1,
 			SuffixTreeAppl tree2) {
@@ -54,14 +54,15 @@ public class CompressSuffixTree {
 					System.out.println("found " +invertResult.result);
 				} else System.out.println("not found");
 				// End right
-				int resultRight=checkContext(suffix,normalTree,invertedTree);
-				int resultLeft;
+				//int resultRight=
+				checkContext(suffix,normalTree,invertedTree);
+				//int resultLeft;
 				// left inverted ends with '$', i.e. label starts at beginning
-				if((invertResult!=null) && (invertResult.result==3))
-					resultLeft= 10; // to do, guessed value
+				//if((invertResult!=null) && (invertResult.result==3))
+					//resultLeft= 10; // to do, guessed value
 				//
 				// Beginning left
-				else resultLeft=
+				//else resultLeft=
 				checkContext(invertResult.node,invertedTree,normalTree);
 				
 				

@@ -137,13 +137,11 @@ public class KeyWordInPhrase {
 					lineNr++;
 				}
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-				int x1 = 10 / 0;
+				LOGGER.log(Level.SEVERE, e.getMessage(), e);
 				System.exit(2);
 
 			} catch (IOException e) {
-				e.printStackTrace();
-				int x1 = 10 / 0;
+				LOGGER.log(Level.SEVERE, e.getMessage(), e);
 				System.exit(2);
 			}
 			w.close();
@@ -151,7 +149,6 @@ public class KeyWordInPhrase {
 
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			int x1 = 10 / 0;
 			System.exit(2);
 		}
 		return index;
@@ -201,7 +198,6 @@ public class KeyWordInPhrase {
 
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			int x1 = 10 / 0;
 			System.exit(6);
 		}
 	}
@@ -274,7 +270,6 @@ public class KeyWordInPhrase {
 
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			int x1 = 10 / 0;
 			System.exit(3);
 		}
 		return -1;
@@ -321,7 +316,6 @@ public class KeyWordInPhrase {
 			fw.close();
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			int x1 = 10 / 0;
 			System.exit(4);
 		}
 	}
@@ -337,7 +331,6 @@ public class KeyWordInPhrase {
 			fw.close();
 		} catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			int x1 = 10 / 0;
 			System.exit(5);
 		}
 	}
@@ -378,7 +371,6 @@ public class KeyWordInPhrase {
 
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
-			int x1 = 10 / 0;
 			// System.exit(7);
 		}
 	}

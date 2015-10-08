@@ -4,7 +4,7 @@ import java.util.logging.Logger;
 
 import modules.suffixTree.suffixTree.applications.event.MyEntryEvent;
 import modules.suffixTree.suffixTree.applications.event.MyExitEvent;
-import modules.suffixTree.suffixTree.node.Node;
+//import modules.suffixTree.suffixTree.node.Node;
 
 
 public class ResultListenerSuffixTreePath  implements ITreeWalkerListener{
@@ -22,7 +22,7 @@ public class ResultListenerSuffixTreePath  implements ITreeWalkerListener{
 		ResultSuffixTreeNodeStack.stack.push((Integer) e.getSource());
 	}
 	
-	private int pathLength() {
+	/*private int pathLength() {
 		int nodeNr,len=0;
 		Node node;
 		for (int i=0;i<ResultSuffixTreeNodeStack.stack.size();i++){
@@ -31,14 +31,14 @@ public class ResultListenerSuffixTreePath  implements ITreeWalkerListener{
 			len=len+node.nodeInfo.getEnd()-node.nodeInfo.getStart();
 		}
 		return len;
-	}
+	}*/
 	
 	@Override
 	public void exitaction(MyExitEvent e) {
-		int nrOfNode = ResultSuffixTreeNodeStack.stack.peek();	
+		//int nrOfNode = ResultSuffixTreeNodeStack.stack.peek();	
 		LOGGER.info("ResultListenerSuffixTreePath exitaction entry node:"
 				+ e.getSource());
-		Node node=ResultSuffixTreeNodeStack.suffixTree.nodes[nrOfNode];
+		//Node node=ResultSuffixTreeNodeStack.suffixTree.nodes[nrOfNode];
 		// terminal, save suffixes on path to root
 		/*if ((node instanceof GeneralisedSuffixTreeNode) && 
 				(node.children.isEmpty()))
