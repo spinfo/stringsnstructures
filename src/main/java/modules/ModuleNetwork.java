@@ -244,12 +244,15 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * @throws SecurityException
 	 */
 	public void stopModules() throws SecurityException {
-
+		Logger.getLogger("")
+		.log(Level.INFO,
+				"Stopping running module threads. Please wait...");
+			
 		// Check whether there are running threads and if not, write a
 		// message into the log
 		if (this.startedThreads.isEmpty())
 			Logger.getLogger("")
-					.log(Level.INFO,
+					.log(Level.WARNING,
 							"Excuse me, but there are no running threads to interrupt.");
 
 		// Interrupt running threads
@@ -349,7 +352,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		moduleThread.setName(module.getName());
 
 		// Final list of started threads
-		final ModuleNetwork moduleTreeInstance = this;
+		final ModuleNetwork moduleNetworkInstance = this;
 
 		// Define action to perform on success (note that this merely means the
 		// module finished without throwing an exception -- not necessarily that
@@ -369,7 +372,8 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 									"Module "
 											+ module.getName()
 											+ " did not finish processing successfully.");
-				moduleTreeInstance.removeStartedThread(moduleThread);
+				// Remove thread from list of running ones
+				moduleNetworkInstance.removeStartedThread(moduleThread);
 			}
 		};
 
@@ -380,7 +384,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 				// Since any exception already gets reported from within the
 				// super class' receiveException() method, we only need to
 				// remove the thread from our list.
-				moduleTreeInstance.removeStartedThread(moduleThread);
+				moduleNetworkInstance.removeStartedThread(moduleThread);
 			}
 		};
 
