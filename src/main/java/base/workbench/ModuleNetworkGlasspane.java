@@ -5,10 +5,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
@@ -22,6 +24,7 @@ public class ModuleNetworkGlasspane extends JComponent {
 	private static final long serialVersionUID = -1423113285724582925L;
 	private ConcurrentHashMap<ModuleInputPortButton, ModuleOutputPortButton> linked; // InputPortButton - OutputPortButton
 	private JDesktopPane desktopPane;
+	private AbstractModulePortButton activeLinkingPortButton = null;
 
     public ModuleNetworkGlasspane (JDesktopPane desktopPane)
     {
@@ -44,9 +47,17 @@ public class ModuleNetworkGlasspane extends JComponent {
         this.desktopPane.repaint();
     }
 
-    public void unlink ( ModuleOutputPortButton outputButton )
+    public void unlink ( final ModuleOutputPortButton outputButton )
     {
-    	this.linked.values().remove(outputButton);
+    	// Remove all links targeting the specified output button
+    	this.linked.values().removeIf(new Predicate<ModuleOutputPortButton> () {
+
+			@Override
+			public boolean test(ModuleOutputPortButton t) {
+				return t.equals(outputButton);
+			}});
+    	
+    	// Repaint visuals
         repaint ();
         this.desktopPane.repaint();
     }
@@ -64,6 +75,13 @@ public class ModuleNetworkGlasspane extends JComponent {
             Point p2 = getRectCenter ( getBoundsInWindow ( this.linked.get ( c1 ) ) );
             g2d.drawLine ( p1.x, p1.y, p2.x, p2.y );
         }
+        
+        // Draw link from selected button to mouse cursor during linking activity
+        /*if (this.activeLinkingPortButton != null){
+        	g2d.setPaint ( Color.RED );
+        	Point p1 = getRectCenter ( getBoundsInWindow ( this.activeLinkingPortButton ) );
+        	g2d.drawLine ( p1.x, p1.y, MouseInfo.getPointerInfo().getLocation().x, MouseInfo.getPointerInfo().getLocation().y );
+        }*/
     }
 
     private Point getRectCenter ( Rectangle rect )
@@ -93,4 +111,18 @@ public class ModuleNetworkGlasspane extends JComponent {
     {
         return false;
     }
+
+	/**
+	 * @return the activeLinkingPortButton
+	 */
+	public AbstractModulePortButton getActiveLinkingPortButton() {
+		return activeLinkingPortButton;
+	}
+
+	/**
+	 * @param activeLinkingPortButton the activeLinkingPortButton to set
+	 */
+	public void setActiveLinkingPortButton(AbstractModulePortButton activeLinkingPortButton) {
+		this.activeLinkingPortButton = activeLinkingPortButton;
+	}
 }

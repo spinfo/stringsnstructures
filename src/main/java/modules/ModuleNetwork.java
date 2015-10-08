@@ -197,9 +197,42 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		// Determine pipe to remove
 		Pipe pipe = inputPort.getPipe();
 		
-		// Remove pipe from both output and input port
-		inputPort.getConnectedPort().removePipe(pipe);
+		// Remove pipe from both output and input port (only need to call the input port's remove function)
 		inputPort.removePipe(pipe);
+
+		// Exit with success
+		return true;
+	}
+
+	/**
+	 * Removes all connections associated to the specified output port.
+	 * 
+	 * @param outputPort Output port
+	 * @return True if successful
+	 * @throws NotFoundException
+	 *             Thrown if there the specified output port is null
+	 */
+	public boolean removeConnection(OutputPort outputPort) throws NotFoundException {
+
+		// See whether the input variables are present
+		if (outputPort == null)
+			throw new NotFoundException("That input port does not have a connection associated to it.");
+		
+		// Loop over pipe lists
+		Iterator<List<Pipe>> pipeLists = outputPort.getPipes().values().iterator();
+		while (pipeLists.hasNext()){
+			List<Pipe> pipeList = pipeLists.next();
+			
+			// Loop over pipe list
+			Iterator<Pipe> pipes = pipeList.iterator();
+			while (pipes.hasNext()){
+				Pipe pipe = pipes.next();
+				
+				// Remove pipe from both ports it connects (only need to call the input port's remove function)
+				Port connectedPort = outputPort.getConnectedPort(pipe);
+				connectedPort.removePipe(pipe);
+			}
+		}
 
 		// Exit with success
 		return true;

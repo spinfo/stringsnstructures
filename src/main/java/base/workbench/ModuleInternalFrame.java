@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,8 +36,9 @@ public class ModuleInternalFrame extends JInternalFrame {
     private ActionListener actionListener;
     private List<ModuleInputPortButton> inputButtons = new ArrayList<ModuleInputPortButton>();
     private List<ModuleOutputPortButton> outputButtons = new ArrayList<ModuleOutputPortButton>();
+    private MouseListener mouseListener;
 
-    public ModuleInternalFrame(Module module, ActionListener actionListener) {
+    public ModuleInternalFrame(Module module, ActionListener actionListener, MouseListener mouseListener) {
         super("Document #" + (++openFrameCount), 
               true, //resizable
               true, //closable
@@ -45,6 +47,7 @@ public class ModuleInternalFrame extends JInternalFrame {
 
         this.module = module;
         this.actionListener = actionListener;
+        this.setMouseListener(mouseListener);
         
         this.setTitle(module.getName());
         
@@ -88,6 +91,7 @@ public class ModuleInternalFrame extends JInternalFrame {
         	ModuleInputPortButton inputPortButton = new ModuleInputPortButton(inputPort, MAXLENGTH, buttonFont);
         	inputPortButton.setActionCommand(ModuleWorkbenchGui.ACTION_ACTIVATEPORT);
         	inputPortButton.addActionListener(this.actionListener);
+        	inputPortButton.addMouseListener(mouseListener);
         	inputPortPanel.add(inputPortButton);
         	this.inputButtons.add(inputPortButton);
         }
@@ -98,6 +102,7 @@ public class ModuleInternalFrame extends JInternalFrame {
         	ModuleOutputPortButton outputPortButton = new ModuleOutputPortButton(outputPort, MAXLENGTH, buttonFont);
         	outputPortButton.setActionCommand(ModuleWorkbenchGui.ACTION_ACTIVATEPORT);
         	outputPortButton.addActionListener(this.actionListener);
+        	outputPortButton.addMouseListener(mouseListener);
         	outputPortPanel.add(outputPortButton);
         	this.outputButtons.add(outputPortButton);
         }
@@ -140,6 +145,20 @@ public class ModuleInternalFrame extends JInternalFrame {
 	 */
 	protected List<ModuleOutputPortButton> getOutputButtons() {
 		return outputButtons;
+	}
+
+	/**
+	 * @return the mouseListener
+	 */
+	public MouseListener getMouseListener() {
+		return mouseListener;
+	}
+
+	/**
+	 * @param mouseListener the mouseListener to set
+	 */
+	public void setMouseListener(MouseListener mouseListener) {
+		this.mouseListener = mouseListener;
 	}
 }
 

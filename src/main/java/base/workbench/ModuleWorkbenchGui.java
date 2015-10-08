@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.Iterator;
@@ -31,10 +33,10 @@ import javax.swing.event.ListSelectionListener;
 import modules.InputPort;
 import modules.Module;
 import modules.ModuleNetwork;
+import modules.NotFoundException;
 import modules.NotSupportedException;
 import modules.OccupiedException;
 import modules.OutputPort;
-
 import common.PrettyLogRecord;
 import common.parallelization.CallbackReceiverImpl;
 
@@ -43,7 +45,7 @@ import common.parallelization.CallbackReceiverImpl;
  * @author Marcel Boeing
  *
  */
-public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, ListSelectionListener {
+public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, ListSelectionListener, MouseListener {
 	
 	protected static final String ACTION_CLEARMODULENETWORK = "ACTION_CLEARMODULENETWORK";
 	protected static final String ACTION_ADDMODULETONETWORK = "ACTION_ADDMODULETONETWORK";
@@ -463,6 +465,31 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to load the module tree.", e1);
 		}
 	}
+	
+	/**
+	 * Returns true is in the process of linking two ports.
+	 * @return
+	 */
+	private boolean isLinking(){
+		return this.activeModulePortButton != null;
+	}
+	
+	/**
+	 * Sets variables to start the linking process
+	 * @param button
+	 */
+	private void startLinking(AbstractModulePortButton button){
+		this.activeModulePortButton = button;
+		this.moduleConnectionGlasspane.setActiveLinkingPortButton(button);
+	}
+	
+	/**
+	 * Sets variables to stop the linking process
+	 */
+	private void stopLinking(){
+		this.activeModulePortButton = null;
+		this.moduleConnectionGlasspane.setActiveLinkingPortButton(null);
+	}
 
 	/**
 	 * Links ports to each other based on which port buttons have been activated.
@@ -477,7 +504,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 
 		// Determine whether there is port label active (respectively a linking
 		// started)
-		if (this.activeModulePortButton != null) {
+		if (this.isLinking()) {
 
 			// Another label is already active -- make connection (if possible)
 			AbstractModulePortButton sourceButton = (AbstractModulePortButton) e
@@ -511,12 +538,13 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 						"Sorry, but I cannot connect those ports: "
 								+ e1.getMessage());
 				e1.printStackTrace();
+				// Reset the reference to the active port button
+				this.stopLinking();
 			}
 
 		} else {
 			// No active port label present -- start new linking activity
-			this.activeModulePortButton = (AbstractModulePortButton) e
-					.getSource();
+			this.startLinking((AbstractModulePortButton) e.getSource());
 		}
 	}
 
@@ -555,7 +583,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	 */
 	private void addModuleFrame(Module module) {
 		// Instantiate module frame
-		ModuleInternalFrame moduleFrame = new ModuleInternalFrame(module, this);
+		ModuleInternalFrame moduleFrame = new ModuleInternalFrame(module, this, this);
 
 		// Add frame listener
 		moduleFrame.addInternalFrameListener(this);
@@ -657,5 +685,55 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		this.selectedModuleTemplate = ((ToolTipJList<Module>)e.getSource()).getSelectedValue();
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		
+		// Only listen to right-clicks (button 3)
+		if (e.getButton() != MouseEvent.BUTTON3)
+			return;
+		
+		// Stop linking process (just in case)
+		this.stopLinking();
+		
+		// Remove port connection(s) when respective port button is right-clicked
+		Object source = e.getSource();
+		if (!AbstractModulePortButton.class.isAssignableFrom(source.getClass())){
+			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I just registered a mouse click for an object I do not know how to handle :-/ "+source.getClass().getCanonicalName());
+			return;
+		} else if (ModuleInputPortButton.class.isAssignableFrom(source.getClass())){
+			ModuleInputPortButton button = (ModuleInputPortButton) source;
+			this.moduleConnectionGlasspane.unlink(button);
+			try {
+				this.controller.getModuleNetwork().removeConnection((InputPort) button.getPort());
+			} catch (NotFoundException e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but there was an error removing the port connection.", e1);
+			}
+		} else if (ModuleOutputPortButton.class.isAssignableFrom(source.getClass())){
+			ModuleOutputPortButton button = (ModuleOutputPortButton) source;
+			this.moduleConnectionGlasspane.unlink(button);
+			try {
+				this.controller.getModuleNetwork().removeConnection((OutputPort) button.getPort());
+			} catch (NotFoundException e1) {
+				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but there was an error removing the port connection.", e1);
+			}
+		}
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
 	}
 }
