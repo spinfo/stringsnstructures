@@ -259,11 +259,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	 */
 	@Override
 	public void receiveCallback(Thread process, Object processingResult, boolean repeat) {
-		// Inserting a hook here -- update the GUI tree display
-		/*this.moduleJTree.invalidate();
-		this.moduleJTree.validate();
-		this.moduleJTree.repaint();
-		this.expandAllNodes(this.moduleJTree);*/ // TODO check whether this needs updating
+		// Inserting a hook here -- update the displayed icons
 		this.updateAllModuleFrameIcons();
 		super.receiveCallback(process, processingResult, repeat);
 	}
@@ -273,11 +269,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	 */
 	@Override
 	public void receiveException(Thread process, Throwable exception) {
-		// Inserting a hook here -- update the GUI tree display
-		/*this.moduleJTree.invalidate();
-		this.moduleJTree.validate();
-		this.moduleJTree.repaint();
-		this.expandAllNodes(this.moduleJTree);*/ // TODO check whether this needs updating
+		// Inserting a hook here -- update the displayed icons
 		this.updateAllModuleFrameIcons();
 		super.receiveException(process, exception);
 	}

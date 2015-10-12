@@ -23,6 +23,7 @@ import modules.basemodules.FileReaderModule;
 import modules.basemodules.FileWriterModule;
 import modules.basemodules.SmbFileReaderModule;
 import modules.basemodules.SmbFileWriterModule;
+import modules.hal.HalAdvancedModule;
 import modules.neo4j.Neo4jOutputModule;
 import modules.oanc.OANC;
 import modules.oanc.OANCXMLParser;
@@ -206,6 +207,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				SeqNewickExproterControllerProperties);
 		SeqNewickExproterControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExproterController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqNewickExproterController.applyProperties();
+		
+		// Prepare HAL advenced module
+		Properties halAdvancedModuleProperties = new Properties();
+		HalAdvancedModule halAdvancedModule = new HalAdvancedModule(moduleNetwork,
+				halAdvancedModuleProperties);
+		halAdvancedModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, halAdvancedModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		halAdvancedModule.applyProperties();
 				
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
@@ -227,6 +235,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(seqTreePropController.getName(),seqTreePropController);
 		availableModules.put(seqSuffixTrie2SuffixTreeController.getName(),seqSuffixTrie2SuffixTreeController);
 		availableModules.put(seqNewickExproterController.getName(),seqNewickExproterController);
+		availableModules.put(halAdvancedModule.getName(),halAdvancedModule);
 		
 	}
 	
