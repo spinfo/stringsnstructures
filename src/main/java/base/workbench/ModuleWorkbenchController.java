@@ -21,6 +21,7 @@ import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
 import modules.basemodules.FileReaderModule;
 import modules.basemodules.FileWriterModule;
+import modules.basemodules.RegExReplacementModule;
 import modules.basemodules.SmbFileReaderModule;
 import modules.basemodules.SmbFileWriterModule;
 import modules.hal.HalAdvancedModule;
@@ -214,6 +215,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				halAdvancedModuleProperties);
 		halAdvancedModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, halAdvancedModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		halAdvancedModule.applyProperties();
+		
+		// Prepare regex replacement module
+		Properties regExReplacementModuleProperties = new Properties();
+		RegExReplacementModule regExReplacementModule = new RegExReplacementModule(moduleNetwork,
+				regExReplacementModuleProperties);
+		regExReplacementModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, regExReplacementModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		regExReplacementModule.applyProperties();
 				
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
@@ -236,6 +244,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(seqSuffixTrie2SuffixTreeController.getName(),seqSuffixTrie2SuffixTreeController);
 		availableModules.put(seqNewickExproterController.getName(),seqNewickExproterController);
 		availableModules.put(halAdvancedModule.getName(),halAdvancedModule);
+		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
 		
 	}
 	
