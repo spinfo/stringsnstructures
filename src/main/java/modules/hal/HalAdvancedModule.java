@@ -100,13 +100,10 @@ public class HalAdvancedModule extends ModuleImpl {
 				this.windowSize + 1);
 
 		// Read input
-		while (reader.ready() || !sequenceQueue.isEmpty()) {
+		String segment;
+		while ((segment = reader.readLine()) != null || !sequenceQueue.isEmpty()) {
 
-			if (reader.ready()){
-				// Read segment
-				String segment = reader.readLine();
-				
-				System.out.println("Lese Segment: "+segment);
+			if (segment != null){
 				
 				// If there is not yet a map entry for that segment, construct one
 				if (!sequenceMap.containsKey(segment)) {
@@ -115,6 +112,9 @@ public class HalAdvancedModule extends ModuleImpl {
 
 				// Add segment to queue
 				sequenceQueue.put(segment);
+				
+				// Reset segment
+				segment = null;
 
 				// If the queue is not yet full, skip the rest
 				if (sequenceQueue.size() < this.windowSize + 1)
@@ -123,8 +123,6 @@ public class HalAdvancedModule extends ModuleImpl {
 
 			// Split the first sequence from the queue
 			String firstSegment = sequenceQueue.poll();
-			
-			System.out.println("Bearbeite Segment: "+firstSegment);
 
 			// Determine line map for that segment
 			TreeMap<String, Integer[]> lineMap = sequenceMap.get(firstSegment);
@@ -135,8 +133,6 @@ public class HalAdvancedModule extends ModuleImpl {
 							// element
 			while (queueIterator.hasNext()) {
 				String queuedSegment = queueIterator.next();
-				
-				System.out.println("Segment in Warteschlange: "+queuedSegment);
 				
 				// Determine whether the two current segments (first in queue
 				// and the one the iterator is pointing to) already have an
@@ -150,8 +146,6 @@ public class HalAdvancedModule extends ModuleImpl {
 					}
 					lineMap.put(queuedSegment, positionArray);
 				}
-				
-				System.out.println("War: "+positionArray[index]);
 
 				// Update the integer array in the respective position
 				Integer cooccurrenceCounter = positionArray[index];
@@ -161,7 +155,6 @@ public class HalAdvancedModule extends ModuleImpl {
 				} else {
 					positionArray[index] += 1;
 				}
-				System.out.println("Ist: "+positionArray[index]);
 
 				// Increase index
 				index++;
