@@ -478,8 +478,11 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 						OutputPort outputPort = (OutputPort)((InputPort)inputButton.getPort()).getConnectedPort();
 						
 						// Not-so-elegant way to get to the respective output button (if present)
-						Module connectedModule = outputPort.getParent();
-						ModuleInternalFrame connectedModuleFrame = this.moduleFrameMap.get(connectedModule);
+						ModuleInternalFrame connectedModuleFrame = null;
+						if (outputPort != null){
+							Module connectedModule = outputPort.getParent();
+							connectedModuleFrame = this.moduleFrameMap.get(connectedModule);
+						}
 						
 						// Check whether there is a connection to be drawn at all
 						if (connectedModuleFrame != null){

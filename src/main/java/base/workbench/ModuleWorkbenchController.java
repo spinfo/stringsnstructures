@@ -328,17 +328,27 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	}
 	
 	/**
-	 * Loads the module tree from a file.
+	 * Loads the module network from a file and adds it to the current one.
 	 * @param file file
 	 * @return Loaded module tree
 	 * @throws Exception 
 	 */
 	public ModuleNetwork loadModuleNetworkFromFile(File file) throws Exception {
+		return this.loadModuleNetworkFromFile(file, false);
+	}
+	
+	/**
+	 * Loads the module network from a file.
+	 * @param file file
+	 * @param replaceCurrent If true, replaces the current module network
+	 * @return Loaded module tree
+	 * @throws Exception 
+	 */
+	public ModuleNetwork loadModuleNetworkFromFile(File file, boolean replaceCurrent) throws Exception {
 				
 		// Read JSON representation of the current module tree from file
 		FileReader fileReader = new FileReader(file);
 		ModuleNetwork loadedModuleNetwork = this.jsonConverter.fromJson(fileReader, ModuleNetwork.class);
-		this.setModuleNetwork(loadedModuleNetwork);
 				
 		// Close file writer
 		fileReader.close();
@@ -348,8 +358,14 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		while (modules.hasNext()){
 			Module module = modules.next();
 			module.applyProperties();
+			if (!replaceCurrent && this.getModuleNetwork() != null)
+				this.getModuleNetwork().addModule(module);
 			Logger.getLogger("").log(Level.INFO, "Loaded module "+module.getName());
 		}
+		
+		// Replace the current module network if specified to do so
+		if (replaceCurrent || this.getModuleNetwork() == null)
+			this.setModuleNetwork(loadedModuleNetwork);
 		
         // Write log message
         Logger.getLogger("").log(Level.INFO, "Successfully loaded the module network from the file "+file.getPath());
