@@ -1,9 +1,13 @@
 package base.workbench;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
@@ -20,6 +24,7 @@ import javax.swing.JButton;
 import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,7 +42,6 @@ import modules.NotFoundException;
 import modules.NotSupportedException;
 import modules.OccupiedException;
 import modules.OutputPort;
-
 import common.PrettyLogRecord;
 import common.parallelization.CallbackReceiverImpl;
 
@@ -143,15 +147,60 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		
 		availableModulesPanel.add(availableModulesScrollPane);
 		
-		JPanel moduleTreePanel = new JPanel();
-		splitPane.setRightComponent(moduleTreePanel);
-		moduleTreePanel.setLayout(new BorderLayout(0, 0));
+		JPanel moduleNetworkPanel = new JPanel();
+		splitPane.setRightComponent(moduleNetworkPanel);
+		moduleNetworkPanel.setLayout(new BorderLayout(0, 0));
 		
 		// Module desktop pane
 		this.moduleJDesktopPane = new JDesktopPane();
-		ModuleDesktopManager moduleDesktopManager = new ModuleDesktopManager();
+		
+		// Add a desktop manager to handle internal frame movement
+		final ModuleDesktopManager moduleDesktopManager = new ModuleDesktopManager();
 		this.moduleJDesktopPane.setDesktopManager(moduleDesktopManager);
-		moduleTreePanel.add(this.moduleJDesktopPane);
+		
+		// Add component adapter to re-adjust frame positioning upon window resize
+		this.moduleJDesktopPane.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent evt) {
+				// Determine desktop pane
+				JDesktopPane desktopPane = (JDesktopPane) evt.getSource();
+
+				// Loop over all internal frames present
+				for (int i = 0; i < desktopPane.getAllFrames().length; i++) {
+					try {
+						JInternalFrame frame = desktopPane.getAllFrames()[i];
+						Rectangle rect = frame.getBounds();
+
+						Dimension d = desktopPane.getSize();
+						int x = rect.x;
+						int y = rect.y;
+
+						// Determine valid bounds
+						if (x < 0) { // too far left?
+							x = 0; // flush against the left side
+						} else {
+							if (x + frame.getWidth() > d.width) { // too far right?
+								x = d.width - frame.getWidth(); // flush against right side
+							}
+						}
+						if (y < 0) { // too high?
+							y = 0; // flush against the top
+						} else {
+							if (y + frame.getHeight() > d.height) { // too low?
+								y = d.height - frame.getHeight(); // flush against the bottom
+							}
+						}
+
+						// Move frame
+						moduleDesktopManager.setBoundsForFrame(frame, x, y, rect.width, rect.height);
+					} catch (ArrayIndexOutOfBoundsException e) {
+					}
+				}
+			}
+		});
+		
+		// Add desktop pane to parent panel
+		moduleNetworkPanel.add(this.moduleJDesktopPane);
 		
 		// Add glasspane (for drawing the port connections onto)
 		this.moduleConnectionGlasspane = new ModuleNetworkGlasspane(this.moduleJDesktopPane);
@@ -161,7 +210,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.setOrientation(JToolBar.VERTICAL);
-		moduleTreePanel.add(toolBar, BorderLayout.WEST);
+		moduleNetworkPanel.add(toolBar, BorderLayout.WEST);
 		
 		
 		// Define toolbar buttons
