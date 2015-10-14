@@ -289,6 +289,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		
 		topSplitPane.setLeftComponent(splitPane);
 		topSplitPane.setRightComponent(panel);
+		topSplitPane.setResizeWeight(1d);
 		frame.getContentPane().add(topSplitPane, BorderLayout.CENTER);
 		
 	}
