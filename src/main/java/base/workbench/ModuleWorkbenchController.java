@@ -16,6 +16,7 @@ import modules.ModuleImpl;
 import modules.ModuleNetwork;
 import modules.ModuleNetworkGsonSerializer;
 import modules.ModuleTreeGsonDeserializer;
+import modules.ListSorting.ListSort;
 import modules.artificialSeqs.CreateArtificialSeqs;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
@@ -223,6 +224,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				regExReplacementModuleProperties);
 		regExReplacementModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, regExReplacementModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		regExReplacementModule.applyProperties();
+
+		// Prepare ListSorting module
+		Properties listSortingProperties = new Properties();
+		ListSort listSort = new ListSort(moduleNetwork,
+				listSortingProperties);
+		listSortingProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, listSort.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		listSort.applyProperties();
 				
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
@@ -246,6 +254,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(seqNewickExproterController.getName(),seqNewickExproterController);
 		availableModules.put(halAdvancedModule.getName(),halAdvancedModule);
 		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
+		availableModules.put(listSort.getName(), listSort);
 		
 	}
 	
