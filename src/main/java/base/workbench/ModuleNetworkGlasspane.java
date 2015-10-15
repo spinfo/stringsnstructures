@@ -70,9 +70,18 @@ public class ModuleNetworkGlasspane extends JComponent {
         g2d.setPaint ( Color.GREEN );
         for ( JComponent c1 : linked.keySet () )
         {
-            Point p1 = getRectCenter ( getBoundsInWindow ( c1 ) );
-            Point p2 = getRectCenter ( getBoundsInWindow ( this.linked.get ( c1 ) ) );
-            g2d.drawLine ( p1.x, p1.y, p2.x, p2.y );
+        	Rectangle r1 = getBoundsInWindow ( c1 );
+        	Rectangle r2 = getBoundsInWindow ( this.linked.get ( c1 ) );
+            Point p1 = getRectCenter ( r1 );
+            Point p2 = getRectCenter ( r2 );
+            int xoffset = 10;
+            int x1 = r1.x + xoffset;
+            int x2 = r2.x + r2.width-xoffset;
+            if (ModuleOutputPortButton.class.isAssignableFrom(c1.getClass())){
+                x2 = r2.x + xoffset;
+                x1 = r1.x + r1.width-xoffset;
+            }
+            g2d.drawLine ( x1, p1.y, x2, p2.y );
         }
         
         // Draw link from selected button to mouse cursor during linking activity
