@@ -29,6 +29,9 @@ public class ExampleModule extends ModuleImpl {
 		
 		// Call parent constructor
 		super(callbackReceiver, properties);
+		
+		// Add module description
+		this.setDescription("Example module. Entwines two inputs and replaces parts via regex.");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_REGEX, "Regular expression to search for");

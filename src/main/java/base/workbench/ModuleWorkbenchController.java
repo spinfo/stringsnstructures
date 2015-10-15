@@ -19,6 +19,7 @@ import modules.ModuleTreeGsonDeserializer;
 import modules.artificialSeqs.CreateArtificialSeqs;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
+import modules.basemodules.FileFinderModule;
 import modules.basemodules.FileReaderModule;
 import modules.basemodules.FileWriterModule;
 import modules.basemodules.RegExReplacementModule;
@@ -26,7 +27,6 @@ import modules.basemodules.SmbFileReaderModule;
 import modules.basemodules.SmbFileWriterModule;
 import modules.hal.HalAdvancedModule;
 import modules.neo4j.Neo4jOutputModule;
-import modules.oanc.OANC;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmenErmittlerModul;
 import modules.seqNewickExporter.SeqNewickExproterController;
@@ -42,6 +42,7 @@ import modules.visualizationModules.ColourGraph;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
+
 import common.ListLoggingHandler;
 import common.parallelization.CallbackReceiver;
 
@@ -70,11 +71,11 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		
 		// Define available modules TODO Load at runtime
 		
-		// Prepare OANC module
+		// Prepare FileFinderModule module
 		Properties oancProperties = new Properties();
-		OANC oanc = new OANC(moduleNetwork, oancProperties);
-		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, oanc.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		oanc.applyProperties();
+		FileFinderModule fileFinderModule = new FileFinderModule(moduleNetwork, oancProperties);
+		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileFinderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		fileFinderModule.applyProperties();
 
 		// Prepare FileWriter module
 		Properties fileWriterProperties = new Properties();
@@ -90,7 +91,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		smbFileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, smbFileWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		smbFileWriter.applyProperties();
 
-		// Prepare OANC parser module
+		// Prepare FileFinderModule parser module
 		Properties oancParserProperties = new Properties();
 		OANCXMLParser oancParser = new OANCXMLParser(moduleNetwork,
 				oancParserProperties);
@@ -229,7 +230,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(smbFileReader.getName(),smbFileReader);
 		availableModules.put(fileWriter.getName(),fileWriter);
 		availableModules.put(smbFileWriter.getName(),smbFileWriter);
-		availableModules.put(oanc.getName(),oanc);
+		availableModules.put(fileFinderModule.getName(),fileFinderModule);
 		availableModules.put(oancParser.getName(),oancParser);
 		availableModules.put(treeBuilder.getName(),treeBuilder);
 		availableModules.put(atomicRangeSuffixTrieBuilder.getName(),atomicRangeSuffixTrieBuilder);

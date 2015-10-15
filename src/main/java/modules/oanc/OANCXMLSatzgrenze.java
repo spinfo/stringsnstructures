@@ -1,7 +1,7 @@
 package modules.oanc;
 
 /**
- * Beinhaltet Satzgrenzeninformation (OANC)
+ * Beinhaltet Satzgrenzeninformation (FileFinderModule)
  * @author marcel
  *
  */

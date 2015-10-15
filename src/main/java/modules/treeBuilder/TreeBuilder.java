@@ -39,7 +39,7 @@ public class TreeBuilder extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O
-		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded OANC data.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded FileFinderModule data.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort(OUTPUTID, "JSON-encoded suffix trie.", this);
 		outputPort.addSupportedPipe(CharPipe.class);

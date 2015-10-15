@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
+import javax.swing.ToolTipManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.event.ListSelectionEvent;
@@ -42,6 +43,7 @@ import modules.NotFoundException;
 import modules.NotSupportedException;
 import modules.OccupiedException;
 import modules.OutputPort;
+
 import common.PrettyLogRecord;
 import common.parallelization.CallbackReceiverImpl;
 
@@ -139,6 +141,8 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		// Initialize available modules moduleTemplateList
 		moduleTemplateList = new ToolTipJList<Module>(this.controller.getAvailableModules().values().toArray(new Module[this.controller.getAvailableModules().size()]));
 		moduleTemplateList.addListSelectionListener(this);
+		// Extend tooltip display time
+		ToolTipManager.sharedInstance().setDismissDelay(10000); 
 		
 		// Scrollpane for the module moduleTemplateList
 		JScrollPane availableModulesScrollPane = new JScrollPane();

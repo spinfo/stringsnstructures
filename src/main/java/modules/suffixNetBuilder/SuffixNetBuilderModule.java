@@ -49,7 +49,7 @@ public class SuffixNetBuilderModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Define I/O
-		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded OANC-data, with the parsed contents of one source file per line.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded FileFinderModule-data, with the parsed contents of one source file per line.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort(OUTPUTID, "Suffix net in binary object form.", this);
 		outputPort.addSupportedPipe(BytePipe.class);

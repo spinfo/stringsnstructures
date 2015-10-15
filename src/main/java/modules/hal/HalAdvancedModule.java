@@ -35,6 +35,11 @@ public class HalAdvancedModule extends ModuleImpl {
 
 		// Call parent constructor
 		super(callbackReceiver, properties);
+		
+		// Add module description
+		this.setDescription("Implementation of the HAL (Hyperspace Analogue to Language) method, "
+				+ "used to find similarities in context, "
+				+ "modified to keep track of relative context position and quantity.");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_WINDOWSIZE,

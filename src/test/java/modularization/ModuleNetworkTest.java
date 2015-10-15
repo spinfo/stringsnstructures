@@ -9,8 +9,8 @@ import modules.CharPipe;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
 import modules.basemodules.ConsoleWriterModule;
+import modules.basemodules.FileFinderModule;
 import modules.basemodules.FileWriterModule;
-import modules.oanc.OANC;
 import modules.oanc.OANCXMLParser;
 
 import org.junit.Test;
@@ -32,11 +32,11 @@ public class ModuleNetworkTest {
 		// Set up module tree
 		ModuleNetwork moduleNetwork = new ModuleNetwork();
 		
-		// Prepare OANC module
+		// Prepare FileFinderModule module
 		Properties oancProperties = new Properties();
-		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "OANC");
-		oancProperties.setProperty(OANC.PROPERTYKEY_OANCLOCATION, oancLoc0);
-		OANC oanc = new OANC(moduleNetwork,oancProperties);
+		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileFinderModule");
+		oancProperties.setProperty(FileFinderModule.PROPERTYKEY_PATHTOSEARCH, oancLoc0);
+		FileFinderModule fileFinderModule = new FileFinderModule(moduleNetwork,oancProperties);
 		
 		//moduleNetwork.setRootModule(oanc); // Necessary before adding more modules!
 		
@@ -47,9 +47,9 @@ public class ModuleNetworkTest {
 		fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_ENCODING, "UTF-8");
 		FileWriterModule fileWriter = new FileWriterModule(moduleNetwork,fileWriterProperties);
 		
-		// Prepare OANC parser module
+		// Prepare FileFinderModule parser module
 		Properties oancParserProperties = new Properties();
-		oancParserProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "OANC-Parser");
+		oancParserProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileFinderModule-Parser");
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_ADDSTARTSYMBOL, Boolean.toString(true));
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_ADDTERMINALSYMBOL, Boolean.toString(true));
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_CONVERTTOLOWERCASE, Boolean.toString(true));
@@ -76,13 +76,13 @@ public class ModuleNetworkTest {
 		ExampleModule exampleModule = new ExampleModule(moduleTree, exampleModuleProperties);*/
 		
 		// Add modules to tree
-		moduleNetwork.addModule(oanc);
+		moduleNetwork.addModule(fileFinderModule);
 		moduleNetwork.addModule(oancParser);
 		moduleNetwork.addModule(fileWriter);
 		moduleNetwork.addModule(consoleWriter);
 
 		// Connect module ports
-		moduleNetwork.addConnection(oanc.getOutputPorts().get("output"), oancParser.getInputPorts().get("input"), new CharPipe());
+		moduleNetwork.addConnection(fileFinderModule.getOutputPorts().get("output"), oancParser.getInputPorts().get("input"), new CharPipe());
 		moduleNetwork.addConnection(oancParser.getOutputPorts().get("output"), fileWriter.getInputPorts().get("input"), new CharPipe());
 		moduleNetwork.addConnection(oancParser.getOutputPorts().get("output"), consoleWriter.getInputPorts().get("input"), new CharPipe());
 		

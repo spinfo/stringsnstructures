@@ -25,6 +25,9 @@ public class ConsoleWriterModule extends ModuleImpl {
 	public ConsoleWriterModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
 		super(callbackReceiver, properties);
+		
+		// Add module description
+		this.setDescription("Writes char output to console.");
 
 		// Define I/O Ports
 		InputPort inputPort = new InputPort(INPUTID,

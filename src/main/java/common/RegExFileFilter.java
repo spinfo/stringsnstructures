@@ -3,12 +3,12 @@ package common;
 import java.io.File;
 import java.io.FileFilter;
 
-public class RegAusdruckDateiFilter implements FileFilter {
+public class RegExFileFilter implements FileFilter {
 	
 	private String regAusdruck;
 
 
-	public RegAusdruckDateiFilter(String regAusdruck) {
+	public RegExFileFilter(String regAusdruck) {
 		super();
 		this.regAusdruck = regAusdruck;
 	}

@@ -3,7 +3,7 @@ package common;
 import java.io.File;
 import java.io.FileFilter;
 
-public class VerzeichnisFilter implements FileFilter {
+public class DirectoryFilter implements FileFilter {
 
 	@Override
 	public boolean accept(File pathname) {

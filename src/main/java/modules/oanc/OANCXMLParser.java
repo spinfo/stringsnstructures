@@ -72,8 +72,10 @@ public class OANCXMLParser extends ModuleImpl {
 	public OANCXMLParser(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
 		
+		this.setDescription("Parses (O)ANC source files and outputs their contents in a configurable way. Needs a JSON list of the raw source text files as input; automatically determines the corresponding metadata XML files.");
+		
 		// Define I/O
-		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded list of source file locations.", this);
+		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded list of source text file locations.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort(OUTPUTID, "Character output based on settings.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
@@ -91,7 +93,7 @@ public class OANCXMLParser extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_SPACE,"symbol or string to divide words from each other");
 		
 		// Add default values
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "OANC-XML-Parser");
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "OANC-Parser");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ADDSTARTSYMBOL, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ADDTERMINALSYMBOL, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_CONVERTTOLOWERCASE, "true");

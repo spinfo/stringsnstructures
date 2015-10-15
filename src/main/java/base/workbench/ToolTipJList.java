@@ -15,6 +15,7 @@ public class ToolTipJList<E> extends JList<Module> {
 		super(array);
 	}
 
+	@Override
 	public String getToolTipText(MouseEvent event) {
 	    Point p = event.getPoint();
 	    int location = locationToIndex(p);

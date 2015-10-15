@@ -10,7 +10,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Verarbeitet OANC-Annotations-XML
+ * Verarbeitet FileFinderModule-Annotations-XML
  * @author marcel
  *
  */

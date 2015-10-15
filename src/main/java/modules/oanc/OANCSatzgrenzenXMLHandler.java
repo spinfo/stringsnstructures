@@ -8,7 +8,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Verarbeitet OANC-Satzgenzen-XML
+ * Verarbeitet FileFinderModule-Satzgenzen-XML
  * @author marcel
  *
  */

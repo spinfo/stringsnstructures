@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Beinhaltet Satzgrenzeninformation (OANC)
+ * Beinhaltet Satzgrenzeninformation (FileFinderModule)
  * @author marcel
  *
  */
