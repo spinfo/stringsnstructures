@@ -24,6 +24,8 @@ public class ModuleNetworkGlasspane extends JComponent {
 	private ConcurrentHashMap<ModuleInputPortButton, ModuleOutputPortButton> linked; // InputPortButton - OutputPortButton
 	private JDesktopPane desktopPane;
 	private AbstractModulePortButton activeLinkingPortButton = null;
+	private Color linkColor = new Color(0,255,0);
+	private Color linkEndColor = new Color(0,155,0);
 
     public ModuleNetworkGlasspane (JDesktopPane desktopPane)
     {
@@ -67,7 +69,7 @@ public class ModuleNetworkGlasspane extends JComponent {
         g2d.setStroke(new BasicStroke(3));
         g2d.setRenderingHint ( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
-        g2d.setPaint ( Color.GREEN );
+        
         for ( JComponent c1 : linked.keySet () )
         {
         	Rectangle r1 = getBoundsInWindow ( c1 );
@@ -81,7 +83,11 @@ public class ModuleNetworkGlasspane extends JComponent {
                 x2 = r2.x + xoffset;
                 x1 = r1.x + r1.width-xoffset;
             }
+            g2d.setPaint ( this.linkColor );
             g2d.drawLine ( x1, p1.y, x2, p2.y );
+            g2d.setPaint ( this.linkEndColor );
+            g2d.drawOval(x1-3, p1.y-3, 6, 6);
+            g2d.drawOval(x2-3, p2.y-3, 6, 6);
         }
         
         // Draw link from selected button to mouse cursor during linking activity
