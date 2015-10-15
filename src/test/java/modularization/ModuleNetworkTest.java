@@ -34,8 +34,9 @@ public class ModuleNetworkTest {
 		
 		// Prepare FileFinderModule module
 		Properties oancProperties = new Properties();
-		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileFinderModule");
+		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileFinder");
 		oancProperties.setProperty(FileFinderModule.PROPERTYKEY_PATHTOSEARCH, oancLoc0);
+		oancProperties.setProperty(FileFinderModule.PROPERTYKEY_FILENAMESUFFIX, "txt");
 		FileFinderModule fileFinderModule = new FileFinderModule(moduleNetwork,oancProperties);
 		
 		//moduleNetwork.setRootModule(oanc); // Necessary before adding more modules!
@@ -49,7 +50,7 @@ public class ModuleNetworkTest {
 		
 		// Prepare FileFinderModule parser module
 		Properties oancParserProperties = new Properties();
-		oancParserProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "FileFinderModule-Parser");
+		oancParserProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, "OANC-Parser");
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_ADDSTARTSYMBOL, Boolean.toString(true));
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_ADDTERMINALSYMBOL, Boolean.toString(true));
 		oancParserProperties.setProperty(OANCXMLParser.PROPERTYKEY_CONVERTTOLOWERCASE, Boolean.toString(true));
@@ -82,7 +83,7 @@ public class ModuleNetworkTest {
 		moduleNetwork.addModule(consoleWriter);
 
 		// Connect module ports
-		moduleNetwork.addConnection(fileFinderModule.getOutputPorts().get("output"), oancParser.getInputPorts().get("input"), new CharPipe());
+		moduleNetwork.addConnection(fileFinderModule.getOutputPorts().get("file list"), oancParser.getInputPorts().get("input"), new CharPipe());
 		moduleNetwork.addConnection(oancParser.getOutputPorts().get("output"), fileWriter.getInputPorts().get("input"), new CharPipe());
 		moduleNetwork.addConnection(oancParser.getOutputPorts().get("output"), consoleWriter.getInputPorts().get("input"), new CharPipe());
 		

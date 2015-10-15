@@ -86,7 +86,7 @@ public class ModuleNetworkSerializationTest {
 			moduleNetwork.addModule(consoleWriter);
 
 			// Connect module ports
-			fileFinderModule.getOutputPorts().get("output").addPipe(new CharPipe(), oancParser.getInputPorts().get("input"));
+			fileFinderModule.getOutputPorts().get("file list").addPipe(new CharPipe(), oancParser.getInputPorts().get("input"));
 			oancParser.getOutputPorts().get("output").addPipe(new CharPipe(), fileWriter.getInputPorts().get("input"));
 			oancParser.getOutputPorts().get("output").addPipe(new CharPipe(), consoleWriter.getInputPorts().get("input"));
 
@@ -114,6 +114,7 @@ public class ModuleNetworkSerializationTest {
 			}
 			
 		} catch (Exception e) {
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}
