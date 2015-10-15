@@ -501,7 +501,7 @@ public class OANCXMLParser extends ModuleImpl {
 						Iterator<String> worte = bereinigterSatz.iterator();
 						while(worte.hasNext()){
 							stringBuilder.append(worte.next());
-							if (worte.hasNext())
+							//if (worte.hasNext())
 								stringBuilder.append(this.wortTrennzeichen);
 						}
 						
