@@ -74,6 +74,7 @@ public class CreateArtificialSeqs extends modules.ModuleImpl {
 	
 	@Override
 	public void applyProperties() throws Exception {
+		super.setDefaultsIfMissing();
 		if (this.getProperties().containsKey(PROPERTYKEY_SEQLEN))
 			this.seqLength = Integer.parseInt(this.getProperties().getProperty(
 					PROPERTYKEY_SEQLEN));
