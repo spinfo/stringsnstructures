@@ -191,10 +191,7 @@ public class SeqTreePropController extends ModuleImpl {
 		//define the properties of the root node
 		seqProperties = new HashMap<String, SeqProperties>();
 		seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, rootNode.getValue(), 0));
-		/*
-		//instantiate new sackin index
-		sackinIndex = new ArrayList<SeqSackinIndex> ();
-		*/
+		
 		Iterator<Entry<String, SeqReducedTrieNode>> it = mainNode.getNodeHash().entrySet().iterator();
 		
 		while (it.hasNext()) {
@@ -205,13 +202,7 @@ public class SeqTreePropController extends ModuleImpl {
 				//end node on first level reached. Create terminal node.
 				SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getCounter(),1);
 				rootNode.addNode(pair.getKey(), node);
-				/*
-				//add a leaf to the Sackin index
-				totalNumOfLeaves ++;
-				SeqSackinIndex index = new SeqSackinIndex(node.getValue(), 1);
-				index.catSequence(rootNode.getValue());
-				sackinIndex.add(index);
-				*/
+				
 			} else {
 				
 				if (pair.getValue().getNodeHash().size() == 1) {
@@ -273,14 +264,7 @@ public class SeqTreePropController extends ModuleImpl {
 		
 		// reaching a terminal node adds the sequence to the previous node
 		if (currentNode.getNodeHash().isEmpty()) {
-			/*
-			//add a leaf to the Sackin index
-			totalNumOfLeaves ++;
-		
-			//add new leaf to calculate the Sackin index
-			SeqSackinIndex index = new SeqSackinIndex(currPropNode.getValue(), seqProperties.get(lastPropNodeName).getPathLength());
-			sackinIndex.add(index);
-			*/
+			
 			return currPropNode;
 		
 		} else {
@@ -290,13 +274,7 @@ public class SeqTreePropController extends ModuleImpl {
 				
 				if(deepPair.getValue().getNodeHash().size() == 0) {
 					SeqPropertyNode newPropNode = new SeqPropertyNode(deepPair.getKey(),deepPair.getValue().getCounter(), nodeDepth + 1);				
-					/*
-					//add a leaf to the Sackin index
-					totalNumOfLeaves ++;
 					
-					SeqSackinIndex index = new SeqSackinIndex(currPropNode.getValue(), seqProperties.get(lastPropNodeName).getPathLength());
-					sackinIndex.add(index);
-					*/
 					currPropNode.addNode(newPropNode.getValue(), newPropNode);
 					
 				} else if(deepPair.getValue().getNodeHash().size() == 1) { //if child has one grand child
@@ -333,7 +311,6 @@ public class SeqTreePropController extends ModuleImpl {
 			return currPropNode;
 		}
 	}
-	
 	
 	//setting up all sackin indexes for the tree
 	public void iterateSackinRootNode() { 

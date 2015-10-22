@@ -18,7 +18,7 @@ public class SeqPropertyNode {
 	//variables:
 	private String nodeValue; //string saved in the node
 	private int nodeCounter; //Zaehler value
-	private int nodeDepth; // remember the tree level of this node
+	private int nodeDepth; // remember the tree depth of this node
 	HashMap<String, SeqPropertyNode> propNode;
 	//end variables
 	
