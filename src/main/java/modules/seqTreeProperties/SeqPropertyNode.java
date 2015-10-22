@@ -18,19 +18,22 @@ public class SeqPropertyNode {
 	//variables:
 	private String nodeValue; //string saved in the node
 	private int nodeCounter; //Zaehler value
+	private int nodeDepth; // remember the tree level of this node
 	HashMap<String, SeqPropertyNode> propNode;
 	//end variables
 	
 	//constructors:
-	public SeqPropertyNode(String value, int counter) {
+	public SeqPropertyNode(String value, int counter, int depth) {
 		nodeValue = value;
 		nodeCounter = counter;
+		nodeDepth = depth;
 		propNode = new HashMap<String, SeqPropertyNode>();
 	}
 	
-	public SeqPropertyNode(String value, int counter, SeqPropertyNode node) {
+	public SeqPropertyNode(String value, int counter, SeqPropertyNode node, int depth) {
 		nodeValue = value;
 		nodeCounter = counter;
+		nodeDepth = depth;
 		propNode = new HashMap<String, SeqPropertyNode>();
 		propNode.put(value, node);
 	}
@@ -57,6 +60,10 @@ public class SeqPropertyNode {
 	public void addNode (String value, SeqPropertyNode node) {
 		propNode.put(value, node);
 	}
+	
+	public void setNodeDepth (int depth) {
+		nodeDepth = depth;
+	}
 	//end setters
 	
 	//getters:
@@ -70,6 +77,10 @@ public class SeqPropertyNode {
 	
 	public HashMap<String, SeqPropertyNode> getNodeHash () {
 		return propNode;
+	}
+	
+	public int getNodeDepth () {
+		return nodeDepth;
 	}
 	//end getters
 	//end methods
