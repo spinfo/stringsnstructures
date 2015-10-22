@@ -18,6 +18,7 @@ import modules.ModuleNetworkGsonSerializer;
 import modules.ModuleTreeGsonDeserializer;
 import modules.ListSorting.ListSort;
 import modules.artificialSeqs.CreateArtificialSeqs;
+import modules.bagOfTokens.BagOfTokensModule;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
 import modules.basemodules.FileFinderModule;
@@ -231,6 +232,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				listSortingProperties);
 		listSortingProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, listSort.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		listSort.applyProperties();
+		
+		// Prepare Bag Of Words module
+		Properties bagOfWordsProperties = new Properties();
+		BagOfTokensModule bagOfWordsModule = new BagOfTokensModule(moduleNetwork,
+				bagOfWordsProperties);
+		bagOfWordsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagOfWordsModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		bagOfWordsModule.applyProperties();
 				
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
@@ -255,6 +263,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(halAdvancedModule.getName(),halAdvancedModule);
 		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
 		availableModules.put(listSort.getName(), listSort);
+		availableModules.put(bagOfWordsModule.getName(), bagOfWordsModule);
 		
 	}
 	

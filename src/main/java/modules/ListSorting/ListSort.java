@@ -98,7 +98,7 @@ public class ListSort extends modules.ModuleImpl {
 			// the separator) before any output can be generated.
 			final TreeMap<String, ArrayList<String>> items = getItemsFromInput(this.getInputPorts().get(INPUT_ID));
 
-			// Output the items in the order given by the item maps set of keys
+			// Output the items in the order given by the item map's set of keys
 			final OutputPort outputPort = this.getOutputPorts().get(OUTPUT_ID);
 			final Iterator<String> itemIterator = items.keySet().iterator();
 			while (itemIterator.hasNext()) {
