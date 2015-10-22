@@ -15,6 +15,7 @@ import java.util.HashMap;
 
 public class SeqPropertyNode {
 	
+	
 	//variables:
 	private String nodeValue; //string saved in the node
 	private int nodeCounter; //Zaehler value

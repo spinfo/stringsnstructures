@@ -407,6 +407,7 @@ public class SeqTreePropController extends ModuleImpl {
 			SeqSackinIndex index = new SeqSackinIndex(currPropNode.getValue(), seqProperties.get(lastPropNodeName).getPathLength());
 			sackinIndex.add(index);
 		
+			
 		} else {
 			Iterator<Entry<String, SeqPropertyNode>> deepIt = currPropNode.getNodeHash().entrySet().iterator();
 			while (deepIt.hasNext()) {
