@@ -191,10 +191,7 @@ public class SeqTreePropController extends ModuleImpl {
 		//define the properties of the root node
 		seqProperties = new HashMap<String, SeqProperties>();
 		seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, rootNode.getValue(), 0));
-		/*
-		//instantiate new sackin index
-		sackinIndex = new ArrayList<SeqSackinIndex> ();
-		*/
+		
 		Iterator<Entry<String, SeqReducedTrieNode>> it = mainNode.getNodeHash().entrySet().iterator();
 		
 		while (it.hasNext()) {
@@ -205,13 +202,7 @@ public class SeqTreePropController extends ModuleImpl {
 				//end node on first level reached. Create terminal node.
 				SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getCounter(),1);
 				rootNode.addNode(pair.getKey(), node);
-				/*
-				//add a leaf to the Sackin index
-				totalNumOfLeaves ++;
-				SeqSackinIndex index = new SeqSackinIndex(node.getValue(), 1);
-				index.catSequence(rootNode.getValue());
-				sackinIndex.add(index);
-				*/
+				
 			} else {
 				
 				if (pair.getValue().getNodeHash().size() == 1) {
@@ -273,14 +264,7 @@ public class SeqTreePropController extends ModuleImpl {
 		
 		// reaching a terminal node adds the sequence to the previous node
 		if (currentNode.getNodeHash().isEmpty()) {
-			/*
-			//add a leaf to the Sackin index
-			totalNumOfLeaves ++;
-		
-			//add new leaf to calculate the Sackin index
-			SeqSackinIndex index = new SeqSackinIndex(currPropNode.getValue(), seqProperties.get(lastPropNodeName).getPathLength());
-			sackinIndex.add(index);
-			*/
+			
 			return currPropNode;
 		
 		} else {
@@ -290,13 +274,7 @@ public class SeqTreePropController extends ModuleImpl {
 				
 				if(deepPair.getValue().getNodeHash().size() == 0) {
 					SeqPropertyNode newPropNode = new SeqPropertyNode(deepPair.getKey(),deepPair.getValue().getCounter(), nodeDepth + 1);				
-					/*
-					//add a leaf to the Sackin index
-					totalNumOfLeaves ++;
 					
-					SeqSackinIndex index = new SeqSackinIndex(currPropNode.getValue(), seqProperties.get(lastPropNodeName).getPathLength());
-					sackinIndex.add(index);
-					*/
 					currPropNode.addNode(newPropNode.getValue(), newPropNode);
 					
 				} else if(deepPair.getValue().getNodeHash().size() == 1) { //if child has one grand child
@@ -323,8 +301,7 @@ public class SeqTreePropController extends ModuleImpl {
 					
 					//create properties of inner node
 					seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, newNode.getValue(), nodeDepth + 1, (((double)newNode.getCounter())/((double)currPropNode.getCounter()))));
-					//seqProperties.get(innerNodeName).catSequence(currPropNode.getValue());
-					
+										
 					currPropNode.addNode(newNode.getValue(), newNode);
 					
 				}
@@ -364,7 +341,7 @@ public class SeqTreePropController extends ModuleImpl {
 				
 				if (pair.getValue().getNodeHash().size() == 1) {
 												
-						deepSackinIteration(pair.getValue(), innerNodeName);
+						deepSackinIteration(pair.getValue(), innerNodeName, "");
 						
 				} else if(pair.getValue().getNodeHash().size() > 1) {
 					
@@ -381,7 +358,7 @@ public class SeqTreePropController extends ModuleImpl {
 						//increase the "name" for each iteration
 						String subPairNodeName = pairNodeName + subPair.getValue().getValue();
 												
-						deepSackinIteration(subPair.getValue(), subPairNodeName);
+						deepSackinIteration(subPair.getValue(), subPairNodeName, pairNodeName);
 						
 						subIt.remove(); // avoids a ConcurrentModificationException
 					}
@@ -392,7 +369,10 @@ public class SeqTreePropController extends ModuleImpl {
 		}
 	}
 	
-	private void deepSackinIteration(SeqPropertyNode propNode, String propNodeName) {
+	private void deepSackinIteration(SeqPropertyNode propNode, String propNodeName, String oldNodeName) {
+		
+		//was there a node with several subnodes as last node?
+		String oldPropNodeName = oldNodeName;
 		
 		SeqPropertyNode currPropNode = propNode;
 		String lastPropNodeName = propNodeName;
@@ -400,11 +380,16 @@ public class SeqTreePropController extends ModuleImpl {
 		// reaching a terminal node adds the sequence to the previous node
 		if (currPropNode.getNodeHash().isEmpty()) {
 			
+			if (!oldPropNodeName.isEmpty()) {
+				lastPropNodeName = oldPropNodeName;
+			}
+			String newCurrPropNodeName = lastPropNodeName + currPropNode.getValue();
 			//add a leaf to the Sackin index
 			totalNumOfLeaves ++;
 		
-			//add new leaf to calculate the Sackin index
-			SeqSackinIndex index = new SeqSackinIndex(currPropNode.getValue(), seqProperties.get(lastPropNodeName).getPathLength());
+			//new leaf to calculate the Sackin index
+
+			SeqSackinIndex index = new SeqSackinIndex(newCurrPropNodeName, seqProperties.get(lastPropNodeName).getPathLength());
 			sackinIndex.add(index);
 		
 		} else {
@@ -423,11 +408,12 @@ public class SeqTreePropController extends ModuleImpl {
 					sackinIndex.add(index);
 										
 				} else if (deepPair.getValue().getNodeHash().size() > 1) { // if there are more nodes remember the zaehler value
-									
+					
+					oldPropNodeName = lastPropNodeName;
 					//increase the "name" for each iteration
 					String innerNodeName = lastPropNodeName + deepPair.getValue().getValue();
 					
-					deepSackinIteration(deepPair.getValue(), innerNodeName); 
+					deepSackinIteration(deepPair.getValue(), innerNodeName, oldPropNodeName); 
 				}
 			}
 			deepIt.remove(); // avoids a ConcurrentModificationException
