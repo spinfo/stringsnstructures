@@ -39,6 +39,7 @@ import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.TreeBuilder;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
+import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -231,7 +232,14 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				listSortingProperties);
 		listSortingProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, listSort.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		listSort.applyProperties();
-				
+		
+		// Prepare PlainText2TreeBuilderConverter module
+		Properties PlainText2TreeBuilderConverterProperties = new Properties();
+		PlainText2TreeBuilderConverter plainText2TreeBuilderConverter = new PlainText2TreeBuilderConverter (moduleNetwork,
+				PlainText2TreeBuilderConverterProperties);
+		PlainText2TreeBuilderConverterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, plainText2TreeBuilderConverter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		plainText2TreeBuilderConverter.applyProperties();
+		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
 		availableModules.put(fileReader.getName(),fileReader);
@@ -255,6 +263,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(halAdvancedModule.getName(),halAdvancedModule);
 		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
 		availableModules.put(listSort.getName(), listSort);
+		availableModules.put(plainText2TreeBuilderConverter.getName(), plainText2TreeBuilderConverter);
 		
 	}
 	
