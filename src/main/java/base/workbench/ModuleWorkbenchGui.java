@@ -87,6 +87,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	private ModuleInternalFrame selectedModuleFrame = null;
 	private AbstractModulePortButton activeModulePortButton = null;
 	private ModuleNetworkGlasspane moduleConnectionGlasspane;
+	private Map<Module,ModulePropertyEditor> modulePropertyEditors;
 
 	/**
 	 * Launch the application.
@@ -116,6 +117,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	public ModuleWorkbenchGui(ModuleWorkbenchController controller) {
 		this.controller = controller;
 		this.moduleFrameMap = new ConcurrentHashMap<Module, ModuleInternalFrame>();
+		this.modulePropertyEditors = new ConcurrentHashMap<Module, ModulePropertyEditor>();
 		initialize();
 	}
 
@@ -372,12 +374,18 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			try {
 				// Determine module that is currently selected within the module network
 				final ModuleInternalFrame selectedModuleFrame = this.selectedModuleFrame;
+				
+				final Map<Module,ModulePropertyEditor> modulePropertyEditorsMap = this.modulePropertyEditors;
 						
 				// Create new editor dialogue in separate thread
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						try {
-							ModulePropertyEditor modulePropertyEditor = new ModulePropertyEditor(selectedModuleFrame.getModule());
+							ModulePropertyEditor modulePropertyEditor = modulePropertyEditorsMap.get(selectedModuleFrame.getModule());
+							if (modulePropertyEditor == null){
+								modulePropertyEditor = new ModulePropertyEditor(selectedModuleFrame.getModule());
+								modulePropertyEditorsMap.put(selectedModuleFrame.getModule(), modulePropertyEditor);
+							}
 							modulePropertyEditor.setLocation(selectedModuleFrame.getLocationOnScreen().x, selectedModuleFrame.getLocationOnScreen().y);
 							modulePropertyEditor.setVisible(true);
 							
@@ -690,6 +698,11 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 			// Determine the module to delete
 			Module module = moduleFrame.getModule();
+			
+			// Close correspondent property editor
+			ModulePropertyEditor editor = this.modulePropertyEditors.get(module);
+			if (editor != null)
+				editor.dispose();
 			
 			// Remove from frame map
 			this.moduleFrameMap.remove(moduleFrame.getModule());

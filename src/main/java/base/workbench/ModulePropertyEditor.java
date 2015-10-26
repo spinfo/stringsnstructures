@@ -138,7 +138,7 @@ public class ModulePropertyEditor extends JDialog implements ActionListener {
 			
 		} else if (e.getActionCommand().equals("Cancel")){
 			// Do nothing, just exit
-			this.dispose();
+			this.setVisible(false);
 		}
 	}
 
