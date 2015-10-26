@@ -303,7 +303,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		Iterator<Module> modules = this.moduleList.iterator();
 		while (modules.hasNext()){
 			// Run module
-			this.runModules(modules.next());
+			this.runModule(modules.next());
 		}
 		
 		// Determine runtime environment
@@ -338,14 +338,12 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	}
 
 	/**
-	 * Runs the modules from a given tree node on.
+	 * Runs the specified module (within a separate thread).
 	 * 
-	 * @param parentNode
-	 *            Root of tree branch from which to run the modules
+	 * @param module Module to run
 	 * @throws Exception
-	 *             Thrown if the method argument values are not right
 	 */
-	private void runModules(Module module) throws Exception {
+	private void runModule(Module module) throws Exception {
 
 		// Initialize thread
 		final Thread moduleThread = new Thread(module);
