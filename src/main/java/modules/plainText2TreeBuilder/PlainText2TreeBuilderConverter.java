@@ -9,9 +9,9 @@ import modules.ModuleImpl;
 import modules.OutputPort;
 
 import java.util.Iterator;
+import java.util.ArrayList;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import common.parallelization.CallbackReceiver;
 
@@ -34,7 +34,8 @@ public class PlainText2TreeBuilderConverter extends ModuleImpl {
 	private final String OUTPUTID = "output";
 
 	private String inputString;
-	private PlainText2TreeNodes[] nodes;
+
+	private ArrayList<ArrayList <PlainText2TreeNodes>> outNodes;
 	
 	//end variables
 	
@@ -73,6 +74,9 @@ public class PlainText2TreeBuilderConverter extends ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 		
+		//initialize inputString
+		this.inputString = "";
+		
 		//Variables used for input data
 		int bufferSize = 1024;
 		char [] bufferInput = new char [bufferSize];
@@ -93,7 +97,7 @@ public class PlainText2TreeBuilderConverter extends ModuleImpl {
 			StringBuffer inputBuffer = new StringBuffer(new String (bufferInput).substring(0, charCode));
 			this.inputString += inputBuffer.toString();
 			
-			// Read next char
+			// Read next charsplitWords = 
 			charCode = this.getInputPorts().get(INPUTID).getInputReader().read(bufferInput, 0, bufferSize);
 			
 		}
@@ -103,10 +107,10 @@ public class PlainText2TreeBuilderConverter extends ModuleImpl {
 		convertString();
 		
 		//write JSON to output
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		Gson gson = new Gson();
 		Iterator<Pipe> charPipes = this.getOutputPorts().get(OUTPUTID).getPipes(CharPipe.class).iterator();
 		while (charPipes.hasNext()) {
-			gson.toJson(this.nodes, ((CharPipe)charPipes.next()).getOutput());
+			gson.toJson(this.outNodes, ((CharPipe)charPipes.next()).getOutput());
 		}
 		
 		//close outputs
@@ -118,19 +122,23 @@ public class PlainText2TreeBuilderConverter extends ModuleImpl {
 	
 	public void convertString() {
 		//split string after each space(s)
-		String[] splitString = this.inputString.split("\\s+");
+		String[] splitLines = this.inputString.split("\n");
+		String[] splitWords;
 		
 		//create dummy strings to feed to the constructor to give proper JSON format
 		String dummy = "dummy";
-		String dummy2 = "dummy";
 		
-		//create node array holding all words
-		this.nodes = new PlainText2TreeNodes [splitString.length]; 
+		//create outNode List holding all lines
+		this.outNodes = new ArrayList<ArrayList<PlainText2TreeNodes>>();
 		
-		int counter = 0;
-		for (String i : splitString) {
-			this.nodes[counter] = new PlainText2TreeNodes(i, dummy, dummy2);
-			counter ++;
+		for (int i = 0; i < splitLines.length; i ++) {
+			splitWords = splitLines[i].split("\\s+");
+			ArrayList <PlainText2TreeNodes> nodes = new ArrayList <PlainText2TreeNodes>();
+			for (String j : splitWords) {
+				 PlainText2TreeNodes plainText2TreeNodes = new PlainText2TreeNodes (j, dummy, dummy);
+				 nodes.add(plainText2TreeNodes);
+			}
+			this.outNodes.add(nodes);
 		}
 	}
 	
