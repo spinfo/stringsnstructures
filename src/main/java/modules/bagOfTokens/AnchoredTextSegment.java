@@ -24,7 +24,7 @@ public class AnchoredTextSegment {
 	/**
 	 * An AnchoredTextSegment representing the input String.
 	 * 
-	 * @param segment
+	 * @param segment Segment
 	 */
 	public AnchoredTextSegment(String segment) {
 		this();
@@ -34,7 +34,7 @@ public class AnchoredTextSegment {
 	/**
 	 * Adds a single TextAnchor to this segment
 	 * 
-	 * @param anchor
+	 * @param anchor Anchor
 	 */
 	public void addAnchor(TextAnchor anchor) {
 		this.textAnchors.add(anchor);

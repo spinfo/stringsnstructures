@@ -31,7 +31,7 @@ public class Node implements Comparable<Node> {
 	 * Add a Type (Document) to that Node. Interpretation: That Type visited
 	 * this Node during construction of the SuffixTree.
 	 * 
-	 * @param newType
+	 * @param newType Type to add
 	 */
 	public void addType(Type newType) {
 		this.typesAndFrequencies.put(newType, new ArrayList<Integer>());
@@ -135,7 +135,7 @@ public class Node implements Comparable<Node> {
 	/**
 	 * Checks if the given Type visited this Node.
 	 * 
-	 * @param type
+	 * @param type Type
 	 * @return true, if type visited this Node, otherwise false
 	 */
 	public boolean containsType(Type type) {
@@ -145,7 +145,7 @@ public class Node implements Comparable<Node> {
 	/**
 	 * Get all start positions of the suffix of a particular type.
 	 * 
-	 * @param type
+	 * @param type Type
 	 * @return List of start positions
 	 */
 	public List<Integer> getStartPositionsOfType(Type type) {
@@ -155,7 +155,7 @@ public class Node implements Comparable<Node> {
 	/**
 	 * Get the number of times a specific type visited this node.
 	 * 
-	 * @param type
+	 * @param type Type
 	 * @return number of visits
 	 */
 	public Integer getTermfrequencyFor(Type type) {

@@ -17,13 +17,15 @@ public abstract class AbstractModulePortButton extends JButton {
 
 
 	private Port port;
-
+	
 	/**
 	 * Constructor.
 	 * @param port Module I/O port
 	 * @param icon e.g. AbstractModulePortButton.ICON_INPUT
 	 * @param alignment e.g. SwingConstants.LEFT
 	 * @param textposition e.g. SwingConstants.TRAILING
+	 * @param maxlength Maximum length of button text
+	 * @param font Font to use
 	 */
 	public AbstractModulePortButton(Port port, ImageIcon icon, int alignment, int textposition, int maxlength, Font font) {
 		super();

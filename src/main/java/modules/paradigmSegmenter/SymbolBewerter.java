@@ -47,6 +47,7 @@ public class SymbolBewerter {
 	 * Bewertet ein einzelnes Symbol (im Sinne, dass die Uebergangshuerde vom Elternknoten aus errechnet wird).
 	 * @param symbol Symbol (Zeichenkette mit Laenge eins)
 	 * @param elternKnoten Elternknoten im Suffixbaum
+	 * @param letzteBewertung Prior rating
 	 * @return bewertung (kleiner bedeutet geringere Uebergangshuerde)
 	 */
 	public double symbolBewerten(Character symbol, Knoten elternKnoten, double letzteBewertung){

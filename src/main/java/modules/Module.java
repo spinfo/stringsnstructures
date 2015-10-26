@@ -77,13 +77,13 @@ public interface Module extends CallbackProcess {
 	/**
 	 * Returns a map containing all valid property keys of this module
 	 * with a short description as value.
-	 * @return
+	 * @return Map
 	 */
 	public Map<String,String> getPropertyDescriptions();
 	
 	/**
 	 * Returns a map containing available default values for properties of this module.
-	 * @return
+	 * @return Map
 	 */
 	public Map<String,String> getPropertyDefaultValues();
 	
@@ -105,7 +105,7 @@ public interface Module extends CallbackProcess {
 	
 	/**
 	 * Resets all outputs.
-	 * @throws IOException
+	 * @throws IOException Thrown if something goes wrong
 	 */
 	public void resetOutputs() throws IOException;
 

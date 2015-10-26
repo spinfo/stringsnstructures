@@ -127,10 +127,10 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
     /**
      * Erzeugt einen Suffixtrie im uebergebenen Knoten anhand der uebergebenen Token.
      * Inkrementiert die Zaehlvariable eines jeden Knotens um eins fuer jede "Beruehrung".
-     * @param token LinkedList<Character> mit Token
+     * @param token LinkedList mit Token
      * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
      * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
-     * @param maxLaenge Die maximale Anzahl an Token, die dem Trie hinzugefuegt werden soll (<0 = ignorieren).
+     * @param maxLaenge Die maximale Anzahl an Token, die dem Trie hinzugefuegt werden soll (&lt;0 = ignorieren).
      * @return Die Anzahl der neu erstellten Knoten
      */
     public int baueTrie(LinkedList<Character> token, Knoten rootnode, boolean umgekehrt, int maxLaenge) {
@@ -233,8 +233,8 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 
 	/**
 	 * Fuegt alle Elemente und Unterelemente des uebergebenen Baumes dem uebergebenen TreeSet hinzu. 
-	 * @param wurzel
-	 * @param treeSet
+	 * @param wurzel Wurzelknoten
+	 * @param treeSet Treeset
 	 */
 	public void fuegeNodesInTreeSetEin(Knoten wurzel, TreeSet<Knoten> treeSet) {
 		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();

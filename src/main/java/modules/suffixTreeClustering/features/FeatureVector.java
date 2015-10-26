@@ -21,7 +21,7 @@ public final class FeatureVector {
 	/**
 	 * Initialize Feature Vector.
 	 * 
-	 * @param values
+	 * @param values Values
 	 */
 	public FeatureVector(final Double[] values) {
 		this.features = values;

@@ -76,7 +76,7 @@ public abstract class AbstractPort implements Port {
 
 	/**
 	 * Adds a class of pipe to the list of the ones supported.
-	 * @param pipeClass
+	 * @param pipeClass Pipe class to add
 	 */
 	public void addSupportedPipe(Class<? extends Pipe> pipeClass) {
 		this.supportedPipes.put(pipeClass.getCanonicalName(),pipeClass);

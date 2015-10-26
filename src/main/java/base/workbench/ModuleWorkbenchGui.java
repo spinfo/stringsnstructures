@@ -91,6 +91,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 
 	/**
 	 * Launch the application.
+	 * @param args Program arguments
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -113,6 +114,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 
 	/**
 	 * Create the application.
+	 * @param controller Controller instance
 	 */
 	public ModuleWorkbenchGui(ModuleWorkbenchController controller) {
 		this.controller = controller;

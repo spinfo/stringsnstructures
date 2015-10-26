@@ -59,6 +59,7 @@ public class Neo4jLokalKlient {
 	 * Fuegt einen Knotennamen der Transaktionswarteschlange hinzu. Ist die Warteschlange voll,
 	 * werden die enthaltenen Knoten erstellt und als Liste zurueckgegeben, ansonsten null. 
 	 * @param knotenName Name des zu erstellenden Knotens
+	 * @param haeufigkeit Frequency
 	 * @return Liste der erstellten Knoten oder Null
 	 */
 	public Map<String,Node> fuegeKnotenErstellungZurWarteschlangeHinzu(String knotenName, long haeufigkeit){
@@ -69,6 +70,7 @@ public class Neo4jLokalKlient {
 	 * Fuegt einen Knotennamen der Transaktionswarteschlange hinzu. Ist die Warteschlange voll,
 	 * werden die enthaltenen Knoten erstellt und als Liste zurueckgegeben, ansonsten null. 
 	 * @param knotenName Name des zu erstellenden Knotens
+	 * @param haeufigkeit Frequency
 	 * @param annotationsListe Sortierte Liste der Annotationen; darf null sein.
 	 * @return Liste der erstellten Knoten oder Null
 	 */

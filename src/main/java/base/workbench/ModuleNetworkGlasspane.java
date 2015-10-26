@@ -15,9 +15,8 @@ import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 
 /**
- * @see http://stackoverflow.com/a/12389479/909085
+ * See http://stackoverflow.com/a/12389479/909085
  */
-
 public class ModuleNetworkGlasspane extends JComponent {
 
 	private static final long serialVersionUID = -1423113285724582925L;

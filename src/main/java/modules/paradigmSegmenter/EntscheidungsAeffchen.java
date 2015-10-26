@@ -18,8 +18,10 @@ public class EntscheidungsAeffchen {
 
 	/**
 	 * Erstellt einen Entscheidungsbaum anhand der uebergebenen Zeichenkette und gibt den Weg des geringsten Widerstands zurueck.
-	 * @param zeichenkette
+	 * @param zeichenkette String
+	 * @param entscheidungsbaumWurzelknoten Decision tree root node
 	 * @return Blatt am Ende des Weges des geringsten Widerstands
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public SplitDecisionNode konstruiereEntscheidungsbaum(StringBuffer zeichenkette, SplitDecisionNode entscheidungsbaumWurzelknoten) throws Exception {
 		

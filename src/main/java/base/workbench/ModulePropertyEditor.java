@@ -29,6 +29,7 @@ public class ModulePropertyEditor extends JDialog implements ActionListener {
 
 	/**
 	 * Create the dialog.
+	 * @param module Module to create the editor for
 	 */
 	public ModulePropertyEditor(Module module) {
 		this.module = module;

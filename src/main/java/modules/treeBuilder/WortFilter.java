@@ -23,8 +23,8 @@ public class WortFilter {
 	
 	/**
 	 * Gibt true zurueck, wenn der uebergebene Satz auf den Filter passt.
-	 * @param satz
-	 * @return
+	 * @param satz Sentence
+	 * @return True if sentence contains the specified word
 	 */
 	public boolean hatWort(String[] satz){
 		for (int i=0; i<satz.length; i++){
@@ -35,8 +35,8 @@ public class WortFilter {
 	
 	/**
 	 * Gibt true zurueck, wenn der uebergebene Satz auf den Filter passt.
-	 * @param satz
-	 * @return
+	 * @param satz Sentence
+	 * @return True if sentence contains the specified word
 	 */
 	public boolean hatWort(List<String> satz){
 		Iterator<String> worte = satz.iterator();
@@ -48,8 +48,8 @@ public class WortFilter {
 	
 	/**
 	 * Gibt einen Array mit Indices der Worte zurueck, auf die der Filter passt.
-	 * @param satz
-	 * @return
+	 * @param satz Sentence
+	 * @return Array with indices of words that match this filter
 	 */
 	public Integer[] getWortIndices(List<String> satz){
 		ArrayList<Integer> indices = new ArrayList<Integer>();
@@ -64,8 +64,8 @@ public class WortFilter {
 	
 	/**
 	 * Gibt einen Array mit Indices der Worte zurueck, auf die der Filter passt.
-	 * @param satz
-	 * @return
+	 * @param satz Sentence
+	 * @return Array with indices of words that match this filter
 	 */
 	public Integer[] getWortIndices(String[] satz){
 		ArrayList<Integer> indices = new ArrayList<Integer>();

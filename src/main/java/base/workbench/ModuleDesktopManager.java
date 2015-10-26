@@ -8,9 +8,7 @@ import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 
 /**
- * 
- * @see http://www.java2s.com/Code/Java/Swing-JFC/InterestingthingsusingJInternalFramesJDesktopPaneandDesktopManager2.htm
- *
+ * See http://www.java2s.com/Code/Java/Swing-JFC/InterestingthingsusingJInternalFramesJDesktopPaneandDesktopManager2.htm
  */
 public class ModuleDesktopManager extends DefaultDesktopManager {
 

@@ -101,8 +101,7 @@ public class SplitDecisionNode {
 	 * Hebt das Aktivierungspotential dieses Entscheidungsknotens auf den minimal
 	 * notwenigen Wert, um das Niveau eines der Kindelemente zu erreichen.
 	 * Gibt true zurueck, falls sich das Aktivierungspotential nicht aendert.
-	 * @param potentialWert
-	 * @return
+	 * @return True if potency does not change
 	 */
 	public boolean hebeAktivierungsPotentialAufMinimumAn() {
 		// Aktivierungspotential auf das minimal notwenige erhoehen
@@ -157,7 +156,7 @@ public class SplitDecisionNode {
 		this.split = split;
 	}
 	/**
-	 * @param suffixTrieElternKnoten the suffixTrieElternKnoten to set
+	 * @param suffixTrieKnoten the suffixTrieElternKnoten to set
 	 */
 	public void setSuffixTrieElternKnoten(Knoten suffixTrieKnoten) {
 		this.suffixTrieElternKnoten = suffixTrieKnoten;

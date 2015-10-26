@@ -241,6 +241,8 @@ public class Neo4jRestKlient {
 	 * @param quellen IDs der Quell-Knoten
 	 * @param ziele IDs der Ziel-Knoten
 	 * @param gewichte Gewicht der Kanten
+	 * @param beziehungsTyp Association type
+	 * @param graphDb Graph DB
 	 * @throws Exception Bei unterschiedlich langen Arrays als Eingabe
 	 */
 	public void erstelleKanten(int[] quellen, int[] ziele, Double[] gewichte, String beziehungsTyp, GraphDatabaseService graphDb) throws Exception {

@@ -161,7 +161,7 @@ public class TreeBuilder extends ModuleImpl {
      * @param token String-Array mit Token (Woerter, Buchstaben, Symbole, ... egal was)
      * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
      * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
-     * @param maxLaenge Die maximale Tiefe des zu erstellenden Baumes, inklusive des Wurzelknotens (<0 = ignorieren)
+     * @param maxLaenge Die maximale Tiefe des zu erstellenden Baumes, inklusive des Wurzelknotens (&lt;0 = ignorieren)
      * @return Die Anzahl der neu erstellten Knoten
      */
 	public int baueBaum(String[] token, Knoten rootnode, boolean umgekehrt, int maxLaenge) {
@@ -208,7 +208,7 @@ public class TreeBuilder extends ModuleImpl {
      * @param token String-Array mit Token (Woerter, Buchstaben, Symbole, ... egal was)
      * @param rootnode Startknoten Wurzelknoten des zu konstruierenden Baumes
      * @param umgekehrt Zeigt an, ob der Baum umgekehrt erstellt werden soll (quasi als "Praefixbaum")
-     * @param maxLaenge Die maximale Anzahl an Token, die dem Trie hinzugefuegt werden soll (<0 = ignorieren).
+     * @param maxLaenge Die maximale Anzahl an Token, die dem Trie hinzugefuegt werden soll (&lt;0 = ignorieren).
      * @return Die Anzahl der neu erstellten Knoten
      */
     public int baueTrie(String[] token, Knoten rootnode, boolean umgekehrt, int maxLaenge) {
@@ -307,8 +307,8 @@ public class TreeBuilder extends ModuleImpl {
 
 	/**
 	 * Fuegt alle Elemente und Unterelemente des uebergebenen Baumes dem uebergebenen TreeSet hinzu. 
-	 * @param wurzel
-	 * @param treeSet
+	 * @param wurzel Root node
+	 * @param treeSet Treeset
 	 */
 	public void fuegeNodesInTreeSetEin(Knoten wurzel, TreeSet<Knoten> treeSet) {
 		Iterator<String> kinder = wurzel.getKinder().keySet().iterator();
@@ -321,13 +321,14 @@ public class TreeBuilder extends ModuleImpl {
 	
 	/**
 	 * Filtert eine Satzliste (Liste einer Liste von Strings) anhand eines Wortfilters und erstellt im uebergebenen Knoten einen Baum.
-	 * @param wortTyp
-	 * @param satzListe
-	 * @param wf
-	 * @param wurzel
-	 * @param praefixwurzel
-	 * @param vergleichAufVergleichswortzweigBeschraenken
-	 * @param praefixBaumErstellen
+	 * @param wortTyp Word type
+	 * @param satzListe sentence list
+	 * @param wf word filter
+	 * @param wurzel root node
+	 * @param praefixwurzel prefix root
+	 * @param vergleichAufVergleichswortzweigBeschraenken only use the tree branche specific to the compare word for comparison 
+	 * @param praefixBaumErstellen construct prefix tree (reversed suffix tree)
+	 * @param ausfuehrlicheFortschrittsMeldungen Verbose messages
 	 * @return Anzahl der in den Saetzen gefundenen Wortvorkommen. 
 	 */
 	public int baueTrieAusSaetzenMitWorttyp(String wortTyp,
@@ -410,13 +411,14 @@ public class TreeBuilder extends ModuleImpl {
 	
 	/**
 	 * Filtert eine Satzliste (Liste einer Liste von Strings) anhand eines Wortfilters und erstellt im uebergebenen Knoten einen Baum.
-	 * @param wortTyp
-	 * @param satzListe
-	 * @param wf
-	 * @param wurzel
-	 * @param praefixwurzel
-	 * @param praefixBaumErstellen
-	 * @param maxLaenge Die maximale Tiefe des zu erstellenden Baumes, inklusive des Wurzelknotens (<0 = ignorieren)
+	 * @param wortTyp word type
+	 * @param satzListe sentence list
+	 * @param wf word filter
+	 * @param wurzel root node
+	 * @param praefixwurzel prefix root
+	 * @param praefixBaumErstellen construct prefix tree (reversed suffix tree)
+	 * @param ausfuehrlicheFortschrittsMeldungen Verbose messages
+	 * @param maxLaenge Die maximale Tiefe des zu erstellenden Baumes, inklusive des Wurzelknotens (&lt;0 = ignorieren)
 	 * @param vergleichsworteNichtInBaumMitAufnehmen Schliesst die Vergleichsworte von den konstruierten Baeumen aus (Eingabesaetze werden entsprechend gekuerzt). 
 	 * @return Anzahl der in den Saetzen gefundenen Wortvorkommen. 
 	 */

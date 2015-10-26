@@ -41,7 +41,7 @@ public abstract class ModuleImpl implements Module {
 	
 	/**
 	 * Adds the specified input port.
-	 * @param port
+	 * @param port Port to add
 	 */
 	public void addInputPort(InputPort port){
 		this.inputPorts.put(port.getName(), port);
@@ -49,7 +49,7 @@ public abstract class ModuleImpl implements Module {
 	
 	/**
 	 * Adds the specified output port.
-	 * @param port
+	 * @param port Port to add
 	 */
 	public void addOutputPort(OutputPort port){
 		this.outputPorts.put(port.getName(), port);
@@ -83,7 +83,7 @@ public abstract class ModuleImpl implements Module {
 
 	/**
 	 * Closes all outputs on all output ports.
-	 * @throws IOException
+	 * @throws IOException Thrown if something goes wrong
 	 */
 	public void closeAllOutputs() throws IOException {
 		Iterator<OutputPort> outputPorts = this.outputPorts.values().iterator();

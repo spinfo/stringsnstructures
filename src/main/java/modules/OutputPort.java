@@ -54,7 +54,7 @@ public class OutputPort extends AbstractPort {
 	
 	/**
 	 * Returns the pipes of a specified class.
-	 * @param pipeClass
+	 * @param pipeClass Pipe class
 	 * @return List of pipes
 	 */
 	public List<Pipe> getPipes(Class<? extends Pipe> pipeClass) {
@@ -63,7 +63,7 @@ public class OutputPort extends AbstractPort {
 	
 	/**
 	 * Returns the port the specified pipe is connected to.
-	 * @param pipe
+	 * @param pipe Pipe
 	 * @return Port
 	 */
 	public Port getConnectedPort(Pipe pipe){

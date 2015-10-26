@@ -31,8 +31,8 @@ public class InputPort extends AbstractPort {
 	
 	/**
 	 * Returns the "naked" input stream.
-	 * @return
-	 * @throws NotSupportedException
+	 * @return Input stream
+	 * @throws NotSupportedException Thrown if something goes wrong
 	 */
 	public PipedInputStream getInputStream() throws NotSupportedException {
 		if (this.pipe == null) return null;
@@ -46,8 +46,8 @@ public class InputPort extends AbstractPort {
 	
 	/**
 	 * Returns the "naked" input reader.
-	 * @return
-	 * @throws NotSupportedException
+	 * @return Input reader
+	 * @throws NotSupportedException Thrown if something goes wrong
 	 */
 	public PipedReader getInputReader() throws NotSupportedException {
 		if (this.pipe == null) return null;
@@ -62,7 +62,12 @@ public class InputPort extends AbstractPort {
 	/**
 	 * Reads bytes from the input.
 	 * @see modules.BytePipe#read(byte[] buffer, int offset, int length)
+	 * @param buffer Buffer
+	 * @param offset Offset
+	 * @param length Length
+	 * @return Bytes read (-1 if input is closed)
 	 * @throws NotSupportedException Thrown if this port does not provide byte stream input after all
+	 * @throws IOException Thrown if something goes wrong
 	 */
 	public int read(byte[] buffer, int offset, int length) throws NotSupportedException, IOException {
 		if (this.pipe == null) throw new IOException("There is no pipe to read from.");
@@ -77,7 +82,12 @@ public class InputPort extends AbstractPort {
 	/**
 	 * Reads characters from the input.
 	 * @see modules.CharPipe#read(char[] buffer, int offset, int length)
+	 * @param buffer Buffer
+	 * @param offset Offset
+	 * @param length Length
+	 * @return Chars read (-1 if input is closed)
 	 * @throws NotSupportedException Thrown if this port does not provide character stream input after all
+	 * @throws IOException Thrown if something goes wrong
 	 */
 	public int read(char[] buffer, int offset, int length) throws NotSupportedException, IOException {
 		if (this.pipe == null) throw new IOException("There is no pipe to read from.");

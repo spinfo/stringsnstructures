@@ -25,8 +25,6 @@ public final class FlatClusterer {
 	/**
 	 * K-Means clustering of the given documents, as part of the given corpus
 	 * 
-	 * @param corpus
-	 *            The corpus the document selection is a part of
 	 * @param documents
 	 *            The documents to cluster
 	 */

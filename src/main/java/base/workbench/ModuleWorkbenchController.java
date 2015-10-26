@@ -292,8 +292,9 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	
 	/**
 	 * Returns a new instance of the module with the specified name.
+	 * @param moduleName Name of module to instantiate
 	 * @return new module instance
-	 * @throws Exception
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public Module getNewInstanceOfModule(String moduleName) throws Exception{
 		return this.getNewInstanceOfModule(this.availableModules.get(moduleName));
@@ -301,8 +302,9 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	
 	/**
 	 * Returns a new instance of the specified module.
+	 * @param module Name of module to instantiate
 	 * @return new module instance
-	 * @throws Exception
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public Module getNewInstanceOfModule(Module module) throws Exception{
 		
@@ -350,7 +352,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	 * Loads the module network from a file and adds it to the current one.
 	 * @param file file
 	 * @return Loaded module tree
-	 * @throws Exception 
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public ModuleNetwork loadModuleNetworkFromFile(File file) throws Exception {
 		return this.loadModuleNetworkFromFile(file, false);
@@ -361,7 +363,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	 * @param file file
 	 * @param replaceCurrent If true, replaces the current module network
 	 * @return Loaded module tree
-	 * @throws Exception 
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public ModuleNetwork loadModuleNetworkFromFile(File file, boolean replaceCurrent) throws Exception {
 				
@@ -396,8 +398,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	/**
 	 * Saves the current module tree to a file.
 	 * @param file File to save to
-	 * @throws Exception 
-	 * @throws JsonIOException 
+	 * @throws Exception Thrown if something goes wrong
+	 * @throws JsonIOException Thrown if serialising fails
 	 */
 	public void saveModuleTreeToFile(File file) throws JsonIOException, Exception {
 		

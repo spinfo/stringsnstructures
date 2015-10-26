@@ -41,9 +41,10 @@ public class ASCIIGraph extends ModuleImpl {
 	boolean elternZeichenUebernehmen;
 
 	/**
-	 * @param callbackReceiver
-	 * @param properties
-	 * @throws Exception
+	 * Constructor
+	 * @param callbackReceiver Callback receiver instance 
+	 * @param properties Properties
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public ASCIIGraph(CallbackReceiver callbackReceiver, Properties properties)
 			throws Exception {

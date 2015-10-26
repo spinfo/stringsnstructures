@@ -64,9 +64,10 @@ public class ColourGraph extends ModuleImpl {
 	private double gleichverteilungsschwellwert;
 
 	/**
-	 * @param callbackReceiver
-	 * @param properties
-	 * @throws Exception
+	 * Constructor
+	 * @param callbackReceiver Callback receiver instance
+	 * @param properties Properties
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public ColourGraph(CallbackReceiver callbackReceiver, Properties properties)
 			throws Exception {

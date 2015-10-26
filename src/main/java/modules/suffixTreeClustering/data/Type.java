@@ -28,7 +28,7 @@ public final class Type implements Comparable<Type> {
 	 * 
 	 * @param corpus
 	 *            data base for creating vector
-	 * @return true iff new vector was created, false if vector already existed
+	 * @param type Type
 	 */
 	public void calculateVector(final SuffixTreeInfo corpus, FeatureType type) {
 		if (vector == null) {
