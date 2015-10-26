@@ -156,7 +156,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 *            Outputport to connect
 	 * @param inputPort
 	 *            Inputport to connect
-	 * @param connectingPipe
+	 * @param pipe
 	 *            Pipe to connect the two ports
 	 * @return True if successful
 	 * @throws NotSupportedException
@@ -241,7 +241,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	/**
 	 * Stops all running modules.
 	 * 
-	 * @throws SecurityException
+	 * @throws SecurityException Thrown if the JVM does not allow one of the threads to be interrupted
 	 */
 	public void stopModules() throws SecurityException {
 		Logger.getLogger("")
@@ -268,7 +268,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * finish, so you should only call it from within another continuous thread
 	 * or loop.
 	 * 
-	 * @throws Exception
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public void runModules() throws Exception {
 		this.runModules(false);
@@ -280,7 +280,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * @param runUntilAllThreadsAreDone
 	 *            If true, the method blocks until all spawned threads have
 	 *            finished
-	 * @throws Exception
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public void runModules(boolean runUntilAllThreadsAreDone) throws Exception {
 		this.runModules(runUntilAllThreadsAreDone, 5000l);
@@ -294,7 +294,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 *            finished
 	 * @param interval
 	 *            Interval to check for thread completion in milliseconds
-	 * @throws Exception
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public void runModules(boolean runUntilAllThreadsAreDone, long interval)
 			throws Exception {
@@ -405,7 +405,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	/**
 	 * Resets the modules' I/O. Must be called prior re-running the module tree.
 	 * 
-	 * @throws Exception
+	 * @throws Exception Thrown if something goes wrong
 	 */
 	public void resetModuleIO() throws Exception {
 		
@@ -419,7 +419,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	
 	/**
 	 * Adds a new module.
-	 * @param module
+	 * @param module Module to add
 	 * @return True if successful
 	 */
 	public boolean addModule(Module module){
@@ -428,7 +428,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	
 	/**
 	 * Removes a module.
-	 * @param module
+	 * @param module Module to remove
 	 * @return True if successful
 	 */
 	public synchronized boolean removeModule(Module module){
