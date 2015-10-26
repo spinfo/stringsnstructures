@@ -78,7 +78,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	public static final ImageIcon ICON_LOAD = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/open.png"));
 	
 	public static final String WINDOWTITLE = "Module Workbench - ";
-	public static final String WINDOWTITLE_NEWTREESUFFIX = "(new module tree)";
+	public static final String WINDOWTITLE_NEWTREESUFFIX = "(new module network)";
 	public static final String FILENAMESUFFIX = "exp";
 	
 	private JFrame frame;
