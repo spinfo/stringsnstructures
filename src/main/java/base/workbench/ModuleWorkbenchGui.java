@@ -11,6 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
@@ -35,6 +36,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import modules.InputPort;
 import modules.Module;
@@ -77,6 +79,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	
 	public static final String WINDOWTITLE = "Module Workbench - ";
 	public static final String WINDOWTITLE_NEWTREESUFFIX = "(new module tree)";
+	public static final String FILENAMESUFFIX = "exp";
 	
 	private JFrame frame;
 	private ModuleWorkbenchController controller;
@@ -88,6 +91,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	private AbstractModulePortButton activeModulePortButton = null;
 	private ModuleNetworkGlasspane moduleConnectionGlasspane;
 	private Map<Module,ModulePropertyEditor> modulePropertyEditors;
+	private File lastChosenFile = null;
 
 	/**
 	 * Launch the application.
@@ -432,13 +436,26 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				// Instantiate a new file chooser
 				final JFileChooser fileChooser = new JFileChooser();
 				
+				// Set file filter
+				FileNameExtensionFilter filter = new FileNameExtensionFilter(
+				        "Experiments", FILENAMESUFFIX);
+				fileChooser.setFileFilter(filter);
+				
+				// Set last chosen directory
+				if (this.lastChosenFile != null)
+					fileChooser.setSelectedFile(this.lastChosenFile);
+				
 				// Determine return value
 				int returnVal = fileChooser.showSaveDialog(this.frame);
 				
 				// If the return value indicates approval, save module tree to the selected file
 				if (returnVal==JFileChooser.APPROVE_OPTION){
-					this.controller.saveModuleTreeToFile(fileChooser.getSelectedFile());
-					frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
+					File selectedFile = fileChooser.getSelectedFile();
+					if (!selectedFile.getName().endsWith(FILENAMESUFFIX) && !fileChooser.accept(selectedFile))
+						selectedFile = new File(selectedFile.getAbsolutePath().concat("."+FILENAMESUFFIX));
+					this.controller.saveModuleTreeToFile(selectedFile);
+					this.lastChosenFile = selectedFile;
+					this.frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
 				}
 				
 			} catch (Exception e1) {
@@ -456,12 +473,29 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			// Instantiate a new file chooser
 			final JFileChooser fileChooser = new JFileChooser();
 			
+			// Set file filter
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(
+			        "Experiments", FILENAMESUFFIX);
+			fileChooser.setFileFilter(filter);
+			
+			// Set last chosen directory
+			if (this.lastChosenFile != null)
+				fileChooser.setSelectedFile(this.lastChosenFile);
+			
 			// Determine return value
 			int returnVal = fileChooser.showOpenDialog(this.frame);
 			
 			// If the return value indicates approval, load the selected file
 			if (returnVal==JFileChooser.APPROVE_OPTION){
-				ModuleNetwork loadedModuleNetwork = this.controller.loadModuleNetworkFromFile(fileChooser.getSelectedFile());
+				
+				// Determine selected file
+				File selectedFile = fileChooser.getSelectedFile();
+				
+				// Remember last chosen file
+				this.lastChosenFile = selectedFile;
+				
+				// Load file
+				ModuleNetwork loadedModuleNetwork = this.controller.loadModuleNetworkFromFile(selectedFile);
 				loadedModuleNetwork.addCallbackReceiver(this);
 				
 				// Loop over loaded modules and add graphical representation for each
