@@ -12,6 +12,14 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
+/**
+ * The module reads a list of anchored text segments. The text anchors must
+ * include a sentence number. The output is a csv table with segments as rows
+ * and sentence numbers as columns. Each table cell contains the count of a
+ * segment in a sentence.
+ * 
+ * @author David Neugebauer
+ */
 public class BagOfTokensModule extends ModuleImpl {
 
 	// Strings identifying/describing in- and output pipes
@@ -22,11 +30,14 @@ public class BagOfTokensModule extends ModuleImpl {
 
 	// Name and description of this module for the User
 	private final static String MODULE_NAME = "Bag of Tokens";
-	private final static String MODULE_DESCRIPTION = "Module";
+	private final static String MODULE_DESCRIPTION = "The module reads a list of anchored text segments. The text anchors must"
+			+ " include a sentence number. The output is a csv table with segments as rows"
+			+ " and sentence numbers as columns. Each table cell contains the count of a"
+			+ " segment in a sentence.";
 
 	// A logger to log stuff
 	private static final Logger LOGGER = Logger.getLogger(BagOfTokensModule.class.getSimpleName());
-	
+
 	// String to separate columns
 	private static final String COL_SEPARATOR = "\t";
 
@@ -103,7 +114,7 @@ public class BagOfTokensModule extends ModuleImpl {
 							new TreeMap<String, Integer>());
 					// increment count and write to the column
 					final int count = column.getOrDefault(segment.text(), 0);
-					column.put(segment.text(), count+1);
+					column.put(segment.text(), count + 1);
 					// add or re-add the column to the table
 					table.put(anchor.getSentenceNr(), column);
 				}
@@ -113,7 +124,7 @@ public class BagOfTokensModule extends ModuleImpl {
 			final Set<Integer> sentenceNrs = table.keySet();
 			// write header line with sentence numbers leaving first field empty
 			final StringBuilder line = new StringBuilder(" ");
-			for(Integer sentenceNr : sentenceNrs) {
+			for (Integer sentenceNr : sentenceNrs) {
 				line.append(COL_SEPARATOR + sentenceNr.toString());
 			}
 			line.append(System.lineSeparator());
