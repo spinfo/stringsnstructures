@@ -18,7 +18,7 @@ import modules.ModuleNetworkGsonSerializer;
 import modules.ModuleTreeGsonDeserializer;
 import modules.ListSorting.ListSort;
 import modules.artificialSeqs.CreateArtificialSeqs;
-import modules.bagOfTokens.BagOfTokensModule;
+import modules.bagOfTokens.BagsOfTokensModule;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
 import modules.basemodules.FileFinderModule;
@@ -235,7 +235,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		
 		// Prepare Bag Of Words module
 		Properties bagOfWordsProperties = new Properties();
-		BagOfTokensModule bagOfWordsModule = new BagOfTokensModule(moduleNetwork,
+		BagsOfTokensModule bagOfWordsModule = new BagsOfTokensModule(moduleNetwork,
 				bagOfWordsProperties);
 		bagOfWordsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagOfWordsModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		bagOfWordsModule.applyProperties();

@@ -1,5 +1,8 @@
 package modules.bagOfTokens;
 
+/**
+ * POJO to hold a sentenceNr as well as a start and end index to identify a segment of text
+ */
 public class TextAnchor {
 
 	// The sentence nr, that this anchor refers to

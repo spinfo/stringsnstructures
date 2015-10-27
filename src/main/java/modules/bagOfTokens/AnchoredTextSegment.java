@@ -1,8 +1,11 @@
 package modules.bagOfTokens;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
+/**
+ * POJO to hold a String, that is a segment of a larger text. Instances of the
+ * segment are identified by a list of TextAnchor objects.
+ */
 public class AnchoredTextSegment {
 
 	// The segment of text, that the object represents
@@ -10,9 +13,6 @@ public class AnchoredTextSegment {
 
 	// A list of TextAnchors representing where the segment appears
 	private ArrayList<TextAnchor> textAnchors;
-
-	// A pattern for newlines, when parsing a segment representation
-	private static final Pattern NEWLINE = Pattern.compile("\r\n|\n|\r");
 
 	/**
 	 * An AnchoredTextSegment without any attributes set
@@ -24,7 +24,8 @@ public class AnchoredTextSegment {
 	/**
 	 * An AnchoredTextSegment representing the input String.
 	 * 
-	 * @param segment Segment
+	 * @param segment
+	 *            Segment
 	 */
 	public AnchoredTextSegment(String segment) {
 		this();
@@ -34,64 +35,17 @@ public class AnchoredTextSegment {
 	/**
 	 * Adds a single TextAnchor to this segment
 	 * 
-	 * @param anchor Anchor
+	 * @param anchor
+	 *            Anchor
 	 */
 	public void addAnchor(TextAnchor anchor) {
 		this.textAnchors.add(anchor);
 	}
 
 	/**
-	 * Attempts to parse a single string as an anchored text segment
-	 * representation. This is a multiline string with the segment on the first
-	 * line followed by any number of lines (at least one), representing
-	 * TextAnchor instances.
-	 * 
-	 * @param input
-	 *            The string to parse
-	 * @return a new AnchoredTextSegment with at least one TextAnchor or null if
-	 *         the input could not be parsed
-	 */
-	public static AnchoredTextSegment parse(String input) {
-		AnchoredTextSegment result = null;
-		// split the input and process each line
-		final String[] lines = NEWLINE.split(input);
-		// process the first line as the segment String
-		if (lines.length > 0 && lines[0].length() > 0) {
-			result = new AnchoredTextSegment(lines[0]);
-		}
-		// if the segment exists, every other line is treated as a TextAnchor
-		if (result != null) {
-			for (int i = 1; i < lines.length; i++) {
-				final String line = lines[i];
-				final TextAnchor anchor = TextAnchor.parse(line);
-				if (anchor != null) {
-					result.addAnchor(anchor);
-				} else {
-					// abort parsing if parsing an anchor failed
-					result = null;
-					break;
-				}
-			}
-			// check if the segment has at least one anchor, if not, abort
-			if (result != null && result.getTextAnchors().isEmpty()) {
-				result = null;
-			}
-		}
-		return result;
-	}
-
-	/**
 	 * @return The text, that this segment represents
 	 */
 	public String getSegment() {
-		return segment;
-	}
-	
-	/**
-	 * An alias for .getSegment()
-	 * @return The text, that this segment represents
-	 */
-	public String text() {
 		return segment;
 	}
 
