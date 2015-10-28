@@ -61,7 +61,8 @@ public class EntscheidungsAeffchen {
 				// Der aktuelle Entscheidungsbaumknoten hat noch KEINE Kindelemente, daher muessen zunaechst die Bewertungen ermittelt werden
 				double bewertungVerbinde = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), aktuellerKnoten, letzteBewertung);
 				double bewertungTrenne = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), suffixbaumWurzelknoten, Double.MAX_VALUE);
-				
+				if (aktuellerKnoten == null)
+					throw new Exception("The segmenter seems to have encountered an unknown symbol and cannot continue -- please make sure the suffix trie contains all symbols used within the segmentation input.");
 				SplitDecisionNode entscheidungsknotenVerbinde = new SplitDecisionNode(bewertungVerbinde, aktuellerKnoten, aktuellerKnoten.getKinder().get(new Character(zeichenkette.charAt(index)).toString()), aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
 				SplitDecisionNode entscheidungsknotenTrenne = new SplitDecisionNode(bewertungTrenne, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(new Character(zeichenkette.charAt(index)).toString()), aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
 				aktuellerEntscheidungsKnoten.setJoin(entscheidungsknotenVerbinde);
