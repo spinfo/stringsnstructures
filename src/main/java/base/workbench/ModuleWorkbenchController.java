@@ -28,6 +28,7 @@ import modules.basemodules.RegExReplacementModule;
 import modules.basemodules.SmbFileReaderModule;
 import modules.basemodules.SmbFileWriterModule;
 import modules.hal.HalAdvancedModule;
+import modules.keyWordInPhrase.KeyWordInPhraseModule;
 import modules.neo4j.Neo4jOutputModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmenErmittlerModul;
@@ -44,7 +45,6 @@ import modules.visualizationModules.ColourGraph;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
-
 import common.ListLoggingHandler;
 import common.parallelization.CallbackReceiver;
 
@@ -239,6 +239,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				bagOfWordsProperties);
 		bagOfWordsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagOfWordsModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		bagOfWordsModule.applyProperties();
+		
+		// Prepare KWIP module
+		Properties kwipProperties = new Properties();
+		KeyWordInPhraseModule kwipModule = new KeyWordInPhraseModule(moduleNetwork,
+				kwipProperties);
+		kwipProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, kwipModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		kwipModule.applyProperties();
 				
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
@@ -264,6 +271,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
 		availableModules.put(listSort.getName(), listSort);
 		availableModules.put(bagOfWordsModule.getName(), bagOfWordsModule);
+		availableModules.put(kwipModule.getName(), kwipModule);
 		
 	}
 	
