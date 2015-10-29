@@ -24,6 +24,7 @@ import modules.basemodules.ExampleModule;
 import modules.basemodules.FileFinderModule;
 import modules.basemodules.FileReaderModule;
 import modules.basemodules.FileWriterModule;
+import modules.basemodules.FilterModule;
 import modules.basemodules.RegExReplacementModule;
 import modules.basemodules.SmbFileReaderModule;
 import modules.basemodules.SmbFileWriterModule;
@@ -44,7 +45,6 @@ import modules.visualizationModules.ColourGraph;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
-
 import common.ListLoggingHandler;
 import common.parallelization.CallbackReceiver;
 
@@ -239,6 +239,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				bagOfWordsProperties);
 		bagOfWordsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagOfWordsModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		bagOfWordsModule.applyProperties();
+		
+		// Prepare filter module
+		Properties filterProperties = new Properties();
+		FilterModule filterModule = new FilterModule(moduleNetwork,
+				filterProperties);
+		filterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, filterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		filterModule.applyProperties();
 				
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
@@ -264,6 +271,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
 		availableModules.put(listSort.getName(), listSort);
 		availableModules.put(bagOfWordsModule.getName(), bagOfWordsModule);
+		availableModules.put(filterModule.getName(), filterModule);
 		
 	}
 	
