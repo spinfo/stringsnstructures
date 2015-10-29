@@ -6,6 +6,9 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import common.parallelization.CallbackReceiver;
 
 public class RegExReplacementModule extends ModuleImpl {
@@ -27,6 +30,9 @@ public class RegExReplacementModule extends ModuleImpl {
 		
 		// Call parent constructor
 		super(callbackReceiver, properties);
+		
+		// Add description
+		this.setDescription("Regular expression text replacement module. Can use escape characters (e.g. '\\n') and backreferences (marked with '$', e.g. '$1').");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_REGEX, "Regular expression to search for");
@@ -96,7 +102,7 @@ public class RegExReplacementModule extends ModuleImpl {
 		
 		// Apply own properties
 		this.regex = this.getProperties().getProperty(PROPERTYKEY_REGEX, this.getPropertyDefaultValues().get(PROPERTYKEY_REGEX));
-		this.replacement = this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_REPLACEMENT));
+		this.replacement = StringEscapeUtils.unescapeJava(this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_REPLACEMENT)));
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
