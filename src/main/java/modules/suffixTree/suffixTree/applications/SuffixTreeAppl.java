@@ -241,7 +241,7 @@ public class SuffixTreeAppl extends SuffixTree {
 			out.println("}");
 			out.close();
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 		LOGGER.exiting(this.getClass().getName(), "printTree");
 	}

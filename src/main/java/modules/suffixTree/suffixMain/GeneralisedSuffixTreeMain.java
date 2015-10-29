@@ -17,7 +17,6 @@ import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
 import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.suffixTree.applications.TreeWalker;
 import modules.suffixTree.suffixTree.applications.XmlPrintWriter;
-//import modules.suffixTree.suffixTree.applications.ResultListenerSuffixTreePath;
 import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
 import modules.suffixTree.suffixTree.node.info.End;
 import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
@@ -27,6 +26,7 @@ public class GeneralisedSuffixTreeMain {
 	// test is true if text is NOT read from file but given by hand
 	private static boolean test=false;
 	private static final Logger LOGGER = Logger.getGlobal();
+	private static final char TERMINATOR = '$';
 	// .getLogger(GeneralisedSuffixTreeMain.class.getName());
 
 	public static SuffixTreeAppl st;
@@ -78,23 +78,22 @@ public class GeneralisedSuffixTreeMain {
 		ExtActivePoint activePoint;
 		String nextText;
 		// Hint: if texts input is alphabetically sorted, it may consist of
-		// types and its tokens (here: texts, each terminated by '$').
+		// types and its tokens (here: texts, each terminated by the TERMINATOR char).
 		// The tokens (texts) are numbered (continuously), and the last token of
 		// a type is numbered by an integer called unit. All unit integers are
 		// stored a unit list.
-		
 		
 		LOGGER.info("GeneralisedSuffixTreeMain cstr text: " + text + "   "
 				+ SuffixTreeAppl.textNr);
 		
 		// create suffix tree for first text
 		// look for terminator symbol
-		if ((end = text.indexOf('$', start)) != -1) {
+		if ((end = text.indexOf(TERMINATOR, start)) != -1) {
 
 			// --------------------------------------
 			LOGGER.finer("GeneralisedSuffixTreeMain: first suffix tree: start: "
 					+ start
-					+ " end $: "
+					+ " end " + TERMINATOR + ": "
 					+ end
 					+ " substring: "
 					+ text.substring(start, end + 1));
@@ -116,7 +115,7 @@ public class GeneralisedSuffixTreeMain {
 
 			// next texts (ending in terminator symbol), add to suffix tree in
 			// phase n
-			while ((end = text.indexOf('$', start)) != -1) {
+			while ((end = text.indexOf(TERMINATOR, start)) != -1) {
 				SuffixTreeAppl.textNr++;
 				// units are integers which mark texts; each unit number
 				// marks the end of texts corresponding to types in
@@ -133,7 +132,7 @@ public class GeneralisedSuffixTreeMain {
 
 				nextText = text.substring(start, end + 1);
 				LOGGER.finer("GeneralisedSuffixTreeMain:  start: " + start
-						+ " end $: " + end + " nextText: " + nextText
+						+ " end " + TERMINATOR + ": " + end + " nextText: " + nextText
 						+ "  textNr:  " + SuffixTreeAppl.textNr);
 
 				// -----------------------------------------------------
@@ -164,44 +163,24 @@ public class GeneralisedSuffixTreeMain {
 				// ----------------------------------------*/
 				start = end + 1;
 			}
+		} else {
+			LOGGER.warning("Did not finde terminator char: ");
 		}
 		
 		st.printTree("Generalized SuffixTree", -1, -1, -1);
-
 		
-		ResultSuffixTreeNodeStack.setSuffixTree(st);
-		if (!test)try {
-			XmlPrintWriter out = new XmlPrintWriter(new FileWriter(
-					TextInfo.getSuffixTreePath()));
-			out.printTag("output", true, 0, true);
-			out.printTag("units", true, 1, false);
-			out.printInt(nrTypes);
-			out.printTag("units", false, 0, true);
-
-			out.printTag("nodes", true, 1, false);
-			out.printInt(st.getCurrentNode());
-			out.printTag("nodes", false, 0, true);
-
-			ResultListener listener = new ResultListener(out);
-			TreeWalker treeWalker = new TreeWalker();
-			treeWalker.walk(st.getRoot(), st, listener);
-			LOGGER.fine("rootnr: " + st.getRoot());
-			out.printTag("output", false, 0, true);
-			out.close();
-		} catch (Exception e) {
-			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+		if(!test) {
+			persistSuffixTreeToXML();
 		}
-		
-		
 	}
 	
 	
-    public static void persistSuffixTree(){
+    public static void persistSuffixTreeToXML(){
 	
-	ResultSuffixTreeNodeStack.setSuffixTree(st);
-	if (!test)try {
-			XmlPrintWriter out = new XmlPrintWriter(new FileWriter(
-				TextInfo.getSuffixTreePath()));
+    	ResultSuffixTreeNodeStack.setSuffixTree(st);
+    	try {
+			final String writePath = TextInfo.getSuffixTreePath();
+			XmlPrintWriter out = new XmlPrintWriter(new FileWriter(writePath));
 			out.printTag("output", true, 0, true);
 			out.printTag("units", true, 1, false);
 			out.printInt(nrTypes);
@@ -216,19 +195,13 @@ public class GeneralisedSuffixTreeMain {
 			treeWalker.walk(st.getRoot(), st, listener);
 			LOGGER.fine("rootnr: " + st.getRoot());
 			out.printTag("output", false, 0, true);
+			LOGGER.info("Writing finished. Wrote to: " + writePath);
 			out.close();
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}
     }
     
-   /* public static void suffixTreePath(){
-    	ResultListenerSuffixTreePath listener = 
-    	new ResultListenerSuffixTreePath();
-    	TreeWalker treeWalker = new TreeWalker();
-    	treeWalker.walk(st.getRoot(), st, listener);
-    }
-    */
 	public static void run() {
 		
 		LoggerConfigurator.configGlobal();
