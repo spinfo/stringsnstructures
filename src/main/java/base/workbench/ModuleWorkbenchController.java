@@ -41,6 +41,8 @@ import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.TreeBuilder;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
+import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
+import modules.treeBuilder2Output.TreeBuilder2OutputController;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -246,7 +248,21 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				kwipProperties);
 		kwipProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, kwipModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		kwipModule.applyProperties();
-				
+		
+		// Prepare PlainText2TreeBuilderConverter module
+		Properties PlainText2TreeBuilderConverterProperties = new Properties();
+		PlainText2TreeBuilderConverter plainText2TreeBuilderConverter = new PlainText2TreeBuilderConverter (moduleNetwork,
+				PlainText2TreeBuilderConverterProperties);
+		PlainText2TreeBuilderConverterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, plainText2TreeBuilderConverter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		plainText2TreeBuilderConverter.applyProperties();
+		
+		// Prepare treeBuilder2Output module
+		Properties TreeBuilder2OutputControllerProperties = new Properties();
+		TreeBuilder2OutputController treeBuilder2OutputController = new TreeBuilder2OutputController (moduleNetwork,
+				TreeBuilder2OutputControllerProperties);
+		TreeBuilder2OutputControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder2OutputController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		treeBuilder2OutputController.applyProperties();
+		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
 		availableModules.put(fileReader.getName(),fileReader);
@@ -272,7 +288,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(listSort.getName(), listSort);
 		availableModules.put(bagOfWordsModule.getName(), bagOfWordsModule);
 		availableModules.put(kwipModule.getName(), kwipModule);
-		
+		availableModules.put(plainText2TreeBuilderConverter.getName(), plainText2TreeBuilderConverter);
+		availableModules.put(treeBuilder2OutputController.getName(), treeBuilder2OutputController);
 	}
 	
 	/**
