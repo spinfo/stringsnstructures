@@ -8,26 +8,27 @@ import modules.suffixTree.suffixTree.applications.event.MyExitEvent;
 import modules.suffixTree.suffixTree.node.GeneralisedSuffixTreeNode;
 import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
 
-public class ResultListener implements ITreeWalkerListener {
+/**
+ * A TreeWalkerListener that outputs the trees nodes directly to an
+ * XmlPrintWriter.
+ */
+public class ResultToXmlListener implements ITreeWalkerListener {
 
 	private static final Logger LOGGER = Logger.getGlobal();
-	// .getLogger(ResultListener.class.getName());
+	// .getLogger(ResultToXmlListener.class.getName());
 
 	XmlPrintWriter out;
 
 	// cstr
-	public ResultListener(XmlPrintWriter o) {
+	public ResultToXmlListener(XmlPrintWriter o) {
 		this.out = o;
 	}
 
 	@Override
 	public void entryaction(MyEntryEvent e) {
 		if ((Integer) e.getSource() != 1)
-			LOGGER.info("Listener Entry node:"
-					+ e.getSource()
-					+ "  "
-					+ ResultSuffixTreeNodeStack.suffixTree
-							.edgeString((Integer) e.getSource()));
+			LOGGER.info("Listener Entry node:" + e.getSource() + "  "
+					+ ResultSuffixTreeNodeStack.suffixTree.edgeString((Integer) e.getSource()));
 		ResultSuffixTreeNodeStack.stack.push((Integer) e.getSource());
 	}
 
@@ -47,9 +48,8 @@ public class ResultListener implements ITreeWalkerListener {
 			GeneralisedSuffixTreeNode motherNode = ((GeneralisedSuffixTreeNode) ResultSuffixTreeNodeStack.suffixTree.nodes[mother]);
 
 			motherNode.getStartPositionOfSuffix().addAll(nodeList);
-			LOGGER.info("Listener freq mother: "
-					+ motherNode.getStartPositionOfSuffix().size()
-					+ " freq node " + nodeList.size());
+			LOGGER.info("Listener freq mother: " + motherNode.getStartPositionOfSuffix().size() + " freq node "
+					+ nodeList.size());
 		}
 		// node(nr)
 		out.printTag("node", true, 1, true);

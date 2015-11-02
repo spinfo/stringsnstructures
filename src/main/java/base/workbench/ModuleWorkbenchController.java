@@ -37,6 +37,7 @@ import modules.seqSplitting.SeqMemory;
 import modules.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
 import modules.seqTreeProperties.SeqTreePropController;
 import modules.suffixNetBuilder.SuffixNetBuilderModule;
+import modules.suffixTree.GeneralisedSuffixTreeModule;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.TreeBuilder;
 import modules.visualizationModules.ASCIIGraph;
@@ -263,6 +264,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		TreeBuilder2OutputControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder2OutputController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilder2OutputController.applyProperties();
 		
+		// Prepare GeneralisedSuffixTree module
+		Properties generalisedSuffixTreeProperties = new Properties();
+		GeneralisedSuffixTreeModule generalisedSuffixTreeModule = new GeneralisedSuffixTreeModule(moduleNetwork,
+				generalisedSuffixTreeProperties);
+		generalisedSuffixTreeProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, generalisedSuffixTreeModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		generalisedSuffixTreeModule.applyProperties();
+		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
 		availableModules.put(fileReader.getName(),fileReader);
@@ -290,6 +298,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(kwipModule.getName(), kwipModule);
 		availableModules.put(plainText2TreeBuilderConverter.getName(), plainText2TreeBuilderConverter);
 		availableModules.put(treeBuilder2OutputController.getName(), treeBuilder2OutputController);
+		availableModules.put(generalisedSuffixTreeModule.getName(), generalisedSuffixTreeModule);
 	}
 	
 	/**
