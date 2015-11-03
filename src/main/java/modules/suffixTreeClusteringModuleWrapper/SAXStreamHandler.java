@@ -1,4 +1,4 @@
-package suffixTreeClusteringModuleWrapper;
+package modules.suffixTreeClusteringModuleWrapper;
 
 import java.io.InputStream;
 import java.io.IOException;

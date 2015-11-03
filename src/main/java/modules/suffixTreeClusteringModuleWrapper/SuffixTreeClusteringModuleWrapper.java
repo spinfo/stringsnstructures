@@ -1,4 +1,4 @@
-package suffixTreeClusteringModuleWrapper;
+package modules.suffixTreeClusteringModuleWrapper;
 
 // java standard imports:
 import java.util.Properties;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.io.InputStream;
 
 // modularization imports:
+import modules.BytePipe;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
@@ -16,7 +17,6 @@ import modules.OutputPort;
 import common.parallelization.CallbackReceiver;
 
 // clustering specific imports:
-
 import modules.suffixTreeClustering.clustering.flat.FlatCluster;
 import modules.suffixTreeClustering.clustering.flat.FlatClusterer;
 import modules.suffixTreeClustering.clustering.hierarchical.HierarchicalCluster;
@@ -41,13 +41,13 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 	// property keys:
 	
 		// this property saves the selected form of clustering
-	public static final String PROPERTYKEY_CLUST = "Three possible clustering types: \"NJ\" (Neighbor Joining), \"KM\" (flat k-means), \"HAC\" (hierachial agglomerative clustering)";
+	public static final String PROPERTYKEY_CLUST = "clustering type";
 	
 		// this property saves the type as which a vector was created
-	public static final String PROPERTYKEY_VECTYPE = "The feature type of the vecotr. Possible inputs: \"TF-IDF\", \"TF-DF\", \"binary\"";
+	public static final String PROPERTYKEY_VECTYPE = "vector type";
 	
 		// this property saves the name of the used corpus
-	public static final String PROPERTYKEY_CORPNAME = "Insert corpus/text name";
+	public static final String PROPERTYKEY_CORPNAME = "corpus/text name";
 	
 	// variables:
 	
@@ -70,6 +70,7 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 	private List<Type> types;
 	
 		// the type of vector which should be created
+	private String vecType;
 	private FeatureType vectorType;
 	
 		// the type of clustering which should be applied
@@ -82,8 +83,8 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 	private String clustResult;
 	
 		// definitions of I/O variables
-	private final String INPUTIDTREERES = "input suffixTreeResult";
-	private final String INPUTIDTREE = "input suffixTree";
+	private final String INPUTIDTREERES = "KWIP xml Result";
+	private final String INPUTIDTREE = "suffixTree";
 	private final String OUTPUTID = "output";
 	
 	// end variables
@@ -100,17 +101,25 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		this.setDescription("This is a wrapper to modularize the clustering process. It takes two inputs: "
 				+ "KWIP suffix tree result in xml format and the suffix tree itself in xml format");
 		
-		// Add property defaults (_should_ be provided for every property)
+		// property descriptions 
+		this.getPropertyDescriptions().put(PROPERTYKEY_CLUST, "Three possible clustering types: \"NJ\" "
+				+ "(Neighbor Joining), \"KM\" (flat k-means), \"HAC\" (hierachial agglomerative clustering)");
+		this.getPropertyDescriptions().put(PROPERTYKEY_VECTYPE, "The feature type of the vector. Possible inputs:"
+				+ " \"TF-IDF\", \"TF-DF\", \"binary\"");
+		this.getPropertyDescriptions().put(PROPERTYKEY_CORPNAME, "Insert corpus/text name");
+		
+		// property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "SuffixTreeClusteringWrapper"); 
 		this.getPropertyDefaultValues().put(PROPERTYKEY_CLUST, "NJ");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_VECTYPE, "TF-IDF");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_CORPNAME, "myCorpus");
 		
 		// I/O definition
 		InputPort inputPortTreeRes = new InputPort(INPUTIDTREERES, "[text/xml] Input of an XML representation of the KWIP result.", this);
-		inputPortTreeRes.addSupportedPipe(CharPipe.class);
+		inputPortTreeRes.addSupportedPipe(BytePipe.class);
 		
 		InputPort inputPortTree = new InputPort(INPUTIDTREE, "[text/xml] Input of an XML representation of the suffix tree.", this);
-		inputPortTree.addSupportedPipe(CharPipe.class);
+		inputPortTree.addSupportedPipe(BytePipe.class);
 		
 		OutputPort outputPort = new OutputPort(OUTPUTID, "Plain text character output.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
@@ -181,6 +190,22 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		// step 2: go through the list and search for each node its unit and
 		// remember the absolute value for each unit after tf/idf.
 		// afterwards save the results in the vector.
+		
+		switch (this.vecType) {
+		case "TF-IDF":
+			this.vectorType = FeatureType.TF_IDF;
+			break;
+		case "TF-DF":
+			this.vectorType = FeatureType.TF_DF;
+			break;
+		case "binary":
+			this.vectorType = FeatureType.BINARY;
+			break;
+		default:
+			this.vectorType = FeatureType.TF_IDF;
+			break;
+		}
+		
 		for (Type doc : corpus.getTypes()) {
 			doc.calculateVector(corpus, vectorType);
 
@@ -231,37 +256,8 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		
 		// Apply own properties
 		this.corpusName = this.getProperties().getProperty(PROPERTYKEY_CORPNAME, this.getPropertyDefaultValues().get(PROPERTYKEY_CORPNAME));
-		String vecType = this.getProperties().getProperty(PROPERTYKEY_VECTYPE, this.getPropertyDefaultValues().get(PROPERTYKEY_VECTYPE));
-		switch (vecType) {
-		case "TF-IDF":
-			this.vectorType = FeatureType.TF_IDF;
-			break;
-		case "TF-DF":
-			this.vectorType = FeatureType.TF_DF;
-			break;
-		case "binary":
-			this.vectorType = FeatureType.BINARY;
-			break;
-		default:
-			this.vectorType = FeatureType.TF_IDF;
-			break;
-		}
-		
-		String clustType = this.getProperties().getProperty(PROPERTYKEY_CLUST, this.getPropertyDefaultValues().get(PROPERTYKEY_CLUST));
-		switch (clustType) {
-		case "NJ":
-			this.clusterType = "NJ";
-			break;
-		case "KM":
-			this.clusterType = "KM";
-			break;
-		case "HAC":
-			this.clusterType = "HAC";
-			break;
-		default:
-			this.clusterType = "KM";
-			break;
-		}
+		this.vecType = this.getProperties().getProperty(PROPERTYKEY_VECTYPE, this.getPropertyDefaultValues().get(PROPERTYKEY_VECTYPE));
+		this.clusterType = this.getProperties().getProperty(PROPERTYKEY_CLUST, this.getPropertyDefaultValues().get(PROPERTYKEY_CLUST));
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
