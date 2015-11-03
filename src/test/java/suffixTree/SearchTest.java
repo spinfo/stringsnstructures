@@ -21,6 +21,8 @@ import org.junit.Test;
 import common.TextInfo;
 
 public class SearchTest {
+	
+	private SuffixTree suffixTree;
 
 	@Test
 	public void test() {
@@ -39,11 +41,13 @@ public class SearchTest {
 
 		char[] text = st.text;
 		System.out.println(text);
+		
+		
 
-		int leafCount = SuffixTree.leafCount;
-		int end = SuffixTree.oo.getEnd();
-		int textNr = SuffixTree.textNr;
-		int unit = SuffixTree.unit;
+		int leafCount = suffixTree.leafCount;
+		int end = suffixTree.oo.getEnd();
+		int textNr = suffixTree.textNr;
+		int unit = suffixTree.unit;
 
 		System.out.println(String.format(
 				"Leaf count: %s\nEnd: %s\nTextNr: %s\nUnit: %s\n", leafCount,
@@ -63,16 +67,18 @@ public class SearchTest {
 	@Before
 	public void setUpSuffixTree() throws Exception {
 		readCorpusAndUnitListFromFile();
+		
+		suffixTree = new SuffixTree(text.length(), new GeneralisedSuffixTreeNodeFactory());
 
 		int start = 0, end;
-		SuffixTreeAppl.unit = 0;
+		suffixTree.unit = 0;
 		ExtActivePoint activePoint;
 		String nextText;
 
 		if ((end = text.indexOf('$', start)) != -1) {
 
 			// --------------------------------------
-			SuffixTree.oo = new End(Integer.MAX_VALUE / 2);
+			suffixTree.oo = new End(Integer.MAX_VALUE / 2);
 			st = new SuffixTreeAppl(text.length(),
 					new GeneralisedSuffixTreeNodeFactory());
 
@@ -85,12 +91,12 @@ public class SearchTest {
 			// next texts (ending in terminator symbol), add to suffix tree in
 			// phase n
 			while ((end = text.indexOf('$', start)) != -1) {
-				SuffixTreeAppl.textNr++;
+				suffixTree.textNr++;
 				// units are integers which mark texts; each unit number
 				// marks the end of texts corresponding to types in
 				// (alphabetically) ordered input
-				if (unitList.get(SuffixTreeAppl.unit) == SuffixTreeAppl.textNr) {
-					SuffixTreeAppl.unit++;
+				if (unitList.get(suffixTree.unit) == suffixTree.textNr) {
+					suffixTree.unit++;
 
 				}
 				nextText = text.substring(start, end + 1);
@@ -101,7 +107,7 @@ public class SearchTest {
 							.println(" GeneralisedSuffixTreeMain activePoint null");
 					break;
 				}
-				SuffixTree.oo = new End(Integer.MAX_VALUE / 2);
+				suffixTree.oo = new End(Integer.MAX_VALUE / 2);
 				st.phases(text, start + activePoint.phase, end + 1, activePoint);
 
 				start = end + 1;

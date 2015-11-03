@@ -1,7 +1,6 @@
 package modules.suffixTree.suffixTree.applications;
 
 import java.util.ArrayList;
-import java.util.EmptyStackException;
 import java.util.logging.Logger;
 
 import modules.suffixTree.output.NodeRepresentation;
@@ -21,15 +20,20 @@ public class ResultToRepresentationListener implements ITreeWalkerListener {
 	private static final Logger LOGGER = Logger.getLogger(ResultToRepresentationListener.class.getName());
 
 	// the suffix tree that this class operates on
-	private final SuffixTreeAppl suffixTreeAppl;
+	//private final SuffixTreeAppl suffixTreeAppl;
 
 	// the suffix tree's representation on which this class will add
 	// representations of the suffix tree's nodes
 	private final SuffixTreeRepresentation suffixTreeRepresentation;
 
+	public ResultToRepresentationListener(SuffixTreeRepresentation suffixTreeRepresentation) {
+		this.suffixTreeRepresentation = suffixTreeRepresentation;
+	}
+
+	@Deprecated
 	public ResultToRepresentationListener(SuffixTreeAppl suffixTreeAppl,
 			SuffixTreeRepresentation suffixTreeRepresentation) {
-		this.suffixTreeAppl = suffixTreeAppl;
+		//this.suffixTreeAppl = suffixTreeAppl;
 		this.suffixTreeRepresentation = suffixTreeRepresentation;
 	}
 

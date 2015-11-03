@@ -1,6 +1,9 @@
 package modules.paradigmSegmenter;
 
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import modules.CharPipe;
@@ -21,6 +24,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	public static final String PROPERTYKEY_MINDESTKOSTENPROEBENE = "Minimal cost";
 	public static final String PROPERTYKEY_BEWERTUNGSABFALLFAKTOR = "Bewertungsabfallfaktor";
 	public static final String PROPERTYKEY_BEWERTUNGAUSGEBEN = "Bewertung mit in Ausgabe schreiben";
+	public static final String PROPERTYKEY_INPUTDIVIDER = "Input divider";
 
 	// Local variables
 	private final String TEXTINPUTID = "text input";
@@ -31,6 +35,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	private double mindestKostenProSymbolEbene;
 	private double bewertungsAbfallFaktor;
 	private boolean bewertungAusgeben = false;
+	private Character inputDivider = null;
 
 	public ParadigmenErmittlerModul(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -58,6 +63,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				"Factor to modify the weight of a rating decrease between symbols [double, >0, 1=neutral]");
 		this.getPropertyDescriptions().put(PROPERTYKEY_BEWERTUNGAUSGEBEN,
 				"Include rating values in output");
+		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDIVIDER,
+				"Divider that marks the input tokens (empty for char-by-char input)");
 
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,
@@ -67,6 +74,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MINDESTKOSTENPROEBENE, "1");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR, "1");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BEWERTUNGAUSGEBEN, "false");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTDIVIDER, "");
 
 		// Add module description
 		this.setDescription("Reads contents from a suffix tree file (JSON-encoded) and based on that data marks paradigm borders in the streamed input. Outputs segmented input data. Can handle GZIP compressed suffix tree files.");
@@ -106,10 +114,13 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		EntscheidungsAeffchen.debug = true;
 		
 		// Eingabepuffer initialisieren
-		StringBuffer puffer = new StringBuffer();
+		List<String> puffer = new ArrayList<String>();
+		
+		// Initialise buffer for chars to build up to a token
+		StringBuffer charBuffer = new StringBuffer();
 		
 		// Sekundaeren Eingabepuffer fuer nicht segmentierbare Zeichenketten initialisieren
-		StringBuffer sekundaerPuffer = new StringBuffer();
+		List<String> sekundaerPuffer = new ArrayList<String>();
 		
 		// HashMap zur Zwischenspeicherung von Ergebnisbaumzweigen
 		//Map<Character,SplitDecisionNode> entscheidungsBaumZweige = new HashMap<Character,SplitDecisionNode>();
@@ -126,15 +137,22 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			// Zeichen einlesen
 			Character symbol = Character.valueOf((char) zeichenCode);
 			
-			// Eingelesenes Zeichen an Puffer anfuegen
-			puffer.append(symbol);
+			// Check whether the read symbol is an input divider
+			if (symbol.equals(this.inputDivider)){
+				// Append char buffer to token buffer
+				puffer.add(charBuffer.toString());
+			} else {
+				// Append symbol to char buffer
+				charBuffer.append(symbol);
+				continue;
+			}
 			
 			// Puffergroesse pruefen
-			if (puffer.length() == this.pufferGroesse){
+			if (puffer.size() == this.pufferGroesse){
 				
 				// Ggf. Entscheidungsbaum beginnen
 				if (entscheidungsbaumWurzelknoten == null){
-					entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(new Character(puffer.charAt(0)).toString()), null, puffer.charAt(0));
+					entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(puffer.get(0)), null, puffer.get(0));
 					//entscheidungsBaumZweige.put(symbol, entscheidungsbaumWurzelknoten);
 				}
 				
@@ -159,8 +177,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				// Pruefen, ob eine Trennstelle gefunden wurde
 				if (letzteTrennstelle == null){
 					// Wenn gar keine Trennstelle gefunden wurde, wird der Puffer mit Ausnahme des letzten Zeichens in den Sekundaerpuffer uebertragen
-					sekundaerPuffer.append(puffer.substring(0, puffer.length()-1));
-					puffer.delete(0, puffer.length()-1);
+					sekundaerPuffer.addAll(puffer);
+					puffer.clear();
+					puffer.add(sekundaerPuffer.remove(sekundaerPuffer.size()-1));
 					// Entscheidungsbaum stutzen
 					entscheidungsbaumWurzelknoten = blattBesterWeg;
 					entscheidungsbaumWurzelknoten.setElternKnoten(null);
@@ -177,13 +196,13 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 					}
 					
 					// Segment ermitteln (Sekundaerpuffer + Puffer bis zur ermittelten Tiefe)
-					String segment = sekundaerPuffer.toString().concat(puffer.substring(0, tiefe));
+					List<String> segment = sekundaerPuffer.subList(0, tiefe);
 					
 					// Segment aus Puffer loeschen
-					puffer.delete(0, tiefe);
+					puffer = puffer.subList(tiefe, puffer.size());
 					
 					// Sekundaerpuffer loeschen
-					sekundaerPuffer.delete(0, sekundaerPuffer.length());
+					sekundaerPuffer.clear();
 					
 					// Entscheidungsbaum stutzen
 					entscheidungsbaumWurzelknoten = letzteTrennstelle.getSplit();
@@ -191,7 +210,14 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 						entscheidungsbaumWurzelknoten.setElternKnoten(null);
 					
 					// Segment ausgeben
-					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(segment.concat(this.divider));
+					//this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(segment.concat(this.divider));
+					Iterator<String> segmentStrings = segment.iterator();
+					while (segmentStrings.hasNext()){
+						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(segmentStrings.next());
+						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.inputDivider.toString());
+					}
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.divider);
+					
 					
 					if (bewertungAusgeben)
 						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(letzteTrennstellenBewertung+this.divider);
@@ -229,6 +255,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		
 		if (this.getProperties().containsKey(PROPERTYKEY_BEWERTUNGAUSGEBEN))
 			this.bewertungAusgeben = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_BEWERTUNGAUSGEBEN));
+		
+		if (this.getProperties().containsKey(PROPERTYKEY_INPUTDIVIDER) && this.getProperties().getProperty(PROPERTYKEY_INPUTDIVIDER) != null && !this.getProperties().getProperty(PROPERTYKEY_INPUTDIVIDER).isEmpty())
+			this.inputDivider = Character.valueOf(this.getProperties().getProperty(PROPERTYKEY_INPUTDIVIDER).charAt(0));
 			
 		super.applyProperties();
 	}

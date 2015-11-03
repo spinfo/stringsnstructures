@@ -21,10 +21,10 @@ public class SuffixTree {
 	// .getLogger(SuffixTree.class.getName());
 
 	// to be initialized in calling class e.g. SuffixTreeAppl
-	public static End oo;
-	public static int unit = 0;
-	public static int textNr = 0;
-	public static int leafCount = -1;
+	public End oo = new End(Integer.MAX_VALUE / 2);
+	public int unit = 0;
+	public int textNr = 0;
+	public int leafCount = -1;
 	// first position in Node (seems to be empty (?why))
 	public Node[] nodes;
 	public char[] text;
@@ -81,7 +81,7 @@ public class SuffixTree {
 		// increment nr
 		NodeInfo nodeInfo = new NodeInfo(start, end /* ,this.oo.getEnd() */);
 
-		nodes[++current_node] = this.nodeFactory.generateNode(nodeInfo);
+		nodes[++current_node] = this.nodeFactory.generateNode(nodeInfo, this);
 		LOGGER.fine("newNode " + m + " active_node: " + current_node
 				+ " nodeInfo: " + nodeInfo.getStart() + " " + nodeInfo.getEnd());
 		return current_node;

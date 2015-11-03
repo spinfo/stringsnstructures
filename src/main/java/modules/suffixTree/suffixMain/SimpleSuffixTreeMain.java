@@ -2,13 +2,12 @@ package modules.suffixTree.suffixMain;
 
 import java.util.logging.Logger;
 
-import common.LoggerConfigurator;
-
-import modules.suffixTree.suffixTree.SuffixTree;
 import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
 import modules.suffixTree.suffixTree.node.info.End;
 import modules.suffixTree.suffixTree.node.nodeFactory.SimpleSuffixTreeNodeFactory;
+
+import common.LoggerConfigurator;
 
 public class SimpleSuffixTreeMain {
 	private static final Logger LOGGER = Logger.getGlobal();
@@ -19,9 +18,9 @@ public class SimpleSuffixTreeMain {
 	public SimpleSuffixTreeMain(String text) throws Exception {
 		LOGGER.fine("SimpleSuffixTreeMain cstr text: " + text);
 
-		SuffixTree.oo = new End(Integer.MAX_VALUE / 2);
 		st = new SuffixTreeAppl(text.length(),
 				new SimpleSuffixTreeNodeFactory());
+		st.oo = new End(Integer.MAX_VALUE / 2);
 
 		// phases
 		st.phases(text, 0, text.length(), null);

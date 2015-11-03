@@ -16,7 +16,7 @@ public class SplitDecisionNode {
 	private Knoten suffixTrieKindKnoten;
 	private SplitDecisionNode elternKnoten;
 	private String notiz;
-	private Character symbol;
+	private String symbol;
 	
 	public SplitDecisionNode() {
 		super();
@@ -28,7 +28,7 @@ public class SplitDecisionNode {
 	}
 	
 	public SplitDecisionNode(double bewertung, Knoten suffixTrieElternKnoten, Knoten suffixTrieKindKnoten,
-			SplitDecisionNode elternKnoten, Character symbol) {
+			SplitDecisionNode elternKnoten, String symbol) {
 		super();
 		this.bewertung = bewertung;
 		this.aktivierungsPotential = bewertung;
@@ -94,7 +94,7 @@ public class SplitDecisionNode {
 	/**
 	 * @return the symbol
 	 */
-	public Character getSymbol() {
+	public String getSymbol() {
 		return symbol;
 	}
 	/**
@@ -172,7 +172,7 @@ public class SplitDecisionNode {
 	/**
 	 * @param symbol the symbol to set
 	 */
-	public void setSymbol(Character symbol) {
+	public void setSymbol(String symbol) {
 		this.symbol = symbol;
 	}
 	@Override

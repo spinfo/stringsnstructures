@@ -8,18 +8,17 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import common.LoggerConfigurator;
-import common.TextInfo;
-
-import modules.suffixTree.suffixTree.SuffixTree;
-import modules.suffixTree.suffixTree.applications.ResultToXmlListener;
 import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
+import modules.suffixTree.suffixTree.applications.ResultToXmlListener;
 import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.suffixTree.applications.TreeWalker;
 import modules.suffixTree.suffixTree.applications.XmlPrintWriter;
 import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
 import modules.suffixTree.suffixTree.node.info.End;
 import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
+
+import common.LoggerConfigurator;
+import common.TextInfo;
 
 public class GeneralisedSuffixTreeMain {
 
@@ -49,7 +48,6 @@ public class GeneralisedSuffixTreeMain {
 			readCorpusAndUnitListFromFile();
 		}
 		int start = 0, end;
-		SuffixTreeAppl.unit = 0;
 		ExtActivePoint activePoint;
 		String nextText;
 		// Hint: if texts input is alphabetically sorted, it may consist of
@@ -59,8 +57,6 @@ public class GeneralisedSuffixTreeMain {
 		// a type is numbered by an integer called unit. All unit integers are
 		// stored a unit list.
 
-		LOGGER.info("GeneralisedSuffixTreeMain cstr text: " + text + "   " + SuffixTreeAppl.textNr);
-
 		// create suffix tree for first text
 		// look for terminator symbol
 		end = text.indexOf(TERMINATOR, start);
@@ -68,8 +64,11 @@ public class GeneralisedSuffixTreeMain {
 
 			LOGGER.finer("GeneralisedSuffixTreeMain: first suffix tree: start: " + start + " end " + TERMINATOR + ": "
 					+ end + " substring: " + text.substring(start, end + 1));
-			SuffixTree.oo = new End(Integer.MAX_VALUE / 2);
 			st = new SuffixTreeAppl(text.length(), new GeneralisedSuffixTreeNodeFactory());
+
+			LOGGER.info("GeneralisedSuffixTreeMain cstr text: " + text + "   " + st.textNr);
+			st.unit = 0;
+			st.oo = new End(Integer.MAX_VALUE / 2);
 			// phases, first text, ExtActivePoint null
 			st.phases(text, start, end + 1, null/* ExtActivePoint */);
 
@@ -81,19 +80,19 @@ public class GeneralisedSuffixTreeMain {
 
 			// next texts (ending in terminator symbol), add to suffix tree in phase n
 			while ((end = text.indexOf(TERMINATOR, start)) != -1) {
-				SuffixTreeAppl.textNr++;
+				st.textNr++;
 				// units are integers which mark texts; each unit number
 				// marks the end of texts corresponding to types in
 				// (alphabetically) ordered input
-				if ((!test) && (unitList.get(SuffixTreeAppl.unit) == SuffixTreeAppl.textNr)) {
-					SuffixTreeAppl.unit++;
-					LOGGER.finer("unit: " + SuffixTreeAppl.unit + "  textNr: " + SuffixTreeAppl.textNr + " type "
-							+ typeList.get(SuffixTreeAppl.unit));
+				if ((!test) && (unitList.get(st.unit) == st.textNr)) {
+					st.unit++;
+					LOGGER.finer("unit: " + st.unit + "  textNr: " + st.textNr + " type "
+							+ typeList.get(st.unit));
 				}
 
 				nextText = text.substring(start, end + 1);
 				LOGGER.finer("GeneralisedSuffixTreeMain:  start: " + start + " end " + TERMINATOR + ": " + end
-						+ " nextText: " + nextText + "  textNr:  " + SuffixTreeAppl.textNr);
+						+ " nextText: " + nextText + "  textNr:  " + st.textNr);
 
 				activePoint = st.longestPath(nextText, 0/* phase */, 1/* node */, start/* active_edge */,
 						true/* generalized suffix tree */);
@@ -106,7 +105,7 @@ public class GeneralisedSuffixTreeMain {
 							+ activePoint.active_length + " start: " + start + " phase: " + activePoint.phase);
 				}
 				// new End element
-				SuffixTree.oo = new End(Integer.MAX_VALUE / 2);
+				st.oo = new End(Integer.MAX_VALUE / 2);
 				st.phases(text, start + activePoint.phase, end + 1, activePoint);
 
 				LOGGER.fine("GeneralisedSuffixTreeMain start: " + start + " end: " + end);

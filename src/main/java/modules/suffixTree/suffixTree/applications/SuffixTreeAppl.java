@@ -14,7 +14,7 @@ public class SuffixTreeAppl extends SuffixTree {
 	// .getLogger(SuffixTreeAppl.class.getName());
 
 	PrintWriter out;
-	private static int nr = 0;
+	private int nr = 0;
 
 	public SuffixTreeAppl(int len, NodeFactory nodeFactory) {
 		super(len, nodeFactory);

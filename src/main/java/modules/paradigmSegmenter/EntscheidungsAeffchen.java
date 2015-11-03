@@ -1,5 +1,7 @@
 package modules.paradigmSegmenter;
 
+import java.util.List;
+
 import modules.treeBuilder.Knoten;
 
 public class EntscheidungsAeffchen {
@@ -23,7 +25,7 @@ public class EntscheidungsAeffchen {
 	 * @return Blatt am Ende des Weges des geringsten Widerstands
 	 * @throws Exception Thrown if something goes wrong
 	 */
-	public SplitDecisionNode konstruiereEntscheidungsbaum(StringBuffer zeichenkette, SplitDecisionNode entscheidungsbaumWurzelknoten) throws Exception {
+	public SplitDecisionNode konstruiereEntscheidungsbaum(List<String> zeichenkette, SplitDecisionNode entscheidungsbaumWurzelknoten) throws Exception {
 		
 		// Rueckkehr zur Wurzel des Entscheidungsbaumes
 		if (debug && aktuellerEntscheidungsKnoten != null)
@@ -34,7 +36,7 @@ public class EntscheidungsAeffchen {
 		double letzteBewertung = Double.MAX_VALUE;
 		
 		// Schleife ueber alle Zeichen (das erste ist bereits im Entsche4idungsbaumwurzelknoten hinterlegt)
-		for (int index=1; index<zeichenkette.length();){
+		for (int index=1; index<zeichenkette.size();){
 			
 			// Pruefen, ob der aktuelle Entscheidungsknoten bereits Kindelemente hat
 			if (aktuellerEntscheidungsKnoten.getSplit() != null && aktuellerEntscheidungsKnoten.getJoin() != null){
@@ -59,12 +61,12 @@ public class EntscheidungsAeffchen {
 			} else {
 				
 				// Der aktuelle Entscheidungsbaumknoten hat noch KEINE Kindelemente, daher muessen zunaechst die Bewertungen ermittelt werden
-				double bewertungVerbinde = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), aktuellerKnoten, letzteBewertung);
-				double bewertungTrenne = symbolBewerter.symbolBewerten(zeichenkette.charAt(index), suffixbaumWurzelknoten, Double.MAX_VALUE);
+				double bewertungVerbinde = symbolBewerter.symbolBewerten(zeichenkette.get(index), aktuellerKnoten, letzteBewertung);
+				double bewertungTrenne = symbolBewerter.symbolBewerten(zeichenkette.get(index), suffixbaumWurzelknoten, Double.MAX_VALUE);
 				if (aktuellerKnoten == null)
 					throw new Exception("The segmenter seems to have encountered an unknown symbol and cannot continue -- please make sure the suffix trie contains all symbols used within the segmentation input.");
-				SplitDecisionNode entscheidungsknotenVerbinde = new SplitDecisionNode(bewertungVerbinde, aktuellerKnoten, aktuellerKnoten.getKinder().get(new Character(zeichenkette.charAt(index)).toString()), aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
-				SplitDecisionNode entscheidungsknotenTrenne = new SplitDecisionNode(bewertungTrenne, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(new Character(zeichenkette.charAt(index)).toString()), aktuellerEntscheidungsKnoten, zeichenkette.charAt(index));
+				SplitDecisionNode entscheidungsknotenVerbinde = new SplitDecisionNode(bewertungVerbinde, aktuellerKnoten, aktuellerKnoten.getKinder().get(zeichenkette.get(index)), aktuellerEntscheidungsKnoten, zeichenkette.get(index));
+				SplitDecisionNode entscheidungsknotenTrenne = new SplitDecisionNode(bewertungTrenne, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(zeichenkette.get(index)), aktuellerEntscheidungsKnoten, zeichenkette.get(index));
 				aktuellerEntscheidungsKnoten.setJoin(entscheidungsknotenVerbinde);
 				aktuellerEntscheidungsKnoten.setSplit(entscheidungsknotenTrenne);
 				

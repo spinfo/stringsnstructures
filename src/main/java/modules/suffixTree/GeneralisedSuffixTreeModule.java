@@ -3,17 +3,12 @@ package modules.suffixTree;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.suffixTree.output.SuffixTreeRepresentation;
 import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
-import modules.suffixTree.suffixTree.SuffixTree;
 import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
 import modules.suffixTree.suffixTree.applications.ResultToRepresentationListener;
 import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
@@ -21,6 +16,10 @@ import modules.suffixTree.suffixTree.applications.TreeWalker;
 import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
 import modules.suffixTree.suffixTree.node.info.End;
 import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import common.parallelization.CallbackReceiver;
 
 /**
  * Work in Progress.
@@ -47,6 +46,12 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	// Variables for input processing
 	private static final char TERMINATOR = '$';
 
+	/**
+	 * Constructor
+	 * @param callbackReceiver callback receiver
+	 * @param properties module properties
+	 * @throws Exception thrown upon error
+	 */
 	public GeneralisedSuffixTreeModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		// Call parent constructor
 		super(callbackReceiver, properties);
@@ -70,15 +75,15 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			// read the whole text once, neccessary to know the text's length
 			final String text = readTextInput(this.getInputPorts().get(INPUT_TEXT_ID));
 
-			// set some static variables to regulate flow in SuffixTree classes
-			SuffixTreeAppl.unit = 0;
-			SuffixTree.oo = new End(Integer.MAX_VALUE / 2);
-
 			// The suffix tree used to read the input is a generalised
 			// suffix
 			// tree for a text of the length of the input string
 			final SuffixTreeAppl suffixTreeAppl = new SuffixTreeAppl(text.length(),
 					new GeneralisedSuffixTreeNodeFactory());
+
+			// set some variables to regulate flow in SuffixTree classes
+			suffixTreeAppl.unit = 0;
+			suffixTreeAppl.oo = new End(Integer.MAX_VALUE / 2);
 
 			// start and end indices regulate which portion of the input we are
 			// reading at any given moment
@@ -99,7 +104,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				end = text.indexOf(TERMINATOR, start);
 				while (end != -1) {
 					// each cycle represents a text read
-					SuffixTreeAppl.textNr++;
+					suffixTreeAppl.textNr++;
 
 					// TODO comment explaining what setting the active point
 					// does
@@ -112,7 +117,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 
 					// TODO comment explaining the use of .oo and extActivePoint
 					// why has this to happen here instead of inside phases() ?
-					SuffixTree.oo = new End(Integer.MAX_VALUE / 2);
+					suffixTreeAppl.oo = new End(Integer.MAX_VALUE / 2);
 					suffixTreeAppl.phases(text, start + extActivePoint.phase, end + 1, extActivePoint);
 
 					// reset text window for the next cycle
@@ -135,7 +140,12 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		return true;
 	}
 
-	// simply reads the whole input of inputPort once and returns it as a string
+	/**
+	 * Simply reads the whole input of inputPort once and returns it as a string
+	 * @param inputPort input port
+	 * @return string
+	 * @throws Exception thrown upon error or interrupt
+	 */
 	private String readTextInput(InputPort inputPort) throws Exception {
 		StringBuilder totalText = new StringBuilder();
 		int charCode = inputPort.getInputReader().read();
@@ -149,6 +159,11 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		return totalText.toString();
 	}
 
+	/**
+	 * Generated JSON output
+	 * @param suffixTreeAppl suffix tree application instance
+	 * @return JSON string
+	 */
 	private String generateJsonOutput(SuffixTreeAppl suffixTreeAppl) {
 		// apparently this needs to be statically for any result listener to
 		// work correctly
@@ -157,8 +172,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		// build an object to hold a representation of the tree for output
 		// and add it's nodes via a listener.
 		final SuffixTreeRepresentation suffixTreeRepresentation = new SuffixTreeRepresentation();
-		final ResultToRepresentationListener listener = new ResultToRepresentationListener(suffixTreeAppl,
-				suffixTreeRepresentation);
+		final ResultToRepresentationListener listener = new ResultToRepresentationListener(suffixTreeRepresentation);
 		final TreeWalker treeWalker = new TreeWalker();
 		suffixTreeRepresentation.setUnitCount(0);
 		suffixTreeRepresentation.setNodeCount(suffixTreeAppl.getCurrentNode());
