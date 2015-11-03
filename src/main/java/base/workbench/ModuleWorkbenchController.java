@@ -46,6 +46,7 @@ import modules.treeBuilder.TreeBuilder;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
+import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringModuleWrapper;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -267,10 +268,10 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		plainText2TreeBuilderConverter.applyProperties();
 		
 		// Prepare treeBuilder2Output module
-		Properties TreeBuilder2OutputControllerProperties = new Properties();
+		Properties treeBuilder2OutputControllerProperties = new Properties();
 		TreeBuilder2OutputController treeBuilder2OutputController = new TreeBuilder2OutputController (moduleNetwork,
-				TreeBuilder2OutputControllerProperties);
-		TreeBuilder2OutputControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder2OutputController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+				treeBuilder2OutputControllerProperties);
+		treeBuilder2OutputControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder2OutputController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilder2OutputController.applyProperties();
 		
 		// Prepare GeneralisedSuffixTree module
@@ -286,6 +287,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				bufferModuleProperties);
 		bufferModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bufferModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		bufferModule.applyProperties();
+		
+		// Prepare SuffixTreeClusteringModuleWrapper module
+		Properties suffixTreeClusteringModuleWrapperProperties = new Properties();
+		SuffixTreeClusteringModuleWrapper suffixTreeClusteringModuleWrapper = new SuffixTreeClusteringModuleWrapper (moduleNetwork,
+				suffixTreeClusteringModuleWrapperProperties);
+		suffixTreeClusteringModuleWrapperProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeClusteringModuleWrapper.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		suffixTreeClusteringModuleWrapper.applyProperties();
 		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
@@ -317,6 +325,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(treeBuilder2OutputController.getName(), treeBuilder2OutputController);
 		availableModules.put(generalisedSuffixTreeModule.getName(), generalisedSuffixTreeModule);
 		availableModules.put(bufferModule.getName(), bufferModule);
+		availableModules.put(suffixTreeClusteringModuleWrapper.getName(), suffixTreeClusteringModuleWrapper);
 	}
 	
 	/**
