@@ -433,6 +433,11 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 */
 	public synchronized boolean removeModule(Module module){
 		
+		// If running, stop
+		Thread moduleThread = this.startedThreads.remove(module);
+		if (moduleThread != null)
+			moduleThread.interrupt();
+		
 		// Iterate over input ports
 		Iterator<InputPort> inputPorts = module.getInputPorts().values().iterator();
 		while (inputPorts.hasNext()){
