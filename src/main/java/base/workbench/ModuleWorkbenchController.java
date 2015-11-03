@@ -19,6 +19,7 @@ import modules.ModuleTreeGsonDeserializer;
 import modules.ListSorting.ListSort;
 import modules.artificialSeqs.CreateArtificialSeqs;
 import modules.bagOfTokens.BagsOfTokensModule;
+import modules.basemodules.BufferModule;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
 import modules.basemodules.FileFinderModule;
@@ -32,6 +33,7 @@ import modules.keyWordInPhrase.KeyWordInPhraseModule;
 import modules.neo4j.Neo4jOutputModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmenErmittlerModul;
+import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
 import modules.seqNewickExporter.SeqNewickExproterController;
 import modules.seqSplitting.SeqMemory;
 import modules.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
@@ -40,10 +42,9 @@ import modules.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.suffixTree.GeneralisedSuffixTreeModule;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.TreeBuilder;
+import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
-import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
-import modules.treeBuilder2Output.TreeBuilder2OutputController;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -271,6 +272,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		generalisedSuffixTreeProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, generalisedSuffixTreeModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		generalisedSuffixTreeModule.applyProperties();
 		
+		// Prepare BufferModule
+		Properties bufferModuleProperties = new Properties();
+		BufferModule bufferModule = new BufferModule(moduleNetwork,
+				bufferModuleProperties);
+		bufferModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bufferModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		bufferModule.applyProperties();
+		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
 		availableModules.put(fileReader.getName(),fileReader);
@@ -299,6 +307,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(plainText2TreeBuilderConverter.getName(), plainText2TreeBuilderConverter);
 		availableModules.put(treeBuilder2OutputController.getName(), treeBuilder2OutputController);
 		availableModules.put(generalisedSuffixTreeModule.getName(), generalisedSuffixTreeModule);
+		availableModules.put(bufferModule.getName(), bufferModule);
 	}
 	
 	/**
