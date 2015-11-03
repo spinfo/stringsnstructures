@@ -307,6 +307,21 @@ public class NeighborJoining {
 		}
 		System.out.println("}");
 	}
+	
+	public String getTree() {
+		String njResult = "";
+		njResult += "graph NJTree {";
+		if (root.getChildren().isEmpty()) {
+			njResult += root.getLabel() + ";";
+		} else {
+			for (NJNode child : root.getChildren()) {
+				njResult += root.getLabel() + " -- ";
+				printSubTree(child);
+			}
+		}
+		njResult +="}";
+		return njResult;
+	}
 
 	private void printSubTree(NJNode node) {
 		System.out.println(node.getLabel() + "[label = "
