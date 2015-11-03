@@ -42,7 +42,6 @@ public class ResultSuffixTreeNodeStack {
 			node = stack.get(i);
 
 			if (node != 1) {
-				LOGGER.info(suffixTree.edgeString(node));
 				strBuf.append(suffixTree.edgeString(node));
 			}
 		}

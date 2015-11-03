@@ -127,6 +127,10 @@ public class ExampleModule extends ModuleImpl {
 		// Close outputs (important!)
 		this.closeAllOutputs();
 		
+		/*
+		 * NOTE: A module must not close its inputs itself -- this is done by the module providing them
+		 */
+		
 		// Done
 		return true;
 	}

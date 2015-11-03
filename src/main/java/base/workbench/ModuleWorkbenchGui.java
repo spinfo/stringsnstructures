@@ -509,12 +509,18 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 					this.addModuleFrame(module);
 				}
 				
+				// We will need a frame without an input connection when arranging them later
+				ModuleInternalFrame frameWithoutInput = null;
+				
 				// Loop over constructed module frames (in order to draw port connection lines)
 				Iterator<ModuleInternalFrame> moduleFrames = this.moduleFrameMap.values().iterator();
 				while (moduleFrames.hasNext()){
 					
 					// Determine next frame in list
 					ModuleInternalFrame moduleFrame = moduleFrames.next();
+					
+					// Flag to mark whether at least one of the inputs is connected
+					boolean inputConnected = false;
 					
 					// Loop over input port buttons
 					Iterator<ModuleInputPortButton> inputButtons = moduleFrame.getInputButtons().iterator();
@@ -535,6 +541,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 						
 						// Check whether there is a connection to be drawn at all
 						if (connectedModuleFrame != null){
+							
+							// Set connected flag
+							inputConnected = true;
 
 							// Loop over the connected module's output buttons
 							Iterator<ModuleOutputPortButton> connectedModuleOutputButtons = connectedModuleFrame.getOutputButtons().iterator();
@@ -552,6 +561,22 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 						}
 						
 					}
+					
+					// Determine if module has an input
+					if (moduleFrame.getInputButtons().isEmpty() || !inputConnected){
+						frameWithoutInput = moduleFrame;
+					}
+						
+				}
+				
+				// Check whether a frame without input connection has been found
+				if (frameWithoutInput != null){
+					// Arrange frames
+					ModuleDesktopManager desktopManager = (ModuleDesktopManager) this.moduleJDesktopPane.getDesktopManager();
+					desktopManager.rearrangeInternalFrame(frameWithoutInput, this.moduleFrameMap);
+					
+				} else {
+					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I could not find a good start for arranging the frames -- did you construct a loop? If so, please don't.");
 				}
 				
 				frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());

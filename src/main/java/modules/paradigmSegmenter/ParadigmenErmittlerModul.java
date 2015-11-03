@@ -1,12 +1,7 @@
 package modules.paradigmSegmenter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Properties;
-import java.util.zip.GZIPInputStream;
 
 import modules.CharPipe;
 import modules.InputPort;
@@ -16,15 +11,11 @@ import modules.treeBuilder.Knoten;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import common.parallelization.CallbackReceiver;
 
 public class ParadigmenErmittlerModul extends ModuleImpl {
 
 	// Property keys
-	public static final String PROPERTYKEY_INPUTFILE = "Suffix tree file";
-	public static final String PROPERTYKEY_USEGZIP = "Suffix tree is GZIP encoded";
-	public static final String PROPERTYKEY_ENCODING = "Encoding";
 	public static final String PROPERTYKEY_BUFFERLENGTH = "Buffer length";
 	public static final String PROPERTYKEY_DIVIDER = "Token divider";
 	public static final String PROPERTYKEY_MINDESTKOSTENPROEBENE = "Minimal cost";
@@ -32,11 +23,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	public static final String PROPERTYKEY_BEWERTUNGAUSGEBEN = "Bewertung mit in Ausgabe schreiben";
 
 	// Local variables
-	private final String INPUTID = "input";
+	private final String TEXTINPUTID = "text input";
+	private final String TRIEINPUTID = "suffix trie (json)";
 	private final String OUTPUTID = "output";
-	private File file;
-	private boolean useGzip = false;
-	private String encoding = "UTF-8";
 	private int pufferGroesse = 12;
 	private String divider = "\t";
 	private double mindestKostenProSymbolEbene;
@@ -47,44 +36,32 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			Properties properties) throws Exception {
 		super(callbackReceiver, properties);
 
-		// Determine system properties (for setting default values that make
-		// sense)
-		String fs = System.getProperty("file.separator");
-		String homedir = System.getProperty("user.home");
-
 		// define I/O
-		InputPort inputPort = new InputPort(INPUTID, "Plain text character input.", this);
-		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(OUTPUTID, "Plain text character output.", this);
+		InputPort textInputPort = new InputPort(TEXTINPUTID, "Plain text character input.", this);
+		textInputPort.addSupportedPipe(CharPipe.class);
+		InputPort trieInputPort = new InputPort(TRIEINPUTID, "JSON-encoded suffix trie input.", this);
+		trieInputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "Plain text character output (with dividers added).", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		super.addInputPort(inputPort);
+		super.addInputPort(textInputPort);
+		super.addInputPort(trieInputPort);
 		super.addOutputPort(outputPort);
 
 		// Add description for properties
-		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTFILE,
-				"Path to the suffix tree file");
-		this.getPropertyDescriptions().put(PROPERTYKEY_USEGZIP,
-				"Set to 'true' if the suffix tree file is compressed using GZIP");
-		this.getPropertyDescriptions().put(PROPERTYKEY_ENCODING,
-				"The text encoding of the suffix tree file (if applicable, else set to empty string)");
 		this.getPropertyDescriptions().put(PROPERTYKEY_BUFFERLENGTH,
-				"Groesse des Eingabepuffers (sollte nicht die Tiefe des Suffixbaumes ueberschreiten!)");
+				"Size of the segmentation window (should not exceed an enforced depth maximum of the trie [if applicable])");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DIVIDER,
 				"Divider that is inserted in between the tokens on output");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINDESTKOSTENPROEBENE,
-				"Minimalkosten fuer jeden Verknuepfungsschritt; hoehere Werte erhoehen stark die vom Bewertungsalgorithmus durchgefuehrten Berechnungsdurchlaufe [double]");
+				"Minimum cost for every joining step; note that higher values significantly increase the frequency of backtracking [double]");
 		this.getPropertyDescriptions().put(PROPERTYKEY_BEWERTUNGSABFALLFAKTOR,
-				"Faktor zur Gewichtung eines Abfalls der Bewertung von einem auf das naechste Symbol [double, >0, 1=neutral]");
+				"Factor to modify the weight of a rating decrease between symbols [double, >0, 1=neutral]");
 		this.getPropertyDescriptions().put(PROPERTYKEY_BEWERTUNGAUSGEBEN,
-				"Uebergangsbewertungen mit in die Ausgabe schreiben");
+				"Include rating values in output");
 
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,
 				"ParadigmSegmenterModule");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTFILE,
-				homedir + fs + "suffixtree.txt.gz");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_USEGZIP, "true");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_ENCODING, "UTF-8");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "10");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DIVIDER, "\t");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MINDESTKOSTENPROEBENE, "1");
@@ -102,33 +79,14 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		 * Suffixbaum einlesen
 		 */
 
-		// Instantiate a new input stream
-		InputStream fileInputStream = new FileInputStream(this.file);
-
-		// Use GZIP if requested
-		if (this.useGzip)
-			fileInputStream = new GZIPInputStream(fileInputStream);
-
 		// Instantiate JSON (de)serializer
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-		if (this.encoding == null || this.encoding.isEmpty()) {
-			// close relevant I/O instances
-			fileInputStream.close();
-			this.closeAllOutputs();
-			throw new Exception(
-					"There is no text encoding set, thus I am unable to read the suffix tree.");
-		}
-
 		// Instantiate input reader if an encoding has been set
-		Reader fileReader = new InputStreamReader(fileInputStream, this.encoding);
+		Reader trieReader = this.getInputPorts().get(TRIEINPUTID).getInputReader();
 
 		// Deserialize suffix tree
-		Knoten suffixbaumWurzelknoten = gson.fromJson(fileReader, Knoten.class);
-
-		// Close relevant I/O instances
-		fileReader.close();
-		fileInputStream.close();
+		Knoten suffixbaumWurzelknoten = gson.fromJson(trieReader, Knoten.class);
 
 		/*
 		 * Segmentierung des Eingabedatenstroms
@@ -138,7 +96,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		SymbolBewerter symbolBewerter = new SymbolBewerter(this.mindestKostenProSymbolEbene, this.bewertungsAbfallFaktor);
 		
 		// Erstes Zeichen einlesen
-		int zeichenCode = this.getInputPorts().get(INPUTID).getInputReader().read();
+		int zeichenCode = this.getInputPorts().get(TEXTINPUTID).getInputReader().read();
 		
 		// Entscheidungsbaum starten
 		SplitDecisionNode entscheidungsbaumWurzelknoten = null;
@@ -243,7 +201,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			
 			
 			// Read next char
-			zeichenCode = this.getInputPorts().get(INPUTID).getInputReader().read();
+			zeichenCode = this.getInputPorts().get(TEXTINPUTID).getInputReader().read();
 		}
 		
 		// Close relevant I/O instances
@@ -256,15 +214,6 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 	@Override
 	public void applyProperties() throws Exception {
 		super.setDefaultsIfMissing();
-		
-		if (this.getProperties().containsKey(PROPERTYKEY_INPUTFILE))
-			this.file = new File(this.getProperties().getProperty(PROPERTYKEY_INPUTFILE));
-		
-		if (this.getProperties().containsKey(PROPERTYKEY_USEGZIP))
-			this.useGzip = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_USEGZIP));
-		
-		if (this.getProperties().containsKey(PROPERTYKEY_ENCODING))
-			this.encoding = this.getProperties().getProperty(PROPERTYKEY_ENCODING);
 			
 		if (this.getProperties().containsKey(PROPERTYKEY_BUFFERLENGTH))
 			this.pufferGroesse = Integer.parseInt(this.getProperties().getProperty(PROPERTYKEY_BUFFERLENGTH));
