@@ -202,11 +202,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 					// Segment ermitteln (Sekundaerpuffer + Puffer bis zur ermittelten Tiefe)
 					List<String> segment = new ArrayList<String>();
 					segment.addAll(sekundaerPuffer);
-					try {
-						segment.addAll(puffer.subList(0, tiefe));
-					} catch (Exception e){
-						e.printStackTrace();
-					}
+					segment.addAll(puffer.subList(0, tiefe));
 					
 					// Segment aus Puffer loeschen
 					puffer = puffer.subList(tiefe, puffer.size());
