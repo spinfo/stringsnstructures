@@ -26,7 +26,6 @@ public class EntscheidungsAeffchen {
 	 * @throws Exception Thrown if something goes wrong
 	 */
 	public SplitDecisionNode konstruiereEntscheidungsbaum(List<String> zeichenkette, SplitDecisionNode entscheidungsbaumWurzelknoten) throws Exception {
-		
 		// Rueckkehr zur Wurzel des Entscheidungsbaumes
 		if (debug && aktuellerEntscheidungsKnoten != null)
 			aktuellerEntscheidungsKnoten.setNotiz(null);
@@ -37,7 +36,6 @@ public class EntscheidungsAeffchen {
 		
 		// Schleife ueber alle Zeichen (das erste ist bereits im Entsche4idungsbaumwurzelknoten hinterlegt)
 		for (int index=1; index<zeichenkette.size();){
-			
 			// Pruefen, ob der aktuelle Entscheidungsknoten bereits Kindelemente hat
 			if (aktuellerEntscheidungsKnoten.getSplit() != null && aktuellerEntscheidungsKnoten.getJoin() != null){
 				
@@ -59,7 +57,6 @@ public class EntscheidungsAeffchen {
 				index++;
 				
 			} else {
-				
 				// Der aktuelle Entscheidungsbaumknoten hat noch KEINE Kindelemente, daher muessen zunaechst die Bewertungen ermittelt werden
 				double bewertungVerbinde = symbolBewerter.symbolBewerten(zeichenkette.get(index), aktuellerKnoten, letzteBewertung);
 				double bewertungTrenne = symbolBewerter.symbolBewerten(zeichenkette.get(index), suffixbaumWurzelknoten, Double.MAX_VALUE);
@@ -78,14 +75,12 @@ public class EntscheidungsAeffchen {
 				 */
 				boolean aktivierungsPotentialVeraendert = true;
 				while(aktivierungsPotentialVeraendert){
-					
 					// Knotenpotential auf das minimal notwendige Niveau anheben und ermitteln, ob es sich dadurch aendert
 					aktivierungsPotentialVeraendert = aktuellerEntscheidungsKnoten.hebeAktivierungsPotentialAufMinimumAn();
 					
 					// Abbrechen, falls wir bereits den Wurzelknoten des Entscheidungsbaumes erreicht haben
 					if (aktuellerEntscheidungsKnoten.equals(entscheidungsbaumWurzelknoten) || !aktivierungsPotentialVeraendert)
 						break;
-					
 					// Elternknoten im Entscheidungs- und Suffixbaum ermitteln
 					if (debug) aktuellerEntscheidungsKnoten.setNotiz(null);
 					aktuellerEntscheidungsKnoten = aktuellerEntscheidungsKnoten.getElternKnoten();

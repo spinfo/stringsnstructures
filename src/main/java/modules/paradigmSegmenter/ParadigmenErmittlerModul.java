@@ -136,11 +136,15 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 
 			// Zeichen einlesen
 			Character symbol = Character.valueOf((char) zeichenCode);
-			
 			// Check whether the read symbol is an input divider
-			if (symbol.equals(this.inputDivider)){
-				// Append char buffer to token buffer
-				puffer.add(charBuffer.toString());
+			if (this.inputDivider == null || symbol.equals(this.inputDivider)){
+				if (this.inputDivider == null)
+					puffer.add(symbol.toString());
+				else {
+					// Append char buffer to token buffer
+					puffer.add(charBuffer.toString());
+					charBuffer = new StringBuffer();
+				}
 			} else {
 				// Append symbol to char buffer
 				charBuffer.append(symbol);
@@ -149,7 +153,6 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			
 			// Puffergroesse pruefen
 			if (puffer.size() == this.pufferGroesse){
-				
 				// Ggf. Entscheidungsbaum beginnen
 				if (entscheidungsbaumWurzelknoten == null){
 					entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(puffer.get(0)), null, puffer.get(0));
@@ -177,8 +180,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				// Pruefen, ob eine Trennstelle gefunden wurde
 				if (letzteTrennstelle == null){
 					// Wenn gar keine Trennstelle gefunden wurde, wird der Puffer mit Ausnahme des letzten Zeichens in den Sekundaerpuffer uebertragen
+
 					sekundaerPuffer.addAll(puffer);
-					puffer.clear();
+					puffer = new ArrayList<String>();
 					puffer.add(sekundaerPuffer.remove(sekundaerPuffer.size()-1));
 					// Entscheidungsbaum stutzen
 					entscheidungsbaumWurzelknoten = blattBesterWeg;
@@ -196,7 +200,13 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 					}
 					
 					// Segment ermitteln (Sekundaerpuffer + Puffer bis zur ermittelten Tiefe)
-					List<String> segment = sekundaerPuffer.subList(0, tiefe);
+					List<String> segment = new ArrayList<String>();
+					segment.addAll(sekundaerPuffer);
+					try {
+						segment.addAll(puffer.subList(0, tiefe));
+					} catch (Exception e){
+						e.printStackTrace();
+					}
 					
 					// Segment aus Puffer loeschen
 					puffer = puffer.subList(tiefe, puffer.size());
@@ -210,11 +220,11 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 						entscheidungsbaumWurzelknoten.setElternKnoten(null);
 					
 					// Segment ausgeben
-					//this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(segment.concat(this.divider));
 					Iterator<String> segmentStrings = segment.iterator();
 					while (segmentStrings.hasNext()){
 						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(segmentStrings.next());
-						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.inputDivider.toString());
+						if (this.inputDivider != null)
+							this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.inputDivider.toString());
 					}
 					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.divider);
 					
@@ -229,10 +239,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			// Read next char
 			zeichenCode = this.getInputPorts().get(TEXTINPUTID).getInputReader().read();
 		}
-		
 		// Close relevant I/O instances
 		this.closeAllOutputs();
-
 		// Success
 		return true;
 	}
