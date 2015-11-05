@@ -103,8 +103,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		// Symbolbewerter instanziieren
 		SymbolBewerter symbolBewerter = new SymbolBewerter(this.mindestKostenProSymbolEbene, this.bewertungsAbfallFaktor);
 		
-		// Erstes Zeichen einlesen
-		int zeichenCode = this.getInputPorts().get(TEXTINPUTID).getInputReader().read();
+		// Variable for input char code
+		int zeichenCode;
 		
 		// Entscheidungsbaum starten
 		SplitDecisionNode entscheidungsbaumWurzelknoten = null;
@@ -126,7 +126,14 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		//Map<Character,SplitDecisionNode> entscheidungsBaumZweige = new HashMap<Character,SplitDecisionNode>();
 		
 		// Daten Zeichen fuer Zeichen einlesen
-		while (zeichenCode != -1) {
+		while (true) {
+			
+			// Read next char
+			zeichenCode = this.getInputPorts().get(TEXTINPUTID).getInputReader().read();
+			
+			// Break if no more input available
+			if (zeichenCode == -1)
+				break;
 
 			// Check for interrupt signal
 			if (Thread.interrupted()) {
@@ -147,7 +154,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				}
 			} else {
 				// Append symbol to char buffer
+				System.out.println("cs1:"+charBuffer.length());
 				charBuffer.append(symbol);
+				System.out.println("cs2:"+charBuffer.length());
 				continue;
 			}
 			
@@ -231,10 +240,8 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				
 			}
 			
-			
-			// Read next char
-			zeichenCode = this.getInputPorts().get(TEXTINPUTID).getInputReader().read();
 		}
+		
 		// Close relevant I/O instances
 		this.closeAllOutputs();
 		// Success
