@@ -154,9 +154,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				}
 			} else {
 				// Append symbol to char buffer
-				System.out.println("cs1:"+charBuffer.length());
 				charBuffer.append(symbol);
-				System.out.println("cs2:"+charBuffer.length());
 				continue;
 			}
 			
