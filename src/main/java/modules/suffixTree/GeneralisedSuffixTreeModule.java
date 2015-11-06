@@ -73,7 +73,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	public boolean process() throws Exception {
 		try {
 			// read the whole text once, neccessary to know the text's length
-			final String text = readTextInput(this.getInputPorts().get(INPUT_TEXT_ID));
+			final String text = readStringFromInputPort(this.getInputPorts().get(INPUT_TEXT_ID));
 
 			// The suffix tree used to read the input is a generalised
 			// suffix
@@ -138,25 +138,6 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Simply reads the whole input of inputPort once and returns it as a string
-	 * @param inputPort input port
-	 * @return string
-	 * @throws Exception thrown upon error or interrupt
-	 */
-	private String readTextInput(InputPort inputPort) throws Exception {
-		StringBuilder totalText = new StringBuilder();
-		int charCode = inputPort.getInputReader().read();
-		while (charCode != -1) {
-			if (Thread.interrupted()) {
-				throw new InterruptedException("Thread has been interrupted.");
-			}
-			totalText.append((char) charCode);
-			charCode = inputPort.getInputReader().read();
-		}
-		return totalText.toString();
 	}
 
 	/**

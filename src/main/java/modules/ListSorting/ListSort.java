@@ -135,15 +135,7 @@ public class ListSort extends modules.ModuleImpl {
 		TreeMap<String, ArrayList<String>> result = new TreeMap<String, ArrayList<String>>();
 
 		// read the whole text once
-		StringBuilder totalText = new StringBuilder();
-		int charCode = inputPort.getInputReader().read();
-		while (charCode != -1) {
-			if (Thread.interrupted()) {
-				throw new InterruptedException("Thread has been interrupted.");
-			}
-			totalText.append((char) charCode);
-			charCode = inputPort.getInputReader().read();
-		}
+		final String totalText = this.readStringFromInputPort(inputPort);
 
 		// split the whole text by the separator, producing items
 		final String[] items = INPUT_SEPARATOR_PATTERN.split(totalText);

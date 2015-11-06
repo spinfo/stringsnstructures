@@ -64,26 +64,15 @@ public class BagsOfTokensModule extends ModuleImpl {
 	public boolean process() throws Exception {
 		boolean result = true;
 
-		// variables for reading
-		final StringBuilder buffer = new StringBuilder();
-		final InputPort inputPort = this.getInputPorts().get(INPUT_ID);
-
 		// A Gson object to serialize and deserialize with
 		final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 		try {
 			// read the whole text once
-			int charCode = inputPort.getInputReader().read();
-			while (charCode != -1) {
-				if (Thread.interrupted()) {
-					throw new InterruptedException("Thread has been interrupted.");
-				}
-				buffer.append((char) charCode);
-				charCode = inputPort.getInputReader().read();
-			}
+			final String text = this.readStringFromInputPort(this.getInputPorts().get(INPUT_ID));
 
 			// deserialize the read text into a list of text segments
-			final ArrayList<AnchoredTextSegment> segments = GSON.fromJson(buffer.toString(), INPUT_TYPE);
+			final ArrayList<AnchoredTextSegment> segments = GSON.fromJson(text, INPUT_TYPE);
 
 			// From the segments derive a map mapping each sentence number to
 			// another map holding the segment string mapped to a count

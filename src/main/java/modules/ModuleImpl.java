@@ -92,6 +92,35 @@ public abstract class ModuleImpl implements Module {
 		}
 	}
 
+	/**
+	 * Reads the total remaining String from inputPort.
+	 *
+	 * Convenience method for module implementations that need the whole input
+	 * present before processing can begin.
+	 *
+	 * @param inputPort the port to read from
+	 * @return The String read
+	 * @throws IOException if an IO-Error occurs
+	 * @throws NotSupportedException if the InputPort does not provide a char pipe to read from.
+	 * @throws InterruptedException if the Thread has been interrupted.
+	 */
+	protected String readStringFromInputPort(InputPort inputPort)
+			throws IOException, NotSupportedException, InterruptedException {
+
+		final StringBuilder stringBuilder = new StringBuilder();
+		int charCode = inputPort.getInputReader().read();
+
+		while (charCode != -1) {
+			if (Thread.interrupted()) {
+				throw new InterruptedException("Thread has been interrupted.");
+			}
+			stringBuilder.append((char) charCode);
+			charCode = inputPort.getInputReader().read();
+		}
+
+		return stringBuilder.toString();
+	}
+
 	/*
 	 * @see parallelization.CallbackProcess#getRueckmeldungsEmpfaenger()
 	 */
