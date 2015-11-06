@@ -1,7 +1,6 @@
 package modules.bagOfWords;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -14,33 +13,40 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
+import modules.suffixTree.output.NodeRepresentation;
+import modules.suffixTree.output.PatternInfoRepresentation;
+import modules.suffixTree.output.SuffixTreeRepresentation;
 
 /**
- * The module reads a JSON array of AnchoredTextSegment objects. The ouput is a
- * JSON-serialized TreeMap<Integer,TreeMap<String,Integer>> mapping sentencesNrs
- * to maps of text segments with their count in the sentence.
+ * The module reads a JSON representation of a GeneralisedSuffixTree and
+ * constructs bags of words from it. It assumes that the tree's pattern nrs
+ * stand in for sentences and treats each node's label as a word. The ouput then is a
+ * JSON-serialized TreeMap<Integer,TreeMap<String,Integer>> mapping
+ * patternNrs to maps of the contained label instances with a count in the pattern.
  * 
  * @author David Neugebauer
  */
 public class BagsOfWordsModule extends ModuleImpl {
 
 	// Strings identifying/describing in- and output pipes
-	private final static String INPUT_ID = "json input";
-	private final static String OUTPUT_ID = "json output";
-	private final static String INPUT_DESC = "Array<AnchoredTextSegement>";
-	private final static String OUTPUT_DESC = "TreeMap<Integer,TreeMap<String,Integer>>";
+	private final static String INPUT_ID = "json";
+	private final static String OUTPUT_ID = "json";
+	private final static String INPUT_DESC = "[text/json] SuffixTreeRepresentation";
+	private final static String OUTPUT_DESC = "[text/json] TreeMap<Integer,TreeMap<String,Integer>>";
 
 	// Types for serializing and deserializing
-	private final static Type INPUT_TYPE = new TypeToken<ArrayList<AnchoredTextSegment>>() {
+	private final static Type INPUT_TYPE = new TypeToken<SuffixTreeRepresentation>() {
 	}.getType();
 	private final static Type OUTPUT_TYPE = new TypeToken<TreeMap<Integer, TreeMap<String, Integer>>>() {
 	}.getType();
 
 	// Name and description of this module for the User
 	private final static String MODULE_NAME = "BagsOfWords";
-	private final static String MODULE_DESCRIPTION = " * The module reads a JSON array of AnchoredTextSegment objects. The ouput is a"
-			+ " JSON-serialized TreeMap<Integer,TreeMap<String,Integer>> mapping sentencesNrs"
-			+ " to maps of text segments with their count in the sentence.";
+	private final static String MODULE_DESCRIPTION = "The module reads a JSON representation of a GeneralisedSuffixTree and"
+			+ " constructs bags of words from it. It assumes that the tree's pattern nrs"
+			+ " stand in for sentences and treats each node's label as a word. The ouput then is a"
+			+ " JSON-serialized TreeMap<Integer,TreeMap<String,Integer>> mapping"
+			+ " patternNrs to maps of the contained label instances with a count in the pattern.";
 
 	public BagsOfWordsModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 
@@ -68,27 +74,27 @@ public class BagsOfWordsModule extends ModuleImpl {
 		final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 		try {
-			// read the whole text once
+			// read the whole text once, deserialize into tree's representation
 			final String text = this.readStringFromInputPort(this.getInputPorts().get(INPUT_ID));
+			final SuffixTreeRepresentation treeRepresentation = GSON.fromJson(text, INPUT_TYPE);
 
-			// deserialize the read text into a list of text segments
-			final ArrayList<AnchoredTextSegment> segments = GSON.fromJson(text, INPUT_TYPE);
-
-			// From the segments derive a map mapping each sentence number to
-			// another map holding the segment string mapped to a count
+			// A map holding the collected pattern's labels
 			final TreeMap<Integer, TreeMap<String, Integer>> sentenceNrsToCounts = new TreeMap<Integer, TreeMap<String, Integer>>();
-			for (AnchoredTextSegment segment : segments) {
+			// Each node represents a suffix, called label
+			for (NodeRepresentation node : treeRepresentation.getNodes()) {
+				final String label = node.getLabel();
 
-				for (TextAnchor anchor : segment.getTextAnchors()) {
-					// get the map for the current anchors sentence number or
-					// construct one
-					final TreeMap<String, Integer> counts = sentenceNrsToCounts.getOrDefault(anchor.getSentenceNr(),
-							new TreeMap<String, Integer>());
+				// traverse the label's occurences, i.e. it's patternInfos
+				for (PatternInfoRepresentation patternInfo : node.getPatternInfos()) {
+					// get the count map for the pattern that the label's
+					// occurence belongs to
+					final TreeMap<String, Integer> labelCounts = sentenceNrsToCounts
+							.getOrDefault(patternInfo.getPatternNr(), new TreeMap<String, Integer>());
 					// increment count and write to the counts map
-					final int count = counts.getOrDefault(segment.getSegment(), 0);
-					counts.put(segment.getSegment(), count + 1);
+					final int count = labelCounts.getOrDefault(label, 0);
+					labelCounts.put(label, count + 1);
 					// add or re-add the counts map to the table
-					sentenceNrsToCounts.put(anchor.getSentenceNr(), counts);
+					sentenceNrsToCounts.put(patternInfo.getPatternNr(), labelCounts);
 				}
 			}
 
