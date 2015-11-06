@@ -1,4 +1,4 @@
-package modules.bagOfTokens;
+package modules.bagOfWords;
 
 /**
  * POJO to hold a sentenceNr as well as a start and end index to identify a segment of text

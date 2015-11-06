@@ -1,4 +1,4 @@
-package modules.bagOfTokens;
+package modules.bagOfWords;
 
 import java.util.ArrayList;
 

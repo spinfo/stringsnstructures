@@ -1,4 +1,4 @@
-package modules.bagOfTokens;
+package modules.bagOfWords;
 
 import java.lang.reflect.Type;
 import java.util.Properties;
@@ -23,9 +23,9 @@ import modules.OutputPort;
  * substitutions, deletions or additions of words that would be needed to
  * transform one Bag of Words into another.
  */
-public class BagsOfTokensDistancesModule extends ModuleImpl {
+public class BagsOfWordsDistancesModule extends ModuleImpl {
 
-	private static final Logger LOGGER = Logger.getLogger(BagsOfTokensDistancesModule.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(BagsOfWordsDistancesModule.class.getName());
 
 	// Strings identifying/describing in- and output pipes
 	private final static String INPUT_ID = "json";
@@ -40,7 +40,7 @@ public class BagsOfTokensDistancesModule extends ModuleImpl {
 	}.getType();
 
 	// Name and description of this module for the User
-	private final static String MODULE_NAME = "BagsOfTokensDistancesModule";
+	private final static String MODULE_NAME = "BagsOfWordsDistancesModule";
 	private final static String MODULE_DESCRIPTION = "Module to determine the distance between Bags of Words."
 			+ " Currently supports Levenshtein distance, i.e. output is the number of"
 			+ " substitutions, deletions or additions of words that would be needed to"
@@ -52,7 +52,7 @@ public class BagsOfTokensDistancesModule extends ModuleImpl {
 	private final static String DEFAUL_NORMALIZE_DISTANCE = "false";
 	private boolean normalizeDistance;
 
-	public BagsOfTokensDistancesModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
+	public BagsOfWordsDistancesModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		// Call parent constructor
 		super(callbackReceiver, properties);
 

@@ -18,8 +18,8 @@ import modules.ModuleNetworkGsonSerializer;
 import modules.ModuleTreeGsonDeserializer;
 import modules.ListSorting.ListSort;
 import modules.artificialSeqs.CreateArtificialSeqs;
-import modules.bagOfTokens.BagsOfTokensDistancesModule;
-import modules.bagOfTokens.BagsOfTokensModule;
+import modules.bagOfWords.BagsOfWordsDistancesModule;
+import modules.bagOfWords.BagsOfWordsModule;
 import modules.basemodules.BufferModule;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
@@ -242,7 +242,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		
 		// Prepare Bag Of Words module
 		Properties bagOfWordsProperties = new Properties();
-		BagsOfTokensModule bagOfWordsModule = new BagsOfTokensModule(moduleNetwork,
+		BagsOfWordsModule bagOfWordsModule = new BagsOfWordsModule(moduleNetwork,
 				bagOfWordsProperties);
 		bagOfWordsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagOfWordsModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		bagOfWordsModule.applyProperties();
@@ -297,7 +297,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		suffixTreeClusteringModuleWrapper.applyProperties();
 		
 		Properties bagsOfWordsDistancesModuleProperties = new Properties();
-		BagsOfTokensDistancesModule bagsOfWordsDistancesModule  = new BagsOfTokensDistancesModule(moduleNetwork, 
+		BagsOfWordsDistancesModule bagsOfWordsDistancesModule  = new BagsOfWordsDistancesModule(moduleNetwork, 
 				bagsOfWordsDistancesModuleProperties);
 		bagsOfWordsDistancesModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagsOfWordsDistancesModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		bagsOfWordsDistancesModule.applyProperties();

@@ -1,4 +1,4 @@
-package modules.bagOfTokens;
+package modules.bagOfWords;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import modules.OutputPort;
  * 
  * @author David Neugebauer
  */
-public class BagsOfTokensModule extends ModuleImpl {
+public class BagsOfWordsModule extends ModuleImpl {
 
 	// Strings identifying/describing in- and output pipes
 	private final static String INPUT_ID = "json input";
@@ -37,12 +37,12 @@ public class BagsOfTokensModule extends ModuleImpl {
 	}.getType();
 
 	// Name and description of this module for the User
-	private final static String MODULE_NAME = "Bags of Tokens";
+	private final static String MODULE_NAME = "BagsOfWords";
 	private final static String MODULE_DESCRIPTION = " * The module reads a JSON array of AnchoredTextSegment objects. The ouput is a"
 			+ " JSON-serialized TreeMap<Integer,TreeMap<String,Integer>> mapping sentencesNrs"
 			+ " to maps of text segments with their count in the sentence.";
 
-	public BagsOfTokensModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
+	public BagsOfWordsModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 
 		// Call parent constructor
 		super(callbackReceiver, properties);
