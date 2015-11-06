@@ -2,13 +2,9 @@ package modules.suffixTree.suffixTree.applications;
 
 import java.util.ArrayList;
 import java.util.Stack;
-import java.util.logging.Logger;
 
 
 public class ResultSuffixTreeNodeStack {
-	
-	private static final Logger LOGGER = Logger.getGlobal();
-//			.getLogger(ResultSuffixTreeNodeStack.class.getName());
 
 	public static Stack<Integer> stack = new Stack<Integer>();
 	
@@ -45,7 +41,6 @@ public class ResultSuffixTreeNodeStack {
 				strBuf.append(suffixTree.edgeString(node));
 			}
 		}
-		LOGGER.info("writeStack result: " + strBuf);
 		return strBuf.toString();
 	}
 	
