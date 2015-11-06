@@ -18,6 +18,7 @@ import modules.ModuleNetworkGsonSerializer;
 import modules.ModuleTreeGsonDeserializer;
 import modules.ListSorting.ListSort;
 import modules.artificialSeqs.CreateArtificialSeqs;
+import modules.bagOfTokens.BagsOfTokensDistancesModule;
 import modules.bagOfTokens.BagsOfTokensModule;
 import modules.basemodules.BufferModule;
 import modules.basemodules.ConsoleWriterModule;
@@ -295,6 +296,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		suffixTreeClusteringModuleWrapperProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeClusteringModuleWrapper.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		suffixTreeClusteringModuleWrapper.applyProperties();
 		
+		Properties bagsOfWordsDistancesModuleProperties = new Properties();
+		BagsOfTokensDistancesModule bagsOfWordsDistancesModule  = new BagsOfTokensDistancesModule(moduleNetwork, 
+				bagsOfWordsDistancesModuleProperties);
+		bagsOfWordsDistancesModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagsOfWordsDistancesModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		bagsOfWordsDistancesModule.applyProperties();
+		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
 		availableModules.put(fileReader.getName(),fileReader);
@@ -326,6 +333,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(generalisedSuffixTreeModule.getName(), generalisedSuffixTreeModule);
 		availableModules.put(bufferModule.getName(), bufferModule);
 		availableModules.put(suffixTreeClusteringModuleWrapper.getName(), suffixTreeClusteringModuleWrapper);
+		availableModules.put(bagsOfWordsDistancesModule.getName(), bagsOfWordsDistancesModule);
 	}
 	
 	/**
