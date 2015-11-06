@@ -16,7 +16,6 @@ import modules.ModuleImpl;
 import modules.ModuleNetwork;
 import modules.ModuleNetworkGsonSerializer;
 import modules.ModuleTreeGsonDeserializer;
-import modules.ListSorting.ListSort;
 import modules.artificialSeqs.CreateArtificialSeqs;
 import modules.bagOfWords.BagsOfWordsDistancesModule;
 import modules.bagOfWords.BagsOfWordsModule;
@@ -232,13 +231,6 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				regExReplacementModuleProperties);
 		regExReplacementModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, regExReplacementModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		regExReplacementModule.applyProperties();
-
-		// Prepare ListSorting module
-		Properties listSortingProperties = new Properties();
-		ListSort listSort = new ListSort(moduleNetwork,
-				listSortingProperties);
-		listSortingProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, listSort.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		listSort.applyProperties();
 		
 		// Prepare Bag Of Words module
 		Properties bagOfWordsProperties = new Properties();
@@ -324,7 +316,6 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(seqNewickExproterController.getName(),seqNewickExproterController);
 		availableModules.put(halAdvancedModule.getName(),halAdvancedModule);
 		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
-		availableModules.put(listSort.getName(), listSort);
 		availableModules.put(bagOfWordsModule.getName(), bagOfWordsModule);
 		availableModules.put(filterModule.getName(), filterModule);
 		availableModules.put(kwipModule.getName(), kwipModule);
