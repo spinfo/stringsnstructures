@@ -132,10 +132,6 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			
 			// Read next char
 			zeichenCode = this.getInputPorts().get(TEXTINPUTID).getInputReader().read();
-			
-			// Break if no more input available
-			if (zeichenCode == -1)
-				break;
 
 			// Check for interrupt signal
 			if (Thread.interrupted()) {
@@ -143,26 +139,29 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 				throw new InterruptedException("Thread has been interrupted.");
 			}
 
-			// Zeichen einlesen
-			Character symbol = Character.valueOf((char) zeichenCode);
-			// Check whether the read symbol is an input divider
-			if (this.inputDivider == null || symbol.equals(this.inputDivider)){
-				if (this.inputDivider == null){
-					puffer.add(symbol.toString());
+			// Check whether there was still input to read
+			if (zeichenCode != -1) {
+				// Zeichen einlesen
+				Character symbol = Character.valueOf((char) zeichenCode);
+				// Check whether the read symbol is an input divider
+				if (this.inputDivider == null
+						|| symbol.equals(this.inputDivider)) {
+					if (this.inputDivider == null) {
+						puffer.add(symbol.toString());
+					} else {
+						// Append char buffer to token buffer
+						puffer.add(charBuffer.toString());
+						charBuffer = new StringBuffer();
+					}
+				} else {
+					// Append symbol to char buffer
+					charBuffer.append(symbol);
+					continue;
 				}
-				else {
-					// Append char buffer to token buffer
-					puffer.add(charBuffer.toString());
-					charBuffer = new StringBuffer();
-				}
-			} else {
-				// Append symbol to char buffer
-				charBuffer.append(symbol);
-				continue;
 			}
 			
-			// Puffergroesse pruefen
-			if (puffer.size() == this.pufferGroesse){
+			// Puffergroesse pruefen (if there is no more input the buffer size is ignored here)
+			if (puffer.size() == this.pufferGroesse || zeichenCode == -1){
 				// Ggf. Entscheidungsbaum beginnen
 				if (entscheidungsbaumWurzelknoten == null){
 					entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(puffer.peekFirst()), null, puffer.peekFirst());
@@ -241,6 +240,26 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(letzteTrennstellenBewertung+this.divider);
 				}
 				
+			}
+			
+			/* If there is no more input available, output what's remaining in
+			/ both secondary and primary buffers and break.
+			/ TODO: Not the best way, certainly could be improved */
+			
+			// Check whether last read input is invalid
+			if (zeichenCode == -1){
+				// Output secondary (backlog) buffer
+				Iterator<String> secondaryBufferIterator = sekundaerPuffer.iterator();
+				while (secondaryBufferIterator.hasNext())
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(secondaryBufferIterator.next());
+				
+				// Output primary buffer
+				Iterator<String> bufferIterator = puffer.iterator();
+				while (bufferIterator.hasNext())
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(bufferIterator.next());
+				
+				// End input read and segmentation loop
+				break;
 			}
 			
 		}
