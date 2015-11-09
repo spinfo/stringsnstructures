@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import modules.BytePipe;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
@@ -98,14 +99,16 @@ public class KeyWordInPhraseModule extends ModuleImpl {
 				"[text/plain] Outputs a line-by-line list of types.", this);
 		typeOutputPort.addSupportedPipe(CharPipe.class);
 		OutputPort plainOutputPort = new OutputPort(OUTPUTPLAINID,
-				"[text/plain] Outputs a plaintext representation of the KWIP result.", this);
+				"[text/plain] Outputs a plaintext representation of the KWIP result (supports char and byte output).", this);
 		plainOutputPort.addSupportedPipe(CharPipe.class);
+		plainOutputPort.addSupportedPipe(BytePipe.class);
 		OutputPort htmlOutputPort = new OutputPort(OUTPUTHTMLID,
 				"[text/html] Outputs an HTML representation of the KWIP result.", this);
 		htmlOutputPort.addSupportedPipe(CharPipe.class);
 		OutputPort xmlOutputPort = new OutputPort(OUTPUTXMLID,
-				"[text/xml] Outputs an XML representation of the KWIP result.", this);
+				"[text/xml] Outputs an XML representation of the KWIP result (supports char and byte output).", this);
 		xmlOutputPort.addSupportedPipe(CharPipe.class);
+		xmlOutputPort.addSupportedPipe(BytePipe.class);
 
 		// Add I/O ports to instance (don't forget...)
 		super.addInputPort(inputPort1);
@@ -456,6 +459,7 @@ public class KeyWordInPhraseModule extends ModuleImpl {
 		
 		// output plain text result
 		this.getOutputPorts().get(OUTPUTPLAINID).outputToAllCharPipes(resultBuf.toString());
+		this.getOutputPorts().get(OUTPUTPLAINID).outputToAllBytePipes(resultBuf.toString().getBytes());
 		this.getOutputPorts().get(OUTPUTPLAINID).close();
 		
 		// Check for interrupt signal
@@ -478,6 +482,7 @@ public class KeyWordInPhraseModule extends ModuleImpl {
 		// output xml result
 		xmlBuf.append("</kwipInfo>");
 		this.getOutputPorts().get(OUTPUTXMLID).outputToAllCharPipes(xmlBuf.toString());
+		this.getOutputPorts().get(OUTPUTXMLID).outputToAllBytePipes(xmlBuf.toString().getBytes());
 		this.getOutputPorts().get(OUTPUTXMLID).close();
 		
 		// Close remaining outputs (if necessary)
