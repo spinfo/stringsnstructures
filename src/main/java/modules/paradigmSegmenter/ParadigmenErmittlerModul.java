@@ -195,9 +195,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 
 					sekundaerPuffer.addAll(puffer);
 					puffer.clear();
-					System.out.println("4:"+puffer.size());
 					puffer.add(sekundaerPuffer.remove(sekundaerPuffer.size()-1));
-					System.out.println("4a:"+puffer.size());
 					// Entscheidungsbaum stutzen
 					entscheidungsbaumWurzelknoten = blattBesterWeg;
 					entscheidungsbaumWurzelknoten.setElternKnoten(null);
