@@ -1,7 +1,9 @@
 package modules.paradigmSegmenter;
 
 import java.io.Reader;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -114,7 +116,7 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 		EntscheidungsAeffchen.debug = true;
 		
 		// Eingabepuffer initialisieren
-		List<String> puffer = new ArrayList<String>();
+		Deque<String> puffer = new ArrayDeque<String>();
 		
 		// Initialise buffer for chars to build up to a token
 		StringBuffer charBuffer = new StringBuffer();
@@ -145,8 +147,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			Character symbol = Character.valueOf((char) zeichenCode);
 			// Check whether the read symbol is an input divider
 			if (this.inputDivider == null || symbol.equals(this.inputDivider)){
-				if (this.inputDivider == null)
+				if (this.inputDivider == null){
 					puffer.add(symbol.toString());
+				}
 				else {
 					// Append char buffer to token buffer
 					puffer.add(charBuffer.toString());
@@ -162,12 +165,14 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 			if (puffer.size() == this.pufferGroesse){
 				// Ggf. Entscheidungsbaum beginnen
 				if (entscheidungsbaumWurzelknoten == null){
-					entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(puffer.get(0)), null, puffer.get(0));
+					entscheidungsbaumWurzelknoten = new SplitDecisionNode(0d, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(puffer.peekFirst()), null, puffer.peekFirst());
 					//entscheidungsBaumZweige.put(symbol, entscheidungsbaumWurzelknoten);
 				}
 				
 				// Wenn der Eingabepuffer die erforderliche Groesse erreicht hat, wird er segmentiert
-				SplitDecisionNode blattBesterWeg = aeffchen.konstruiereEntscheidungsbaum(puffer, entscheidungsbaumWurzelknoten);
+				List<String> bufferList = new ArrayList<String>(puffer.size());
+				bufferList.addAll(puffer); // TODO: Ugly conversion. Find better way to do this.
+				SplitDecisionNode blattBesterWeg = aeffchen.konstruiereEntscheidungsbaum(bufferList, entscheidungsbaumWurzelknoten);
 				
 				// Erstes Segment (erster Entscheidungsknoten, der trennt) ermitteln, Entscheidungsbaum stutzen, Puffer kuerzen
 				
@@ -189,8 +194,10 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 					// Wenn gar keine Trennstelle gefunden wurde, wird der Puffer mit Ausnahme des letzten Zeichens in den Sekundaerpuffer uebertragen
 
 					sekundaerPuffer.addAll(puffer);
-					puffer = new ArrayList<String>();
+					puffer.clear();
+					System.out.println("4:"+puffer.size());
 					puffer.add(sekundaerPuffer.remove(sekundaerPuffer.size()-1));
+					System.out.println("4a:"+puffer.size());
 					// Entscheidungsbaum stutzen
 					entscheidungsbaumWurzelknoten = blattBesterWeg;
 					entscheidungsbaumWurzelknoten.setElternKnoten(null);
@@ -209,10 +216,10 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 					// Segment ermitteln (Sekundaerpuffer + Puffer bis zur ermittelten Tiefe)
 					List<String> segment = new ArrayList<String>();
 					segment.addAll(sekundaerPuffer);
-					segment.addAll(puffer.subList(0, tiefe));
-					
-					// Segment aus Puffer loeschen
-					puffer = puffer.subList(tiefe, puffer.size());
+					for (int i=0; i<tiefe; i++){
+						// append the first symbol in the input buffer to the segment (and remove it from the buffer in one go)
+						segment.add(puffer.removeFirst());
+					}
 					
 					// Sekundaerpuffer loeschen
 					sekundaerPuffer.clear();
