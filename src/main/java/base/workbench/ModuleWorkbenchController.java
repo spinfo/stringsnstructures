@@ -27,6 +27,7 @@ import modules.basemodules.FileReaderModule;
 import modules.basemodules.FileWriterModule;
 import modules.basemodules.FilterModule;
 import modules.basemodules.RegExReplacementModule;
+import modules.basemodules.ReverserModule;
 import modules.basemodules.SmbFileReaderModule;
 import modules.basemodules.SmbFileWriterModule;
 import modules.hal.HalAdvancedModule;
@@ -41,12 +42,12 @@ import modules.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
 import modules.seqTreeProperties.SeqTreePropController;
 import modules.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.suffixTree.GeneralisedSuffixTreeModule;
+import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringModuleWrapper;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.TreeBuilder;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
-import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringModuleWrapper;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -288,11 +289,19 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		suffixTreeClusteringModuleWrapperProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeClusteringModuleWrapper.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		suffixTreeClusteringModuleWrapper.applyProperties();
 		
+		// Bag of Words module
 		Properties bagsOfWordsDistancesModuleProperties = new Properties();
 		BagsOfWordsDistancesModule bagsOfWordsDistancesModule  = new BagsOfWordsDistancesModule(moduleNetwork, 
 				bagsOfWordsDistancesModuleProperties);
 		bagsOfWordsDistancesModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagsOfWordsDistancesModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		bagsOfWordsDistancesModule.applyProperties();
+		
+		// Reverser module
+		Properties reverserModuleProperties = new Properties();
+		ReverserModule reverserModule  = new ReverserModule(moduleNetwork, 
+				reverserModuleProperties);
+		reverserModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, reverserModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		reverserModule.applyProperties();
 		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
@@ -325,6 +334,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(bufferModule.getName(), bufferModule);
 		availableModules.put(suffixTreeClusteringModuleWrapper.getName(), suffixTreeClusteringModuleWrapper);
 		availableModules.put(bagsOfWordsDistancesModule.getName(), bagsOfWordsDistancesModule);
+		availableModules.put(reverserModule.getName(), reverserModule);
 	}
 	
 	/**
