@@ -30,7 +30,7 @@ public class FilterModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("Example module. Entwines two inputs and replaces parts via regex.");
+		this.setDescription("Filters out strings not matching the specified minimum or maximum length.");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINLENGTH, "minimum length of ...");
