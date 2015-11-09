@@ -218,7 +218,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		SeqNewickExproterControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExproterController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqNewickExproterController.applyProperties();
 		
-		// Prepare HAL advenced module
+		// Prepare HAL advanced module
 		Properties halAdvancedModuleProperties = new Properties();
 		HalAdvancedModule halAdvancedModule = new HalAdvancedModule(moduleNetwork,
 				halAdvancedModuleProperties);
