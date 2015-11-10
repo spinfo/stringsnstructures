@@ -80,6 +80,10 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		
 		// Define available modules TODO Load at runtime
 		
+		/*
+		 * INSTANTIATE MODULES BELOW
+		 */
+		
 		// Prepare FileFinderModule module
 		Properties oancProperties = new Properties();
 		FileFinderModule fileFinderModule = new FileFinderModule(moduleNetwork, oancProperties);
@@ -302,6 +306,10 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				reverserModuleProperties);
 		reverserModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, reverserModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		reverserModule.applyProperties();
+		
+		/*
+		 * ADD MODULE INSTANCES TO LIST BELOW
+		 */
 		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
