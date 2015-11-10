@@ -1,28 +1,32 @@
 package modules.basemodules;
 
 import java.util.Properties;
+import java.util.Scanner;
 
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
+
 import common.parallelization.CallbackReceiver;
 
 public class ExampleModule extends ModuleImpl {
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
-	public static final String PROPERTYKEY_REGEX = "regex";
-	public static final String PROPERTYKEY_REPLACEMENT = "replacement";
+	public static final String PROPERTYKEY_DELIMITER_A = "delimiter A";
+	public static final String PROPERTYKEY_DELIMITER_B = "delimiter B";
+	public static final String PROPERTYKEY_DELIMITER_OUTPUT = "delimiter out";
 	
 	// Define I/O IDs (must be unique for every input or output)
-	private final String INPUT1ID = "input1";
-	private final String INPUT2ID = "input2";
-	private final String OUTPUTNORMID = "output-normal";
-	private final String OUTPUTCAPSID = "output-caps";
+	private static final String ID_INPUT_A = "input A";
+	private static final String ID_INPUT_B = "input B";
+	private static final String ID_OUTPUT_ENTWINED = "entwined";
+	private static final String ID_OUTPUT_ENTWINED_CAPITALISED = "capitals";
 	
 	// Local variables
-	private String regex;
-	private String replacement;
+	private String inputdelimiter_a;
+	private String inputdelimiter_b;
+	private String outputdelimiter;
 
 	public ExampleModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -31,16 +35,18 @@ public class ExampleModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("Example module. Entwines two inputs and replaces parts via regex.");
+		this.setDescription("Example module. Segments two inputs and entwines them.");
 
 		// Add property descriptions (obligatory for every property!)
-		this.getPropertyDescriptions().put(PROPERTYKEY_REGEX, "Regular expression to search for");
-		this.getPropertyDescriptions().put(PROPERTYKEY_REPLACEMENT, "Replacement for found strings");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_A, "Regular expression to use as segmentation delimiter for input A");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_B, "Regular expression to use as segmentation delimiter for input B");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT, "String to insert as segmentation delimiter into the output");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Example Module"); // Property key for module name is defined in parent class
-		this.getPropertyDefaultValues().put(PROPERTYKEY_REGEX, "[aeiu]");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_REPLACEMENT, "o");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_A, "[\\s]+");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_B, "[\\s]+");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT, "\t");
 		
 		// Define I/O
 		/*
@@ -50,13 +56,13 @@ public class ExampleModule extends ModuleImpl {
 		 * to multiple pipe instances at once, input ports can
 		 * in contrast only obtain data from one pipe instance.
 		 */
-		InputPort inputPort1 = new InputPort(INPUT1ID, "Plain text character input.", this);
+		InputPort inputPort1 = new InputPort(ID_INPUT_A, "Plain text character input A.", this);
 		inputPort1.addSupportedPipe(CharPipe.class);
-		InputPort inputPort2 = new InputPort(INPUT2ID, "Plain text character input (will be inserted at every other character position from input 1; length beyond that of input 1 will be ignored).", this);
+		InputPort inputPort2 = new InputPort(ID_INPUT_B, "Plain text character input B.", this);
 		inputPort2.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(OUTPUTNORMID, "Plain text character output.", this);
+		OutputPort outputPort = new OutputPort(ID_OUTPUT_ENTWINED, "Plain text character output.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
-		OutputPort capsOutputPort = new OutputPort(OUTPUTCAPSID, "Plain text character output (all uppercase).", this);
+		OutputPort capsOutputPort = new OutputPort(ID_OUTPUT_ENTWINED_CAPITALISED, "Plain text character output (all uppercase).", this);
 		capsOutputPort.addSupportedPipe(CharPipe.class);
 		
 		// Add I/O ports to instance (don't forget...)
@@ -72,64 +78,68 @@ public class ExampleModule extends ModuleImpl {
 		
 		/*
 		 * This module doesn't do much useful processing.
-		 * It reads from two inputs, entwines both of them
-		 * with each other and replaces characters via
-		 * a regex taken from the specified property.
+		 * It reads from two inputs, segments them via
+		 * the specified delimiters and entwines the
+		 * result.
 		 * Just used to exemplify a basic module. 
 		 */
 		
-		// Variables used for input data
-		int bufferSize = 1024;
-		char[] bufferInput1 = new char[bufferSize];
-		char[] bufferInput2 = new char[bufferSize];
+		// Construct scanner instances for input segmentation
+		Scanner inputAScanner = new Scanner(this.getInputPorts().get(ID_INPUT_A).getInputReader());
+		inputAScanner.useDelimiter(this.inputdelimiter_a);
+		Scanner inputBScanner = new Scanner(this.getInputPorts().get(ID_INPUT_B).getInputReader());
+		inputBScanner.useDelimiter(this.inputdelimiter_b);
 		
-		// Read first chunk of data from both inputs
-		int readCharsInput1 = this.getInputPorts().get(INPUT1ID).read(bufferInput1, 0, bufferSize);
-		int readCharsInput2 = -1;
-		if (this.getInputPorts().get(INPUT2ID).isConnected())
-			readCharsInput2 = this.getInputPorts().get(INPUT2ID).read(bufferInput2, 0, bufferSize);
-		
-		// Loop until no more data can be read from input 1
-		while (readCharsInput1 != -1){
+		// Input read loop
+		while (true){
 			
 			// Check for interrupt signal
 			if (Thread.interrupted()) {
+				inputAScanner.close();
+				inputBScanner.close();
 				this.closeAllOutputs();
 				throw new InterruptedException("Thread has been interrupted.");
 			}
 			
-			// Convert char array to string buffer
-			StringBuffer input1Chunk = new StringBuffer(new String(bufferInput1).substring(0, readCharsInput1));
-			
-			// Check whether input 2 provided data
-			if (readCharsInput2 != -1){
-				
-				// Loop over input 2 buffer
-				for (int i=0; i<readCharsInput2 && i<readCharsInput1; i++){
-					// Insert character
-					input1Chunk.insert(i*2, bufferInput2[i]);
-				}
+			// Check whether input A has more segments
+			if (inputAScanner.hasNext()){
+				// Determine next segment
+				String inputASegment = inputAScanner.next();
+				// Write to outputs
+				this.getOutputPorts().get(ID_OUTPUT_ENTWINED).outputToAllCharPipes(inputASegment.concat(outputdelimiter));
+				this.getOutputPorts().get(ID_OUTPUT_ENTWINED_CAPITALISED).outputToAllCharPipes(inputASegment.concat(outputdelimiter).toUpperCase());
 			}
 			
-			// Process data
-			String outputChunk = input1Chunk.toString().replaceAll(this.regex, this.replacement);
+			// Check whether input B has more segments
+			if (inputBScanner.hasNext()){
+				// Determine next segment
+				String inputBSegment = inputBScanner.next();
+				// Write to outputs
+				this.getOutputPorts().get(ID_OUTPUT_ENTWINED).outputToAllCharPipes(inputBSegment.concat(outputdelimiter));
+				this.getOutputPorts().get(ID_OUTPUT_ENTWINED_CAPITALISED).outputToAllCharPipes(inputBSegment.concat(outputdelimiter).toUpperCase());
+			}
 			
-			// Write to outputs
-			this.getOutputPorts().get(OUTPUTNORMID).outputToAllCharPipes(outputChunk);
-			this.getOutputPorts().get(OUTPUTCAPSID).outputToAllCharPipes(outputChunk.toUpperCase());
 			
-			// Read next chunk of data from both inputs
-			readCharsInput1 = this.getInputPorts().get(INPUT1ID).read(bufferInput1, 0, bufferSize);
-			if (readCharsInput2 != -1)
-				readCharsInput2 = this.getInputPorts().get(INPUT2ID).read(bufferInput2, 0, bufferSize);
+			// If none of the inputs has any more segments, break the loop
+			if (!(inputAScanner.hasNext() && inputBScanner.hasNext()))
+				break;
 		}
+
+		/*
+		 * Close input scanners. NOTE: A module should not attempt to close its
+		 * inputs before the module providing it has done so itself! Please
+		 * either leave open any readers that would close the underlying
+		 * this.getInputPorts().get().getInputReader() (or getInputStream()
+		 * respectively) or only do so after you can be sure that the providing
+		 * module has already closed them (like in this instance).
+		 */
+		inputAScanner.close();
+		inputBScanner.close();
 		
 		// Close outputs (important!)
 		this.closeAllOutputs();
 		
-		/*
-		 * NOTE: A module must not close its inputs itself -- this is done by the module providing them
-		 */
+		
 		
 		// Done
 		return true;
@@ -142,8 +152,9 @@ public class ExampleModule extends ModuleImpl {
 		super.setDefaultsIfMissing();
 		
 		// Apply own properties
-		this.regex = this.getProperties().getProperty(PROPERTYKEY_REGEX, this.getPropertyDefaultValues().get(PROPERTYKEY_REGEX));
-		this.replacement = this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_REPLACEMENT));
+		this.inputdelimiter_a = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_A, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_A));
+		this.inputdelimiter_b = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_B, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_B));
+		this.outputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT));
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
