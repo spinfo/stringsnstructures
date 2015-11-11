@@ -32,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.event.ListSelectionEvent;
@@ -56,6 +57,7 @@ import common.parallelization.CallbackReceiverImpl;
  */
 public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, ListSelectionListener, MouseListener {
 	
+	// Keywords used to identify actions
 	protected static final String ACTION_CLEARMODULENETWORK = "ACTION_CLEARMODULENETWORK";
 	protected static final String ACTION_ADDMODULETONETWORK = "ACTION_ADDMODULETONETWORK";
 	protected static final String ACTION_DELETEMODULEFROMNETWORK = "ACTION_DELETEMODULEFROMNETWORK";
@@ -77,21 +79,25 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	public static final ImageIcon ICON_SAVE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/save.png"));
 	public static final ImageIcon ICON_LOAD = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/open.png"));
 	
+	// Standard text snippets
 	public static final String WINDOWTITLE = "Module Workbench - ";
 	public static final String WINDOWTITLE_NEWTREESUFFIX = "(new module network)";
 	public static final String FILENAMESUFFIX = "exp";
 	
-	private JFrame frame;
-	private ModuleWorkbenchController controller;
-	private JDesktopPane moduleJDesktopPane;
-	private Map<Module,ModuleInternalFrame> moduleFrameMap;
-	private ToolTipJList<Module> moduleTemplateList; // Module template moduleTemplateList
-	private Module selectedModuleTemplate = null;
-	private ModuleInternalFrame selectedModuleFrame = null;
-	private AbstractModulePortButton activeModulePortButton = null;
-	private ModuleNetworkGlasspane moduleConnectionGlasspane;
-	private Map<Module,ModulePropertyEditor> modulePropertyEditors;
-	private File lastChosenFile = null;
+	/*
+	 *  Local variables
+	 */
+	private JFrame mainGuiFrame; // Main GUI
+	private ModuleWorkbenchController controller; // Controller handling the underlying module network
+	private JDesktopPane moduleJDesktopPane; // Desktop pane containing the modules' frames displayed within the editor
+	private Map<Module,ModuleInternalFrame> moduleFrameMap; // Map referencing which module belongs to which frame
+	private ToolTipJList<Module> moduleTemplateList; // List of available module templates
+	private Module selectedModuleTemplate = null; // Template that is currently selected
+	private ModuleInternalFrame selectedModuleFrame = null; // Module frame that is currently selected
+	private AbstractModulePortButton activeModulePortButton = null; // Used to keep track of which module port button was pressed last 
+	private ModuleNetworkGlasspane moduleConnectionGlasspane; // Glasspane to draw module port connections onto
+	private Map<Module,ModulePropertyEditor> modulePropertyEditors; // Map to associate each module with its property editor dialogue
+	private File lastChosenFile = null; // Used to keep track of where to store / load from within the file system
 
 	/**
 	 * Launch the application.
@@ -101,12 +107,18 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					// Set look and feel to crossplatform
+			        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+			        
+			        // Instantiate controller that handles all modulenetwork actions
 					ModuleWorkbenchController controller = new ModuleWorkbenchController();
 					controller.setModuleNetwork(new ModuleNetwork());
+					
+					// Initialise GUI
 					ModuleWorkbenchGui window = new ModuleWorkbenchGui(controller);
 					controller.getModuleNetwork().addCallbackReceiver(window);
-					window.frame.setIconImage(ICON_APP.getImage());
-					window.frame.setVisible(true);
+					window.mainGuiFrame.setIconImage(ICON_APP.getImage());
+					window.mainGuiFrame.setVisible(true);
 					
 					Logger.getGlobal().log(Level.INFO, "Workbench GUI started.");
 				} catch (Exception e) {
@@ -128,42 +140,47 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	}
 
 	/**
-	 * Initialize the contents of the frame.
+	 * Initialises the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 850, 600);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setTitle(WINDOWTITLE+WINDOWTITLE_NEWTREESUFFIX);
 		
+		// Main GUI frame
+		mainGuiFrame = new JFrame();
+		mainGuiFrame.setBounds(100, 100, 850, 600);
+		mainGuiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		mainGuiFrame.setTitle(WINDOWTITLE+WINDOWTITLE_NEWTREESUFFIX);
+		
+		// Splitpane that divides the GUI main area from the bottom message log display
 		JSplitPane topSplitPane = new JSplitPane();
 		topSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		
+		// Splitpane that divides the available modules list from the module network editor
 		JSplitPane splitPane = new JSplitPane();
 		
+		// Panel for the list of available modules
 		JPanel availableModulesPanel = new JPanel();
 		splitPane.setLeftComponent(availableModulesPanel);
-		
 		availableModulesPanel.setLayout(new BorderLayout(0, 0));
 		
-		// Initialize available modules moduleTemplateList
+		// Initialize available modules list
 		moduleTemplateList = new ToolTipJList<Module>(this.controller.getAvailableModules().values().toArray(new Module[this.controller.getAvailableModules().size()]));
 		moduleTemplateList.addListSelectionListener(this);
+		
 		// Extend tooltip display time
 		ToolTipManager.sharedInstance().setDismissDelay(10000); 
 		
-		// Scrollpane for the module moduleTemplateList
+		// Scrollpane for the available modules list
 		JScrollPane availableModulesScrollPane = new JScrollPane();
 		availableModulesScrollPane.add(moduleTemplateList);
 		availableModulesScrollPane.setViewportView(moduleTemplateList);
-		
 		availableModulesPanel.add(availableModulesScrollPane);
 		
+		// Panel for the module network editor
 		JPanel moduleNetworkPanel = new JPanel();
 		splitPane.setRightComponent(moduleNetworkPanel);
 		moduleNetworkPanel.setLayout(new BorderLayout(0, 0));
 		
-		// Module desktop pane
+		// Module network editor desktop pane
 		this.moduleJDesktopPane = new JDesktopPane();
 		
 		// Add a desktop manager to handle internal frame movement
@@ -217,9 +234,14 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		// Add glasspane (for drawing the port connections onto)
 		this.moduleConnectionGlasspane = new ModuleNetworkGlasspane(this.moduleJDesktopPane);
 		moduleDesktopManager.setGlasspane(this.moduleConnectionGlasspane);
-		frame.setGlassPane(this.moduleConnectionGlasspane);
+		mainGuiFrame.setGlassPane(this.moduleConnectionGlasspane);
 		this.moduleConnectionGlasspane.setVisible(true);
 		
+		/*
+		 * Editor toolbar
+		 */
+		
+		// Add a toolbar for module network editor actions
 		JToolBar toolBar = new JToolBar();
 		toolBar.setOrientation(JToolBar.VERTICAL);
 		moduleNetworkPanel.add(toolBar, BorderLayout.WEST);
@@ -285,24 +307,35 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		toolBar.add(saveTreeButton);
 		toolBar.add(loadTreeButton);
 		
+		/*
+		 * Message log
+		 */
+		
+		// Panel for message log display at the bottom
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
 		
+		// Add a scrollpane
 		JScrollPane messageListScrollPane = new JScrollPane();
 		
+		// Message log entries are of a special class and have got their own
+		// renderer in order to display their contents more pleasing to the eye
 		DefaultListModel<PrettyLogRecord> messageListModel = new DefaultListModel<PrettyLogRecord>();
 		LogListCellRenderer renderer = new LogListCellRenderer();
 		JList<PrettyLogRecord> messageList = new JList<PrettyLogRecord>(messageListModel);
 		messageList.setCellRenderer(renderer);
+		
+		// Attach the message log list to the conteoller's logging handler
 		this.controller.getListLoggingHandler().setListModel(messageListModel);
 		this.controller.getListLoggingHandler().getAutoScrollLists().add(messageList);
+		
+		// Finalise display
 		messageListScrollPane.setViewportView(messageList);
 		panel.add(messageListScrollPane, BorderLayout.CENTER);
-		
 		topSplitPane.setLeftComponent(splitPane);
 		topSplitPane.setRightComponent(panel);
 		topSplitPane.setResizeWeight(1d);
-		frame.getContentPane().add(topSplitPane, BorderLayout.CENTER);
+		mainGuiFrame.getContentPane().add(topSplitPane, BorderLayout.CENTER);
 		
 	}
 	
@@ -408,8 +441,11 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		} else if (e.getActionCommand().equals(ACTION_RUNMODULES)){
 			
 			try {
+				// Reset the I/O ports of all modules
 				this.controller.getModuleNetwork().resetModuleIO();
+				// Run modules
 				this.controller.getModuleNetwork().runModules();
+				// Display the new status for all frames
 				this.updateAllModuleFrameIcons();
 				
 			} catch (Exception e1) {
@@ -446,7 +482,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 					fileChooser.setSelectedFile(this.lastChosenFile);
 				
 				// Determine return value
-				int returnVal = fileChooser.showSaveDialog(this.frame);
+				int returnVal = fileChooser.showSaveDialog(this.mainGuiFrame);
 				
 				// If the return value indicates approval, save module tree to the selected file
 				if (returnVal==JFileChooser.APPROVE_OPTION){
@@ -455,7 +491,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 						selectedFile = new File(selectedFile.getAbsolutePath().concat("."+FILENAMESUFFIX));
 					this.controller.saveModuleTreeToFile(selectedFile);
 					this.lastChosenFile = selectedFile;
-					this.frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
+					this.mainGuiFrame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
 				}
 				
 			} catch (Exception e1) {
@@ -483,7 +519,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				fileChooser.setSelectedFile(this.lastChosenFile);
 			
 			// Determine return value
-			int returnVal = fileChooser.showOpenDialog(this.frame);
+			int returnVal = fileChooser.showOpenDialog(this.mainGuiFrame);
 			
 			// If the return value indicates approval, load the selected file
 			if (returnVal==JFileChooser.APPROVE_OPTION){
@@ -579,7 +615,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I could not find a good start for arranging the frames -- did you construct a loop? If so, please don't.");
 				}
 				
-				frame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
+				mainGuiFrame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
 			}
 			
 		} catch (Exception e1) {

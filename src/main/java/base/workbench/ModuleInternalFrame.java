@@ -57,7 +57,7 @@ public class ModuleInternalFrame extends JInternalFrame {
         int labelRowsNeeded = Math.max(module.getInputPorts().size(), module.getOutputPorts().size());
         
         // Set the window size (according to amount of I/O ports we will have to display)
-        setSize(200,50+(labelRowsNeeded*ROWSIZE));
+        this.setSize(200,50+(labelRowsNeeded*ROWSIZE));
 
         // Set the button font
         Font buttonFont = new Font("Monospace", Font.PLAIN, 10);
