@@ -1,4 +1,4 @@
-package modules.suffixTree.output;
+package modules.suffixTreeModuleWrapper;
 
 public class PatternInfoRepresentation {
 

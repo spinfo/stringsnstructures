@@ -1,11 +1,12 @@
 package modules.suffixTree.suffixTree.applications;
 
 import java.util.ArrayList;
+
 import java.util.logging.Logger;
 
-import modules.suffixTree.output.NodeRepresentation;
-import modules.suffixTree.output.PatternInfoRepresentation;
-import modules.suffixTree.output.SuffixTreeRepresentation;
+import modules.suffixTreeModuleWrapper.NodeRepresentation;
+import modules.suffixTreeModuleWrapper.PatternInfoRepresentation;
+import modules.suffixTreeModuleWrapper.SuffixTreeRepresentation;
 import modules.suffixTree.suffixTree.applications.event.MyEntryEvent;
 import modules.suffixTree.suffixTree.applications.event.MyExitEvent;
 import modules.suffixTree.suffixTree.node.GeneralisedSuffixTreeNode;

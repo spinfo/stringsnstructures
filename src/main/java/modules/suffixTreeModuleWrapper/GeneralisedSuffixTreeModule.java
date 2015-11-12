@@ -1,4 +1,4 @@
-package modules.suffixTree;
+package modules.suffixTreeModuleWrapper;
 
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -7,7 +7,6 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.suffixTree.output.SuffixTreeRepresentation;
 import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
 import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
 import modules.suffixTree.suffixTree.applications.ResultToRepresentationListener;

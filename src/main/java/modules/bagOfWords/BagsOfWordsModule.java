@@ -13,9 +13,9 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.suffixTree.output.NodeRepresentation;
-import modules.suffixTree.output.PatternInfoRepresentation;
-import modules.suffixTree.output.SuffixTreeRepresentation;
+import modules.suffixTreeModuleWrapper.NodeRepresentation;
+import modules.suffixTreeModuleWrapper.PatternInfoRepresentation;
+import modules.suffixTreeModuleWrapper.SuffixTreeRepresentation;
 
 /**
  * The module reads a JSON representation of a GeneralisedSuffixTree and
