@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -121,6 +122,7 @@ public class GeneralisedSuffixTreeMain {
 		if (!test) {
 			persistSuffixTreeToXmlFile();
 		}
+		
 	}
 
 	private void readCorpusAndUnitListFromFile() {
@@ -148,28 +150,56 @@ public class GeneralisedSuffixTreeMain {
 		}
 	}
 
+	/**
+	 * Writes an XML-Representation of the suffix tree to the path given
+	 * by the config file (handled statically by the TextInfo Class) 
+	 */
 	public static void persistSuffixTreeToXmlFile() {
-
-		ResultSuffixTreeNodeStack.setSuffixTree(st);
+		final String writePath = TextInfo.getSuffixTreePath();
+		XmlPrintWriter out = null;
 		try {
-			final String writePath = TextInfo.getSuffixTreePath();
-			XmlPrintWriter out = new XmlPrintWriter(new FileWriter(writePath));
+			out = new XmlPrintWriter(new FileWriter(writePath));
+			persistSuffixTreeToXml(out, st);
+		} catch (IOException e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+		} finally {
+			if (out != null) {
+				out.close();
+			}
+		}
+		LOGGER.info("Writing finished. Wrote to: " + writePath);
+	}
+	
+	/**
+	 * Writes an XML-Representation of the suffix tree and returns it as
+	 * a String. 
+	 */
+	public static String persistSuffixTreeToXmlString(SuffixTreeAppl suffixTree) {
+		final StringWriter stringWriter = new StringWriter();
+		XmlPrintWriter out = new XmlPrintWriter(stringWriter);
+		persistSuffixTreeToXml(out, suffixTree);
+		out.close();
+		return stringWriter.toString();
+	}
+	
+	// let's the tree's representation be printed to XMLPrintWriter out
+	private static void persistSuffixTreeToXml(XmlPrintWriter out, SuffixTreeAppl suffixTree) {
+		ResultSuffixTreeNodeStack.setSuffixTree(suffixTree);
+		try {
 			out.printTag("output", true, 0, true);
 			out.printTag("units", true, 1, false);
 			out.printInt(nrTypes);
 			out.printTag("units", false, 0, true);
 
 			out.printTag("nodes", true, 1, false);
-			out.printInt(st.getCurrentNode());
+			out.printInt(suffixTree.getCurrentNode());
 			out.printTag("nodes", false, 0, true);
 
 			ResultToXmlListener listener = new ResultToXmlListener(out);
 			TreeWalker treeWalker = new TreeWalker();
-			treeWalker.walk(st.getRoot(), st, listener);
-			LOGGER.fine("rootnr: " + st.getRoot());
+			treeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+			LOGGER.fine("rootnr: " + suffixTree.getRoot());
 			out.printTag("output", false, 0, true);
-			LOGGER.info("Writing finished. Wrote to: " + writePath);
-			out.close();
 		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 		}

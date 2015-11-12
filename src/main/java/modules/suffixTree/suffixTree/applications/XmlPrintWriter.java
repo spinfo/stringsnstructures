@@ -2,6 +2,7 @@ package modules.suffixTree.suffixTree.applications;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class XmlPrintWriter extends PrintWriter {
 
@@ -11,6 +12,10 @@ public class XmlPrintWriter extends PrintWriter {
 
 	public XmlPrintWriter(FileWriter fw) {
 		super(new PrintWriter(fw));
+	}
+	
+	public XmlPrintWriter(StringWriter sw) {
+		super(new PrintWriter(sw));
 	}
 
 	public void printTag(String tag, boolean start, int nrTabs, boolean newline) {

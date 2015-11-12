@@ -3,6 +3,7 @@ package modules.suffixTreeModuleWrapper;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import modules.BytePipe;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
@@ -39,17 +40,23 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	// Variables describing I/O
 	private static final String INPUT_TEXT_ID = "plain";
 	private static final String INPUT_TEXT_DESC = "[text/plain] Takes a plaintext representation of the KWIP result.";
-	private static final String OUTPUT_ID = "json";
-	private static final String OUTPUT_DESC = "[text/json] A json representation of the tree build, suitable for clustering.";
+	private static final String OUTPUT_JSON_ID = "json";
+	private static final String OUTPUT_JSON_DESC = "[text/json] A json representation of the tree build, suitable for clustering.";
+	private static final String OUTPUT_XML_ID = "xml";
+	private static final String OUTPUT_XML_DESC = "[bytestream] An xml representation of the tree build, suitbale for clustering.";
 
 	// Variables for input processing
 	private static final char TERMINATOR = '$';
 
 	/**
 	 * Constructor
-	 * @param callbackReceiver callback receiver
-	 * @param properties module properties
-	 * @throws Exception thrown upon error
+	 * 
+	 * @param callbackReceiver
+	 *            callback receiver
+	 * @param properties
+	 *            module properties
+	 * @throws Exception
+	 *             thrown upon error
 	 */
 	public GeneralisedSuffixTreeModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		// Call parent constructor
@@ -59,13 +66,21 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, MODULE_NAME);
 		this.setDescription(MODULE_DESCRIPTION);
 
-		// Setup I/O, reads from char input produced by KWIP,
+		// Setup I/O, reads from char input produced by KWIP.
+		// json output is to a CharPipe as expected, but
+		// xml Output is to a BytePipe for compatibility reasons to the
+		// clustering module
 		InputPort inputTextPort = new InputPort(INPUT_TEXT_ID, INPUT_TEXT_DESC, this);
 		inputTextPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(OUTPUT_ID, OUTPUT_DESC, this);
-		outputPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputTextPort);
-		super.addOutputPort(outputPort);
+
+		OutputPort outputJsonPort = new OutputPort(OUTPUT_JSON_ID, OUTPUT_JSON_DESC, this);
+		outputJsonPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputJsonPort);
+
+		OutputPort outputXmlPort = new OutputPort(OUTPUT_XML_ID, OUTPUT_XML_DESC, this);
+		outputXmlPort.addSupportedPipe(BytePipe.class);
+		super.addOutputPort(outputXmlPort);
 	}
 
 	@Override
@@ -127,11 +142,24 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				LOGGER.warning("Did not find terminator char: " + TERMINATOR);
 			}
 
-			// construct the JSON output and write it to the output port
-			final String ouput = generateJsonOutput(suffixTreeAppl);
-			this.getOutputPorts().get(OUTPUT_ID).outputToAllCharPipes(ouput);
+			// construct the JSON output and write it to the output port if connected
+			final OutputPort jsonOut = this.getOutputPorts().get(OUTPUT_JSON_ID);
+			if (jsonOut.isConnected()) {
+				final String ouput = generateJsonOutput(suffixTreeAppl);
+				jsonOut.outputToAllCharPipes(ouput);
+			} else {
+				LOGGER.info("No port for json connected, not producing json output.");
+			}
+			// construct the XML output and write it to the output port if connected
+			final OutputPort xmlOut = this.getOutputPorts().get(OUTPUT_XML_ID);
+			if (xmlOut.isConnected()) {
+				final String output = GeneralisedSuffixTreeMain.persistSuffixTreeToXmlString(suffixTreeAppl);
+				xmlOut.outputToAllBytePipes(output.getBytes());
+			} else {
+				LOGGER.info("No port for xml connected, not producing xml output.");
+			}
 
-		// no catch block, this should just crash on error
+			// no catch block, this should just crash on error
 		} finally {
 			this.closeAllOutputs();
 		}
@@ -141,11 +169,13 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 
 	/**
 	 * Generated JSON output
-	 * @param suffixTreeAppl suffix tree application instance
+	 * 
+	 * @param suffixTreeAppl
+	 *            suffix tree application instance
 	 * @return JSON string
 	 */
 	private String generateJsonOutput(SuffixTreeAppl suffixTreeAppl) {
-		// apparently this needs to be statically for any result listener to
+		// apparently this needs to be statically set for any result listener to
 		// work correctly
 		ResultSuffixTreeNodeStack.suffixTree = suffixTreeAppl;
 
