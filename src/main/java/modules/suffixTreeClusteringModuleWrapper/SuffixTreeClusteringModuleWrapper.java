@@ -147,6 +147,7 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 		
+		
 		try {
 			kwipInStream = this.getInputPorts().get(INPUTIDTREERES).getInputStream();
 			kwipStreamReader = new KwipXmlStreamReader (kwipInStream);
@@ -207,7 +208,7 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		}
 		
 		for (Type doc : corpus.getTypes()) {
-			doc.calculateVector(corpus, vectorType);
+				doc.calculateVector(corpus, vectorType);
 
 			/*
 			// for debugging
