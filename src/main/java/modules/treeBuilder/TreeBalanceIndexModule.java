@@ -31,7 +31,12 @@ public class TreeBalanceIndexModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("Tree Balance Index Module.");
+		this.setDescription("Calculates a balance index for the specified tree "
+				+ "(the tree has to incorporate a node weight counter). "
+				+ "The index ranges from above zero (unbalanced) to one "
+				+ "(perfectly balanced) and is calculated by comparing "
+				+ "the counter values of each node's children with the "
+				+ "determined average.");
 
 		// Add property descriptions (obligatory for every property!)
 		//this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_A, "Regular expression to use as segmentation delimiter for input A");
@@ -79,13 +84,20 @@ public class TreeBalanceIndexModule extends ModuleImpl {
 		return true;
 	}
 	
-	private double calculateBalanceIndex(Knoten node){
-		double counterAverage = new Double(node.getZaehler()) / new Double(node.getKinder().size());
+	private double calculateBalanceIndex(Knoten node) {
 		double balanceIndex = 1d; // Value range is 0<X<=1
-		Iterator<Knoten> childNodes = node.getKinder().values().iterator();
-		while(childNodes.hasNext()){
-			Knoten childNode = childNodes.next();
-			balanceIndex = balanceIndex*(childNode.getZaehler()/counterAverage)*(1-(calculateBalanceIndex(childNode)/new Double(node.getKinder().size())));
+		// Check whether node counter is larger than one (not a leaf)
+		if (node.getKinder().size() > 1) {
+			double counterAverage = new Double(node.getZaehler())
+					/ new Double(node.getKinder().size());
+			Iterator<Knoten> childNodes = node.getKinder().values().iterator();
+			while (childNodes.hasNext()) {
+				Knoten childNode = childNodes.next();
+				balanceIndex = balanceIndex
+						* (childNode.getZaehler() / counterAverage)
+						* (1-((1-calculateBalanceIndex(childNode)) / new Double(
+								node.getKinder().size())));
+			}
 		}
 		return balanceIndex;
 	}
