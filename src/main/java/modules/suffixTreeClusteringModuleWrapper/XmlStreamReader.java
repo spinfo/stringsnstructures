@@ -14,9 +14,11 @@ public class XmlStreamReader {
 		}
 		
 	public SuffixTreeInfo read(Map<Integer, String> typeStrings){
+		final SAXStreamHandler saxStreamHandler = new SAXStreamHandler();
+		
 		if(null == typeStrings)
 			return new SuffixTreeInfo();
-		return SAXStreamHandler.read(inStream, typeStrings);		
+		return saxStreamHandler.read(inStream, typeStrings);		
 	}
 	
 	public InputStream getInStream() {
