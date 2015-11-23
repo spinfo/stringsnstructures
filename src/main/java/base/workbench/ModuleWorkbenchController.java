@@ -22,6 +22,7 @@ import modules.bagOfWords.BagsOfWordsModule;
 import modules.basemodules.BufferModule;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
+import modules.basemodules.ExternalCommandModule;
 import modules.basemodules.FileFinderModule;
 import modules.basemodules.FileReaderModule;
 import modules.basemodules.FileWriterModule;
@@ -315,6 +316,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		treeBalanceIndexModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBalanceIndexModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBalanceIndexModule.applyProperties();
 		
+		// ExternalCommandModule
+		Properties externalCommandModuleProperties = new Properties();
+		ExternalCommandModule externalCommandModule  = new ExternalCommandModule(moduleNetwork, 
+				externalCommandModuleProperties);
+		externalCommandModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, externalCommandModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		externalCommandModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -352,6 +360,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(bagsOfWordsDistancesModule.getName(), bagsOfWordsDistancesModule);
 		availableModules.put(reverserModule.getName(), reverserModule);
 		availableModules.put(treeBalanceIndexModule.getName(), treeBalanceIndexModule);
+		availableModules.put(externalCommandModule.getName(), externalCommandModule);
 	}
 	
 	/**
