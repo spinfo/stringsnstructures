@@ -1,5 +1,7 @@
 package modules.basemodules;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Properties;
@@ -17,6 +19,7 @@ public class ExternalCommandModule extends ModuleImpl {
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_COMMAND = "command";
+	public static final String PROPERTYKEY_WORKDIR = "directory";
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "input";
@@ -24,6 +27,7 @@ public class ExternalCommandModule extends ModuleImpl {
 	
 	// Local variables
 	private String command;
+	private String workDir;
 
 	public ExternalCommandModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -35,11 +39,19 @@ public class ExternalCommandModule extends ModuleImpl {
 		this.setDescription("Executes an external system command. Can use streamed character or byte input as command stdin.");
 
 		// Add property descriptions (obligatory for every property!)
-		this.getPropertyDescriptions().put(PROPERTYKEY_COMMAND, "Command to execute. Please specify the complete path and parameters as used on the system console. On MS Windows, use '\\\\' as path separator.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_COMMAND, "<html>Command to execute. Please specify the complete path.<br/>"
+				+ "Explicit parameters can be separated by using ',' (comma) as a delimiter<br/>"
+				+ "(use '\\,' if you want a literal comma). Most of the times with linux/unix<br/>"
+				+ "it is best to wrap the command in a shell, in this case meaning that you<br/>"
+				+ "prefix your command with '/bin/sh,-c,'. On MS Windows, please use '\\\\'<br/>"
+				+ "as path separator.</html>");
+		this.getPropertyDescriptions().put(PROPERTYKEY_WORKDIR, "<html>Working directory to execute the command in. Please specify the complete path.<br/>"
+				+ "On MS Windows, use '\\\\' as path separator.</html>");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "External Command Module"); // Property key for module name is defined in parent class
-		this.getPropertyDefaultValues().put(PROPERTYKEY_COMMAND, "/bin/ls -l /tmp");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_COMMAND, "/bin/sh,-c,(echo '>Seq 1'; cat -)");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_WORKDIR, "/tmp");
 		
 		// Define I/O
 		/*
@@ -65,7 +77,26 @@ public class ExternalCommandModule extends ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 		
-		Process process = Runtime.getRuntime().exec(this.command);
+		// Check whether workdir is valid
+		File workDirFile = new File(this.workDir);
+		if (!workDirFile.exists() || !workDirFile.isDirectory())
+			throw new Exception("The specified working directory ("+this.workDir+") is invalid.");
+		
+		// Parse command string
+		String delim = ",";
+		String regex = "(?<!\\\\)" + java.util.regex.Pattern.quote(delim);
+		String[] commandArray = this.command.split(regex);
+		// Replace masked ',' characters
+		for (int i=0; i<commandArray.length; i++){
+			commandArray[i] = commandArray[i].replaceAll("\\\\\\,",",");
+		}
+		
+		// Run process
+		ProcessBuilder processBuilder = new ProcessBuilder(commandArray);
+		//Map<String, String> env = processBuilder.environment();
+		//env.put("LC_ALL", "en_GB.UTF-8");
+		processBuilder.directory(new File(this.workDir));
+		Process process = processBuilder.start();
 		
 		// Determine whether the input port is connected (and we need to feed the input to the executed command)
 		if (this.getInputPorts().get(ID_INPUT).isConnected()){
@@ -79,8 +110,10 @@ public class ExternalCommandModule extends ModuleImpl {
 					process.getOutputStream().write(buffer, 0, readBytes);
 					readBytes = this.getInputPorts().get(ID_INPUT).getInputStream().read(buffer);
 				}
-				process.getOutputStream().flush();
-				process.getOutputStream().close();
+				try {
+					process.getOutputStream().flush();
+					process.getOutputStream().close();
+				} catch (IOException e){}
 			} else if (CharPipe.class.isAssignableFrom(this.getInputPorts().get(ID_INPUT).getPipe().getClass())) {
 				Writer processInputWriter = new OutputStreamWriter(process.getOutputStream());
 				// Read char input
@@ -90,8 +123,9 @@ public class ExternalCommandModule extends ModuleImpl {
 					processInputWriter.write(buffer, 0, readChars);
 					readChars = this.getInputPorts().get(ID_INPUT).getInputReader().read(buffer);
 				}
-				processInputWriter.flush();
-				processInputWriter.close();
+				try {
+					processInputWriter.close();
+				} catch (IOException e){}
 				
 			} else {
 				// The connected pipe is of unknown type
@@ -129,6 +163,8 @@ public class ExternalCommandModule extends ModuleImpl {
 		
 		// Apply own properties
 		this.command = this.getProperties().getProperty(PROPERTYKEY_COMMAND, this.getPropertyDefaultValues().get(PROPERTYKEY_COMMAND));
+		this.workDir = this.getProperties().getProperty(PROPERTYKEY_WORKDIR, this.getPropertyDefaultValues().get(PROPERTYKEY_WORKDIR));
+		
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
