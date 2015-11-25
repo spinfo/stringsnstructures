@@ -156,8 +156,8 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		}
 		
 		List<Type> kwipTypes = this.kwipStreamReader.read();
-		for (Type type : kwipTypes)
-			System.out.println(type);
+//		for (Type type : kwipTypes)
+//			System.out.println(type);
 
 		Map<Integer, String> typeStrings = null;
 		try {

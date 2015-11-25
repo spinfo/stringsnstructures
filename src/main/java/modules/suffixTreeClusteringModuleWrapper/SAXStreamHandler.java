@@ -3,7 +3,6 @@ package modules.suffixTreeClusteringModuleWrapper;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -26,11 +25,11 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 
 public class SAXStreamHandler extends DefaultHandler {
-	private static Logger logger = Logger.getLogger(SAXStreamHandler.class
-			.getSimpleName());
+//	private static Logger logger = Logger.getLogger(SAXStreamHandler.class
+//			.getSimpleName());
 
-	private static SuffixTreeInfo outputInfo;
-	private static Map<Integer, String> types;
+	private SuffixTreeInfo outputInfo;
+	private Map<Integer, String> types;
 	private Node currentNode;
 
 	private Tags iState = Tags.UNDEFINED;
@@ -49,17 +48,17 @@ public class SAXStreamHandler extends DefaultHandler {
 	 *            - mapping from type IDs to type Strings
 	 * @return {@link SuffixTreeInfo} object
 	 */
-	public static SuffixTreeInfo read(InputStream inStream,
+	public SuffixTreeInfo read(InputStream inStream,
 			Map<Integer, String> typeStrings) {
 
-		SAXStreamHandler.types = typeStrings;
-		DefaultHandler handler = new SAXStreamHandler();
+		types = typeStrings;
 
 		SAXParser saxParser;
 
 		try {
 			saxParser = SAXParserFactory.newInstance().newSAXParser();
-			saxParser.parse(inStream, handler);
+			
+			saxParser.parse(inStream, this);
 
 		} catch (ParserConfigurationException pe) {
 			pe.printStackTrace();
@@ -81,12 +80,12 @@ public class SAXStreamHandler extends DefaultHandler {
 		String eName = ("".equals(localName)) ? qName : localName;
 
 		if (attrs != null && attrs.getLength() > 0) {
-			logger.warning("Node should not have attributes!");
+//			logger.warning("Node should not have attributes!");
 		}
 
 		if (eName.equals("output")) {
 			outputInfo = new SuffixTreeInfo();
-			logger.info("Create new SuffixTreeInfo Object");
+//			logger.info("Create new SuffixTreeInfo Object");
 		}
 		if (eName.equals("units")) {
 			iState = Tags.UNITS;
@@ -113,7 +112,7 @@ public class SAXStreamHandler extends DefaultHandler {
 			// TODO: eigentlich muss nicht jedes Mal ein neuer Type erstellt
 			// werden...
 			currentType = new Type();
-			logger.info("Create new type");
+//			logger.info("Create new type");
 			iState = Tags.PATTERNINFO;
 		}
 		if (eName.equals("typeNr")) {
@@ -182,7 +181,7 @@ public class SAXStreamHandler extends DefaultHandler {
 
 			if (!currentNode.getTypes().containsKey(currentType))
 				currentNode.addType(currentType);
-			else logger.info("Type already contained in node");
+//			else logger.info("Type already contained in node");
 
 			break;
 		case PATTERN:

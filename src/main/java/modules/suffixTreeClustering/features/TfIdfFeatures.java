@@ -47,6 +47,7 @@ public final class TfIdfFeatures {
 		// ...für jeden Term im Vokabular... (=jeder Knoten im SuffixTree)
 		List<Node> terms = corpus.getNodes();
 
+		
 		boolean ok = false;
 		for (Node node : terms) {
 			// der tf-idf-Wert des Terms:

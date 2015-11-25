@@ -22,6 +22,7 @@ import modules.bagOfWords.BagsOfWordsModule;
 import modules.basemodules.BufferModule;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleModule;
+import modules.basemodules.ExternalCommandModule;
 import modules.basemodules.FileFinderModule;
 import modules.basemodules.FileReaderModule;
 import modules.basemodules.FileWriterModule;
@@ -44,6 +45,7 @@ import modules.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringModuleWrapper;
 import modules.suffixTreeModuleWrapper.GeneralisedSuffixTreeModule;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
+import modules.treeBuilder.TreeBalanceIndexModule;
 import modules.treeBuilder.TreeBuilder;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.visualizationModules.ASCIIGraph;
@@ -307,6 +309,20 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		reverserModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, reverserModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		reverserModule.applyProperties();
 		
+		// TreeBalanceIndexModule
+		Properties treeBalanceIndexModuleProperties = new Properties();
+		TreeBalanceIndexModule treeBalanceIndexModule  = new TreeBalanceIndexModule(moduleNetwork, 
+				treeBalanceIndexModuleProperties);
+		treeBalanceIndexModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBalanceIndexModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		treeBalanceIndexModule.applyProperties();
+		
+		// ExternalCommandModule
+		Properties externalCommandModuleProperties = new Properties();
+		ExternalCommandModule externalCommandModule  = new ExternalCommandModule(moduleNetwork, 
+				externalCommandModuleProperties);
+		externalCommandModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, externalCommandModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		externalCommandModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -343,6 +359,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(suffixTreeClusteringModuleWrapper.getName(), suffixTreeClusteringModuleWrapper);
 		availableModules.put(bagsOfWordsDistancesModule.getName(), bagsOfWordsDistancesModule);
 		availableModules.put(reverserModule.getName(), reverserModule);
+		availableModules.put(treeBalanceIndexModule.getName(), treeBalanceIndexModule);
+		availableModules.put(externalCommandModule.getName(), externalCommandModule);
 	}
 	
 	/**
