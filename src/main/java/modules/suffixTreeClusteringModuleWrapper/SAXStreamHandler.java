@@ -3,7 +3,6 @@ package modules.suffixTreeClusteringModuleWrapper;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
