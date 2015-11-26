@@ -86,10 +86,10 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 		try {
-			// read the whole text once, neccessary to know the text's length
+			// read the whole text once, necessary to know the text's length
 			final String text = readStringFromInputPort(this.getInputPorts().get(INPUT_TEXT_ID));
 
-			// The suffix tree used to read the input is a generalised
+			// The suffix tree used to read the input is a generalized
 			// suffix
 			// tree for a text of the length of the input string
 			final SuffixTreeAppl suffixTreeAppl = new SuffixTreeAppl(text.length(),
