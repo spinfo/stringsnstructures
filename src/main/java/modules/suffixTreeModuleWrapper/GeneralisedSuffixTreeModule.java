@@ -1,12 +1,16 @@
 package modules.suffixTreeModuleWrapper;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import modules.BytePipe;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
+import modules.NotSupportedException;
 import modules.OutputPort;
 import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
 import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
@@ -22,10 +26,8 @@ import com.google.gson.GsonBuilder;
 import common.parallelization.CallbackReceiver;
 
 /**
- * Work in Progress.
- * 
- * Currently Reads KWIP processed text only, outputs a generalised suffix tree
- * based on the text. Does not handle units and types at the moment.
+ * Module Rreads from KWIP modules output into a suffix tree. Constructs a
+ * representation of that tree, that can be used as input for clustering.
  * 
  * @author David Neugebauer
  */
@@ -35,17 +37,24 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 
 	// Variables for the module
 	private static final String MODULE_NAME = "GeneralisedSuffixTreeModule";
-	private static final String MODULE_DESCRIPTION = "Reads from KWIP modules output and constructs output suitable for clustering.";
+	private static final String MODULE_DESCRIPTION = "Module Rreads from KWIP modules output into a suffix tree. Constructs a "
+			+ "representation of that tree, that can be used as input for clustering.";
 
 	// Variables describing I/O
 	private static final String INPUT_TEXT_ID = "plain";
 	private static final String INPUT_TEXT_DESC = "[text/plain] Takes a plaintext representation of the KWIP result.";
+	private static final String INPUT_UNITS_ID = "units";
+	private static final String INPUT_UNITS_DESC = "[text/plain] Takes a unit list (numbers of available types) from the KWIP result";
 	private static final String OUTPUT_JSON_ID = "json";
 	private static final String OUTPUT_JSON_DESC = "[text/json] A json representation of the tree build, suitable for clustering.";
 	private static final String OUTPUT_XML_ID = "xml";
 	private static final String OUTPUT_XML_DESC = "[bytestream] An xml representation of the tree build, suitbale for clustering.";
 
+	// Container to hold units if provided
+	private ArrayList<Integer> unitList = null;
+
 	// Variables for input processing
+	private static final Pattern NEWLINE_PATTERN = Pattern.compile("\r\n|\n|\r");
 	private static final char TERMINATOR = '$';
 
 	/**
@@ -74,6 +83,10 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		inputTextPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputTextPort);
 
+		InputPort inputUnitsPort = new InputPort(INPUT_UNITS_ID, INPUT_UNITS_DESC, this);
+		inputUnitsPort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(inputUnitsPort);
+
 		OutputPort outputJsonPort = new OutputPort(OUTPUT_JSON_ID, OUTPUT_JSON_DESC, this);
 		outputJsonPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputJsonPort);
@@ -86,18 +99,29 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 		try {
-			// read the whole text once, neccessary to know the text's length
+			// read the whole text once, necessary to know the text's length
 			final String text = readStringFromInputPort(this.getInputPorts().get(INPUT_TEXT_ID));
 
 			// The suffix tree used to read the input is a generalised
-			// suffix
-			// tree for a text of the length of the input string
+			// suffix tree for a text of the length of the input string
 			final SuffixTreeAppl suffixTreeAppl = new SuffixTreeAppl(text.length(),
 					new GeneralisedSuffixTreeNodeFactory());
 
 			// set some variables to regulate flow in SuffixTree classes
 			suffixTreeAppl.unit = 0;
 			suffixTreeAppl.oo = new End(Integer.MAX_VALUE / 2);
+
+			// if a unit list is provided read it and set the suffix tree
+			// variables accordingly
+			if (this.getInputPorts().get(INPUT_UNITS_ID).isConnected()) {
+				this.unitList = readUnitListFromInput(this.getInputPorts().get(INPUT_UNITS_ID));
+				if (this.unitList.size() == 0) {
+					throw new Exception("Unit list provided but empty.");
+				}
+				suffixTreeAppl.unitCount = this.unitList.size();
+			} else {
+				LOGGER.warning("GST: No port for unit list connected. Output might be unsuitable for clustering.");
+			}
 
 			// start and end indices regulate which portion of the input we are
 			// reading at any given moment
@@ -119,6 +143,13 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				while (end != -1) {
 					// each cycle represents a text read
 					suffixTreeAppl.textNr++;
+
+					// If a unit list from KWIP is available, make sure that the
+					// currently read text is counted for the unit, that it was
+					// mapped to by KWIP
+					if (unitList != null && (unitList.get(suffixTreeAppl.unit) == suffixTreeAppl.textNr)) {
+						suffixTreeAppl.unit++;
+					}
 
 					// TODO comment explaining what setting the active point
 					// does
@@ -142,7 +173,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				LOGGER.warning("Did not find terminator char: " + TERMINATOR);
 			}
 
-			// construct the JSON output and write it to the output port if connected
+			// construct the JSON output and write it to the output port if
+			// connected
 			final OutputPort jsonOut = this.getOutputPorts().get(OUTPUT_JSON_ID);
 			if (jsonOut.isConnected()) {
 				final String ouput = generateJsonOutput(suffixTreeAppl);
@@ -150,7 +182,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.info("No port for json connected, not producing json output.");
 			}
-			// construct the XML output and write it to the output port if connected
+			// construct the XML output and write it to the output port if
+			// connected
 			final OutputPort xmlOut = this.getOutputPorts().get(OUTPUT_XML_ID);
 			if (xmlOut.isConnected()) {
 				final String output = GeneralisedSuffixTreeMain.persistSuffixTreeToXmlString(suffixTreeAppl);
@@ -168,7 +201,31 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	}
 
 	/**
-	 * Generated JSON output
+	 * Reads a list of units provided by the KWIP module. Expects to read a
+	 * newline separated list of Integers from the provided InputPort
+	 * 
+	 * @param unitsPort
+	 *            the InputPort to read the newline separated list of units
+	 *            from. (Produced by the KWIP module)
+	 * @return An array of Integers that are the unit numbers read. An empty
+	 *         array if none were read.
+	 * @throws NumberFormatException
+	 *             If a line in the input could not be parsed as an Integer
+	 */
+	private ArrayList<Integer> readUnitListFromInput(InputPort unitsPort)
+			throws IOException, NotSupportedException, InterruptedException, NumberFormatException {
+		ArrayList<Integer> unitsList = new ArrayList<Integer>();
+
+		final String[] inputStrings = NEWLINE_PATTERN.split(readStringFromInputPort(unitsPort));
+		for (String str : inputStrings) {
+			unitsList.add(Integer.parseInt(str));
+		}
+
+		return unitsList;
+	}
+
+	/**
+	 * Generates JSON output
 	 * 
 	 * @param suffixTreeAppl
 	 *            suffix tree application instance
@@ -184,7 +241,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		final SuffixTreeRepresentation suffixTreeRepresentation = new SuffixTreeRepresentation();
 		final ResultToRepresentationListener listener = new ResultToRepresentationListener(suffixTreeRepresentation);
 		final TreeWalker treeWalker = new TreeWalker();
-		suffixTreeRepresentation.setUnitCount(0);
+		suffixTreeRepresentation.setUnitCount(suffixTreeAppl.unitCount);
 		suffixTreeRepresentation.setNodeCount(suffixTreeAppl.getCurrentNode());
 		treeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
 
