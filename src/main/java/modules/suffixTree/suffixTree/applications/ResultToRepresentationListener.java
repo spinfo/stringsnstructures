@@ -58,7 +58,7 @@ public class ResultToRepresentationListener implements ITreeWalkerListener {
 	public void exitaction(MyExitEvent exitEvent) {
 
 		// the node's label and identifying number are simply retrieved from the
-		// node stack. The identiying nodeNr is strictly neccessary, so we do
+		// node stack. The identifying nodeNr is strictly necessary, so we do
 		// not catch the possible EmptyStackException at this point
 		final String label = ResultSuffixTreeNodeStack.writeStack();
 		final int nodeNr = ResultSuffixTreeNodeStack.stack.pop();
