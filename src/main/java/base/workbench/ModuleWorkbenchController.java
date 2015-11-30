@@ -477,7 +477,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 			module.applyProperties();
 			if (!replaceCurrent && this.getModuleNetwork() != null)
 				this.getModuleNetwork().addModule(module);
-			Logger.getLogger("").log(Level.INFO, "Loaded module "+module.getName());
+			Logger.getLogger("").log(Level.INFO, "Loaded module "+module.getName()+" ["+module.getClass().getSimpleName()+"]");
 		}
 		
 		// Replace the current module network if specified to do so
