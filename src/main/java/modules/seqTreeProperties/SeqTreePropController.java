@@ -168,12 +168,14 @@ public class SeqTreePropController extends ModuleImpl {
 		seqPropertiesOutput = "Longest Path for inner nodes:\t" + longestPath + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Longest Path (for leaves):\t" + (longestPath + 1) + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Average length of paths:\t" + avPathLen + "\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Average ratio of paths:\t" + avPathRatio + "\n";
+		//seqPropertiesOutput = seqPropertiesOutput + "Average ratio of paths:\t" + avPathRatio + "\n";
+		seqPropertiesOutput = seqPropertiesOutput + "Average Sackin index of paths:\t" + avPathRatio + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Total number of leaves:\t" + totalNumOfLeaves + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Sackin index:\t" + sackinIndexVal + "\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Sackin variance:\t" + sackinVar + "\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Normalized Sackin index:\t" + sackinIndexNorm + "\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tpath ratio\n";
+		//seqPropertiesOutput = seqPropertiesOutput + "Sackin variance:\t" + sackinVar + "\n";
+		//seqPropertiesOutput = seqPropertiesOutput + "Normalized Sackin index:\t" + sackinIndexNorm + "\n";
+		//seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tpath ratio\n";
+		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\n";
 		for (SeqProperties i : seqPropertiesSorted) {
 			seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() + "\t" + i.getPathRatio() + "\n";
 		}
@@ -223,7 +225,8 @@ public class SeqTreePropController extends ModuleImpl {
 					SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getCounter(), 1);
 					
 					//create properties of inner node
-					seqProperties.put(pairNodeName, new SeqProperties(pairNodeName, node.getValue(), seqProperties.get("^").getPathLength() + 1, (((double)node.getCounter())/((double)rootNode.getCounter()))));
+					//seqProperties.put(pairNodeName, new SeqProperties(pairNodeName, node.getValue(), seqProperties.get("^").getPathLength() + 1, (((double)node.getCounter())/((double)rootNode.getCounter()))));
+					seqProperties.put(pairNodeName, new SeqProperties(pairNodeName, node.getValue(), seqProperties.get("^").getPathLength() + 1, (((double)node.getCounter())+((double)rootNode.getCounter()))));
 					
 					while (subIt.hasNext()) {
 						
@@ -235,7 +238,8 @@ public class SeqTreePropController extends ModuleImpl {
 						//create properties for an inner node
 						if (subPair.getValue().getNodeHash().size() > 1 ) {
 							subPairNodeName += subPair.getValue().getValue();
-							seqProperties.put(subPairNodeName, new SeqProperties(subPairNodeName, subNode.getValue(), seqProperties.get(pairNodeName).getPathLength() + 1, (((double)subNode.getCounter())/((double)node.getCounter()))));
+							//seqProperties.put(subPairNodeName, new SeqProperties(subPairNodeName, subNode.getValue(), seqProperties.get(pairNodeName).getPathLength() + 1, (((double)subNode.getCounter())/((double)node.getCounter()))));
+							seqProperties.put(subPairNodeName, new SeqProperties(subPairNodeName, subNode.getValue(), seqProperties.get(pairNodeName).getPathLength() + 1, (((double)subNode.getCounter())+((double)node.getCounter()))));
 						}
 						
 						SeqPropertyNode childNode = deepPropIteration(subPair.getValue(), subNode, pairNodeName, subNode.getNodeDepth());
@@ -300,8 +304,8 @@ public class SeqTreePropController extends ModuleImpl {
 					String innerNodeName = currPropNodeName + newNode.getValue();
 					
 					//create properties of inner node
-					seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, newNode.getValue(), nodeDepth + 1, (((double)newNode.getCounter())/((double)currPropNode.getCounter()))));
-										
+					//seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, newNode.getValue(), nodeDepth + 1, (((double)newNode.getCounter())/((double)currPropNode.getCounter()))));
+					seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, newNode.getValue(), nodeDepth + 1, (((double)newNode.getCounter())+((double)currPropNode.getCounter()))));					
 					currPropNode.addNode(newNode.getValue(), newNode);
 					
 				}
