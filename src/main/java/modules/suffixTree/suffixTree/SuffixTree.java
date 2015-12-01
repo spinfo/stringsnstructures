@@ -23,6 +23,7 @@ public class SuffixTree {
 	// to be initialized in calling class e.g. SuffixTreeAppl
 	public End oo = new End(Integer.MAX_VALUE / 2);
 	public int unit = 0;
+	public int unitCount = 0;
 	public int textNr = 0;
 	public int leafCount = -1;
 	// first position in Node (seems to be empty (?why))

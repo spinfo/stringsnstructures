@@ -32,7 +32,6 @@ public class GeneralisedSuffixTreeMain {
 	public static SuffixTreeAppl st;
 	private ArrayList<Integer> unitList = new ArrayList<Integer>();
 	private ArrayList<String> typeList = new ArrayList<String>();
-	private static int nrTypes = 0;
 	private String text;
 	private static String in;
 
@@ -41,6 +40,8 @@ public class GeneralisedSuffixTreeMain {
 	 **/
 	private GeneralisedSuffixTreeMain() {
 
+		st = new SuffixTreeAppl(text.length(), new GeneralisedSuffixTreeNodeFactory());
+		
 		if (test) {
 			text = in;
 			LOGGER.info("test: " + text);
@@ -65,7 +66,6 @@ public class GeneralisedSuffixTreeMain {
 
 			LOGGER.finer("GeneralisedSuffixTreeMain: first suffix tree: start: " + start + " end " + TERMINATOR + ": "
 					+ end + " substring: " + text.substring(start, end + 1));
-			st = new SuffixTreeAppl(text.length(), new GeneralisedSuffixTreeNodeFactory());
 
 			LOGGER.info("GeneralisedSuffixTreeMain cstr text: " + text + "   " + st.textNr);
 			st.unit = 0;
@@ -136,12 +136,12 @@ public class GeneralisedSuffixTreeMain {
 			BufferedReader brType = new BufferedReader(new FileReader(TextInfo.getKwipTypePath()));
 			while ((line = brInt.readLine()) != null) {
 				unitList.add(Integer.parseInt(line));
+				st.unitCount++;
 			}
 			brInt.close();
 			while ((type = brType.readLine()) != null) {
 				LOGGER.finest("Type: " + type);
 				typeList.add(type);
-				nrTypes++;
 			}
 			brType.close();
 
@@ -182,13 +182,13 @@ public class GeneralisedSuffixTreeMain {
 		return stringWriter.toString();
 	}
 	
-	// let's the tree's representation be printed to XMLPrintWriter out
+	// lets the tree's representation be printed to XMLPrintWriter out
 	private static void persistSuffixTreeToXml(XmlPrintWriter out, SuffixTreeAppl suffixTree) {
 		ResultSuffixTreeNodeStack.setSuffixTree(suffixTree);
 		try {
 			out.printTag("output", true, 0, true);
 			out.printTag("units", true, 1, false);
-			out.printInt(nrTypes);
+			out.printInt(suffixTree.unitCount);
 			out.printTag("units", false, 0, true);
 
 			out.printTag("nodes", true, 1, false);
