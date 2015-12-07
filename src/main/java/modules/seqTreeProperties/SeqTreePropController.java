@@ -69,10 +69,10 @@ public class SeqTreePropController extends ModuleImpl {
 	private double sackinIndexVal;
 	
 	//sackin variance
-	private double sackinVar;
+	//private double sackinVar;
 	
 	//normalized Sackin index
-	private double sackinIndexNorm;
+	//private double sackinIndexNorm;
 	
 	private SeqReducedTrieNode mainNode;
 	private Gson gson;
@@ -292,7 +292,7 @@ public class SeqTreePropController extends ModuleImpl {
 						Object[] newChild = newPropNode.getNodeHash().keySet().toArray();//What is the name of this new child?
 						currPropNode.concatValue(newPropNode.getValue()); //remember the name of the grand child
 						currPropNode.addNode(newPropNode.getNodeHash().get(newChild[0]).getValue(), newPropNode.getNodeHash().get(newChild[0]));//continue with this new child
-					} else { // so the grand child several or no children, let's remember that
+					} else { // so the grand child has several or no children, let's remember that
 						currPropNode.addNode(newPropNode.getValue(), newPropNode); 
 					}
 				} else if (deepPair.getValue().getNodeHash().size() > 1) { // if there are more nodes remember the zaehler value
@@ -503,10 +503,10 @@ public class SeqTreePropController extends ModuleImpl {
 		sackinIndexVal = (double) sackinIndexReady;
 		
 		//calculate Sackin variance
-		double sackinVariance = 2 * totalNumOfLeaves * sackinSum;
-		sackinVar = sackinVariance;
+		//double sackinVariance = 2 * totalNumOfLeaves * sackinSum;
+		//sackinVar = sackinVariance;
 		
 		//calculate normalized Sackin index
-		sackinIndexNorm = (sackinIndexReady - sackinVariance) / totalNumOfLeaves;
+		//sackinIndexNorm = (sackinIndexReady - sackinVariance) / totalNumOfLeaves;
 	}
 }
