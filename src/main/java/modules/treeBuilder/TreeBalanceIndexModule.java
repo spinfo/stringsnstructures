@@ -15,7 +15,7 @@ import common.parallelization.CallbackReceiver;
 public class TreeBalanceIndexModule extends ModuleImpl {
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
-	//public static final String PROPERTYKEY_DELIMITER_A = "delimiter A";
+	//public static final String PROPERTYKEY_INPUTDELIMITER = "delimiter A";
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "json tree";
@@ -39,11 +39,11 @@ public class TreeBalanceIndexModule extends ModuleImpl {
 				+ "determined average.");
 
 		// Add property descriptions (obligatory for every property!)
-		//this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_A, "Regular expression to use as segmentation delimiter for input A");
+		//this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for input A");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "TreeBalanceIndexModule"); // Property key for module name is defined in parent class
-		//this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_A, "[\\s]+");
+		//this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTDELIMITER, "[\\s]+");
 		
 		// Define I/O
 		/*
