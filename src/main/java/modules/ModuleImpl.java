@@ -105,8 +105,12 @@ public abstract class ModuleImpl implements Module {
 	 * @throws InterruptedException if the Thread has been interrupted.
 	 */
 	protected String readStringFromInputPort(InputPort inputPort)
-			throws IOException, NotSupportedException, InterruptedException {
+			throws Exception {
 
+		if(!inputPort.isConnected()) {
+			throw new Exception("inputPort is not connected");
+		}
+		
 		final StringBuilder stringBuilder = new StringBuilder();
 		int charCode = inputPort.getInputReader().read();
 

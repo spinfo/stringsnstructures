@@ -213,7 +213,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	 *             If a line in the input could not be parsed as an Integer
 	 */
 	private ArrayList<Integer> readUnitListFromInput(InputPort unitsPort)
-			throws IOException, NotSupportedException, InterruptedException, NumberFormatException {
+			throws Exception {
 		ArrayList<Integer> unitsList = new ArrayList<Integer>();
 
 		final String[] inputStrings = NEWLINE_PATTERN.split(readStringFromInputPort(unitsPort));
