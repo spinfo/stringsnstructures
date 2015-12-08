@@ -62,8 +62,8 @@ public class ParentRelationTreeNodeImpl implements ParentRelationTreeNode {
 	 */
 	@Override
 	public String toString() {
-		return this.toString("");
-		//return this.nodeValue.concat(":"+this.nodeCounter);
+		//return this.toString("");
+		return this.nodeValue.concat(":"+this.nodeCounter);
 	}
 	
 	public String toString(String prefix){

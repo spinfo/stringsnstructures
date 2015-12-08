@@ -9,7 +9,6 @@ import java.util.Scanner;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
-import modules.ModuleNetwork;
 import modules.OutputPort;
 import modules.Pipe;
 
@@ -17,7 +16,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import common.ParentRelationTreeNode;
 import common.ParentRelationTreeNodeImpl;
-import common.ParentRelationTreeNodeSerialiser;
 import common.parallelization.CallbackReceiver;
 
 public class TreeBuilderV2Module extends ModuleImpl {
