@@ -1,6 +1,5 @@
 package modules.suffixTreeModuleWrapper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -10,7 +9,6 @@ import modules.BytePipe;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
-import modules.NotSupportedException;
 import modules.OutputPort;
 import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
 import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
