@@ -4,7 +4,7 @@ public class SeqProperties {
 	//variables:
 	private String nodeName; 
 	private String sequence;
-	private double pathRatio;
+	private int leafNum;
 	private int pathLength;
 	
 	//end variables
@@ -14,16 +14,16 @@ public class SeqProperties {
 	public SeqProperties (String name, String seq, int len) {
 		nodeName = name;
 		sequence = seq;
-		pathRatio = 1;
+		leafNum = 1;
 		pathLength = len;
 	}
 	
 	
-	public SeqProperties (String name, String seq, int len, double ratio) {
+	public SeqProperties (String name, String seq, int len, int leaves) {
 		nodeName = name;
 		sequence = seq;
 		pathLength = len;
-		pathRatio = ratio;
+		leafNum = leaves;
 	}
 	//end constructors
 	
@@ -35,8 +35,8 @@ public class SeqProperties {
 		sequence = seq;
 	}
 	
-	public void setPathRatio (double ratio) {
-		pathRatio = ratio;
+	public void setLeafNum (int leaves) {
+		leafNum = leaves;
 	}
 	
 	public void setPathLength (int len) {
@@ -55,8 +55,8 @@ public class SeqProperties {
 		return sequence;
 	}
 	
-	public double getPathRatio () {
-		return pathRatio;
+	public int getLeafNum () {
+		return leafNum;
 	}
 	
 	public int getPathLength () {

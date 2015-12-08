@@ -55,16 +55,23 @@ public class SeqTreePropController extends ModuleImpl {
 	private ArrayList<Integer> averagePathLength;
 	private double avPathLen;
 	
-	private ArrayList<Double> averagePathRatio;
-	private double avPathRatio; 
+	// total number of leaves of the tree
+	private int totalNumOfLeaves;
 	
 	//longestPath = height of the tree
 	private int longestPath;
 	
-	//variables for calculating the Sackin index
-	private int totalNumOfLeaves;
-	private ArrayList<SeqSackinIndex> sackinIndex;
+	//varaibles for calculating the cophenetic index
+	private HashMap<String,SeqCopheneticIndex> copheneticIndex;
+	private ArrayList<Integer> copheneticIndexBinomList;
+	private double avCopheneticIndex;
+	// cophenetic index
+	private int copheneticIndexVal;
 	
+	//variables for calculating the Sackin index
+	private HashMap<String, SeqSackinIndex> sackinIndex;
+	private ArrayList<Integer> sackinIndexLeavesList;
+	private double avSackinIndex; 
 	//sackin index
 	private double sackinIndexVal;
 	
@@ -160,24 +167,27 @@ public class SeqTreePropController extends ModuleImpl {
 		//create rootNode tree and initialize seqProperties
 		iteratePropMainNode();
 		
-		//create Sackin index
-		iterateSackinRootNode();
+		//create indexes
+		//iterateIndexRootNode();
+		
+		//create index HashMaps
+		createIndexHashMaps();
 		
 		sortByPathLength();
 		calculateProps();
 		seqPropertiesOutput = "Longest Path for inner nodes:\t" + longestPath + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Longest Path (for leaves):\t" + (longestPath + 1) + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Average length of paths:\t" + avPathLen + "\n";
-		//seqPropertiesOutput = seqPropertiesOutput + "Average ratio of paths:\t" + avPathRatio + "\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Average Sackin index of paths:\t" + avPathRatio + "\n";
+		
+		seqPropertiesOutput = seqPropertiesOutput + "Average Sackin index of paths:\t" + avSackinIndex + "\n";
+		seqPropertiesOutput = seqPropertiesOutput + "Average cophenetic index of paths:\t" + this.avCopheneticIndex + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Total number of leaves:\t" + totalNumOfLeaves + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Sackin index:\t" + sackinIndexVal + "\n";
-		//seqPropertiesOutput = seqPropertiesOutput + "Sackin variance:\t" + sackinVar + "\n";
-		//seqPropertiesOutput = seqPropertiesOutput + "Normalized Sackin index:\t" + sackinIndexNorm + "\n";
-		//seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tpath ratio\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\n";
+		seqPropertiesOutput = seqPropertiesOutput + "Cophenetic index:\t" + this.copheneticIndexVal + "\n";
+		
+		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\tcophenetic index\n";
 		for (SeqProperties i : seqPropertiesSorted) {
-			seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() + "\t" + i.getPathRatio() + "\n";
+			seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() + "\t" + i.getLeafNum() + "\t" + this.copheneticIndex.get(i.getNodeName()).getBinomialCoeff() + "\n";
 		}
 	}
 	
@@ -187,12 +197,15 @@ public class SeqTreePropController extends ModuleImpl {
 		// instantiate new root node
 		rootNode = new SeqPropertyNode("^", mainNode.getCounter(),0);  
 		
+		// set total number of leaves for this tree
+		this.totalNumOfLeaves = rootNode.getCounter();
+		
 		//name of the current leaf of the root node
 		String innerNodeName = rootNode.getValue();
 		
 		//define the properties of the root node
 		seqProperties = new HashMap<String, SeqProperties>();
-		seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, rootNode.getValue(), 0));
+		seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, rootNode.getValue(), 0, rootNode.getCounter()));
 		
 		Iterator<Entry<String, SeqReducedTrieNode>> it = mainNode.getNodeHash().entrySet().iterator();
 		
@@ -225,8 +238,8 @@ public class SeqTreePropController extends ModuleImpl {
 					SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getCounter(), 1);
 					
 					//create properties of inner node
-					//seqProperties.put(pairNodeName, new SeqProperties(pairNodeName, node.getValue(), seqProperties.get("^").getPathLength() + 1, (((double)node.getCounter())/((double)rootNode.getCounter()))));
-					seqProperties.put(pairNodeName, new SeqProperties(pairNodeName, node.getValue(), seqProperties.get("^").getPathLength() + 1, (((double)node.getCounter())+((double)rootNode.getCounter()))));
+					
+					seqProperties.put(pairNodeName, new SeqProperties(pairNodeName, node.getValue(), seqProperties.get("^").getPathLength() + 1, node.getCounter()));
 					
 					while (subIt.hasNext()) {
 						
@@ -239,13 +252,11 @@ public class SeqTreePropController extends ModuleImpl {
 						if (subPair.getValue().getNodeHash().size() > 1 ) {
 							subPairNodeName += subPair.getValue().getValue();
 							//seqProperties.put(subPairNodeName, new SeqProperties(subPairNodeName, subNode.getValue(), seqProperties.get(pairNodeName).getPathLength() + 1, (((double)subNode.getCounter())/((double)node.getCounter()))));
-							seqProperties.put(subPairNodeName, new SeqProperties(subPairNodeName, subNode.getValue(), seqProperties.get(pairNodeName).getPathLength() + 1, (((double)subNode.getCounter())+((double)node.getCounter()))));
+							seqProperties.put(subPairNodeName, new SeqProperties(subPairNodeName, subNode.getValue(), seqProperties.get(pairNodeName).getPathLength() + 1, subNode.getCounter()));
 						}
 						
 						SeqPropertyNode childNode = deepPropIteration(subPair.getValue(), subNode, pairNodeName, subNode.getNodeDepth());
-						
-						
-						
+										
 						node.addNode(childNode.getValue(), childNode);
 						subIt.remove(); // avoids a ConcurrentModificationException
 					}
@@ -305,7 +316,7 @@ public class SeqTreePropController extends ModuleImpl {
 					
 					//create properties of inner node
 					//seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, newNode.getValue(), nodeDepth + 1, (((double)newNode.getCounter())/((double)currPropNode.getCounter()))));
-					seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, newNode.getValue(), nodeDepth + 1, (((double)newNode.getCounter())+((double)currPropNode.getCounter()))));					
+					seqProperties.put(innerNodeName, new SeqProperties(innerNodeName, newNode.getValue(), nodeDepth + 1, newNode.getCounter()));					
 					currPropNode.addNode(newNode.getValue(), newNode);
 					
 				}
@@ -315,158 +326,81 @@ public class SeqTreePropController extends ModuleImpl {
 		}
 	}
 	
-	//setting up all sackin indexes for the tree
-	public void iterateSackinRootNode() { 
+	// create the Sackin and the cophenetic indexes
+	public void createIndexHashMaps() {
+		Iterator<Entry<String, SeqProperties>> iter = seqProperties.entrySet().iterator();
 		
-		//name of the current leaf of the root node
-		String innerNodeName = rootNode.getValue();
-
-		//instantiate new sackin index
-		sackinIndex = new ArrayList<SeqSackinIndex> ();
+		sackinIndex = new HashMap<String, SeqSackinIndex> ();
 		
-		Iterator<Entry<String, SeqPropertyNode>> it = rootNode.getNodeHash().entrySet().iterator();
+		copheneticIndex = new HashMap<String,SeqCopheneticIndex>();
 		
-		while (it.hasNext()) {
-			HashMap.Entry<String, SeqPropertyNode> pair = (HashMap.Entry<String, SeqPropertyNode>)it.next();
+		while(iter.hasNext()) {
+			HashMap.Entry<String, SeqProperties> pair = (HashMap.Entry<String, SeqProperties>)iter.next();
 			
-			if(pair.getValue().getNodeHash().isEmpty()) {
-				
-				//end node on first level reached. Create terminal node.
-				SeqPropertyNode node = new SeqPropertyNode(pair.getKey(), pair.getValue().getCounter(), pair.getValue().getNodeDepth());
-								
-				//add a leaf to the Sackin index
-				totalNumOfLeaves ++;
-				SeqSackinIndex index = new SeqSackinIndex(node.getValue(), 1);
-				index.catSequence(rootNode.getValue());
-				sackinIndex.add(index);
-	
-			} else {
-				
-				if (pair.getValue().getNodeHash().size() == 1) {
-												
-						deepSackinIteration(pair.getValue(), innerNodeName, "");
-						
-				} else if(pair.getValue().getNodeHash().size() > 1) {
-					
-					//increase the "name" for each iteration
-					String pairNodeName = innerNodeName + pair.getValue().getValue();
-					
-					Iterator<Entry<String, SeqPropertyNode>> subIt = pair.getValue().getNodeHash().entrySet().iterator();
-					
-									
-					while (subIt.hasNext()) {
-						
-						HashMap.Entry<String, SeqPropertyNode> subPair = (HashMap.Entry<String, SeqPropertyNode>)subIt.next();
-												
-						//increase the "name" for each iteration
-						String subPairNodeName = pairNodeName + subPair.getValue().getValue();
-												
-						deepSackinIteration(subPair.getValue(), subPairNodeName, pairNodeName);
-						
-						subIt.remove(); // avoids a ConcurrentModificationException
-					}
-				}
-			}
+			/* get the number of descending leaves which equals the number of inner nodes beneath a specific node
+			and save this data as a node for the Sackin index */
 			
-		    it.remove(); // avoids a ConcurrentModificationException 
+			SeqSackinIndex sIndex = new SeqSackinIndex (pair.getValue().getSequence(),pair.getValue().getLeafNum());
+			sackinIndex.put(pair.getKey(),sIndex);
+			
+			/*get the number of descending leaves and save the data as a node for the cophenetic index*/
+			SeqCopheneticIndex cIndex = new SeqCopheneticIndex (pair.getValue().getSequence(),pair.getValue().getLeafNum());
+			copheneticIndex.put(pair.getKey(), cIndex);
 		}
 	}
 	
-	private void deepSackinIteration(SeqPropertyNode propNode, String propNodeName, String oldNodeName) {
-		
-		//was there a node with several subnodes as last node?
-		String oldPropNodeName = oldNodeName;
-		
-		SeqPropertyNode currPropNode = propNode;
-		String lastPropNodeName = propNodeName;
-			
-		// reaching a terminal node adds the sequence to the previous node
-		if (currPropNode.getNodeHash().isEmpty()) {
-			
-			if (!oldPropNodeName.isEmpty()) {
-				lastPropNodeName = oldPropNodeName;
-			}
-			String newCurrPropNodeName = lastPropNodeName + currPropNode.getValue();
-			//add a leaf to the Sackin index
-			totalNumOfLeaves ++;
-		
-			//new leaf to calculate the Sackin index
-
-			SeqSackinIndex index = new SeqSackinIndex(newCurrPropNodeName, seqProperties.get(lastPropNodeName).getPathLength());
-			sackinIndex.add(index);
-		
-		} else {
-			Iterator<Entry<String, SeqPropertyNode>> deepIt = currPropNode.getNodeHash().entrySet().iterator();
-			while (deepIt.hasNext()) {
-				HashMap.Entry<String, SeqPropertyNode> deepPair = (HashMap.Entry<String, SeqPropertyNode>)deepIt.next();
-				
-				if(deepPair.getValue().getNodeHash().size() == 0) {
-					String newPropNodeName = lastPropNodeName + deepPair.getKey();
-					SeqPropertyNode newPropNode = new SeqPropertyNode(newPropNodeName,deepPair.getValue().getCounter(), deepPair.getValue().getNodeDepth());				
-					
-					//add a leaf to the Sackin index
-					totalNumOfLeaves ++;
-					
-					SeqSackinIndex index = new SeqSackinIndex(newPropNode.getValue(), seqProperties.get(lastPropNodeName).getPathLength());
-					sackinIndex.add(index);
-										
-				} else if (deepPair.getValue().getNodeHash().size() > 1) { // if there are more nodes remember the zaehler value
-					
-					oldPropNodeName = lastPropNodeName;
-					//increase the "name" for each iteration
-					String innerNodeName = lastPropNodeName + deepPair.getValue().getValue();
-					
-					deepSackinIteration(deepPair.getValue(), innerNodeName, oldPropNodeName); 
-				}
-			}
-			deepIt.remove(); // avoids a ConcurrentModificationException
-		}
-	}
-
+	
 	//sort the different paths through the tree by their length
 	public void sortByPathLength() {
 		
 		//initiate the sorted ArrayList
-		seqPropertiesSorted = new ArrayList<SeqProperties>();
+		this.seqPropertiesSorted = new ArrayList<SeqProperties>();
 			
-		Iterator<Entry<String, SeqProperties>> iter = seqProperties.entrySet().iterator();
+		Iterator<Entry<String, SeqProperties>> iter = this.seqProperties.entrySet().iterator();
 		
 		//remember the length of the last path
-		int lastLength = seqProperties.get("^").getPathLength();
+		int lastLength = this.seqProperties.get("^").getPathLength();
 		
 		//instantiate variables to remember information about path length and path ratio
-		averagePathLength = new ArrayList<Integer>();
-		averagePathRatio = new ArrayList<Double>();
+		this.averagePathLength = new ArrayList<Integer>();
+		this.sackinIndexLeavesList = new ArrayList<Integer>();
+		this.copheneticIndexBinomList = new ArrayList<Integer>();
 		
 		while(iter.hasNext()) {
 			
 			HashMap.Entry<String, SeqProperties> pair = (HashMap.Entry<String, SeqProperties>)iter.next();
 			
 			//get information to calculate the average path length and the average path ratio
-			averagePathLength.add(pair.getValue().getPathLength());
-			averagePathRatio.add(pair.getValue().getPathRatio());
+			this.averagePathLength.add(pair.getValue().getPathLength());
+			
+			this.sackinIndexLeavesList.add(this.sackinIndex.get(pair.getKey()).getNodeNumber());
+			
+			if (!(pair.getKey() == "^")) { // do not include the root; 
+				this.copheneticIndexBinomList.add(this.copheneticIndex.get(pair.getKey()).getBinomialCoeff());
+			}
+			
 			
 			if (pair.getValue().getPathLength() >= lastLength) {
-				seqPropertiesSorted.add(0, pair.getValue()); //put it to the top
+				this.seqPropertiesSorted.add(0, pair.getValue()); //put it to the top
 				lastLength = pair.getValue().getPathLength();
 			} else {
 				//iterate over the ArrayList seqPropertiesSorted and add this sequence
-				for(SeqProperties i : seqPropertiesSorted) {
+				for(SeqProperties i : this.seqPropertiesSorted) {
 
 					if (i.getPathLength() <= pair.getValue().getPathLength()) {
-						seqPropertiesSorted.add(seqPropertiesSorted.indexOf(i), pair.getValue());
+						this.seqPropertiesSorted.add(this.seqPropertiesSorted.indexOf(i), pair.getValue());
 						break;
 					}
 					
 					// if this is the smallest value add it to the end of the list
-					if (seqPropertiesSorted.indexOf(i) == seqPropertiesSorted.size() -1 ) { 
-						seqPropertiesSorted.add(pair.getValue());
+					if (this.seqPropertiesSorted.indexOf(i) == this.seqPropertiesSorted.size() -1 ) { 
+						this.seqPropertiesSorted.add(pair.getValue());
 						break;
 					}
 				}
 			}
 		}
-		longestPath = lastLength;
+		this.longestPath = lastLength;
 	}
 	
 	//calculate properties of the tree
@@ -474,39 +408,25 @@ public class SeqTreePropController extends ModuleImpl {
 
 		int totalPathLen = 0;
 		
-		for (Integer i : averagePathLength) {
+		for (Integer i : this.averagePathLength) {
 			totalPathLen = totalPathLen + i;  
 		}
 		
-		avPathLen = (double) totalPathLen / (double) averagePathLength.size();
+		this.avPathLen = (double) totalPathLen / (double) this.averagePathLength.size();
 		
-		double totalPathRatio = 0;
+		this.sackinIndexVal = 0;
 		
-		for (Double i : averagePathRatio) {
-			totalPathRatio = totalPathRatio + i; 
+		// calculate the Sackin index
+		for (int i : this.sackinIndexLeavesList) {
+			this.sackinIndexVal = this.sackinIndexVal + i; 
 		}
 		
-		avPathRatio = (double) totalPathRatio / (double) averagePathRatio.size();
-		
-		//calculate Sackin index
-		int counter = 1;
-		double sackinSum = 0; 
-		int sackinIndexReady = 0;
-		for (SeqSackinIndex i : sackinIndex) {
-			sackinIndexReady = sackinIndexReady + i.getNodeNumber();
-			if (counter > 1) {
-				sackinSum = sackinSum + 1/( (double) counter);
-			}
-			counter ++;
+		// calculate the cophenetic index
+		for (int i : this.copheneticIndexBinomList) {
+			this.copheneticIndexVal = this.copheneticIndexVal + i;
 		}
-
-		sackinIndexVal = (double) sackinIndexReady;
 		
-		//calculate Sackin variance
-		//double sackinVariance = 2 * totalNumOfLeaves * sackinSum;
-		//sackinVar = sackinVariance;
-		
-		//calculate normalized Sackin index
-		//sackinIndexNorm = (sackinIndexReady - sackinVariance) / totalNumOfLeaves;
+		this.avSackinIndex = (double) this.sackinIndexVal / (double) this.averagePathLength.size();
+		this.avCopheneticIndex = (double) this.copheneticIndexVal / (double) this.averagePathLength.size();
 	}
 }
