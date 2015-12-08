@@ -1,6 +1,7 @@
 package common;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class ParentRelationTreeNodeImpl implements ParentRelationTreeNode {
@@ -55,5 +56,26 @@ public class ParentRelationTreeNodeImpl implements ParentRelationTreeNode {
 	public void setParentNode(ParentRelationTreeNode parentNode) {
 		this.parentNode = parentNode;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return this.toString("");
+		//return this.nodeValue.concat(":"+this.nodeCounter);
+	}
+	
+	public String toString(String prefix){
+		StringBuffer sb = new StringBuffer(prefix.concat(this.nodeValue.concat(":"+this.nodeCounter)));
+		Iterator<TreeNode> children = this.childNodes.values().iterator();
+		while(children.hasNext()){
+			ParentRelationTreeNodeImpl child = (ParentRelationTreeNodeImpl) children.next();
+			sb.append("\n"+child.toString(prefix+"\t"));
+		}
+		return sb.toString();
+	}
+	
+	
 
 }

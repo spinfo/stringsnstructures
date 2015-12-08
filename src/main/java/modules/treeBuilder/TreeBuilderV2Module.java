@@ -82,8 +82,12 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		Scanner inputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
 		inputScanner.useDelimiter(this.inputDelimiter);
 		
-		// Initialise leaf list
+		// Initialise trie root node
 		ParentRelationTreeNode rootNode = new ParentRelationTreeNodeImpl("^", null);
+		if (inputScanner.hasNext()) // Root node counter has to be set to one from start if there is any input 
+			rootNode.setNodeCounter(1);
+		
+		// Initialise leaf list
 		List<ParentRelationTreeNode> leafList = new ArrayList<ParentRelationTreeNode>();
 		leafList.add(rootNode);
 		
@@ -122,18 +126,18 @@ public class TreeBuilderV2Module extends ModuleImpl {
 				if (childNode == null){
 					childNode = new ParentRelationTreeNodeImpl(inputSegment, node);
 					node.getChildNodes().put(inputSegment, childNode);
+					
+					// Increment child node counter
+					childNode.incNodeCounter();
+					
 					// If there is a new split, increment ancestor node counters
-					if (node.getChildNodes().size()>1){
-						ParentRelationTreeNode ancestor = node;
-						while (ancestor != null){
+					ParentRelationTreeNode ancestor = node;
+					if (ancestor.getChildNodes().size() > 1)
+						while (ancestor != null) {
 							ancestor.incNodeCounter();
 							ancestor = ancestor.getParentNode();
 						}
-					}
 				}
-				
-				// Increment child node counter
-				childNode.incNodeCounter();
 				
 				// Apply max depth constraint if specified
 				if (this.maxDepth < 0 || nextLeafList.size() <= this.maxDepth)
