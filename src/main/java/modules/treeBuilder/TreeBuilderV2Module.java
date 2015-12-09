@@ -3,8 +3,14 @@ package modules.treeBuilder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.stream.Collectors;
 
 import modules.CharPipe;
 import modules.InputPort;
@@ -16,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import common.ParentRelationTreeNode;
 import common.ParentRelationTreeNodeImpl;
+import common.TreeNode;
 import common.parallelization.CallbackReceiver;
 
 public class TreeBuilderV2Module extends ModuleImpl {
@@ -23,6 +30,8 @@ public class TreeBuilderV2Module extends ModuleImpl {
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_INPUTDELIMITER = "Input delimiter";
 	public static final String PROPERTYKEY_MAXDEPTH = "Tree depth";
+	public static final String PROPERTYKEY_OMITREDUNDANTINFO = "Omit redundant info";
+	public static final String PROPERTYKEY_STRUCTURE = "Tree or trie";
 	//public static final String PROPERTYKEY_MAXTHREADS = "Max. threads";
 	
 	// Define I/O IDs (must be unique for every input or output)
@@ -32,6 +41,8 @@ public class TreeBuilderV2Module extends ModuleImpl {
 	// Local variables
 	private String inputDelimiter;
 	private int maxDepth;
+	private boolean omitRedundantInformation;
+	private boolean constructSuffixTree;
 	//private int maxThreads;
 
 	public TreeBuilderV2Module(CallbackReceiver callbackReceiver,
@@ -47,11 +58,15 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for the input; leave empty for char-by-char segmentation.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MAXDEPTH, "Maximum depth for the resulting tree; set to -1 for no constraint.");
 		//this.getPropertyDescriptions().put(PROPERTYKEY_MAXTHREADS, "Maximum number of threads to run concurrently.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OMITREDUNDANTINFO, "Omit redundant information upon creating the trie (do not set nodevalue, since this info is already contained within the parent's child node mapping key).");
+		this.getPropertyDescriptions().put(PROPERTYKEY_STRUCTURE, "Structure to output; possible values are 'tree' and 'trie'.");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "TreeBuilder v2 Module"); // Property key for module name is defined in parent class
 		this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTDELIMITER, "[\\s]+");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXDEPTH, "-1");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OMITREDUNDANTINFO, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_STRUCTURE, "tree");
 		//this.getPropertyDefaultValues().put(PROPERTYKEY_MAXTHREADS, "4");
 		
 		// Define I/O
@@ -118,23 +133,79 @@ public class TreeBuilderV2Module extends ModuleImpl {
 				ParentRelationTreeNode node = leaves.next();
 				
 				// Get child node for the read segment
-				ParentRelationTreeNode childNode = (ParentRelationTreeNode) node.getChildNodes().get(inputSegment);
+				ParentRelationTreeNode childNode = null;
+				if (constructSuffixTree){
+					// Determine all child nodes that start with the read segment (amount can only be one or zero)
+					SortedMap<String, TreeNode> childNodesThatStartWithSegment = node.getChildNodesByPrefix(inputSegment);
+					if (!childNodesThatStartWithSegment.isEmpty()){
+						String childNodeValue = childNodesThatStartWithSegment.firstKey();
+						childNode = (ParentRelationTreeNode) childNodesThatStartWithSegment.get(childNodeValue);
+						// If the child node's value is longer than the input segment, we have to insert a split (i.e. a new node)
+						if (childNodeValue.length()>inputSegment.length()){
+							// Determine the part of the node value to detach as a suffix
+							String childNodeValueSuffix = childNodeValue.substring(inputSegment.length());
+							// Create new node
+							ParentRelationTreeNode newNode = new ParentRelationTreeNodeImpl(node);
+							newNode.setNodeCounter(childNode.getNodeCounter());
+							if (!omitRedundantInformation)
+								newNode.setNodeValue(inputSegment);
+							// Remove child node that has to be split from parent
+							node.getChildNodes().remove(childNodeValue);
+							// Insert new child node
+							node.getChildNodes().put(inputSegment, newNode);
+							// Attach old node as a child to new one
+							newNode.getChildNodes().put(childNodeValueSuffix, childNode);
+							childNode.setParentNode(newNode);
+							// Update node value
+							if (!omitRedundantInformation)
+								childNode.setNodeValue(childNodeValueSuffix);
+							// Update child node reference
+							childNode = newNode;
+						}
+					}
+					
+				} else
+					childNode = (ParentRelationTreeNode) node.getChildNodes().get(inputSegment);
 				
 				// Check if child node does not yet exist (and if so, create it)
 				if (childNode == null){
-					childNode = new ParentRelationTreeNodeImpl(inputSegment, node);
-					node.getChildNodes().put(inputSegment, childNode);
 					
-					// Increment child node counter
-					childNode.incNodeCounter();
-					
-					// If there is a new split, increment ancestor node counters
-					ParentRelationTreeNode ancestor = node;
-					if (ancestor.getChildNodes().size() > 1)
-						while (ancestor != null) {
-							ancestor.incNodeCounter();
-							ancestor = ancestor.getParentNode();
+					// Merge with parent or construct separate child node
+					if (constructSuffixTree && node.getChildNodes().size() == 0 && !node.equals(rootNode)){
+						
+						// Determine node value
+						String nodeValue = node.getNodeValue();
+						// If the value is only present as a map key, we have to search it first
+						if (omitRedundantInformation){
+							nodeValue = node.getParentNode().getChildNodes().entrySet()
+						              .stream()
+						              .filter(entry -> Objects.equals(entry.getValue(), node))
+						              .map(Map.Entry::getKey)
+						              .collect(Collectors.toSet())
+						              .iterator().next();
 						}
+						node.getParentNode().getChildNodes().values().remove(node);
+						node.getParentNode().getChildNodes().put(nodeValue+inputSegment, node);
+						if (!omitRedundantInformation)
+							node.setNodeValue(nodeValue+inputSegment);
+						childNode = node;
+					} else {
+						childNode = new ParentRelationTreeNodeImpl(node);
+						if (!omitRedundantInformation)
+							childNode.setNodeValue(inputSegment);
+						node.getChildNodes().put(inputSegment, childNode);
+						
+						// Increment child node counter
+						childNode.incNodeCounter();
+						
+						// If there is a new split, increment ancestor node counters
+						ParentRelationTreeNode ancestor = node;
+						if (ancestor.getChildNodes().size() > 1)
+							while (ancestor != null) {
+								ancestor.incNodeCounter();
+								ancestor = ancestor.getParentNode();
+							}
+					}
 				}
 				
 				// Apply max depth constraint if specified
@@ -193,6 +264,18 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		String maxDepthString = this.getProperties().getProperty(PROPERTYKEY_MAXDEPTH, this.getPropertyDefaultValues().get(PROPERTYKEY_MAXDEPTH));
 		if (maxDepthString != null)
 			this.maxDepth = Integer.parseInt(maxDepthString);
+
+		String omitRedundantInformationString = this.getProperties().getProperty(PROPERTYKEY_OMITREDUNDANTINFO, this.getPropertyDefaultValues().get(PROPERTYKEY_OMITREDUNDANTINFO));
+		if (omitRedundantInformationString != null)
+			this.omitRedundantInformation = Boolean.parseBoolean(omitRedundantInformationString);
+		
+		String treeOrTrieString = this.getProperties().getProperty(PROPERTYKEY_STRUCTURE, this.getPropertyDefaultValues().get(PROPERTYKEY_STRUCTURE));
+		if (treeOrTrieString != null)
+			if (treeOrTrieString.equalsIgnoreCase("tree"))
+				this.constructSuffixTree = true;
+			else if (treeOrTrieString.equalsIgnoreCase("trie"))
+				this.constructSuffixTree = false;
+		
 		//this.maxThreads = Integer.parseInt(this.getProperties().getProperty(PROPERTYKEY_MAXTHREADS, this.getPropertyDefaultValues().get(PROPERTYKEY_MAXTHREADS)));
 		
 		// Apply parent object's properties (just the name variable actually)

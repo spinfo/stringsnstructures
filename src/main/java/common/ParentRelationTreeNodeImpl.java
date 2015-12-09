@@ -1,15 +1,20 @@
 package common;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class ParentRelationTreeNodeImpl implements ParentRelationTreeNode {
 	
 	private String nodeValue;
 	private int nodeCounter;
 	private ParentRelationTreeNode parentNode;
-	private Map<String, TreeNode> childNodes = new HashMap<String, TreeNode>();
+	private TreeMap<String, TreeNode> childNodes = new TreeMap<String, TreeNode>();
+
+	public ParentRelationTreeNodeImpl(ParentRelationTreeNode parentNode) {
+		this(null,parentNode);
+	}
 
 	public ParentRelationTreeNodeImpl(String nodeValue, ParentRelationTreeNode parentNode) {
 		super();
@@ -62,20 +67,41 @@ public class ParentRelationTreeNodeImpl implements ParentRelationTreeNode {
 	 */
 	@Override
 	public String toString() {
-		//return this.toString("");
-		return this.nodeValue.concat(":"+this.nodeCounter);
+		return this.toString("\t");
+		//return this.nodeValue+":"+this.nodeCounter;
 	}
 	
+	/**
+	 * Fancy output containing all child nodes.
+	 * @param prefix
+	 * @return
+	 */
 	public String toString(String prefix){
-		StringBuffer sb = new StringBuffer(prefix.concat(this.nodeValue.concat(":"+this.nodeCounter)));
-		Iterator<TreeNode> children = this.childNodes.values().iterator();
-		while(children.hasNext()){
-			ParentRelationTreeNodeImpl child = (ParentRelationTreeNodeImpl) children.next();
-			sb.append("\n"+child.toString(prefix+"\t"));
+		StringBuffer sb = new StringBuffer();
+		//if (this.nodeValue != null && !this.nodeValue.isEmpty())
+			sb.append(this.nodeValue+":");
+		sb.append(this.nodeCounter);
+		Iterator<String> childKeys = this.childNodes.keySet().iterator();
+		while(childKeys.hasNext()){
+			String childKey = childKeys.next();
+			ParentRelationTreeNodeImpl child = (ParentRelationTreeNodeImpl) this.childNodes.get(childKey);
+			sb.append("\n"+prefix);
+			//if (this.nodeValue == null || this.nodeValue.isEmpty())
+				sb.append(childKey+":");
+			sb.append(child.toString(prefix+"\t"));
 		}
 		return sb.toString();
 	}
 	
-	
+	/**
+	 * Returns an alphabetically sorted map of all children
+	 * whose key starts with the specified prefix.
+	 * @param prefix Prefix
+	 * @return Map Sorted map
+	 */
+	@Override
+	public SortedMap<String, TreeNode> getChildNodesByPrefix(String prefix) {
+	    return this.childNodes.subMap(prefix, prefix + Character.MAX_VALUE);
+	}
 
 }
