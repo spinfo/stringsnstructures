@@ -40,7 +40,7 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 		super.addOutputPort(outputPort);
 		
 		// Add description for properties
-		this.getPropertyDescriptions().put(PROPERTYKEY_MAXLENGTH,"Define the maximum length of any branch of the trie.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_MAXLENGTH,"Define the maximum length of any branch of the trie. Set to -1 for no constraint");
 		this.getPropertyDescriptions().put(PROPERTYKEY_REVERSE,"Reverse the building of the trie (results in a prefix trie).");
 		
 		// Add default values
@@ -76,7 +76,7 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 			buffer.add(Character.valueOf((char) charCode));
 			
 			// If the buffer exceeds the set maximum length, remove the oldest (first) element
-			if (buffer.size()>this.maxLaenge)
+			if (this.maxLaenge >= 0 && buffer.size()>this.maxLaenge)
 				buffer.removeFirst();
 			
 			// Construct trie from buffer and attach it to the root node (skip this until the buffer is full)
