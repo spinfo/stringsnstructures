@@ -67,8 +67,8 @@ public class ParentRelationTreeNodeImpl implements ParentRelationTreeNode {
 	 */
 	@Override
 	public String toString() {
-		return this.toString("\t");
-		//return this.nodeValue+":"+this.nodeCounter;
+		//return this.toString("\t");
+		return this.nodeValue+":"+this.nodeCounter;
 	}
 	
 	/**
