@@ -37,8 +37,8 @@ public class TreeBuilderV2Module extends ModuleImpl {
 	private static final String ID_OUTPUT = "output";
 	
 	// Local variables
-	private String inputDelimiter;
-	private int maxDepth;
+	private String inputDelimiter = "";
+	private int maxDepth = -1;
 	private boolean omitRedundantInformation;
 	private boolean constructSuffixTree;
 	//private int maxThreads;
@@ -53,19 +53,17 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		this.setDescription("TreeBuilder v2 module. Can process larger datasets more quickly. Replaces AtomicRangeSuffixTrieBuilder and TreeBuilder.");
 
 		// Add property descriptions (obligatory for every property!)
-		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for the input; leave empty for char-by-char segmentation.");
-		this.getPropertyDescriptions().put(PROPERTYKEY_MAXDEPTH, "Maximum depth for the resulting tree; set to -1 for no constraint.");
-		//this.getPropertyDescriptions().put(PROPERTYKEY_MAXTHREADS, "Maximum number of threads to run concurrently.");
+		//this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for the input; leave empty for char-by-char segmentation.");
+		//this.getPropertyDescriptions().put(PROPERTYKEY_MAXDEPTH, "Maximum depth for the resulting tree; set to -1 for no constraint.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_OMITREDUNDANTINFO, "Omit redundant information upon creating the trie (do not set nodevalue, since this info is already contained within the parent's child node mapping key).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_STRUCTURE, "Structure to output; possible values are 'tree' and 'trie'.");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "TreeBuilder v2 Module"); // Property key for module name is defined in parent class
-		this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTDELIMITER, "[\\s]+");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXDEPTH, "-1");
+		//this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTDELIMITER, "[\\s]+");
+		//this.getPropertyDefaultValues().put(PROPERTYKEY_MAXDEPTH, "-1");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OMITREDUNDANTINFO, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_STRUCTURE, "tree");
-		//this.getPropertyDefaultValues().put(PROPERTYKEY_MAXTHREADS, "4");
 		
 		// Define I/O
 		/*
@@ -258,10 +256,10 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		super.setDefaultsIfMissing();
 		
 		// Apply own properties
-		this.inputDelimiter = this.getProperties().getProperty(PROPERTYKEY_INPUTDELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_INPUTDELIMITER));
+		/*this.inputDelimiter = this.getProperties().getProperty(PROPERTYKEY_INPUTDELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_INPUTDELIMITER));
 		String maxDepthString = this.getProperties().getProperty(PROPERTYKEY_MAXDEPTH, this.getPropertyDefaultValues().get(PROPERTYKEY_MAXDEPTH));
 		if (maxDepthString != null)
-			this.maxDepth = Integer.parseInt(maxDepthString);
+			this.maxDepth = Integer.parseInt(maxDepthString);*/
 
 		String omitRedundantInformationString = this.getProperties().getProperty(PROPERTYKEY_OMITREDUNDANTINFO, this.getPropertyDefaultValues().get(PROPERTYKEY_OMITREDUNDANTINFO));
 		if (omitRedundantInformationString != null)
