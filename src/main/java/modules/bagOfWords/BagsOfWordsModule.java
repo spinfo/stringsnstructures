@@ -1,6 +1,7 @@
 package modules.bagOfWords;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -15,8 +16,6 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.suffixTreeModuleWrapper.NodeRepresentation;
-import modules.suffixTreeModuleWrapper.PatternInfoRepresentation;
 import modules.suffixTreeModuleWrapper.SuffixTreeRepresentation;
 
 /**
@@ -91,7 +90,7 @@ public class BagsOfWordsModule extends ModuleImpl {
 
 			// the result of calling the module may only be set once
 			final String text;
-			final TreeMap<Integer, TreeMap<String, Integer>> bagsOfWords;
+			final Map<Integer, TreeMap<String, Integer>> bagsOfWords;
 
 			// two input sources are possible
 			final InputPort gstPort = this.getInputPorts().get(INPUT_GST_ID);
@@ -104,11 +103,11 @@ public class BagsOfWordsModule extends ModuleImpl {
 			} else if (gstPort.isConnected()) {
 				text = this.readStringFromInputPort(gstPort);
 				final SuffixTreeRepresentation treeRepresentation = GSON.fromJson(text, INPUT_TYPE);
-				bagsOfWords = buildBagsOfWords(treeRepresentation);
+				bagsOfWords = BagOfWordsFactory.build(treeRepresentation);
 			} else if (simplePort.isConnected()) {
 				text = this.readStringFromInputPort(simplePort);
 				final String[] sentences = Pattern.compile("\r\n|\n|\r").split(text);
-				bagsOfWords = buildBagsOfWords(sentences);
+				bagsOfWords = BagOfWordsFactory.build(sentences);
 			} else {
 				throw new Exception("Either gst input or simple input has to be connected.");
 			}
@@ -128,66 +127,6 @@ public class BagsOfWordsModule extends ModuleImpl {
 		}
 
 		return result;
-	}
-
-	// builds Bags of Words (actually Bags of Suffixes) from a
-	// SuffixTreeRepresentation
-	private TreeMap<Integer, TreeMap<String, Integer>> buildBagsOfWords(SuffixTreeRepresentation treeRepresentation) {
-		final TreeMap<Integer, TreeMap<String, Integer>> result = new TreeMap<Integer, TreeMap<String, Integer>>();
-
-		// Each node represents a suffix, called label
-		for (NodeRepresentation node : treeRepresentation.getNodes()) {
-			final String label = node.getLabel();
-
-			// traverse the label's occurences, i.e. it's patternInfos
-			for (PatternInfoRepresentation patternInfo : node.getPatternInfos()) {
-				// get the count map for the pattern that the label's
-				// occurence belongs to
-				final TreeMap<String, Integer> labelCounts = result.getOrDefault(patternInfo.getPatternNr(),
-						new TreeMap<String, Integer>());
-				// increment count and write to the counts map
-				final int count = labelCounts.getOrDefault(label, 0);
-				labelCounts.put(label, count + 1);
-				// add or re-add the counts map to the table
-				result.put(patternInfo.getPatternNr(), labelCounts);
-			}
-		}
-		return result;
-	}
-
-	// builds Bags of Words from a simple List of Sentences, by splitting on
-	// whitespace and incrementing the word count for each word encountered more
-	// than once in a sentence.
-	private TreeMap<Integer, TreeMap<String, Integer>> buildBagsOfWords(final String[] sentences) {
-		final TreeMap<Integer, TreeMap<String, Integer>> bagsOfWords = new TreeMap<Integer, TreeMap<String, Integer>>();
-
-		final Pattern whitespace = Pattern.compile("[ ]+");
-		String[] words = null;
-		int sentenceNr = 0;
-		int wordCount = 0;
-		TreeMap<String, Integer> bagOfWords = null;
-
-		// traverse sentences and build a list of words
-		for (String sentence : sentences) {
-			bagOfWords = new TreeMap<String, Integer>();
-			words = whitespace.split(sentence);
-
-			// traverse words and add if not empty
-			for (String word : words) {
-				if (word.length() > 0) {
-					wordCount = bagOfWords.getOrDefault(word, 0);
-					bagOfWords.put(word, wordCount);
-				}
-			}
-
-			// add the produced bag to the result if not empty
-			if (bagOfWords.size() > 0) {
-				bagsOfWords.put(sentenceNr, bagOfWords);
-				sentenceNr += 1;
-			}
-		}
-
-		return bagsOfWords;
 	}
 
 }
