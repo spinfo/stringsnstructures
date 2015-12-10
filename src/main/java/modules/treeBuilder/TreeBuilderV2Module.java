@@ -3,12 +3,11 @@ package modules.treeBuilder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.SortedMap;
-import java.util.stream.Collectors;
 
 import modules.CharPipe;
 import modules.InputPort;
@@ -138,25 +137,56 @@ public class TreeBuilderV2Module extends ModuleImpl {
 						childNode = (ParentRelationTreeNode) childNodesThatStartWithSegment.get(childNodeValue);
 						// If the child node's value is longer than the input segment, we have to insert a split (i.e. a new node)
 						if (childNodeValue.length()>inputSegment.length()){
-							// Determine the part of the node value to detach as a suffix
+							// Determine the part of the child node value to detach as a suffix
 							String childNodeValueSuffix = childNodeValue.substring(inputSegment.length());
-							// Create new node
-							ParentRelationTreeNode newNode = new ParentRelationTreeNodeImpl(node);
-							newNode.setNodeCounter(childNode.getNodeCounter());
-							if (!omitRedundantInformation)
-								newNode.setNodeValue(inputSegment);
-							// Remove child node that has to be split from parent
-							node.getChildNodes().remove(childNodeValue);
-							// Insert new child node
-							node.getChildNodes().put(inputSegment, newNode);
-							// Attach old node as a child to new one
-							newNode.getChildNodes().put(childNodeValueSuffix, childNode);
-							childNode.setParentNode(newNode);
-							// Update node value
+							
+							// Determine parent node value
+							String parentNodeValue = node.getNodeValue();
+							// If the value is only present as a map key, we have to search it first
+							if (omitRedundantInformation){
+								for (Entry<String, TreeNode> entry : node.getParentNode().getChildNodes().entrySet()) {
+							        if (Objects.equals(node, entry.getValue())) {
+							        	parentNodeValue = entry.getKey();
+							        	break;
+							        }
+							    }
+							}
+							
+							// Clip read segment from child node
 							if (!omitRedundantInformation)
 								childNode.setNodeValue(childNodeValueSuffix);
-							// Update child node reference
-							childNode = newNode;
+							// Detach child node (will be re-attached with only the suffix as key)
+							node.getChildNodes().remove(childNodeValue);
+							
+							// Check whether the child node was an only child
+							if (node.getChildNodes().size()==0 && !node.equals(rootNode)){
+								// Incorporate read segment into node
+								if (!omitRedundantInformation)
+									node.setNodeValue(parentNodeValue+inputSegment);
+								// Update grandparent map key
+								node.getParentNode().getChildNodes().remove(parentNodeValue);
+								node.getParentNode().getChildNodes().put(parentNodeValue+inputSegment, node);
+								// Re-attach child node
+								node.getChildNodes().put(childNodeValueSuffix, childNode);
+								
+								// Update child node reference (because the child node will be added to next iteration's leaf list further down)
+								childNode = node;
+							} else {
+								// Create new node for the read segment
+								ParentRelationTreeNode newNode = new ParentRelationTreeNodeImpl(node);
+								newNode.setNodeCounter(childNode.getNodeCounter());
+								if (!omitRedundantInformation)
+									newNode.setNodeValue(inputSegment);
+								// Attach new node to parent node
+								node.getChildNodes().put(inputSegment, newNode);
+								newNode.setParentNode(node);
+								// Re-attach child node
+								newNode.getChildNodes().put(childNodeValueSuffix, childNode);
+								childNode.setParentNode(newNode);
+								
+								// Update child node reference (because the child node will be added to next iteration's leaf list further down)
+								childNode = newNode;
+							}
 						}
 					}
 					
@@ -167,24 +197,53 @@ public class TreeBuilderV2Module extends ModuleImpl {
 				if (childNode == null){
 					
 					// Merge with parent or construct separate child node
-					if (constructSuffixTree && node.getChildNodes().size() == 0 && !node.equals(rootNode)){
+					if (constructSuffixTree && !node.equals(rootNode) && node.getChildNodes().size() == 0){
 						
 						// Determine node value
 						String nodeValue = node.getNodeValue();
 						// If the value is only present as a map key, we have to search it first
 						if (omitRedundantInformation){
-							nodeValue = node.getParentNode().getChildNodes().entrySet()
-						              .stream()
-						              .filter(entry -> Objects.equals(entry.getValue(), node))
-						              .map(Map.Entry::getKey)
-						              .collect(Collectors.toSet())
-						              .iterator().next();
+							
+							for (Entry<String, TreeNode> entry : node.getParentNode().getChildNodes().entrySet()) {
+						        if (Objects.equals(node, entry.getValue())) {
+						        	nodeValue = entry.getKey();
+						        	break;
+						        }
+						    }
 						}
 						node.getParentNode().getChildNodes().values().remove(node);
 						node.getParentNode().getChildNodes().put(nodeValue+inputSegment, node);
 						if (!omitRedundantInformation)
 							node.setNodeValue(nodeValue+inputSegment);
+						node.getChildNodes().clear();
 						childNode = node;
+						
+						// TODO Has to climb up the tree and merge with any parent that has only one child.
+						/*String segment = inputSegment;
+						while (!node.equals(rootNode) && node.getChildNodes().size()<=1 && !nextLeafList.contains(node)){
+							// Determine node value
+							String nodeValue = node.getNodeValue();
+							// If the value is only present as a map key, we have to search it first
+							if (omitRedundantInformation){
+								
+								for (Entry<String, TreeNode> entry : node.getParentNode().getChildNodes().entrySet()) {
+							        if (Objects.equals(node, entry.getValue())) {
+							        	nodeValue = entry.getKey();
+							        	break;
+							        }
+							    }
+							}
+							node.getParentNode().getChildNodes().values().remove(node);
+							node.getParentNode().getChildNodes().put(nodeValue+segment, node);
+							if (!omitRedundantInformation)
+								node.setNodeValue(nodeValue+segment);
+							node.getChildNodes().clear();
+							childNode = node;
+							node = node.getParentNode();
+							segment = nodeValue+segment;
+						}*/
+						
+						
 					} else {
 						childNode = new ParentRelationTreeNodeImpl(node);
 						if (!omitRedundantInformation)

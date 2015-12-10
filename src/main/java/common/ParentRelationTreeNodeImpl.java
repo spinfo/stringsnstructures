@@ -67,8 +67,8 @@ public class ParentRelationTreeNodeImpl implements ParentRelationTreeNode {
 	 */
 	@Override
 	public String toString() {
-		//return this.toString("\t");
-		return this.nodeValue+":"+this.nodeCounter;
+		return this.toString("\t");
+		//return this.nodeValue+":"+this.nodeCounter;
 	}
 	
 	/**
@@ -78,18 +78,22 @@ public class ParentRelationTreeNodeImpl implements ParentRelationTreeNode {
 	 */
 	public String toString(String prefix){
 		StringBuffer sb = new StringBuffer();
-		//if (this.nodeValue != null && !this.nodeValue.isEmpty())
+		if (this.nodeValue != null)
 			sb.append(this.nodeValue+":");
 		sb.append(this.nodeCounter);
-		Iterator<String> childKeys = this.childNodes.keySet().iterator();
-		while(childKeys.hasNext()){
-			String childKey = childKeys.next();
-			ParentRelationTreeNodeImpl child = (ParentRelationTreeNodeImpl) this.childNodes.get(childKey);
-			sb.append("\n"+prefix);
-			//if (this.nodeValue == null || this.nodeValue.isEmpty())
-				sb.append(childKey+":");
-			sb.append(child.toString(prefix+"\t"));
-		}
+		sb.append(" @"+this.hashCode());
+		//if (this.getParentNode() == null) {
+			Iterator<String> childKeys = this.childNodes.keySet().iterator();
+			while (childKeys.hasNext()) {
+				String childKey = childKeys.next();
+				ParentRelationTreeNodeImpl child = (ParentRelationTreeNodeImpl) this.childNodes
+						.get(childKey);
+				sb.append("\n" + prefix);
+				if (child.getNodeValue() == null)
+					sb.append(childKey + ":");
+				sb.append(child.toString(prefix + "\t"));
+			}
+		//}
 		return sb.toString();
 	}
 	
