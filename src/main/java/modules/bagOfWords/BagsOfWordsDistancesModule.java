@@ -1,6 +1,7 @@
 package modules.bagOfWords;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -45,12 +46,19 @@ public class BagsOfWordsDistancesModule extends ModuleImpl {
 			+ " Currently supports Levenshtein distance, i.e. output is the number of"
 			+ " substitutions, deletions or additions of words that would be needed to"
 			+ " transform one Bag of Words into another.";
-	
+
 	// Property describing whether the distance should be normalized
 	private final static String PROPERTYKEY_NORMALIZE_DISTANCE = "Normalize distance";
 	private final static String DESCRIPTION_NORMALIZE_DISTANCE = "Divides each distance by it's possible maximum for the two BoWs.";
 	private final static String DEFAUL_NORMALIZE_DISTANCE = "false";
 	private boolean normalizeDistance;
+
+	// Property describing if words with a certain tf-idf value should be
+	// disregard
+	private final static String PROPERTYKEY_TFIDF_MIN = "Filter on TF-IDF min";
+	private final static String DESCRIPTION_TFIDF_MIN = "When computing distances disregards words with tf-idf below this value. Disabled on \"0.0\"";
+	private final static String DEFAULT_TFIDF_MIN = "0.8";
+	private Float tfIdfMin;
 
 	public BagsOfWordsDistancesModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		// Call parent constructor
@@ -68,9 +76,11 @@ public class BagsOfWordsDistancesModule extends ModuleImpl {
 		super.addInputPort(inputPort);
 		super.addOutputPort(outputPort);
 
-		// Setup property determining whether the distance should be normalized
+		// Setup properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_NORMALIZE_DISTANCE, DESCRIPTION_NORMALIZE_DISTANCE);
 		this.getPropertyDefaultValues().put(PROPERTYKEY_NORMALIZE_DISTANCE, DEFAUL_NORMALIZE_DISTANCE);
+		this.getPropertyDescriptions().put(PROPERTYKEY_TFIDF_MIN, DESCRIPTION_TFIDF_MIN);
+		this.getPropertyDefaultValues().put(PROPERTYKEY_TFIDF_MIN, DEFAULT_TFIDF_MIN);
 	}
 
 	@Override
@@ -82,23 +92,53 @@ public class BagsOfWordsDistancesModule extends ModuleImpl {
 
 		// the output: an empty result map mapping sentence Nrs to a map holding
 		// the distance of this sentence to each other sentence
-		final TreeMap<Integer, TreeMap<Integer, Float>> sentenceNrsToDistances = new TreeMap<Integer, TreeMap<Integer, Float>>();
+		final Map<Integer, Map<Integer, Float>> sentenceNrsToDistances = new TreeMap<Integer, Map<Integer, Float>>();
 
 		try {
 			// deserialize the input
 			final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			final TreeMap<Integer, TreeMap<String, Integer>> sentenceNrsToBagOfWords = gson.fromJson(input, INPUT_TYPE);
+			final TreeMap<Integer, Map<String, Integer>> sentenceNrsToBagOfWords = gson.fromJson(input, INPUT_TYPE);
 			final Set<Integer> sentenceNrs = sentenceNrsToBagOfWords.keySet();
+
+			// make sure that the bags of words are ready to use
+			if (sentenceNrs.size() == 0) {
+				throw new Exception("No bags of words given");
+			}
+
+			// if tf-idf filtering is wished for, compute inverse document
+			// frequencies for each term
+			Map<String, Double> inverseDocumentFrequencies = null;
+			if (this.tfIdfMin > 0.0) {
+				// get all terms frequencies by merging all bags of words into
+				// one bag
+				final Map<String, Integer> termFrequencies = new TreeMap<String, Integer>();
+				for (Integer sentenceNr : sentenceNrs) {
+					Map<String, Integer> bag = sentenceNrsToBagOfWords.get(sentenceNr);
+					BagOfWordsHelper.merge(termFrequencies, bag);
+				}
+				// from term frequencies compute idf-values, taking the amount
+				// of documents to be the amount of sentences
+				inverseDocumentFrequencies = BagOfWordsHelper.inverseDocumentFrequencies(termFrequencies,
+						sentenceNrs.size());
+				// replace all bags of words with copies filtered by the minimum
+				// TF-IDF value
+				Map<String, Integer> bow = null;
+				for (int sentenceNr : sentenceNrs) {
+					bow = sentenceNrsToBagOfWords.get(sentenceNr);
+					bow = BagOfWordsHelper.tfIdfMinFilter(bow, inverseDocumentFrequencies, tfIdfMin);
+					sentenceNrsToBagOfWords.put(sentenceNr, bow);
+				}
+			}
 
 			// bags that are compared
 			// word => count in sentence
-			TreeMap<String, Integer> thisBag;
-			TreeMap<String, Integer> otherBag;
+			Map<String, Integer> thisBag;
+			Map<String, Integer> otherBag;
 
 			// distances that are produced by comparison
 			// sentenceNr => distance
-			TreeMap<Integer, Float> thisDistances;
-			TreeMap<Integer, Float> otherDistances;
+			Map<Integer, Float> thisDistances;
+			Map<Integer, Float> otherDistances;
 
 			// first loop over sentences to compare
 			for (Integer thisSentence : sentenceNrs) {
@@ -118,9 +158,9 @@ public class BagsOfWordsDistancesModule extends ModuleImpl {
 						// actually compare bags
 						final Float distance;
 						if (this.normalizeDistance) {
-							distance = normalizedLevenshteinDistance(thisBag, otherBag);
+							distance = BagOfWordsHelper.normalizedLevenshteinDistance(thisBag, otherBag);
 						} else {
-							distance = levenshteinDistance(thisBag, otherBag);
+							distance = BagOfWordsHelper.levenshteinDistance(thisBag, otherBag);
 						}
 
 						// write distance to both distance maps and write maps
@@ -151,60 +191,6 @@ public class BagsOfWordsDistancesModule extends ModuleImpl {
 		return result;
 	}
 
-	/**
-	 * Assumes that both bags of words are simple bags of words and do not
-	 * contain word counts. Then computes the number of operations needed to
-	 * transform one Bag of Words into another. Removal, addition and
-	 * substitution of a word each have a count of 1.
-	 * 
-	 * The input parameters bagOne and bagTwo are interchangeable.
-	 * 
-	 * @param bagOne
-	 *            a TreeMap mapping Strings to counts
-	 * @param bagTwo
-	 *            a TreeMap mapping Strings to counts
-	 * @return The distance computed, always a positive integer value
-	 */
-	public static float levenshteinDistance(TreeMap<String, Integer> bagOne, TreeMap<String, Integer> bagTwo) {
-		// Find out the size of the bigger bag of words
-		final int maxSize = Math.max(bagOne.size(), bagTwo.size());
-		return levenshteinDistance(bagOne, bagTwo, maxSize);
-	}
-
-	// Compute Levenshtein distance when the size of the biggest bag is already
-	// known
-	private static float levenshteinDistance(TreeMap<String, Integer> bagOne, TreeMap<String, Integer> bagTwo,
-			int maxSize) {
-		// Find the amount of matches
-		int matchCount = 0;
-		for (String string : bagOne.keySet()) {
-			if (bagTwo.containsKey(string)) {
-				matchCount += 1;
-			}
-		}
-		// The operations needed to transform each map into the other is the
-		// length of the bigger bag minus the number of matches
-		return (float) (maxSize - matchCount);
-	}
-
-	/**
-	 * Compute the Levenshtein distance, but divide it by it's upper bound, i.e.
-	 * the size of the bigger bag of words.
-	 * 
-	 * @param bagOne
-	 *            a TreeMap mapping Strings to counts
-	 * @param bagTwo
-	 *            a TreeMap mapping Strings to counts
-	 * @return The distance computed, floating point number between 0 and 1.0
-	 */
-	public static float normalizedLevenshteinDistance(TreeMap<String, Integer> bagOne,
-			TreeMap<String, Integer> bagTwo) {
-		final int maxSize = Math.max(bagOne.size(), bagTwo.size());
-		final float distance = levenshteinDistance(bagOne, bagTwo, maxSize);
-		final float result = (new Float(distance) / new Float(maxSize));
-		return result;
-	}
-	
 	@Override
 	public void applyProperties() throws Exception {
 		super.setDefaultsIfMissing();
@@ -212,6 +198,7 @@ public class BagsOfWordsDistancesModule extends ModuleImpl {
 		if (this.getProperties().containsKey(PROPERTYKEY_NORMALIZE_DISTANCE)) {
 			this.normalizeDistance = Boolean
 					.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_NORMALIZE_DISTANCE));
+			this.tfIdfMin = Float.parseFloat(this.getProperties().getProperty(PROPERTYKEY_TFIDF_MIN));
 		}
 
 		super.applyProperties();
