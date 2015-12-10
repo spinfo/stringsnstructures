@@ -37,7 +37,8 @@ import modules.neo4j.Neo4jOutputModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmenErmittlerModul;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
-import modules.seqNewickExporter.SeqNewickExproterController;
+import modules.seqNewickExporter.SeqNewickExporterController;
+import modules.seqNewickExporter.SeqNewickExporterControllerV2;
 import modules.seqSplitting.SeqMemory;
 import modules.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
 import modules.seqTreeProperties.SeqTreePropController;
@@ -220,11 +221,18 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		seqSuffixTrie2SuffixTreeController.applyProperties();
 			
 		// Prepare seqNewickExporter module
-		Properties SeqNewickExproterControllerProperties = new Properties();
-		SeqNewickExproterController seqNewickExproterController = new SeqNewickExproterController(moduleNetwork,
-				SeqNewickExproterControllerProperties);
-		SeqNewickExproterControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExproterController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		seqNewickExproterController.applyProperties();
+		Properties seqNewickExporterControllerProperties = new Properties();
+		SeqNewickExporterController seqNewickExporterController = new SeqNewickExporterController(moduleNetwork,
+				seqNewickExporterControllerProperties);
+		seqNewickExporterControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExporterController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		seqNewickExporterController.applyProperties();
+		
+		// Prepare seqNewickExporter version 2 module
+		Properties seqNewickExporterControllerV2Properties = new Properties();
+		SeqNewickExporterControllerV2 seqNewickExporterControllerV2 = new SeqNewickExporterControllerV2(moduleNetwork,
+				seqNewickExporterControllerV2Properties);
+		seqNewickExporterControllerV2Properties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExporterControllerV2.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		seqNewickExporterControllerV2.applyProperties();
 		
 		// Prepare HAL advanced module
 		Properties halAdvancedModuleProperties = new Properties();
@@ -354,7 +362,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(seqMemory.getName(),seqMemory);
 		availableModules.put(seqTreePropController.getName(),seqTreePropController);
 		availableModules.put(seqSuffixTrie2SuffixTreeController.getName(),seqSuffixTrie2SuffixTreeController);
-		availableModules.put(seqNewickExproterController.getName(),seqNewickExproterController);
+		availableModules.put(seqNewickExporterController.getName(),seqNewickExporterController);
+		availableModules.put(seqNewickExporterControllerV2.getName(),seqNewickExporterControllerV2);
 		availableModules.put(halAdvancedModule.getName(),halAdvancedModule);
 		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
 		availableModules.put(bagOfWordsModule.getName(), bagOfWordsModule);

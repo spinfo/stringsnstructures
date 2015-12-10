@@ -10,9 +10,14 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.seqSuffixTrie2SuffixTree.SeqReducedTrieNode;
+
+import common.TreeNode;
+import common.ParentRelationTreeNodeImpl;
+
+import modules.seqNewickExporter.TreeNodeInstanceCreator;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import common.parallelization.CallbackReceiver;
 
@@ -20,13 +25,13 @@ import common.parallelization.CallbackReceiver;
 
 /**
  * Reads JSON format from I/O pipe.
- * JSON format must be in the format contributed by the package "modules.seqSuffixTrie2SuffixTree".
+ * JSON format must be in the format contributed by the package "modules.treeBuilder.TreeBuilderV2Module.java".
  * This module will write a String variable to the char pipe.
  * Output format will be in Newick format for tree visualization purposes.
  * @author christopher
  *
  */
-public class SeqNewickExproterController extends ModuleImpl {
+public class SeqNewickExporterControllerV2 extends ModuleImpl {
 	//property keys:
 	public static final String PROPERTYKEY_NEWICK = "Newick branch length";
 	//end keys
@@ -37,14 +42,16 @@ public class SeqNewickExproterController extends ModuleImpl {
 	private final String OUTPUTID = "output";
 	private String newickOutput;
 	private boolean standardOut;
-	private SeqReducedTrieNode mainNode;
+	//private TreeNode mainNode;
+	private ParentRelationTreeNodeImpl mainNode;
+	
 	private Gson gson;
-	private SeqNewickNode rootNode;
+	private SeqNewickNodeV2 rootNode;
 	
 	//end variables
 	
 	//constructors:
-	public SeqNewickExproterController (CallbackReceiver callbackReceiver,
+	public SeqNewickExporterControllerV2 (CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
 		super(callbackReceiver, properties);
 
@@ -52,7 +59,7 @@ public class SeqNewickExproterController extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_NEWICK, "Choose branch length in Newick: true = by string; false = by node occurence");
 		
 		// Add property defaults
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "seqNewickExporter");
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "seqNewickExporterV2");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_NEWICK, "true");
 		
 		// set up newickOutput
@@ -72,8 +79,10 @@ public class SeqNewickExproterController extends ModuleImpl {
 	//setters:
 		
 	public void setGson(PipedReader reader) {
-		gson = new Gson();
-		mainNode = gson.fromJson(reader, SeqReducedTrieNode.class);
+		
+		gson = new GsonBuilder().registerTypeAdapter(TreeNode.class, new TreeNodeInstanceCreator()).create();
+		mainNode = gson.fromJson(reader, ParentRelationTreeNodeImpl.class);
+		
 	}
 	
 	public void setRootNewickNode(String val, int count) {
@@ -205,30 +214,30 @@ public class SeqNewickExproterController extends ModuleImpl {
 	public void iterateNewickMainNode() { 
 
 		// instantiate new root node
-		rootNode = new SeqNewickNode("^", mainNode.getCounter()); 
+		rootNode = new SeqNewickNodeV2("^", mainNode.getNodeCounter()); 
 		
 		// add root node to Newick format
 		addLeadingParenthesisNewick();
 		setRootNewickNode(rootNode.getValue(), rootNode.getCounter()); 
 		
-		Iterator<Entry<String, SeqReducedTrieNode>> it = mainNode.getNodeHash().entrySet().iterator();
+		Iterator<Entry<String, TreeNode>> it = mainNode.getChildNodes().entrySet().iterator();
 		
 		while (it.hasNext()) {
-			HashMap.Entry<String, SeqReducedTrieNode> pair = (HashMap.Entry<String, SeqReducedTrieNode>)it.next();
+			HashMap.Entry<String, TreeNode> pair = (HashMap.Entry<String, TreeNode>)it.next();
 			
-			if(pair.getValue().getNodeHash().isEmpty()) {
+			if(pair.getValue().getChildNodes().isEmpty()) {
 				//end node on first level reached. Create terminal node at tree height 0.
-				SeqNewickNode node = new SeqNewickNode(pair.getKey(), pair.getValue().getCounter());
+				SeqNewickNodeV2 node = new SeqNewickNodeV2(pair.getKey(), pair.getValue().getNodeCounter());
 				setTermNewickNode(node.getValue(), node.getCounter()); //new Newick terminal node
 				rootNode.addNode(pair.getKey(), node);
 			} else {
-					if (pair.getValue().getNodeHash().size() == 1) {
-							SeqNewickNode node = new SeqNewickNode(pair.getKey(), pair.getValue().getCounter());
+					if (pair.getValue().getChildNodes().size() == 1) {
+							SeqNewickNodeV2 node = new SeqNewickNodeV2(pair.getKey(), pair.getValue().getNodeCounter());
 							
 							// add child node to Newick format
 							addLeadingParenthesisNewick(); 
 							
-							SeqNewickNode childNode;
+							SeqNewickNodeV2 childNode;
 							
 							if (it.hasNext()) {
 								childNode = deepNewickIteration(false, pair.getValue(), node);
@@ -242,17 +251,17 @@ public class SeqNewickExproterController extends ModuleImpl {
 							//get node directly beneath childnode
 							rootNode.addNode(childNode.getValue(), childNode); 
 							
-					} else if(pair.getValue().getNodeHash().size() > 1) {
-							Iterator<Entry<String, SeqReducedTrieNode>> subIt = pair.getValue().getNodeHash().entrySet().iterator();
+					} else if(pair.getValue().getChildNodes().size() > 1) {
+							Iterator<Entry<String, TreeNode>> subIt = pair.getValue().getChildNodes().entrySet().iterator();
 							
-							SeqNewickNode node = new SeqNewickNode(pair.getKey(), pair.getValue().getCounter());
+							SeqNewickNodeV2 node = new SeqNewickNodeV2(pair.getKey(), pair.getValue().getNodeCounter());
 							
 							//add node to Newick format
 							addLeadingParenthesisNewick(); 
 							
 							while (subIt.hasNext()) {
-								HashMap.Entry<String, SeqReducedTrieNode> subPair = (HashMap.Entry<String, SeqReducedTrieNode>)subIt.next();
-								SeqNewickNode subNode = new SeqNewickNode(subPair.getKey(), subPair.getValue().getCounter());
+								HashMap.Entry<String, TreeNode> subPair = (HashMap.Entry<String, TreeNode>)subIt.next();
+								SeqNewickNodeV2 subNode = new SeqNewickNodeV2(subPair.getKey(), subPair.getValue().getNodeCounter());
 								
 								boolean lastTerm; 
 								
@@ -266,11 +275,11 @@ public class SeqNewickExproterController extends ModuleImpl {
 								addLeadingParenthesisNewick(); 
 								
 								// in case the child node does not have another child remove the first parenthesis
-								if (subPair.getValue().getNodeHash().isEmpty()) {
+								if (subPair.getValue().getChildNodes().isEmpty()) {
 									removeLeadingParenthesisNewick();
 								}
 								
-								SeqNewickNode childNode = deepNewickIteration(lastTerm, subPair.getValue(), subNode);						
+								SeqNewickNodeV2 childNode = deepNewickIteration(lastTerm, subPair.getValue(), subNode);						
 															
 								if (childNode.getNodeHash().size() > 0) {
 									// add child node to Newick format
@@ -296,15 +305,15 @@ public class SeqNewickExproterController extends ModuleImpl {
 		addRootNewickEnd();
 	}
 	
-	private SeqNewickNode deepNewickIteration(boolean term, SeqReducedTrieNode Node, SeqNewickNode propNode) {
+	private SeqNewickNodeV2 deepNewickIteration(boolean term, TreeNode Node, SeqNewickNodeV2 propNode) {
 		boolean lastTerm = term;
 		
-		SeqReducedTrieNode currentNode = Node;
+		TreeNode currentNode = Node;
 		
-		SeqNewickNode currPropNode = new SeqNewickNode(currentNode.getValue(), currentNode.getCounter());
+		SeqNewickNodeV2 currPropNode = new SeqNewickNodeV2(currentNode.getNodeValue(), currentNode.getNodeCounter());
 		
 		// reaching a terminal node adds the sequence to the previous node
-		if (currentNode.getNodeHash().isEmpty()) {
+		if (currentNode.getChildNodes().isEmpty()) {
 			if (lastTerm) {
 				setLastTermNewickNode(currPropNode.getValue(), currPropNode.getCounter()); //new Newick terminal node
 			} else {
@@ -312,9 +321,9 @@ public class SeqNewickExproterController extends ModuleImpl {
 			}
 			return currPropNode;
 		} else {
-			Iterator<Entry<String, SeqReducedTrieNode>> deepIt = currentNode.getNodeHash().entrySet().iterator();
+			Iterator<Entry<String, TreeNode>> deepIt = currentNode.getChildNodes().entrySet().iterator();
 			while (deepIt.hasNext()) {
-				HashMap.Entry<String, SeqReducedTrieNode> deepPair = (HashMap.Entry<String, SeqReducedTrieNode>)deepIt.next();
+				HashMap.Entry<String, TreeNode> deepPair = (HashMap.Entry<String, TreeNode>)deepIt.next();
 				
 				if (deepIt.hasNext()) {
 					lastTerm = false;
@@ -322,9 +331,9 @@ public class SeqNewickExproterController extends ModuleImpl {
 					lastTerm = true;
 				}
 				
-				if(deepPair.getValue().getNodeHash().size() == 0) {
+				if(deepPair.getValue().getChildNodes().size() == 0) {
 					
-					SeqNewickNode newPropNode = new SeqNewickNode(deepPair.getKey(),deepPair.getValue().getCounter());				
+					SeqNewickNodeV2 newPropNode = new SeqNewickNodeV2(deepPair.getKey(),deepPair.getValue().getNodeCounter());				
 					
 					// new Newick terminal node
 					if (lastTerm) {
@@ -337,13 +346,13 @@ public class SeqNewickExproterController extends ModuleImpl {
 				} 
 				
 				 //if child has one grand child
-				 else if(deepPair.getValue().getNodeHash().size() == 1) { 
+				 else if(deepPair.getValue().getChildNodes().size() == 1) { 
 					
 					//add a leading Parenthesis to the Newick output
 					addLeadingParenthesisNewick(); 
 					
 					//Let's continue with the child
-					SeqNewickNode newPropNode = deepNewickIteration(lastTerm, deepPair.getValue(), currPropNode); 
+					SeqNewickNodeV2 newPropNode = deepNewickIteration(lastTerm, deepPair.getValue(), currPropNode); 
 					
 					//write content of inner node
 					setInnerNewickNode(newPropNode.getValue(), newPropNode.getCounter());
@@ -354,10 +363,10 @@ public class SeqNewickExproterController extends ModuleImpl {
 				} 
 				  
 				  // if child has several grand children
-				  else if (deepPair.getValue().getNodeHash().size() > 1) { 
+				  else if (deepPair.getValue().getChildNodes().size() > 1) { 
 					
 					addLeadingParenthesisNewick(); //add a leading Parenthesis to the Newick output
-					SeqNewickNode newNode = deepNewickIteration(lastTerm, deepPair.getValue(),currPropNode);
+					SeqNewickNodeV2 newNode = deepNewickIteration(lastTerm, deepPair.getValue(),currPropNode);
 					setInnerNewickNode(newNode.getValue(), newNode.getCounter()); //write content of inner node
 					
 					if (lastTerm) {

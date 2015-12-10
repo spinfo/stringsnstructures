@@ -1,6 +1,6 @@
 package modules.seqNewickExporter;
 
-import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Helper class for Newick Exporter module(s)
@@ -8,27 +8,24 @@ import java.util.HashMap;
  * @author Christopher Kraus
  *
  */
-
-
-public class SeqNewickNode {
-	
+public class SeqNewickNodeV2 {
 	//variables:
 	private String nodeValue; //string saved in the node
 	private int nodeCounter; //Zaehler value
-	HashMap<String, SeqNewickNode> propNode;
+	TreeMap<String, SeqNewickNodeV2> propNode;
 	//end variables
 	
 	//constructors:
-	public SeqNewickNode(String value, int counter) {
+	public SeqNewickNodeV2(String value, int counter) {
 		nodeValue = value;
 		nodeCounter = counter;
-		propNode = new HashMap<String, SeqNewickNode>();
+		propNode = new TreeMap<String, SeqNewickNodeV2>();
 	}
 	
-	public SeqNewickNode(String value, int counter, SeqNewickNode node) {
+	public SeqNewickNodeV2(String value, int counter, SeqNewickNodeV2 node) {
 		nodeValue = value;
 		nodeCounter = counter;
-		propNode = new HashMap<String, SeqNewickNode>();
+		propNode = new TreeMap<String, SeqNewickNodeV2>();
 		propNode.put(value, node);
 	}
 	//end constructors
@@ -51,7 +48,7 @@ public class SeqNewickNode {
 		nodeCounter += count;
 	}
 	
-	public void addNode (String value, SeqNewickNode node) {
+	public void addNode (String value, SeqNewickNodeV2 node) {
 		propNode.put(value, node);
 	}
 	//end setters
@@ -65,9 +62,10 @@ public class SeqNewickNode {
 		return nodeCounter;
 	}
 	
-	public HashMap<String, SeqNewickNode> getNodeHash () {
+	public TreeMap<String, SeqNewickNodeV2> getNodeHash () {
 		return propNode;
 	}
 	//end getters
 	//end methods
+
 }
