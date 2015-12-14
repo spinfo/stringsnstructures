@@ -21,7 +21,6 @@ import com.google.gson.GsonBuilder;
 
 import common.parallelization.CallbackReceiver;
 
-//TODO: instead of different node classes I need to create different node classes which implement the interface "common.TreeNode"
 
 /**
  * Reads JSON format from I/O pipe.

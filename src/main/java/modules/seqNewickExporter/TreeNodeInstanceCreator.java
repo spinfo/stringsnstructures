@@ -10,7 +10,7 @@ public class TreeNodeInstanceCreator implements InstanceCreator <TreeNode> {
 	
 	@Override
 	public TreeNode createInstance(Type type) {
-		return new ParentRelationTreeNodeImpl(null);
+		return new ParentRelationTreeNodeImpl("^", null);
 	}
 	
 }
