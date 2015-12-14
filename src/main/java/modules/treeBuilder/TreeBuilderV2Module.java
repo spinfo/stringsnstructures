@@ -143,7 +143,7 @@ public class TreeBuilderV2Module extends ModuleImpl {
 							// Determine parent node value
 							String parentNodeValue = node.getNodeValue();
 							// If the value is only present as a map key, we have to search it first
-							if (omitRedundantInformation){
+							if (omitRedundantInformation && !node.equals(rootNode)){
 								for (Entry<String, TreeNode> entry : node.getParentNode().getChildNodes().entrySet()) {
 							        if (Objects.equals(node, entry.getValue())) {
 							        	parentNodeValue = entry.getKey();
@@ -218,31 +218,6 @@ public class TreeBuilderV2Module extends ModuleImpl {
 						node.getChildNodes().clear();
 						childNode = node;
 						
-						// TODO Has to climb up the tree and merge with any parent that has only one child.
-						/*String segment = inputSegment;
-						while (!node.equals(rootNode) && node.getChildNodes().size()<=1 && !nextLeafList.contains(node)){
-							// Determine node value
-							String nodeValue = node.getNodeValue();
-							// If the value is only present as a map key, we have to search it first
-							if (omitRedundantInformation){
-								
-								for (Entry<String, TreeNode> entry : node.getParentNode().getChildNodes().entrySet()) {
-							        if (Objects.equals(node, entry.getValue())) {
-							        	nodeValue = entry.getKey();
-							        	break;
-							        }
-							    }
-							}
-							node.getParentNode().getChildNodes().values().remove(node);
-							node.getParentNode().getChildNodes().put(nodeValue+segment, node);
-							if (!omitRedundantInformation)
-								node.setNodeValue(nodeValue+segment);
-							node.getChildNodes().clear();
-							childNode = node;
-							node = node.getParentNode();
-							segment = nodeValue+segment;
-						}*/
-						
 						
 					} else {
 						childNode = new ParentRelationTreeNodeImpl(node);
@@ -260,6 +235,47 @@ public class TreeBuilderV2Module extends ModuleImpl {
 								ancestor.incNodeCounter();
 								ancestor = ancestor.getParentNode();
 							}
+					}
+				} else {
+					// Merge with parent or construct separate child node
+					if (constructSuffixTree && !node.equals(rootNode)
+							&& node.getChildNodes().size() == 1 && !node.equals(childNode)) {
+
+						// Determine node value
+						String nodeValue = node.getNodeValue();
+						// If the value is only present as a map key, we have to
+						// search it first
+						if (omitRedundantInformation) {
+
+							for (Entry<String, TreeNode> entry : node
+									.getParentNode().getChildNodes().entrySet()) {
+								if (Objects.equals(node, entry.getValue())) {
+									nodeValue = entry.getKey();
+									break;
+								}
+							}
+						}
+						// Determine child node value
+						String childNodeValue = childNode.getNodeValue();
+						// If the value is only present as a map key, we have to
+						// search it first
+						if (omitRedundantInformation) {
+
+							for (Entry<String, TreeNode> entry : node.getChildNodes().entrySet()) {
+								if (Objects.equals(childNode, entry.getValue())) {
+									childNodeValue = entry.getKey();
+									break;
+								}
+							}
+						}
+						node.getParentNode().getChildNodes().values()
+								.remove(node);
+						node.getParentNode().getChildNodes()
+								.put(nodeValue + childNodeValue, childNode);
+						if (!omitRedundantInformation)
+							childNode.setNodeValue(nodeValue + childNodeValue);
+						node.getChildNodes().clear();
+						childNode.setParentNode(node.getParentNode());
 					}
 				}
 				
