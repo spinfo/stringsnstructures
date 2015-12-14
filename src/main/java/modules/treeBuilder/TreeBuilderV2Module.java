@@ -197,7 +197,7 @@ public class TreeBuilderV2Module extends ModuleImpl {
 				if (childNode == null){
 					
 					// Merge with parent or construct separate child node
-					if (constructSuffixTree && !node.equals(rootNode) && node.getChildNodes().size() == 0){
+					if (constructSuffixTree && !node.equals(rootNode) && node.getChildNodes().size() == 0  && !nextLeafList.contains(node)){
 						
 						// Determine node value
 						String nodeValue = node.getNodeValue();
@@ -239,7 +239,7 @@ public class TreeBuilderV2Module extends ModuleImpl {
 				} else {
 					// Merge with parent or construct separate child node
 					if (constructSuffixTree && !node.equals(rootNode)
-							&& node.getChildNodes().size() == 1 && !node.equals(childNode)) {
+							&& node.getChildNodes().size() == 1 && !node.equals(childNode) && !nextLeafList.contains(node)) {
 
 						// Determine node value
 						String nodeValue = node.getNodeValue();
