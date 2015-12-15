@@ -129,7 +129,7 @@ public class ModulePropertyEditor extends JDialog implements ActionListener {
 				Logger.getLogger("").log(Level.INFO, "Updated properties for module "+module.getName()+".");
 			} catch (Exception e1) {
 				// Log error message
-				Logger.getLogger("").log(Level.WARNING, "Sorry, but the properties for module "+module.getName()+" could not be updated.");
+				Logger.getLogger("").log(Level.WARNING, "Sorry, but the properties for module "+module.getName()+" could not be updated.", e1);
 			}
 			
 			

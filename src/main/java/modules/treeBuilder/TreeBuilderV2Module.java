@@ -28,18 +28,18 @@ public class TreeBuilderV2Module extends ModuleImpl {
 	public static final String PROPERTYKEY_INPUTDELIMITER = "Input delimiter";
 	public static final String PROPERTYKEY_MAXDEPTH = "Tree depth";
 	public static final String PROPERTYKEY_OMITREDUNDANTINFO = "Omit redundant info";
-	public static final String PROPERTYKEY_STRUCTURE = "Tree or trie";
+	public static final String PROPERTYKEY_STRUCTURE = "Compact or atomic?";
 	//public static final String PROPERTYKEY_MAXTHREADS = "Max. threads";
 	
 	// Define I/O IDs (must be unique for every input or output)
-	private static final String ID_INPUT = "input";
-	private static final String ID_OUTPUT = "output";
+	private static final String ID_INPUT = "text";
+	private static final String ID_OUTPUT = "tree";
 	
 	// Local variables
 	private String inputDelimiter = "";
 	private int maxDepth = -1;
 	private boolean omitRedundantInformation;
-	private boolean constructSuffixTree;
+	private boolean compactTree;
 	//private int maxThreads;
 
 	public TreeBuilderV2Module(CallbackReceiver callbackReceiver,
@@ -54,15 +54,15 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		// Add property descriptions (obligatory for every property!)
 		//this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for the input; leave empty for char-by-char segmentation.");
 		//this.getPropertyDescriptions().put(PROPERTYKEY_MAXDEPTH, "Maximum depth for the resulting tree; set to -1 for no constraint.");
-		this.getPropertyDescriptions().put(PROPERTYKEY_OMITREDUNDANTINFO, "Omit redundant information upon creating the trie (do not set nodevalue, since this info is already contained within the parent's child node mapping key).");
-		this.getPropertyDescriptions().put(PROPERTYKEY_STRUCTURE, "Structure to output; possible values are 'tree' and 'trie'.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OMITREDUNDANTINFO, "Omit redundant information upon creating the tree (do not set nodevalue, since this info is already contained within the parent's child node mapping key).");
+		this.getPropertyDescriptions().put(PROPERTYKEY_STRUCTURE, "Type of suffix tree to output; possible values are 'compact' and 'atomic'.");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "TreeBuilder v2 Module"); // Property key for module name is defined in parent class
 		//this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTDELIMITER, "[\\s]+");
 		//this.getPropertyDefaultValues().put(PROPERTYKEY_MAXDEPTH, "-1");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OMITREDUNDANTINFO, "true");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_STRUCTURE, "tree");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_STRUCTURE, "compact");
 		
 		// Define I/O
 		/*
@@ -74,7 +74,7 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		 */
 		InputPort inputPort = new InputPort(ID_INPUT, "Plain text character input.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Plain text character output.", this);
+		OutputPort outputPort = new OutputPort(ID_OUTPUT, "JSON-encoded suffix tree (nodes based on the TreeNode interface).", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 		
 		// Add I/O ports to instance (don't forget...)
@@ -129,7 +129,7 @@ public class TreeBuilderV2Module extends ModuleImpl {
 				
 				// Get child node for the read segment
 				ParentRelationTreeNode childNode = null;
-				if (constructSuffixTree){
+				if (compactTree){
 					// Determine all child nodes that start with the read segment (amount can only be one or zero)
 					SortedMap<String, TreeNode> childNodesThatStartWithSegment = node.getChildNodesByPrefix(inputSegment);
 					if (!childNodesThatStartWithSegment.isEmpty()){
@@ -197,7 +197,7 @@ public class TreeBuilderV2Module extends ModuleImpl {
 				if (childNode == null){
 					
 					// Merge with parent or construct separate child node
-					if (constructSuffixTree && !node.equals(rootNode) && node.getChildNodes().size() == 0  && !nextLeafList.contains(node)){
+					if (compactTree && !node.equals(rootNode) && node.getChildNodes().size() == 0  && !nextLeafList.contains(node)){
 						
 						// Determine node value
 						String nodeValue = node.getNodeValue();
@@ -238,7 +238,7 @@ public class TreeBuilderV2Module extends ModuleImpl {
 					}
 				} else {
 					// Merge with parent or construct separate child node
-					if (constructSuffixTree && !node.equals(rootNode)
+					if (compactTree && !node.equals(rootNode)
 							&& node.getChildNodes().size() == 1 && !node.equals(childNode) && !nextLeafList.contains(node)) {
 
 						// Determine node value
@@ -342,10 +342,11 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		
 		String treeOrTrieString = this.getProperties().getProperty(PROPERTYKEY_STRUCTURE, this.getPropertyDefaultValues().get(PROPERTYKEY_STRUCTURE));
 		if (treeOrTrieString != null)
-			if (treeOrTrieString.equalsIgnoreCase("tree"))
-				this.constructSuffixTree = true;
-			else if (treeOrTrieString.equalsIgnoreCase("trie"))
-				this.constructSuffixTree = false;
+			if (treeOrTrieString.equalsIgnoreCase("compact"))
+				this.compactTree = true;
+			else if (treeOrTrieString.equalsIgnoreCase("atomic"))
+				this.compactTree = false;
+			else throw new Exception("Invalid value for property '"+PROPERTYKEY_STRUCTURE+"'.");
 		
 		//this.maxThreads = Integer.parseInt(this.getProperties().getProperty(PROPERTYKEY_MAXTHREADS, this.getPropertyDefaultValues().get(PROPERTYKEY_MAXTHREADS)));
 		
