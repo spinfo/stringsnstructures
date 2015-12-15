@@ -3,14 +3,13 @@ package modules.seqNewickExporter;
 import java.lang.reflect.Type;
 
 import com.google.gson.InstanceCreator;
-import common.ParentRelationTreeNodeImpl;
-import common.TreeNode;
 
-public class TreeNodeInstanceCreator implements InstanceCreator <TreeNode> {
+
+public class TreeNodeInstanceCreator implements InstanceCreator <SeqNewickNodeV2> {
 	
 	@Override
-	public TreeNode createInstance(Type type) {
-		return new ParentRelationTreeNodeImpl("^", null);
+	public SeqNewickNodeV2 createInstance(Type type) {
+		return new SeqNewickNodeV2("^");
 	}
 	
 }

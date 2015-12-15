@@ -11,9 +11,6 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
-import common.TreeNode;
-import common.ParentRelationTreeNodeImpl;
-
 import modules.seqNewickExporter.TreeNodeInstanceCreator;
 
 import com.google.gson.Gson;
@@ -42,7 +39,7 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 	private String newickOutput;
 	private boolean standardOut;
 	//private TreeNode mainNode;
-	private ParentRelationTreeNodeImpl mainNode;
+	private SeqNewickNodeV2 mainNode;
 	
 	private Gson gson;
 	private SeqNewickNodeV2 rootNode;
@@ -79,8 +76,8 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 		
 	public void setGson(PipedReader reader) {
 		
-		gson = new GsonBuilder().registerTypeAdapter(TreeNode.class, new TreeNodeInstanceCreator()).create();
-		mainNode = gson.fromJson(reader, ParentRelationTreeNodeImpl.class);
+		gson = new GsonBuilder().registerTypeAdapter(SeqNewickNodeV2.class, new TreeNodeInstanceCreator()).create();
+		mainNode = gson.fromJson(reader, SeqNewickNodeV2.class);
 		
 	}
 	
@@ -219,10 +216,10 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 		addLeadingParenthesisNewick();
 		setRootNewickNode(rootNode.getValue(), rootNode.getCounter()); 
 		
-		Iterator<Entry<String, TreeNode>> it = mainNode.getChildNodes().entrySet().iterator();
+		Iterator<Entry<String, SeqNewickNodeV2>> it = mainNode.getChildNodes().entrySet().iterator();
 		
 		while (it.hasNext()) {
-			HashMap.Entry<String, TreeNode> pair = (HashMap.Entry<String, TreeNode>)it.next();
+			HashMap.Entry<String, SeqNewickNodeV2> pair = (HashMap.Entry<String, SeqNewickNodeV2>)it.next();
 			
 			if(pair.getValue().getChildNodes().isEmpty()) {
 				//end node on first level reached. Create terminal node at tree height 0.
@@ -251,7 +248,7 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 							rootNode.addNode(childNode.getValue(), childNode); 
 							
 					} else if(pair.getValue().getChildNodes().size() > 1) {
-							Iterator<Entry<String, TreeNode>> subIt = pair.getValue().getChildNodes().entrySet().iterator();
+							Iterator<Entry<String, SeqNewickNodeV2>> subIt = pair.getValue().getChildNodes().entrySet().iterator();
 							
 							SeqNewickNodeV2 node = new SeqNewickNodeV2(pair.getKey(), pair.getValue().getNodeCounter());
 							
@@ -259,7 +256,7 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 							addLeadingParenthesisNewick(); 
 							
 							while (subIt.hasNext()) {
-								HashMap.Entry<String, TreeNode> subPair = (HashMap.Entry<String, TreeNode>)subIt.next();
+								HashMap.Entry<String, SeqNewickNodeV2> subPair = (HashMap.Entry<String, SeqNewickNodeV2>)subIt.next();
 								SeqNewickNodeV2 subNode = new SeqNewickNodeV2(subPair.getKey(), subPair.getValue().getNodeCounter());
 								
 								boolean lastTerm; 
@@ -304,10 +301,10 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 		addRootNewickEnd();
 	}
 	
-	private SeqNewickNodeV2 deepNewickIteration(boolean term, TreeNode Node, SeqNewickNodeV2 propNode) {
+	private SeqNewickNodeV2 deepNewickIteration(boolean term, SeqNewickNodeV2 Node, SeqNewickNodeV2 propNode) {
 		boolean lastTerm = term;
 		
-		TreeNode currentNode = Node;
+		SeqNewickNodeV2 currentNode = Node;
 		
 		SeqNewickNodeV2 currPropNode = new SeqNewickNodeV2(currentNode.getNodeValue(), currentNode.getNodeCounter());
 		
@@ -320,9 +317,9 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 			}
 			return currPropNode;
 		} else {
-			Iterator<Entry<String, TreeNode>> deepIt = currentNode.getChildNodes().entrySet().iterator();
+			Iterator<Entry<String, SeqNewickNodeV2>> deepIt = currentNode.getChildNodes().entrySet().iterator();
 			while (deepIt.hasNext()) {
-				HashMap.Entry<String, TreeNode> deepPair = (HashMap.Entry<String, TreeNode>)deepIt.next();
+				HashMap.Entry<String, SeqNewickNodeV2> deepPair = (HashMap.Entry<String, SeqNewickNodeV2>)deepIt.next();
 				
 				if (deepIt.hasNext()) {
 					lastTerm = false;
