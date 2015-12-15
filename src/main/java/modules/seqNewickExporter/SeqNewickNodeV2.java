@@ -4,35 +4,39 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import common.ParentRelationTreeNode;
-import common.TreeNode;
-
 /**
  * Helper class for Newick Exporter module(s)
  * 
  * @author Christopher Kraus
  *
  */
-public class SeqNewickNodeV2 implements ParentRelationTreeNode {
+public class SeqNewickNodeV2 {
 	//variables:
 	private String nodeValue; //string saved in the node
 	private int nodeCounter; //Zaehler value
-	TreeMap<String, TreeNode> childNodes;
-	private ParentRelationTreeNode parentNode; //TODO: kick out unnecessary variable implement declaration of ParentRelationTreeNode
+	TreeMap<String, SeqNewickNodeV2> childNodes;
+	private SeqNewickNodeV2 parentNode;
 	//end variables
 	
 	//constructors:
+	public SeqNewickNodeV2(String value) {
+		nodeValue = value;
+		nodeCounter = 0;
+		childNodes = new TreeMap<String, SeqNewickNodeV2>();
+		this.parentNode = null;
+	}
+	
 	public SeqNewickNodeV2(String value, int counter) {
 		nodeValue = value;
 		nodeCounter = counter;
-		childNodes = new TreeMap<String, TreeNode>();
+		childNodes = new TreeMap<String, SeqNewickNodeV2>();
 		this.parentNode = null;
 	}
 	
 	public SeqNewickNodeV2(String value, int counter, SeqNewickNodeV2 node) {
 		nodeValue = value;
 		nodeCounter = counter;
-		childNodes = new TreeMap<String, TreeNode>();
+		childNodes = new TreeMap<String, SeqNewickNodeV2>();
 		childNodes.put(value, node);
 		this.parentNode = null;
 	}
@@ -59,6 +63,24 @@ public class SeqNewickNodeV2 implements ParentRelationTreeNode {
 	public void addNode (String value, SeqNewickNodeV2 node) {
 		childNodes.put(value, node);
 	}
+	
+	public void setNodeValue(String nodeValue) {
+		this.nodeValue = nodeValue;
+		
+	}
+	
+	public void setNodeCounter(int nodeCounter) {
+		this.nodeCounter = nodeCounter;
+	}
+	
+	public int incNodeCounter() {
+		return ++this.nodeCounter;
+	}
+	
+	public void setParentNode(SeqNewickNodeV2 parentNode) {
+		this.parentNode = parentNode;
+	}
+	
 	//end setters
 	
 	//getters:
@@ -70,56 +92,30 @@ public class SeqNewickNodeV2 implements ParentRelationTreeNode {
 		return nodeCounter;
 	}
 	
-	public Map<String, TreeNode> getNodeHash () {
+	public Map<String, SeqNewickNodeV2> getNodeHash () {
 		return childNodes;
 	}
-	//end getters
-	//end methods
-
-	@Override
-	public void setNodeValue(String nodeValue) {
-		this.nodeValue = nodeValue;
-		
-	}
-
-	@Override
-	public void setNodeCounter(int nodeCounter) {
-		this.nodeCounter = nodeCounter;
-	}
-
-	@Override
-	public int incNodeCounter() {
-		return ++this.nodeCounter;
-	}
-
-	@Override
+	
 	public String getNodeValue() {
 		return this.nodeValue;
 	}
-
-	@Override
+	
 	public int getNodeCounter() {
 		return this.nodeCounter;
 	}
-
-	@Override
-	public Map<String, TreeNode> getChildNodes() {
+	
+	public Map<String, SeqNewickNodeV2> getChildNodes() {
 		return this.childNodes;
 	}
-
-	@Override
-	public ParentRelationTreeNode getParentNode() {
+	
+	public SeqNewickNodeV2 getParentNode() {
 		return this.parentNode;
 	}
-
-	@Override
-	public void setParentNode(ParentRelationTreeNode parentNode) {
-		this.parentNode = parentNode;
-	}
-
-	@Override
-	public SortedMap<String, TreeNode> getChildNodesByPrefix(String prefix) {
+	
+	public SortedMap<String, SeqNewickNodeV2> getChildNodesByPrefix(String prefix) {
 		return this.childNodes.subMap(prefix, prefix + Character.MAX_VALUE);
 	}
-
+	
+	//end getters
+	//end methods
 }
