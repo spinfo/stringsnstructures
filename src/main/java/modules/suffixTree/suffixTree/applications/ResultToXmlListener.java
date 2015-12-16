@@ -1,10 +1,7 @@
 package modules.suffixTree.suffixTree.applications;
 
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
-import modules.suffixTree.suffixTree.applications.event.MyEntryEvent;
-import modules.suffixTree.suffixTree.applications.event.MyExitEvent;
 import modules.suffixTree.suffixTree.node.GeneralisedSuffixTreeNode;
 import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
 
@@ -14,9 +11,6 @@ import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
  */
 public class ResultToXmlListener implements ITreeWalkerListener {
 
-	private static final Logger LOGGER = Logger.getGlobal();
-	// .getLogger(ResultToXmlListener.class.getName());
-
 	XmlPrintWriter out;
 
 	// cstr
@@ -25,36 +19,31 @@ public class ResultToXmlListener implements ITreeWalkerListener {
 	}
 
 	@Override
-	public void entryaction(MyEntryEvent e) {
-		if ((Integer) e.getSource() != 1)
-			LOGGER.info("Listener Entry node:" + e.getSource() + "  "
-					+ ResultSuffixTreeNodeStack.suffixTree.edgeString((Integer) e.getSource()));
-		ResultSuffixTreeNodeStack.stack.push((Integer) e.getSource());
+	public void entryaction(int nodeNr) {
+		ResultSuffixTreeNodeStack.stack.push(nodeNr);
 	}
 
 	@Override
-	public void exitaction(MyExitEvent e) {
-		LOGGER.info("Listener Exit node:" + e.getSource());
-		// if
-		// (ResultSuffixTreeNodeStack.printSuffixTree.st.nodes[(Integer)e.getSource()].children.values().isEmpty())
+	public void exitaction(int nodeNr) {
 		String label = ResultSuffixTreeNodeStack.writeStack();
 
-		int nrOfNode = ResultSuffixTreeNodeStack.stack.pop();
-		GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) ResultSuffixTreeNodeStack.suffixTree.nodes[nrOfNode]);
+		if (ResultSuffixTreeNodeStack.stack.empty()) {
+			return;
+		}
+		int stackedNodeNr = ResultSuffixTreeNodeStack.stack.pop();
+		GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) ResultSuffixTreeNodeStack.suffixTree.nodes[stackedNodeNr]);
 		ArrayList<TextStartPosInfo> nodeList = node.getStartPositionOfSuffix();
 		if (!ResultSuffixTreeNodeStack.stack.empty()) {
 			int mother = ResultSuffixTreeNodeStack.stack.peek();
-			LOGGER.info("Listener Exit mother:" + mother);
 			GeneralisedSuffixTreeNode motherNode = ((GeneralisedSuffixTreeNode) ResultSuffixTreeNodeStack.suffixTree.nodes[mother]);
 
 			motherNode.getStartPositionOfSuffix().addAll(nodeList);
-			LOGGER.info("Listener freq mother: " + motherNode.getStartPositionOfSuffix().size() + " freq node "
-					+ nodeList.size());
+
 		}
 		// node(nr)
 		out.printTag("node", true, 1, true);
 		out.printTag("number", true, 2, false);
-		out.printInt(nrOfNode);
+		out.printInt(stackedNodeNr);
 		out.printTag("number", false, 0, true);
 		// edge label
 		out.printTag("label", true, 2, false);

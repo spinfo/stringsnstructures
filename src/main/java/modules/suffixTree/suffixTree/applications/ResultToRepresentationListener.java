@@ -7,8 +7,6 @@ import java.util.logging.Logger;
 import modules.suffixTreeModuleWrapper.NodeRepresentation;
 import modules.suffixTreeModuleWrapper.PatternInfoRepresentation;
 import modules.suffixTreeModuleWrapper.SuffixTreeRepresentation;
-import modules.suffixTree.suffixTree.applications.event.MyEntryEvent;
-import modules.suffixTree.suffixTree.applications.event.MyExitEvent;
 import modules.suffixTree.suffixTree.node.GeneralisedSuffixTreeNode;
 import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
 
@@ -20,9 +18,6 @@ public class ResultToRepresentationListener implements ITreeWalkerListener {
 
 	private static final Logger LOGGER = Logger.getLogger(ResultToRepresentationListener.class.getName());
 
-	// the suffix tree that this class operates on
-	//private final SuffixTreeAppl suffixTreeAppl;
-
 	// the suffix tree's representation on which this class will add
 	// representations of the suffix tree's nodes
 	private final SuffixTreeRepresentation suffixTreeRepresentation;
@@ -31,20 +26,12 @@ public class ResultToRepresentationListener implements ITreeWalkerListener {
 		this.suffixTreeRepresentation = suffixTreeRepresentation;
 	}
 
-	@Deprecated
-	public ResultToRepresentationListener(SuffixTreeAppl suffixTreeAppl,
-			SuffixTreeRepresentation suffixTreeRepresentation) {
-		//this.suffixTreeAppl = suffixTreeAppl;
-		this.suffixTreeRepresentation = suffixTreeRepresentation;
-	}
-
 	/**
 	 * This simply pushes the node number of the current node on a stack for
 	 * later processing on the exitaction.
 	 */
 	@Override
-	public void entryaction(MyEntryEvent entryEvent) {
-		Integer nodeNr = (Integer) entryEvent.getSource();
+	public void entryaction(int nodeNr) {
 		ResultSuffixTreeNodeStack.stack.push(nodeNr);
 	}
 
@@ -55,20 +42,20 @@ public class ResultToRepresentationListener implements ITreeWalkerListener {
 	 * initialisation.
 	 */
 	@Override
-	public void exitaction(MyExitEvent exitEvent) {
+	public void exitaction(int nodeNr) {
 
 		// the node's label and identifying number are simply retrieved from the
 		// node stack. The identifying nodeNr is strictly necessary, so we do
 		// not catch the possible EmptyStackException at this point
 		final String label = ResultSuffixTreeNodeStack.writeStack();
-		final int nodeNr = ResultSuffixTreeNodeStack.stack.pop();
+		final int stackedNodeNr = ResultSuffixTreeNodeStack.stack.pop();
 
 		// For the rest of the information we need to retrieve the node
-		final GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) ResultSuffixTreeNodeStack.suffixTree.nodes[nodeNr]);
+		final GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) ResultSuffixTreeNodeStack.suffixTree.nodes[stackedNodeNr]);
 		final ArrayList<TextStartPosInfo> nodeList = node.getStartPositionOfSuffix();
 		final int frequency = nodeList.size();
 
-		// TODO write a comment explaining this...
+		// TODO write a comment explaining this... (Copied from ResultToXmlListener)
 		if (!ResultSuffixTreeNodeStack.stack.empty()) {
 			final int mother = ResultSuffixTreeNodeStack.stack.peek();
 			final GeneralisedSuffixTreeNode motherNode = ((GeneralisedSuffixTreeNode) ResultSuffixTreeNodeStack.suffixTree.nodes[mother]);
@@ -77,7 +64,7 @@ public class ResultToRepresentationListener implements ITreeWalkerListener {
 
 		// construct and fill an output object for the node
 		NodeRepresentation nodeRepresentation = new NodeRepresentation();
-		nodeRepresentation.setNumber(nodeNr);
+		nodeRepresentation.setNumber(stackedNodeNr);
 		nodeRepresentation.setLabel(label);
 		nodeRepresentation.setFrequency(frequency);
 

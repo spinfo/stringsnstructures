@@ -1,19 +1,15 @@
 package modules.suffixTree.suffixTree.applications;
 
 import modules.suffixTree.suffixTree.SuffixTree;
-import modules.suffixTree.suffixTree.applications.event.MyEntryEvent;
-import modules.suffixTree.suffixTree.applications.event.MyExitEvent;
 
 public class TreeWalker {
 
-	public void walk(int node, SuffixTree st, ITreeWalkerListener listener) {
-		MyEntryEvent entryEvent = new MyEntryEvent(node);
-		listener.entryaction(entryEvent);
-		for (int child : st.nodes[node].children.values()) {
-			walk(child, st, listener);
+	public void walk(int nodeNr, SuffixTree st, ITreeWalkerListener listener) {
+		listener.entryaction(nodeNr);
+		for (int childNr : st.nodes[nodeNr].children.values()) {
+			walk(childNr, st, listener);
 		}
 		// generate exitEvent
-		MyExitEvent exitEvent = new MyExitEvent(node);
-		listener.exitaction(exitEvent);
+		listener.exitaction(nodeNr);
 	}
 }
