@@ -317,6 +317,9 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 		inputScanner.close();
 		
 		}
+		
+		
+		
 		// Loop over leaves to eliminate parent relations (since they make serialisation impossible)
 		Iterator<ParentRelationTreeNode> leaves = leafList.iterator();
 		while (leaves.hasNext()){
@@ -328,6 +331,9 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 				parent = parent.getParentNode();
 			}
 		}
+		
+		
+		
 		
 		// Initialise JSON serialiser
 		GsonBuilder gsonBuilder = new GsonBuilder();
