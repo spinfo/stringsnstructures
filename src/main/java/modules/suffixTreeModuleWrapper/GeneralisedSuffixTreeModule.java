@@ -230,14 +230,13 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	 * @return JSON string
 	 */
 	private String generateJsonOutput(SuffixTreeAppl suffixTreeAppl) {
-		// apparently this needs to be statically set for any result listener to
-		// work correctly
-		ResultSuffixTreeNodeStack.suffixTree = suffixTreeAppl;
+		// A node stack for the Listener to work with
+		ResultSuffixTreeNodeStack nodeStack = new ResultSuffixTreeNodeStack(suffixTreeAppl);
 
 		// build an object to hold a representation of the tree for output
 		// and add it's nodes via a listener.
 		final SuffixTreeRepresentation suffixTreeRepresentation = new SuffixTreeRepresentation();
-		final ResultToRepresentationListener listener = new ResultToRepresentationListener(suffixTreeRepresentation);
+		final ResultToRepresentationListener listener = new ResultToRepresentationListener(suffixTreeRepresentation, nodeStack);
 		suffixTreeRepresentation.setUnitCount(suffixTreeAppl.unitCount);
 		suffixTreeRepresentation.setNodeCount(suffixTreeAppl.getCurrentNode());
 		TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);

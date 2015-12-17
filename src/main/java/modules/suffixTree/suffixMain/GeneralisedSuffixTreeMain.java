@@ -184,7 +184,8 @@ public class GeneralisedSuffixTreeMain {
 	
 	// lets the tree's representation be printed to XMLPrintWriter out
 	private static void persistSuffixTreeToXml(XmlPrintWriter out, SuffixTreeAppl suffixTree) {
-		ResultSuffixTreeNodeStack.setSuffixTree(suffixTree);
+		final ResultSuffixTreeNodeStack nodeStack = new ResultSuffixTreeNodeStack(suffixTree);
+
 		try {
 			out.printTag("output", true, 0, true);
 			out.printTag("units", true, 1, false);
@@ -195,7 +196,7 @@ public class GeneralisedSuffixTreeMain {
 			out.printInt(suffixTree.getCurrentNode());
 			out.printTag("nodes", false, 0, true);
 
-			ResultToXmlListener listener = new ResultToXmlListener(out);
+			ResultToXmlListener listener = new ResultToXmlListener(out, nodeStack);
 			TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
 			LOGGER.fine("rootnr: " + suffixTree.getRoot());
 			out.printTag("output", false, 0, true);

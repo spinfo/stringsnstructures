@@ -1,8 +1,6 @@
 package modules.suffixTree.suffixTree.applications;
 
-import java.util.EventListener;
-
-public interface ITreeWalkerListener extends EventListener {
+public interface ITreeWalkerListener {
 
 	/**
 	 * The action to take on the current node when the TreeWalker enters it.

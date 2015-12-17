@@ -12,30 +12,43 @@ import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
 public class ResultToXmlListener implements ITreeWalkerListener {
 
 	XmlPrintWriter out;
+	
+	// a node stack that the listener can collect nodes on
+	private final ResultSuffixTreeNodeStack nodeStack;
 
 	// cstr
-	public ResultToXmlListener(XmlPrintWriter o) {
+	public ResultToXmlListener(XmlPrintWriter o, ResultSuffixTreeNodeStack nodeStack) {
 		this.out = o;
+		this.nodeStack = nodeStack;
 	}
 
+	/**
+	 * This simply pushes the node number of the current node on a stack for
+	 * later processing on the exitaction.
+	 * 
+	 * The reason for this seems to be, that the ResultSuffixTreeNodeStack can
+	 * elegantly get a representation of a node's label on the exitaction.
+	 */
 	@Override
 	public void entryaction(int nodeNr, int level) {
-		ResultSuffixTreeNodeStack.stack.push(nodeNr);
+		this.nodeStack.push(nodeNr);
 	}
 
 	@Override
 	public void exitaction(int nodeNr, int level) {
-		String label = ResultSuffixTreeNodeStack.writeStack();
+		final SuffixTreeAppl suffixTreeAppl = this.nodeStack.getSuffixTreeAppl();
+		
+		String label = this.nodeStack.writeStack();
 
-		if (ResultSuffixTreeNodeStack.stack.empty()) {
+		if (this.nodeStack.empty()) {
 			return;
 		}
-		int stackedNodeNr = ResultSuffixTreeNodeStack.stack.pop();
-		GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) ResultSuffixTreeNodeStack.suffixTree.nodes[stackedNodeNr]);
+		int stackedNodeNr = this.nodeStack.pop();
+		GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTreeAppl.nodes[stackedNodeNr]);
 		ArrayList<TextStartPosInfo> nodeList = node.getStartPositionOfSuffix();
-		if (!ResultSuffixTreeNodeStack.stack.empty()) {
-			int mother = ResultSuffixTreeNodeStack.stack.peek();
-			GeneralisedSuffixTreeNode motherNode = ((GeneralisedSuffixTreeNode) ResultSuffixTreeNodeStack.suffixTree.nodes[mother]);
+		if (!this.nodeStack.empty()) {
+			int mother = this.nodeStack.peek();
+			GeneralisedSuffixTreeNode motherNode = ((GeneralisedSuffixTreeNode) suffixTreeAppl.nodes[mother]);
 
 			motherNode.getStartPositionOfSuffix().addAll(nodeList);
 
