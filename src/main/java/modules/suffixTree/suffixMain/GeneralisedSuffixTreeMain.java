@@ -196,8 +196,7 @@ public class GeneralisedSuffixTreeMain {
 			out.printTag("nodes", false, 0, true);
 
 			ResultToXmlListener listener = new ResultToXmlListener(out);
-			TreeWalker treeWalker = new TreeWalker();
-			treeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+			TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
 			LOGGER.fine("rootnr: " + suffixTree.getRoot());
 			out.printTag("output", false, 0, true);
 		} catch (Exception e) {

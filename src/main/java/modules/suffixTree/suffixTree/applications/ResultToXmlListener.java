@@ -19,12 +19,12 @@ public class ResultToXmlListener implements ITreeWalkerListener {
 	}
 
 	@Override
-	public void entryaction(int nodeNr) {
+	public void entryaction(int nodeNr, int level) {
 		ResultSuffixTreeNodeStack.stack.push(nodeNr);
 	}
 
 	@Override
-	public void exitaction(int nodeNr) {
+	public void exitaction(int nodeNr, int level) {
 		String label = ResultSuffixTreeNodeStack.writeStack();
 
 		if (ResultSuffixTreeNodeStack.stack.empty()) {

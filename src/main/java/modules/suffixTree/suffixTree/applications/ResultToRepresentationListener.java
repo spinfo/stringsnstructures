@@ -31,7 +31,7 @@ public class ResultToRepresentationListener implements ITreeWalkerListener {
 	 * later processing on the exitaction.
 	 */
 	@Override
-	public void entryaction(int nodeNr) {
+	public void entryaction(int nodeNr, int level) {
 		ResultSuffixTreeNodeStack.stack.push(nodeNr);
 	}
 
@@ -42,7 +42,7 @@ public class ResultToRepresentationListener implements ITreeWalkerListener {
 	 * initialisation.
 	 */
 	@Override
-	public void exitaction(int nodeNr) {
+	public void exitaction(int nodeNr, int level) {
 
 		// the node's label and identifying number are simply retrieved from the
 		// node stack. The identifying nodeNr is strictly necessary, so we do

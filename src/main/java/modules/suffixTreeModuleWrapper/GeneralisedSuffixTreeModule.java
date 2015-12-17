@@ -238,10 +238,9 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		// and add it's nodes via a listener.
 		final SuffixTreeRepresentation suffixTreeRepresentation = new SuffixTreeRepresentation();
 		final ResultToRepresentationListener listener = new ResultToRepresentationListener(suffixTreeRepresentation);
-		final TreeWalker treeWalker = new TreeWalker();
 		suffixTreeRepresentation.setUnitCount(suffixTreeAppl.unitCount);
 		suffixTreeRepresentation.setNodeCount(suffixTreeAppl.getCurrentNode());
-		treeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
+		TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
 
 		// serialize the representation to JSON
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
