@@ -52,6 +52,7 @@ import modules.treeBuilder.TreeBuilderV2Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
+import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -283,6 +284,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		treeBuilder2OutputControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder2OutputController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilder2OutputController.applyProperties();
 		
+		// Prepare treeBuilder2OutputV2 module
+		Properties treeBuilder2OutputV2ControllerProperties = new Properties();
+		TreeBuilder2OutputControllerV2 treeBuilder2OutputControllerV2 = new TreeBuilder2OutputControllerV2 (moduleNetwork,
+				treeBuilder2OutputV2ControllerProperties);
+		treeBuilder2OutputV2ControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder2OutputControllerV2.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		treeBuilder2OutputControllerV2.applyProperties();
+		
 		// Prepare GeneralisedSuffixTree module
 		Properties generalisedSuffixTreeProperties = new Properties();
 		GeneralisedSuffixTreeModule generalisedSuffixTreeModule = new GeneralisedSuffixTreeModule(moduleNetwork,
@@ -371,6 +379,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(kwipModule.getName(), kwipModule);
 		availableModules.put(plainText2TreeBuilderConverter.getName(), plainText2TreeBuilderConverter);
 		availableModules.put(treeBuilder2OutputController.getName(), treeBuilder2OutputController);
+		availableModules.put(treeBuilder2OutputControllerV2.getName(), treeBuilder2OutputControllerV2);
 		availableModules.put(generalisedSuffixTreeModule.getName(), generalisedSuffixTreeModule);
 		availableModules.put(bufferModule.getName(), bufferModule);
 		availableModules.put(suffixTreeClusteringModuleWrapper.getName(), suffixTreeClusteringModuleWrapper);
