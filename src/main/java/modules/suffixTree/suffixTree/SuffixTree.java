@@ -206,7 +206,7 @@ public class SuffixTree {
 					}
 					LOGGER.fine("Text length: " + text.length);
 				}
-				if ((endposition < 0) || (!(text[endposition] == '$'))) {
+				if ((endposition < 0)  || (endposition == (Integer.MAX_VALUE / 2)-1) || (!(text[endposition] == '$'))) {
 					// make new leaf node
 					int leaf_node = newNode(currentPosition, oo,
 							"new leaf put to active_node");

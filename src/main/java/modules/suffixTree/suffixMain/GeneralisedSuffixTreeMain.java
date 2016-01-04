@@ -74,7 +74,8 @@ public class GeneralisedSuffixTreeMain {
 			st.phases(text, start, end + 1, null/* ExtActivePoint */);
 
 			st.printTree("SuffixTree", -1, -1, -1);
-
+			// set end for first text, end indicates termination symbol $
+			st.oo.setEnd(end);
 			start = end + 1;
 
 			LOGGER.finer("GeneralisedSuffixTreeMain: vor while text: " + text + " start: " + start);
@@ -110,7 +111,8 @@ public class GeneralisedSuffixTreeMain {
 				st.phases(text, start + activePoint.phase, end + 1, activePoint);
 
 				LOGGER.fine("GeneralisedSuffixTreeMain start: " + start + " end: " + end);
-
+				// set end for text read, end indicates termination symbol $
+				st.oo.setEnd(end);
 				start = end + 1;
 			}
 		} else {

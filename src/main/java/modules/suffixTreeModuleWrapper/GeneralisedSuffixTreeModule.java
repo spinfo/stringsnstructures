@@ -136,6 +136,10 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				// traverse the remaining portions of the input string
 				ExtActivePoint extActivePoint;
 				String nextText;
+				
+				// set end for first text, end indicates termination symbol $
+				suffixTreeAppl.oo.setEnd(end);
+				
 				start = end + 1;
 				end = text.indexOf(TERMINATOR, start);
 				while (end != -1) {
@@ -163,6 +167,9 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 					suffixTreeAppl.oo = new End(Integer.MAX_VALUE / 2);
 					suffixTreeAppl.phases(text, start + extActivePoint.phase, end + 1, extActivePoint);
 
+					// set end for text read, end indicates termination symbol $
+					suffixTreeAppl.oo.setEnd(end);
+					
 					// reset text window for the next cycle
 					start = end + 1;
 					end = text.indexOf(TERMINATOR, start);
