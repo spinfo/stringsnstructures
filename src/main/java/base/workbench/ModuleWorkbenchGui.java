@@ -39,16 +39,16 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import common.PrettyLogRecord;
+import common.parallelization.CallbackReceiverImpl;
 import modules.InputPort;
 import modules.Module;
+import modules.ModuleLabel;
 import modules.ModuleNetwork;
 import modules.NotFoundException;
 import modules.NotSupportedException;
 import modules.OccupiedException;
 import modules.OutputPort;
-
-import common.PrettyLogRecord;
-import common.parallelization.CallbackReceiverImpl;
 
 /**
  * Provides a GUI to create/edit/run module trees.
@@ -163,7 +163,28 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		availableModulesPanel.setLayout(new BorderLayout(0, 0));
 		
 		// Initialize available modules list
-		moduleTemplateList = new ToolTipJList<Module>(this.controller.getAvailableModules().values().toArray(new Module[this.controller.getAvailableModules().size()]));
+		//moduleTemplateList = new ToolTipJList<Module>(this.controller.getAvailableModules().values().toArray(new Module[this.controller.getAvailableModules().size()]));
+		moduleTemplateList = new ToolTipJList<Module>();
+		
+		Map<String,ModuleLabel> categoryLabelMap = new ConcurrentHashMap<String,ModuleLabel>();
+		
+		DefaultListModel<Module> moduleTemplateListModel = (DefaultListModel<Module>) moduleTemplateList.getModel();
+		Iterator<Module> moduleTemplateIterator = this.controller.getAvailableModules().values().iterator();
+		
+		while(moduleTemplateIterator.hasNext()){
+			Module module = moduleTemplateIterator.next();
+			String categoryName = module.getCategory();
+			
+			ModuleLabel categoryLabel = null;
+			if (categoryLabelMap.containsKey(categoryName)){
+				categoryLabel = categoryLabelMap.get(categoryName);
+			} else {
+				categoryLabel = new ModuleLabel(categoryName);
+			}
+			
+			moduleTemplateListModel.
+		}
+		
 		moduleTemplateList.addListSelectionListener(this);
 		
 		// Extend tooltip display time
