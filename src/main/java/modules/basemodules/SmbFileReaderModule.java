@@ -74,6 +74,9 @@ public class SmbFileReaderModule extends ModuleImpl {
 
 		// Add module description
 		this.setDescription("Reads contents from a SMB/CIFS share. Can handle GZIP compression.");
+		
+		// Add module category
+		this.setCategory("I/O");
 	}
 
 	@Override

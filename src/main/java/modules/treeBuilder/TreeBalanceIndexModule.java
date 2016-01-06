@@ -37,6 +37,9 @@ public class TreeBalanceIndexModule extends ModuleImpl {
 				+ "(perfectly balanced) and is calculated by comparing "
 				+ "the counter values of each node's children with the "
 				+ "determined average.");
+		
+		// Add module category
+		this.setCategory("Experimental/WiP");
 
 		// Add property descriptions (obligatory for every property!)
 		//this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for input A");

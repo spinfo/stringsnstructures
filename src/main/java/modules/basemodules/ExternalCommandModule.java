@@ -39,6 +39,9 @@ public class ExternalCommandModule extends ModuleImpl {
 		
 		// Add module description
 		this.setDescription("Executes an external system command. Can use streamed character or byte input as command stdin.");
+		
+		// Add module category
+		this.setCategory("I/O");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_COMMAND, "<html>Command to execute. Please specify the complete path.<br/>"

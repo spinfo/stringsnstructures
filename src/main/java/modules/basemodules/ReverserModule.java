@@ -24,6 +24,9 @@ public class ReverserModule extends ModuleImpl {
 		// Add description
 		this.setDescription("Reverses a string input.");
 		
+		// Add module category
+		this.setCategory("Basic text processing");
+		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Reverser Module"); // Property key for module name is defined in parent class
 		

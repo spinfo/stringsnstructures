@@ -50,6 +50,8 @@ public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
 		
 		// Add module description
 		this.setDescription("Iterates over a raw and unsegmented string input, building a suffix trie from the data of limited range with each step. Keeps track of how often each node of the suffix trie gets triggered.");
+		// Add module category
+		this.setCategory("Tree-building");
 	}
 
 	@Override

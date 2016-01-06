@@ -47,6 +47,9 @@ public class PlainText2TreeBuilderConverter extends ModuleImpl {
 		//Add property descriptions
 			//no specific property keys
 		
+		// Add module category
+		this.setCategory("Format conversion");
+		
 		//Add property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "PlainText2TreeBuilder");
 		

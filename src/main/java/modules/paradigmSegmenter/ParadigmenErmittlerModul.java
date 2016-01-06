@@ -80,6 +80,9 @@ public class ParadigmenErmittlerModul extends ModuleImpl {
 
 		// Add module description
 		this.setDescription("Reads contents from a suffix tree file (JSON-encoded) and based on that data marks paradigm borders in the streamed input. Outputs segmented input data. Can handle GZIP compressed suffix tree files.");
+		
+		// Add module category
+		this.setCategory("Segmenting");
 	}
 
 	@Override

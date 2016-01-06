@@ -50,6 +50,8 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 
 		// Add property descriptions
 		this.getPropertyDescriptions().put(PROPERTYKEY_NEWICK, "Choose branch length in Newick: true = by string; false = by node occurence");
+		// Add module category
+		this.setCategory("Format conversion");
 		
 		// Add property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "seqNewickExporterV2");

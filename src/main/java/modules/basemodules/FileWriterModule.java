@@ -76,6 +76,9 @@ public class FileWriterModule extends ModuleImpl {
 
 		// Add module description
 		this.setDescription("Writes received input to a file. Can apply GZIP compression.");
+		
+		// Add module category
+		this.setCategory("I/O");
 	}
 
 	@Override

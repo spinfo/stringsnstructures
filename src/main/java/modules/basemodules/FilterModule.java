@@ -31,6 +31,9 @@ public class FilterModule extends ModuleImpl {
 		
 		// Add module description
 		this.setDescription("Filters out strings not matching the specified minimum or maximum length.");
+		
+		// Add module category
+		this.setCategory("Basic text processing");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINLENGTH, "minimum length of ...");
