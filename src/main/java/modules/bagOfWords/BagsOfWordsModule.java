@@ -12,11 +12,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import common.parallelization.CallbackReceiver;
+import models.SuffixTreeRepresentation;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.suffixTreeModuleWrapper.SuffixTreeRepresentation;
 
 /**
  * This module reads either a) A JSON representation of a GeneralisedSuffixTree.

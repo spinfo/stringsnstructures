@@ -1,4 +1,4 @@
-package modules.suffixTreeModuleWrapper;
+package models;
 
 public class PatternInfoRepresentation {
 

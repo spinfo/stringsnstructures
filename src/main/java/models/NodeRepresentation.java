@@ -1,4 +1,4 @@
-package modules.suffixTreeModuleWrapper;
+package models;
 
 import java.util.ArrayList;
 
