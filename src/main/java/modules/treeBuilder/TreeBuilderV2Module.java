@@ -17,10 +17,11 @@ import modules.Pipe;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import common.ParentRelationTreeNode;
-import common.ParentRelationTreeNodeImpl;
-import common.TreeNode;
+
 import common.parallelization.CallbackReceiver;
+import models.ParentRelationTreeNode;
+import models.ParentRelationTreeNodeImpl;
+import models.TreeNode;
 
 public class TreeBuilderV2Module extends ModuleImpl {
 	
@@ -50,6 +51,9 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		
 		// Add module description
 		this.setDescription("TreeBuilder v2 module. Can process larger datasets more quickly. Replaces AtomicRangeSuffixTrieBuilder and TreeBuilder.");
+		
+		// Add module category
+		this.setCategory("Tree-building");
 
 		// Add property descriptions (obligatory for every property!)
 		//this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for the input; leave empty for char-by-char segmentation.");

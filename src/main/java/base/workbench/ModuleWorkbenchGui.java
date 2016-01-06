@@ -13,6 +13,7 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,13 +32,18 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
+import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import modules.InputPort;
 import modules.Module;
@@ -55,7 +61,7 @@ import common.parallelization.CallbackReceiverImpl;
  * @author Marcel Boeing
  *
  */
-public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, ListSelectionListener, MouseListener {
+public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, TreeSelectionListener, MouseListener {
 	
 	// Keywords used to identify actions
 	protected static final String ACTION_CLEARMODULENETWORK = "ACTION_CLEARMODULENETWORK";
@@ -91,7 +97,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	private ModuleWorkbenchController controller; // Controller handling the underlying module network
 	private JDesktopPane moduleJDesktopPane; // Desktop pane containing the modules' frames displayed within the editor
 	private Map<Module,ModuleInternalFrame> moduleFrameMap; // Map referencing which module belongs to which frame
-	private ToolTipJList<Module> moduleTemplateList; // List of available module templates
+	private JTree moduleTemplateTree; // List of available module templates
 	private Module selectedModuleTemplate = null; // Template that is currently selected
 	private ModuleInternalFrame selectedModuleFrame = null; // Module frame that is currently selected
 	private AbstractModulePortButton activeModulePortButton = null; // Used to keep track of which module port button was pressed last 
@@ -162,17 +168,54 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		splitPane.setLeftComponent(availableModulesPanel);
 		availableModulesPanel.setLayout(new BorderLayout(0, 0));
 		
-		// Initialize available modules list
-		moduleTemplateList = new ToolTipJList<Module>(this.controller.getAvailableModules().values().toArray(new Module[this.controller.getAvailableModules().size()]));
-		moduleTemplateList.addListSelectionListener(this);
+		// Initialise available modules tree
+		//moduleTemplateList = new ToolTipJList<Module>(this.controller.getAvailableModules().values().toArray(new Module[this.controller.getAvailableModules().size()]));
+		DefaultMutableTreeNode moduleTemplateTreeRootNode = new DefaultMutableTreeNode("Modules");
+		DefaultTreeModel moduleTemplateTreeModel = new DefaultTreeModel(moduleTemplateTreeRootNode);
+		moduleTemplateTree = new JTree(moduleTemplateTreeModel);
+		moduleTemplateTree.setCellRenderer(new ModuleJTreeCellRenderer());
+		ToolTipManager.sharedInstance().registerComponent(moduleTemplateTree);
+		moduleTemplateTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		
+		// Map to keep track of created category label nodes (we only allow one level of categories within the module tree)
+		Map<String,DefaultMutableTreeNode> categoryLabelMap = new HashMap<String,DefaultMutableTreeNode>();
+		
+		// Loop over the controller's available modules list
+		Iterator<Module> moduleTemplateIterator = this.controller.getAvailableModules().values().iterator();
+		while(moduleTemplateIterator.hasNext()){
+			
+			// Determine next module and its category
+			Module module = moduleTemplateIterator.next();
+			String categoryName = module.getCategory();
+			
+			// Create category node to attach the module to
+			DefaultMutableTreeNode categoryNode = moduleTemplateTreeRootNode;
+			if (categoryName != null)
+				if (categoryLabelMap.containsKey(categoryName)){
+					categoryNode = categoryLabelMap.get(categoryName);
+				} else {
+					categoryNode = new DefaultMutableTreeNode(categoryName);
+					moduleTemplateTreeModel.insertNodeInto(categoryNode, moduleTemplateTreeRootNode, 0);
+					categoryLabelMap.put(categoryName, categoryNode);
+				}
+			
+			// Attach module to category node
+			moduleTemplateTreeModel.insertNodeInto(new DefaultMutableTreeNode(module), categoryNode, categoryNode.getChildCount());
+		}
+		
+		// Expand the first level of the module template tree
+		moduleTemplateTree.expandPath(new TreePath(moduleTemplateTreeRootNode.getPath()));
+		
+		// Add selection listener
+		moduleTemplateTree.addTreeSelectionListener(this);
 		
 		// Extend tooltip display time
-		ToolTipManager.sharedInstance().setDismissDelay(10000); 
+		ToolTipManager.sharedInstance().setDismissDelay(20000); 
 		
 		// Scrollpane for the available modules list
 		JScrollPane availableModulesScrollPane = new JScrollPane();
-		availableModulesScrollPane.add(moduleTemplateList);
-		availableModulesScrollPane.setViewportView(moduleTemplateList);
+		availableModulesScrollPane.add(moduleTemplateTree);
+		availableModulesScrollPane.setViewportView(moduleTemplateTree);
 		availableModulesPanel.add(availableModulesScrollPane);
 		
 		// Panel for the module network editor
@@ -843,12 +886,6 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		this.moduleConnectionGlasspane.setVisible(true);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public void valueChanged(ListSelectionEvent e) {
-		this.selectedModuleTemplate = ((ToolTipJList<Module>)e.getSource()).getSelectedValue();
-	}
-
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		
@@ -897,5 +934,14 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 
 	@Override
 	public void mouseExited(MouseEvent e) {
+	}
+
+	@Override
+	public void valueChanged(TreeSelectionEvent e) {
+		DefaultMutableTreeNode selectedNode =  (DefaultMutableTreeNode)((JTree)e.getSource()).getLastSelectedPathComponent();
+		if (selectedNode != null && selectedNode.getUserObject() != null && Module.class.isAssignableFrom(selectedNode.getUserObject().getClass()))
+			this.selectedModuleTemplate = (Module) selectedNode.getUserObject();
+		else
+			this.selectedModuleTemplate = null;
 	}
 }

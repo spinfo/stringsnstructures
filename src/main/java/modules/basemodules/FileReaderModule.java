@@ -67,6 +67,9 @@ public class FileReaderModule extends ModuleImpl {
 
 		// Add module description
 		this.setDescription("Reads contents from a file. Can handle GZIP compression.");
+		
+		// Add module category
+		this.setCategory("I/O");
 	}
 
 	@Override

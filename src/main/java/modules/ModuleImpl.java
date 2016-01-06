@@ -23,6 +23,7 @@ public abstract class ModuleImpl implements Module {
 	private String description = "(no description)";
 	private Map<String,InputPort> inputPorts;
 	private Map<String,OutputPort> outputPorts;
+	private String category = null;
 
 	public ModuleImpl(CallbackReceiver callbackReceiver, Properties properties)
 			throws Exception {
@@ -284,6 +285,16 @@ public abstract class ModuleImpl implements Module {
 	@Override
 	public Map<String,OutputPort> getOutputPorts() {
 		return this.outputPorts;
+	}
+
+	@Override
+	public String getCategory() {
+		return category;
+	}
+
+	@Override
+	public void setCategory(String category) {
+		this.category = category;
 	}
 
 }

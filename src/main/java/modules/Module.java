@@ -108,5 +108,17 @@ public interface Module extends CallbackProcess {
 	 * @throws IOException Thrown if something goes wrong
 	 */
 	public void resetOutputs() throws IOException;
+	
+	/**
+	 * Returns the category name associated with this module.
+	 * @return Category name
+	 */
+	public String getCategory();
+
+	/**
+	 * Set category name.
+	 * @param category Category name
+	 */
+	public void setCategory(String category);
 
 }

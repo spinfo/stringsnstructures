@@ -73,6 +73,8 @@ public class OANCXMLParser extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		this.setDescription("Parses (O)ANC source files and outputs their contents in a configurable way. Needs a JSON list of the raw source text files as input; automatically determines the corresponding metadata XML files.");
+		// Add module category
+		this.setCategory("I/O");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(INPUTID, "JSON-encoded list of source text file locations.", this);

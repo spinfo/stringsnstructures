@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import java.util.logging.Logger;
 
-import modules.suffixTreeModuleWrapper.NodeRepresentation;
-import modules.suffixTreeModuleWrapper.PatternInfoRepresentation;
-import modules.suffixTreeModuleWrapper.SuffixTreeRepresentation;
+import models.NodeRepresentation;
+import models.PatternInfoRepresentation;
+import models.SuffixTreeRepresentation;
 import modules.suffixTree.suffixTree.node.GeneralisedSuffixTreeNode;
 import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
 

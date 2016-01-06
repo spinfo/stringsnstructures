@@ -22,6 +22,7 @@ import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeF
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import common.parallelization.CallbackReceiver;
+import models.SuffixTreeRepresentation;
 
 /**
  * Module Rreads from KWIP modules output into a suffix tree. Constructs a
@@ -72,6 +73,9 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		// Set the modules name and description
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, MODULE_NAME);
 		this.setDescription(MODULE_DESCRIPTION);
+		
+		// Add module category
+		this.setCategory("Tree-building");
 
 		// Setup I/O, reads from char input produced by KWIP.
 		// json output is to a CharPipe as expected, but

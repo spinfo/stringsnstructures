@@ -11,6 +11,10 @@ import modules.Module;
 public class ToolTipJList<E> extends JList<Module> {
 	private static final long serialVersionUID = -7868066009909531086L;
 
+	public ToolTipJList() {
+		super();
+	}
+
 	public ToolTipJList(Module[] array) {
 		super(array);
 	}

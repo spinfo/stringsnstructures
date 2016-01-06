@@ -73,6 +73,8 @@ public class SuffixNetBuilderModule extends ModuleImpl {
 
 		// Add module description
 		this.setDescription("Builds a suffix net from the annotated JSON output of OANCXMLParser (expects one JSON object per line).");
+		// Add module category
+		this.setCategory("Experimental/WiP");
 
 	}
 

@@ -1,4 +1,4 @@
-package common;
+package models;
 
 public interface MutableTreeNode extends TreeNode {
 

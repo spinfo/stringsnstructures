@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import modules.suffixTreeModuleWrapper.NodeRepresentation;
-import modules.suffixTreeModuleWrapper.PatternInfoRepresentation;
-import modules.suffixTreeModuleWrapper.SuffixTreeRepresentation;
+import models.NodeRepresentation;
+import models.PatternInfoRepresentation;
+import models.SuffixTreeRepresentation;
 
 /**
  * Helper class, static methods to produce Bags Of Words.

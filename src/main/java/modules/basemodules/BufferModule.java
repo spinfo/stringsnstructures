@@ -21,7 +21,10 @@ public class BufferModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("Buffer module. Stores input until the pipe closes and only then writes it to the output.");
+		this.setDescription("<html><h1>Buffer module</h1><p>Stores input until the pipe closes and only then writes it to the output.</p></html>");
+		
+		// Add module category
+		this.setCategory("I/O");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Buffer Module"); // Property key for module name is defined in parent class

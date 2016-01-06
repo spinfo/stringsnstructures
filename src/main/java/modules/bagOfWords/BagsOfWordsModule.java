@@ -12,11 +12,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import common.parallelization.CallbackReceiver;
+import models.SuffixTreeRepresentation;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.suffixTreeModuleWrapper.SuffixTreeRepresentation;
 
 /**
  * This module reads either a) A JSON representation of a GeneralisedSuffixTree.
@@ -51,10 +51,10 @@ public class BagsOfWordsModule extends ModuleImpl {
 
 	// Name and description of this module for the User
 	private final static String MODULE_NAME = "BagsOfWords";
-	private final static String MODULE_DESCRIPTION = "This module reads either\n"
-			+ "a) A JSON representation of a GeneralisedSuffixTree. It then constructs bags of words from it. It assumes that the tree's pattern nrs stand in for sentence numbers and treats each node's label as a word.\n"
-			+ "b) A simple List of newline separated sentences. It then simply splits the words on whitespace.\n" + "\n"
-			+ "The output in either case is a JSON-serialized TreeMap<Integer,TreeMap<String,Integer>> mapping sentence numbers to maps of \"words\" with a count in the sentence.";
+	private final static String MODULE_DESCRIPTION = "<html>This module reads either<br/>"
+			+ "<ol><li>A JSON representation of a GeneralisedSuffixTree.<br/>It then constructs bags of words from it. It assumes<br/>that the tree's pattern nrs stand in for sentence<br/>numbers and treats each node's label as a word.</li>"
+			+ "<li>A simple List of newline separated sentences.<br/>It then simply splits the words on whitespace.</li></ol>" + "<br/>"
+			+ "The output in either case is a JSON-serialized<br/>TreeMap&lt;Integer,TreeMap&lt;String,Integer&gt;&gt; mapping<br/>sentence numbers to maps of \"words\" with a count in<br/>the sentence.</html>";
 
 	public BagsOfWordsModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 

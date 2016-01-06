@@ -59,6 +59,9 @@ public class TreeBuilder extends ModuleImpl {
 		
 		// Add module description
 		this.setDescription("Builds a suffixtree from the JSON output of OANCXMLParser (expects annotated JSON, one object per line). Can be configured to build other forms.");
+		
+		// Add module category
+		this.setCategory("Deprecated");
 	}
 
 	@Override
