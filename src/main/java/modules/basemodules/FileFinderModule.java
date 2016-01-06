@@ -38,7 +38,7 @@ public class FileFinderModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("Searches for files with the specified suffix beneath the specified path(s) and outputs their locations in a JSON-encoded file list.");
+		this.setDescription("<html>Searches for files with the specified suffix<br/>beneath the specified path(s) and outputs their<br/>locations in a JSON-encoded file list.</html>");
 		
 		// Add module category
 		this.setCategory("I/O");

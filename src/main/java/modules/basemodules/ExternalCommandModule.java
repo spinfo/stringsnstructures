@@ -38,7 +38,7 @@ public class ExternalCommandModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("Executes an external system command. Can use streamed character or byte input as command stdin.");
+		this.setDescription("<html>Executes an external system command.<br/>Can use streamed character or byte input as command stdin.</html>");
 		
 		// Add module category
 		this.setCategory("I/O");
