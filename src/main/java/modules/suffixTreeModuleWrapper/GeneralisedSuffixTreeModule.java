@@ -22,6 +22,7 @@ import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeF
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import common.parallelization.CallbackReceiver;
+import models.SuffixTreeRepresentation;
 
 /**
  * Module Rreads from KWIP modules output into a suffix tree. Constructs a
