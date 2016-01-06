@@ -351,6 +351,11 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 					//write content of inner node
 					setInnerNewickNode(newPropNode.getValue(), newPropNode.getCounter());
 					
+					//avoid additional comma error at the end of an inner node
+					if (lastTerm) {
+						removeLastCommaNewick();
+					}
+					
 					//add new node to current node
 					currPropNode.addNode(newPropNode.getValue(), newPropNode);
 					
@@ -363,6 +368,7 @@ public class SeqNewickExporterControllerV2 extends ModuleImpl {
 					SeqNewickNodeV2 newNode = deepNewickIteration(lastTerm, deepPair.getKey(), deepPair.getValue(),currPropNode);
 					setInnerNewickNode(newNode.getValue(), newNode.getCounter()); //write content of inner node
 					
+					//avoid additional comma error at the end of an inner node
 					if (lastTerm) {
 						removeLastCommaNewick();
 					}
