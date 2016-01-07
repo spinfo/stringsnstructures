@@ -54,6 +54,9 @@ import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 
+//TODO: import your module
+import modules.basemodules.ExampleRandString;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
@@ -347,8 +350,15 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		treeBuilderV2ModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilderV2Module.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilderV2Module.applyProperties();
 		
+		// ExampleRandString
+		Properties exampleRandStringProperties = new Properties();
+		ExampleRandString exampleRandString  = new ExampleRandString(moduleNetwork, 
+				exampleRandStringProperties);
+		exampleRandStringProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleRandString.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		exampleRandString.applyProperties();
+		
 		/*
-		 * ADD MODULE INSTANCES TO LIST BELOW
+		 * TODO: ADD MODULE INSTANCES TO LIST BELOW
 		 */
 		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
@@ -388,6 +398,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(treeBalanceIndexModule.getName(), treeBalanceIndexModule);
 		availableModules.put(externalCommandModule.getName(), externalCommandModule);
 		availableModules.put(treeBuilderV2Module.getName(), treeBuilderV2Module);
+		availableModules.put(exampleRandString.getName(), exampleRandString);
 	}
 	
 	/**
