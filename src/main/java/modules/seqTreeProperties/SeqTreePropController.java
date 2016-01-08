@@ -455,12 +455,16 @@ public class SeqTreePropController extends ModuleImpl {
 			lastStr = j.getNodeName();
 			
 			for (SeqProperties i : seqPropertiesSortedInverted) {
-			
+				/*
+				 * Increase cophenetic index only if the lastStr is a substring of the current sequence.
+				 * This avoids calculating the n choose k value for the root of the tree
+				 * */ 
 				if (i.getNodeName().length() > lastStr.length() && !(i.getNodeName().equals(lastStr)) && i.getNodeName().substring(0, lastStr.length()).equals(lastStr)) {
 					lastCophVal += this.copheneticIndex.get(i.getNodeName()).getBinomialCoeff();
 					termNode = false;
 				}
 				
+				//increase Sackin index only if the lastStr is a substring of the current sequence OR if it is equal
 				if (i.getNodeName().length() >= lastStr.length() && (i.getNodeName().equals(lastStr) || i.getNodeName().substring(0, lastStr.length()).equals(lastStr))) {
 					lastSackinVal += this.sackinIndex.get(i.getNodeName()).getNodeNumber(); 
 				}
