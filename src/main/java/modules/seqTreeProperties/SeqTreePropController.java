@@ -67,6 +67,8 @@ public class SeqTreePropController extends ModuleImpl {
 	private double avCopheneticIndex;
 	// cophenetic index
 	private int copheneticIndexVal;
+	// cophenetic indexes for subtrees
+	HashMap<String, Integer> subCophTrees;
 	
 	//variables for calculating the Sackin index
 	private HashMap<String, SeqSackinIndex> sackinIndex;
@@ -74,6 +76,8 @@ public class SeqTreePropController extends ModuleImpl {
 	private double avSackinIndex; 
 	//sackin index
 	private double sackinIndexVal;
+	//sackin indexes for subtrees
+	HashMap<String, Integer> subSackinTrees;
 	
 	//sackin variance
 	//private double sackinVar;
@@ -182,12 +186,16 @@ public class SeqTreePropController extends ModuleImpl {
 		seqPropertiesOutput = seqPropertiesOutput + "Average Sackin index of paths:\t" + avSackinIndex + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Average cophenetic index of paths:\t" + this.avCopheneticIndex + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Total number of leaves:\t" + totalNumOfLeaves + "\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Sackin index:\t" + sackinIndexVal + "\n";
+		seqPropertiesOutput = seqPropertiesOutput + "Sackin index:\t" + this.sackinIndexVal + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Cophenetic index:\t" + this.copheneticIndexVal + "\n";
 		
 		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\tcophenetic index\n";
 		for (SeqProperties i : seqPropertiesSorted) {
-			seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() + "\t" + i.getLeafNum() + "\t" + this.copheneticIndex.get(i.getNodeName()).getBinomialCoeff() + "\n";
+			if (i.getNodeName().equals("^")) {
+				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() + "\t" + this.sackinIndexVal + "\t" + this.copheneticIndexVal + "\n";
+			} else {
+				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() + "\t" + this.subSackinTrees.get(i.getNodeName()) + "\t" + this.subCophTrees.get(i.getNodeName()) + "\n";
+			}
 		}
 	}
 	
@@ -361,7 +369,7 @@ public class SeqTreePropController extends ModuleImpl {
 		//remember the length of the last path
 		int lastLength = this.seqProperties.get("^").getPathLength();
 		
-		//instantiate variables to remember information about path length and path ratio
+		//instantiate variables to remember information about path length and indexes
 		this.averagePathLength = new ArrayList<Integer>();
 		this.sackinIndexLeavesList = new ArrayList<Integer>();
 		this.copheneticIndexBinomList = new ArrayList<Integer>();
@@ -378,6 +386,7 @@ public class SeqTreePropController extends ModuleImpl {
 			if (!(pair.getKey() == "^")) { // do not include the root; 
 				this.copheneticIndexBinomList.add(this.copheneticIndex.get(pair.getKey()).getBinomialCoeff());
 			}
+			
 			
 			
 			if (pair.getValue().getPathLength() >= lastLength) {
@@ -426,6 +435,51 @@ public class SeqTreePropController extends ModuleImpl {
 			this.copheneticIndexVal = this.copheneticIndexVal + i;
 		}
 		
+		//calculate Sackin and cophenetic indexes for subtrees
+		this.subCophTrees = new HashMap<String, Integer> ();
+		this.subSackinTrees = new HashMap<String, Integer> ();
+		
+		ArrayList <SeqProperties> seqPropertiesSortedInverted = new ArrayList <SeqProperties> ();
+		
+		for (SeqProperties i : this.seqPropertiesSorted) {
+			if (!(i.getNodeName() == "^")) {
+				seqPropertiesSortedInverted.add(0, i);
+			}
+		}
+		
+		String lastStr = "";
+		int lastCophVal = 0;
+		int lastSackinVal = 0;
+		boolean termNode = true;
+		for (SeqProperties j : seqPropertiesSortedInverted) {
+			lastStr = j.getNodeName();
+			
+			for (SeqProperties i : seqPropertiesSortedInverted) {
+				/*
+				 * Increase cophenetic index only if the lastStr is a substring of the current sequence.
+				 * This avoids calculating the n choose k value for the root of the tree
+				 * */ 
+				if (i.getNodeName().length() > lastStr.length() && !(i.getNodeName().equals(lastStr)) && i.getNodeName().substring(0, lastStr.length()).equals(lastStr)) {
+					lastCophVal += this.copheneticIndex.get(i.getNodeName()).getBinomialCoeff();
+					termNode = false;
+				}
+				
+				//increase Sackin index only if the lastStr is a substring of the current sequence OR if it is equal
+				if (i.getNodeName().length() >= lastStr.length() && (i.getNodeName().equals(lastStr) || i.getNodeName().substring(0, lastStr.length()).equals(lastStr))) {
+					lastSackinVal += this.sackinIndex.get(i.getNodeName()).getNodeNumber(); 
+				}
+			}
+			
+			if (termNode) {
+				lastCophVal = 1;
+			}
+			this.subCophTrees.put(lastStr, lastCophVal);
+			this.subSackinTrees.put(lastStr,lastSackinVal);
+			lastCophVal = 0;
+			lastSackinVal = 0;
+			termNode = true;
+		}
+				
 		this.avSackinIndex = (double) this.sackinIndexVal / (double) this.averagePathLength.size();
 		this.avCopheneticIndex = (double) this.copheneticIndexVal / (double) this.averagePathLength.size();
 	}
