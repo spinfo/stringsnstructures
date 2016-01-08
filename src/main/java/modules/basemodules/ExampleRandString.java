@@ -17,7 +17,7 @@ import modules.OutputPort;
 public class ExampleRandString extends modules.ModuleImpl {
 	
 	//Add property keys:
-		public static final String PROPERTYKEY_STRLEN = "Length of the random String";
+	public static final String PROPERTYKEY_STRLEN = "Length of the random String";
 			
 	//Add properties variables:
 	private int strLength;
@@ -27,8 +27,6 @@ public class ExampleRandString extends modules.ModuleImpl {
 	
 	//Add I/O labels
 	private final String OUTPUTID = "output";
-	
-	//End variables
 	
 	//Add constructors:
 	public ExampleRandString(CallbackReceiver callbackReceiver,
@@ -56,9 +54,7 @@ public class ExampleRandString extends modules.ModuleImpl {
 		
 		//Add module category
 		this.setCategory("Examples");
-	}
-	
-	//End constructors 
+	} 
 	
 	//Add methods:
 	
@@ -66,8 +62,7 @@ public class ExampleRandString extends modules.ModuleImpl {
 		
 	public void setSeqString(String s) {
 		this.string += s;
-	}	
-	//End setters
+	}
 		
 	//Add getters:
 	
@@ -75,18 +70,20 @@ public class ExampleRandString extends modules.ModuleImpl {
 		return this.string;
 	}
 	
-	//End getters
-	
 	//Add "applyProperties() method
 	@Override
 	public void applyProperties() throws Exception {
+		// Set defaults for properties not yet set
 		super.setDefaultsIfMissing();
+		
+		// Apply own properties
 		if (this.getProperties().containsKey(PROPERTYKEY_STRLEN))
 			this.strLength = Integer.parseInt(this.getProperties().getProperty(
 					PROPERTYKEY_STRLEN));
+		
+		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
 	}
-	//End applyProperites()
 	
 	//Add "process()" method
 	@Override
@@ -113,19 +110,13 @@ public class ExampleRandString extends modules.ModuleImpl {
 		}
 		
 		//write random string to output pipe with a try block
-		try {
-			
-			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.string);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.string);
+		
 		// close outputs 
 		this.closeAllOutputs();
 		
 		//success
 		return true;
 	}
-	//End process() method
 
 }

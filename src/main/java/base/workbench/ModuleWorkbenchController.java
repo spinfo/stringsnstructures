@@ -56,6 +56,8 @@ import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 
 //TODO: import your module
 import modules.basemodules.ExampleRandString;
+import modules.basemodules.ExampleGsonSerialization;
+import modules.basemodules.ExampleGsonDeserialization;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -357,6 +359,20 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		exampleRandStringProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleRandString.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		exampleRandString.applyProperties();
 		
+		// ExampleGsonSerialization
+		Properties exampleGsonSerializationProperties = new Properties();
+		ExampleGsonSerialization exampleGsonSerialization  = new ExampleGsonSerialization(moduleNetwork, 
+				exampleGsonSerializationProperties);
+		exampleGsonSerializationProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleGsonSerialization.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		exampleGsonSerialization.applyProperties();
+		
+		// ExampleGsonDeserialization
+		Properties exampleGsonDeserializationProperties = new Properties();
+		ExampleGsonDeserialization exampleGsonDeserialization  = new ExampleGsonDeserialization(moduleNetwork, 
+				exampleGsonDeserializationProperties);
+		exampleGsonDeserializationProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleGsonDeserialization.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		exampleGsonDeserialization.applyProperties();
+				
 		/*
 		 * TODO: ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -399,6 +415,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(externalCommandModule.getName(), externalCommandModule);
 		availableModules.put(treeBuilderV2Module.getName(), treeBuilderV2Module);
 		availableModules.put(exampleRandString.getName(), exampleRandString);
+		availableModules.put(exampleGsonSerialization.getName(), exampleGsonSerialization);
+		availableModules.put(exampleGsonDeserialization.getName(), exampleGsonDeserialization);
 	}
 	
 	/**
