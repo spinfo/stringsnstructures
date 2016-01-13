@@ -109,7 +109,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 
 	@Override
 	public boolean process() throws Exception {
-		boolean result = false;
+		boolean result = true;
 
 		try {
 			// read the whole text once, necessary to know the text's length
@@ -221,7 +221,10 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 					listOut.outputToAllCharPipes(label + "\n");
 				}
 			}
-			// no catch block, this should just crash on error
+
+		} catch (Exception e) {
+			result = false;
+			throw e;
 		} finally {
 			this.closeAllOutputs();
 		}
