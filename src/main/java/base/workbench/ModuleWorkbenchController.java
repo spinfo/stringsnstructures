@@ -55,6 +55,11 @@ import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
 
+//TODO: import your module
+import modules.basemodules.ExampleRandString;
+import modules.basemodules.ExampleGsonSerialization;
+import modules.basemodules.ExampleGsonDeserialization;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
