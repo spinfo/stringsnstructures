@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.SortedMap;
 
+import models.ExtensibleTreeNode;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
@@ -17,16 +18,13 @@ import modules.Pipe;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import common.parallelization.CallbackReceiver;
-import models.ParentRelationTreeNode;
-import models.ParentRelationTreeNodeImpl;
-import models.TreeNode;
 
-public class TreeBuilderV2GstModule extends ModuleImpl {
+public class TreeBuilderV3Module extends ModuleImpl {
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_INPUTDELIMITER = "Input delimiter";
+	public static final String PROPERTYKEY_OUTPUTDELIMITER = "Output delimiter";
 	public static final String PROPERTYKEY_MAXDEPTH = "Tree depth";
 	public static final String PROPERTYKEY_OMITREDUNDANTINFO = "Omit redundant info";
 	public static final String PROPERTYKEY_STRUCTURE = "Compact or atomic?";
@@ -38,32 +36,35 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 	
 	// Local variables
 	private String inputDelimiter = "\\$";
+	private String outputDelimiter = " ";
 	private int maxDepth = -1;
 	private boolean omitRedundantInformation;
 	private boolean compactTree;
 	//private int maxThreads;
 
-	public TreeBuilderV2GstModule(CallbackReceiver callbackReceiver,
+	public TreeBuilderV3Module(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
 		
 		// Call parent constructor
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("TreeBuilder v2 module. Can process larger datasets more quickly. Replaces AtomicRangeSuffixTrieBuilder and TreeBuilder.");
+		this.setDescription("<html><h1>TreeBuilder v3 module</h1><p>Can process larger datasets more quickly and has the capability to construct Generalised Suffix Trees.</p><p>Replaces TreeBuilder v2 module.</p></html>");
 		
 		// Add module category
-		this.setCategory("Experimental/WiP");
+		this.setCategory("Tree-building");
 
 		// Add property descriptions (obligatory for every property!)
-		//this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for the input; leave empty for char-by-char segmentation.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for the input; leave empty for char-by-char segmentation.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTDELIMITER, "String to use as segmentation delimiter for the output; must match with the input delimiter regex; leave empty for char-by-char segmentation.");
 		//this.getPropertyDescriptions().put(PROPERTYKEY_MAXDEPTH, "Maximum depth for the resulting tree; set to -1 for no constraint.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_OMITREDUNDANTINFO, "Omit redundant information upon creating the tree (do not set nodevalue, since this info is already contained within the parent's child node mapping key).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_STRUCTURE, "Type of suffix tree to output; possible values are 'compact' and 'atomic'.");
 		
 		// Add property defaults (_should_ be provided for every property)
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "TreeBuilder v2 Module"); // Property key for module name is defined in parent class
-		//this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTDELIMITER, "[\\s]+");
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "TreeBuilder v3 Module"); // Property key for module name is defined in parent class
+		this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTDELIMITER, "[\\s]+");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTDELIMITER, " ");
 		//this.getPropertyDefaultValues().put(PROPERTYKEY_MAXDEPTH, "-1");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OMITREDUNDANTINFO, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_STRUCTURE, "compact");
@@ -90,42 +91,21 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 		
-		// Construct scanner instances for input segmentation
-		Scanner inputScanner1 = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
-		inputScanner1.useDelimiter(this.inputDelimiter);
+		// Define additional attribute key for nodes
+		final String attribkey_parentnode = "parent";
 		
-		ArrayList <String> inputStrList = new ArrayList<String>();
-		// Input read loop
-		while (inputScanner1.hasNext()){
-			
-			// Check for interrupt signal
-			if (Thread.interrupted()) {
-				inputScanner1.close();
-				this.closeAllOutputs();
-				throw new InterruptedException("Thread has been interrupted.");
-			}
-			
-			// Determine next segment
-			inputStrList.add(inputScanner1.next());
-		}
-		
-		inputScanner1.close();
-		
-		
-		// Initialise trie root node
-		ParentRelationTreeNode rootNode = new ParentRelationTreeNodeImpl("^", null);
-		//if (inputScanner.hasNext()) // Root node counter has to be set to one from start if there is any input 
-			rootNode.setNodeCounter(1);
+		// Initialise tree root node
+		ExtensibleTreeNode rootNode = new ExtensibleTreeNode("^");
+		rootNode.setNodeCounter(1);
+		rootNode.getAttributes().put(attribkey_parentnode, null);
 		
 		// Initialise leaf list
-		List<ParentRelationTreeNode> leafList = new ArrayList<ParentRelationTreeNode>();
+		List<ExtensibleTreeNode> leafList = new ArrayList<ExtensibleTreeNode>();
 		leafList.add(rootNode);
 		
-		
-		for (String str : inputStrList) {
-			Scanner inputScanner = new Scanner(str);
-			System.out.println(str);
-			inputScanner.useDelimiter("");
+		// Instantiate input scanner
+		Scanner inputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
+		inputScanner.useDelimiter(this.inputDelimiter);
 		
 		// Input read loop
 		while (inputScanner.hasNext()){
@@ -138,7 +118,7 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 			}
 			
 			// Determine next segment
-			String inputSegment = inputScanner.next();
+			String inputSegment = inputScanner.next().concat(this.outputDelimiter);
 			
 			/*
 			 * Each segment is to be attached as a child to each tree node
@@ -147,32 +127,32 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 			 * the created/found child node to next loop's list.
 			 */
 			
-			List<ParentRelationTreeNode> nextLeafList = new ArrayList<ParentRelationTreeNode>(leafList.size()+1);
+			List<ExtensibleTreeNode> nextLeafList = new ArrayList<ExtensibleTreeNode>(leafList.size()+1);
 			nextLeafList.add(rootNode);
 			
-			Iterator<ParentRelationTreeNode> leaves = leafList.iterator();
+			Iterator<ExtensibleTreeNode> leaves = leafList.iterator();
 			while (leaves.hasNext()){
 				// Determine next node
-				ParentRelationTreeNode node = leaves.next();
+				ExtensibleTreeNode node = leaves.next();
 				
 				// Get child node for the read segment
-				ParentRelationTreeNode childNode = null;
+				ExtensibleTreeNode childNode = null;
 				if (compactTree){
 					// Determine all child nodes that start with the read segment (amount can only be one or zero)
-					SortedMap<String, TreeNode> childNodesThatStartWithSegment = node.getChildNodesByPrefix(inputSegment);
+					SortedMap<String, ExtensibleTreeNode> childNodesThatStartWithSegment = node.getChildNodes().subMap(inputSegment, inputSegment + Character.MAX_VALUE);
 					if (!childNodesThatStartWithSegment.isEmpty()){
 						String childNodeValue = childNodesThatStartWithSegment.firstKey();
-						childNode = (ParentRelationTreeNode) childNodesThatStartWithSegment.get(childNodeValue);
+						childNode = (ExtensibleTreeNode) childNodesThatStartWithSegment.get(childNodeValue);
 						// If the child node's value is longer than the input segment, we have to insert a split (i.e. a new node)
 						if (childNodeValue.length()>inputSegment.length()){
 							// Determine the part of the child node value to detach as a suffix
 							String childNodeValueSuffix = childNodeValue.substring(inputSegment.length());
 							
 							// Determine parent node value
-							String parentNodeValue = node.getNodeValue();
+							String parentNodeValue = (String) node.getNodeValue();
 							// If the value is only present as a map key, we have to search it first
 							if (omitRedundantInformation && !node.equals(rootNode)){
-								for (Entry<String, TreeNode> entry : node.getParentNode().getChildNodes().entrySet()) {
+								for (Entry<String, ExtensibleTreeNode> entry : ((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode))).getChildNodes().entrySet()) {
 							        if (Objects.equals(node, entry.getValue())) {
 							        	parentNodeValue = entry.getKey();
 							        	break;
@@ -192,8 +172,8 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 								if (!omitRedundantInformation)
 									node.setNodeValue(parentNodeValue+inputSegment);
 								// Update grandparent map key
-								node.getParentNode().getChildNodes().remove(parentNodeValue);
-								node.getParentNode().getChildNodes().put(parentNodeValue+inputSegment, node);
+								((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode))).getChildNodes().remove(parentNodeValue);
+								((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode))).getChildNodes().put(parentNodeValue+inputSegment, node);
 								// Re-attach child node
 								node.getChildNodes().put(childNodeValueSuffix, childNode);
 								
@@ -201,16 +181,17 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 								childNode = node;
 							} else {
 								// Create new node for the read segment
-								ParentRelationTreeNode newNode = new ParentRelationTreeNodeImpl(node);
+								ExtensibleTreeNode newNode = new ExtensibleTreeNode();
+								newNode.getAttributes().put(attribkey_parentnode, node);
 								newNode.setNodeCounter(childNode.getNodeCounter());
 								if (!omitRedundantInformation)
 									newNode.setNodeValue(inputSegment);
 								// Attach new node to parent node
 								node.getChildNodes().put(inputSegment, newNode);
-								newNode.setParentNode(node);
+								newNode.getAttributes().put(attribkey_parentnode, node);
 								// Re-attach child node
 								newNode.getChildNodes().put(childNodeValueSuffix, childNode);
-								childNode.setParentNode(newNode);
+								childNode.getAttributes().put(attribkey_parentnode, newNode);
 								
 								// Update child node reference (because the child node will be added to next iteration's leaf list further down)
 								childNode = newNode;
@@ -219,7 +200,7 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 					}
 					
 				} else
-					childNode = (ParentRelationTreeNode) node.getChildNodes().get(inputSegment);
+					childNode = (ExtensibleTreeNode) node.getChildNodes().get(inputSegment);
 				
 				// Check if child node does not yet exist (and if so, create it)
 				if (childNode == null){
@@ -232,15 +213,15 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 						// If the value is only present as a map key, we have to search it first
 						if (omitRedundantInformation){
 							
-							for (Entry<String, TreeNode> entry : node.getParentNode().getChildNodes().entrySet()) {
+							for (Entry<String, ExtensibleTreeNode> entry : ((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode))).getChildNodes().entrySet()) {
 						        if (Objects.equals(node, entry.getValue())) {
 						        	nodeValue = entry.getKey();
 						        	break;
 						        }
 						    }
 						}
-						node.getParentNode().getChildNodes().values().remove(node);
-						node.getParentNode().getChildNodes().put(nodeValue+inputSegment, node);
+						((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode))).getChildNodes().values().remove(node);
+						((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode))).getChildNodes().put(nodeValue+inputSegment, node);
 						if (!omitRedundantInformation)
 							node.setNodeValue(nodeValue+inputSegment);
 						node.getChildNodes().clear();
@@ -248,20 +229,21 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 						
 						
 					} else {
-						childNode = new ParentRelationTreeNodeImpl(node);
+						childNode = new ExtensibleTreeNode();
+						childNode.getAttributes().put(attribkey_parentnode, node);
 						if (!omitRedundantInformation)
 							childNode.setNodeValue(inputSegment);
 						node.getChildNodes().put(inputSegment, childNode);
 						
 						// Increment child node counter
-						childNode.incNodeCounter();
+						childNode.setNodeCounter(childNode.getNodeCounter()+1);
 						
 						// If there is a new split, increment ancestor node counters
-						ParentRelationTreeNode ancestor = node;
+						ExtensibleTreeNode ancestor = node;
 						if (ancestor.getChildNodes().size() > 1)
 							while (ancestor != null) {
-								ancestor.incNodeCounter();
-								ancestor = ancestor.getParentNode();
+								ancestor.setNodeCounter(ancestor.getNodeCounter()+1);
+								ancestor = ((ExtensibleTreeNode)(ancestor.getAttributes().get(attribkey_parentnode)));
 							}
 					}
 				} else {
@@ -275,8 +257,7 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 						// search it first
 						if (omitRedundantInformation) {
 
-							for (Entry<String, TreeNode> entry : node
-									.getParentNode().getChildNodes().entrySet()) {
+							for (Entry<String, ExtensibleTreeNode> entry : ((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode))).getChildNodes().entrySet()) {
 								if (Objects.equals(node, entry.getValue())) {
 									nodeValue = entry.getKey();
 									break;
@@ -289,21 +270,21 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 						// search it first
 						if (omitRedundantInformation) {
 
-							for (Entry<String, TreeNode> entry : node.getChildNodes().entrySet()) {
+							for (Entry<String, ExtensibleTreeNode> entry : node.getChildNodes().entrySet()) {
 								if (Objects.equals(childNode, entry.getValue())) {
 									childNodeValue = entry.getKey();
 									break;
 								}
 							}
 						}
-						node.getParentNode().getChildNodes().values()
+						((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode))).getChildNodes().values()
 								.remove(node);
-						node.getParentNode().getChildNodes()
+						((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode))).getChildNodes()
 								.put(nodeValue + childNodeValue, childNode);
 						if (!omitRedundantInformation)
 							childNode.setNodeValue(nodeValue + childNodeValue);
 						node.getChildNodes().clear();
-						childNode.setParentNode(node.getParentNode());
+						childNode.getAttributes().put(attribkey_parentnode, (((ExtensibleTreeNode)(node.getAttributes().get(attribkey_parentnode)))));
 					}
 				}
 				
@@ -317,22 +298,19 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 			// Update list reference
 			leafList = nextLeafList;
 		}
-		// Close input scanner
 		inputScanner.close();
-		
-		}
 		
 		
 		
 		// Loop over leaves to eliminate parent relations (since they make serialisation impossible)
-		Iterator<ParentRelationTreeNode> leaves = leafList.iterator();
+		Iterator<ExtensibleTreeNode> leaves = leafList.iterator();
 		while (leaves.hasNext()){
-			ParentRelationTreeNode leaf = leaves.next();
-			ParentRelationTreeNode parent = leaf.getParentNode();
+			ExtensibleTreeNode leaf = leaves.next();
+			ExtensibleTreeNode parent = (((ExtensibleTreeNode)(leaf.getAttributes().get(attribkey_parentnode))));
 			while (parent != null){
-				leaf.setParentNode(null);
+				leaf.getAttributes().put(attribkey_parentnode, null);
 				leaf = parent;
-				parent = parent.getParentNode();
+				parent = (((ExtensibleTreeNode)(parent.getAttributes().get(attribkey_parentnode))));
 			}
 		}
 		
@@ -367,8 +345,11 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 		super.setDefaultsIfMissing();
 		
 		// Apply own properties
-		/*this.inputDelimiter = this.getProperties().getProperty(PROPERTYKEY_INPUTDELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_INPUTDELIMITER));
-		String maxDepthString = this.getProperties().getProperty(PROPERTYKEY_MAXDEPTH, this.getPropertyDefaultValues().get(PROPERTYKEY_MAXDEPTH));
+		this.inputDelimiter = this.getProperties().getProperty(PROPERTYKEY_INPUTDELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_INPUTDELIMITER));
+		this.outputDelimiter = this.getProperties().getProperty(PROPERTYKEY_OUTPUTDELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_OUTPUTDELIMITER));
+		if (!(this.outputDelimiter == null && this.inputDelimiter == null) && !this.outputDelimiter.matches(this.inputDelimiter))
+			throw new Exception("The specified output delimiter does not match with the current input delimiter.");
+		/*String maxDepthString = this.getProperties().getProperty(PROPERTYKEY_MAXDEPTH, this.getPropertyDefaultValues().get(PROPERTYKEY_MAXDEPTH));
 		if (maxDepthString != null)
 			this.maxDepth = Integer.parseInt(maxDepthString);*/
 

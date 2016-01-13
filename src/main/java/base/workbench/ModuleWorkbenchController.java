@@ -48,11 +48,12 @@ import modules.suffixTreeModuleWrapper.GeneralisedSuffixTreeModule;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.TreeBalanceIndexModule;
 import modules.treeBuilder.TreeBuilder;
+import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder.TreeBuilderV2Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
+import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
-import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -347,6 +348,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		treeBuilderV2ModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilderV2Module.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilderV2Module.applyProperties();
 		
+		// TreeBuilderV2GSTModule
+		Properties treeBuilderV2GSTModuleProperties = new Properties();
+		TreeBuilderV3Module treeBuilderV2GSTModule  = new TreeBuilderV3Module(moduleNetwork, 
+				treeBuilderV2GSTModuleProperties);
+		treeBuilderV2GSTModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilderV2GSTModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		treeBuilderV2GSTModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -388,6 +396,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(treeBalanceIndexModule.getName(), treeBalanceIndexModule);
 		availableModules.put(externalCommandModule.getName(), externalCommandModule);
 		availableModules.put(treeBuilderV2Module.getName(), treeBuilderV2Module);
+		availableModules.put(treeBuilderV2GSTModule.getName(), treeBuilderV2GSTModule);
 	}
 	
 	/**

@@ -1,5 +1,6 @@
 package modules.suffixTreeModuleWrapper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -21,15 +22,14 @@ import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
 import modules.suffixTree.suffixTree.node.info.End;
 import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import common.parallelization.CallbackReceiver;
-import models.SuffixTreeRepresentation;
 
 /**
- * Module Rreads from KWIP modules output into a suffix tree. Constructs a
+ * Module Reads from KWIP modules output into a suffix tree. Constructs a
  * representation of that tree, that can be used as input for clustering.
+ * 
+ * Alternatively reads a simple String of '$'-separated sentences and does the
+ * same.
  * 
  * @author David Neugebauer
  */
@@ -78,7 +78,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		// Set the modules name and description
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, MODULE_NAME);
 		this.setDescription(MODULE_DESCRIPTION);
-		
+
 		// Add module category
 		this.setCategory("Tree-building");
 
@@ -109,6 +109,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 
 	@Override
 	public boolean process() throws Exception {
+		boolean result = false;
+
 		try {
 			// read the whole text once, necessary to know the text's length
 			final String text = readStringFromInputPort(this.getInputPorts().get(INPUT_TEXT_ID));
@@ -149,10 +151,10 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				// traverse the remaining portions of the input string
 				ExtActivePoint extActivePoint;
 				String nextText;
-				
+
 				// set end for first text, end indicates termination symbol $
 				suffixTreeAppl.oo.setEnd(end);
-				
+
 				start = end + 1;
 				end = text.indexOf(TERMINATOR, start);
 				while (end != -1) {
@@ -182,7 +184,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 
 					// set end for text read, end indicates termination symbol $
 					suffixTreeAppl.oo.setEnd(end);
-					
+
 					// reset text window for the next cycle
 					start = end + 1;
 					end = text.indexOf(TERMINATOR, start);
@@ -195,8 +197,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			// connected
 			final OutputPort jsonOut = this.getOutputPorts().get(OUTPUT_JSON_ID);
 			if (jsonOut.isConnected()) {
-				final String ouput = generateJsonOutput(suffixTreeAppl);
-				jsonOut.outputToAllCharPipes(ouput);
+
+				writeJsonOutput(suffixTreeAppl, jsonOut);
 			} else {
 				LOGGER.info("No port for json connected, not producing json output.");
 			}
@@ -225,7 +227,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			this.closeAllOutputs();
 		}
 
-		return true;
+		return result;
 	}
 
 	/**
@@ -240,8 +242,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	 * @throws NumberFormatException
 	 *             If a line in the input could not be parsed as an Integer
 	 */
-	private ArrayList<Integer> readUnitListFromInput(InputPort unitsPort)
-			throws Exception {
+	private ArrayList<Integer> readUnitListFromInput(InputPort unitsPort) throws Exception {
 		ArrayList<Integer> unitsList = new ArrayList<Integer>();
 
 		final String[] inputStrings = NEWLINE_PATTERN.split(readStringFromInputPort(unitsPort));
@@ -253,28 +254,26 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	}
 
 	/**
-	 * Generates JSON output
+	 * Genereates JSON output for the suffixTree and continually writes it to
+	 * all char pipes connected to the json OutputPort
 	 * 
 	 * @param suffixTreeAppl
-	 *            suffix tree application instance
-	 * @return JSON string
+	 *            the suffixTree to write
+	 * @param outputPort
+	 *            the OutputPort to write to
+	 * @throws IOException
 	 */
-	private String generateJsonOutput(SuffixTreeAppl suffixTreeAppl) {
+	private void writeJsonOutput(SuffixTreeAppl suffixTreeAppl, OutputPort outputPort) throws IOException {
 		// A node stack for the Listener to work with
 		ResultSuffixTreeNodeStack nodeStack = new ResultSuffixTreeNodeStack(suffixTreeAppl);
 
-		// build an object to hold a representation of the tree for output
-		// and add it's nodes via a listener.
-		final SuffixTreeRepresentation suffixTreeRepresentation = new SuffixTreeRepresentation();
-		final ResultToRepresentationListener listener = new ResultToRepresentationListener(suffixTreeRepresentation, nodeStack);
-		suffixTreeRepresentation.setUnitCount(suffixTreeAppl.unitCount);
-		suffixTreeRepresentation.setNodeCount(suffixTreeAppl.getCurrentNode());
+		// Initialize a new TreeWalkerListener, that directly writes to the
+		// connected outputPort
+		final ResultToRepresentationListener listener = new ResultToRepresentationListener(nodeStack, outputPort);
 		TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
 
-		// serialize the representation to JSON
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		final String output = gson.toJson(suffixTreeRepresentation);
-		return output;
+		// close the listener
+		listener.finishWriting();
 	}
 
 	@Override
