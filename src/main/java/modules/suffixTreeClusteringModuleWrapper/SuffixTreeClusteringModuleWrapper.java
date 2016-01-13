@@ -98,8 +98,12 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// module description
-		this.setDescription("This is a wrapper to modularize the clustering process. It takes two inputs: "
-				+ "KWIP suffix tree result in xml format and the suffix tree itself in xml format");
+		this.setDescription("<html><h1>SuffixTreeClusteringWrapper</h1><p>This is a wrapper to modularize the clustering process.<br/>"
+				+ "It takes two inputs:<br/>"
+				+ "<ul type =\"disc\" ><li>KWIP suffix tree result in xml format</li><li>the suffix tree itself in xml format</li></ul></p></html>");
+		
+		// Add module category
+		this.setCategory("VectorClustering");
 		
 		// property descriptions 
 		this.getPropertyDescriptions().put(PROPERTYKEY_CLUST, "Three possible clustering types: \"NJ\" "
@@ -279,7 +283,7 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		//LOGGER.info("Flaches Clustern von " + types.size() + " Types");
 		List<FlatCluster> fClusters = f_analysis.analyse(3, 10);
 		for (FlatCluster cluster : fClusters) {
-			System.out.println(cluster);
+			System.out.println(cluster.getMedoid().getString());
 		}
 		this.clustResult = f_analysis.toDot();
 		// System.out.println(dot);
