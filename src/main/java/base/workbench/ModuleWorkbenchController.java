@@ -360,6 +360,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		treeBuilderV2GSTModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilderV2GSTModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilderV2GSTModule.applyProperties();
 		
+		// ExampleRandString
+		Properties exampleRandStringProperties = new Properties();
+		ExampleRandString exampleRandString  = new ExampleRandString(moduleNetwork, 
+				exampleRandStringProperties);
+		exampleRandStringProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleRandString.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		exampleRandString.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -402,6 +409,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(externalCommandModule.getName(), externalCommandModule);
 		availableModules.put(treeBuilderV2Module.getName(), treeBuilderV2Module);
 		availableModules.put(treeBuilderV2GSTModule.getName(), treeBuilderV2GSTModule);
+		availableModules.put(exampleRandString.getName(), exampleRandString);
 	}
 	
 	/**
