@@ -367,6 +367,20 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		exampleRandStringProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleRandString.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		exampleRandString.applyProperties();
 		
+		// ExampleGsonSerialization
+		Properties exampleGsonSerializationProperties = new Properties();
+		ExampleGsonSerialization exampleGsonSerialization  = new ExampleGsonSerialization(moduleNetwork, 
+				exampleGsonSerializationProperties);
+		exampleGsonSerializationProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleGsonSerialization.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		exampleGsonSerialization.applyProperties();
+		
+		// ExampleGsonDeserialization
+		Properties exampleGsonDeserializationProperties = new Properties();
+		ExampleGsonDeserialization exampleGsonDeserialization  = new ExampleGsonDeserialization(moduleNetwork, 
+				exampleGsonDeserializationProperties);
+		exampleGsonDeserializationProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleGsonDeserialization.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		exampleGsonDeserialization.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -410,6 +424,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(treeBuilderV2Module.getName(), treeBuilderV2Module);
 		availableModules.put(treeBuilderV2GSTModule.getName(), treeBuilderV2GSTModule);
 		availableModules.put(exampleRandString.getName(), exampleRandString);
+		availableModules.put(exampleGsonSerialization.getName(), exampleGsonSerialization);
+		availableModules.put(exampleGsonDeserialization.getName(), exampleGsonDeserialization);
 	}
 	
 	/**
