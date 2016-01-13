@@ -10,9 +10,6 @@ import java.util.Scanner;
 import java.util.SortedMap;
 
 import models.ExtensibleTreeNode;
-import models.ParentRelationTreeNode;
-import models.ParentRelationTreeNodeImpl;
-import models.TreeNode;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
@@ -21,10 +18,9 @@ import modules.Pipe;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import common.parallelization.CallbackReceiver;
 
-public class TreeBuilderV2GstModule extends ModuleImpl {
+public class TreeBuilderV3Module extends ModuleImpl {
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_INPUTDELIMITER = "Input delimiter";
@@ -46,17 +42,17 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 	private boolean compactTree;
 	//private int maxThreads;
 
-	public TreeBuilderV2GstModule(CallbackReceiver callbackReceiver,
+	public TreeBuilderV3Module(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
 		
 		// Call parent constructor
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("<html><h1>TreeBuilder v2 GST module</h1><p>Can process larger datasets more quickly and has the capability to construct Generalised Suffix Trees.</p><p>Replaces AtomicRangeSuffixTrieBuilder and TreeBuilder.</p></html>");
+		this.setDescription("<html><h1>TreeBuilder v3 module</h1><p>Can process larger datasets more quickly and has the capability to construct Generalised Suffix Trees.</p><p>Replaces TreeBuilder v2 module.</p></html>");
 		
 		// Add module category
-		this.setCategory("Experimental/WiP");
+		this.setCategory("Tree-building");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for the input; leave empty for char-by-char segmentation.");
@@ -66,7 +62,7 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_STRUCTURE, "Type of suffix tree to output; possible values are 'compact' and 'atomic'.");
 		
 		// Add property defaults (_should_ be provided for every property)
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "TreeBuilder v2 GST Module"); // Property key for module name is defined in parent class
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "TreeBuilder v3 Module"); // Property key for module name is defined in parent class
 		this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTDELIMITER, "[\\s]+");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTDELIMITER, " ");
 		//this.getPropertyDefaultValues().put(PROPERTYKEY_MAXDEPTH, "-1");
@@ -302,6 +298,7 @@ public class TreeBuilderV2GstModule extends ModuleImpl {
 			// Update list reference
 			leafList = nextLeafList;
 		}
+		inputScanner.close();
 		
 		
 		

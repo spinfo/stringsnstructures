@@ -53,7 +53,7 @@ public class TreeBuilderV2Module extends ModuleImpl {
 		this.setDescription("TreeBuilder v2 module. Can process larger datasets more quickly. Replaces AtomicRangeSuffixTrieBuilder and TreeBuilder.");
 		
 		// Add module category
-		this.setCategory("Tree-building");
+		this.setCategory("Deprecated");
 
 		// Add property descriptions (obligatory for every property!)
 		//this.getPropertyDescriptions().put(PROPERTYKEY_INPUTDELIMITER, "Regular expression to use as segmentation delimiter for the input; leave empty for char-by-char segmentation.");

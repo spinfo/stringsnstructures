@@ -48,7 +48,7 @@ import modules.suffixTreeModuleWrapper.GeneralisedSuffixTreeModule;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.TreeBalanceIndexModule;
 import modules.treeBuilder.TreeBuilder;
-import modules.treeBuilder.TreeBuilderV2GstModule;
+import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder.TreeBuilderV2Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
@@ -350,7 +350,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		
 		// TreeBuilderV2GSTModule
 		Properties treeBuilderV2GSTModuleProperties = new Properties();
-		TreeBuilderV2GstModule treeBuilderV2GSTModule  = new TreeBuilderV2GstModule(moduleNetwork, 
+		TreeBuilderV3Module treeBuilderV2GSTModule  = new TreeBuilderV3Module(moduleNetwork, 
 				treeBuilderV2GSTModuleProperties);
 		treeBuilderV2GSTModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilderV2GSTModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilderV2GSTModule.applyProperties();
