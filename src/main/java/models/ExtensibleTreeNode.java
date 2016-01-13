@@ -8,7 +8,7 @@ public class ExtensibleTreeNode {
 	
 	private String nodeValue;
 	private int nodeCounter = 0;
-	private Map<String,ExtensibleTreeNode> childNodes = new TreeMap<String,ExtensibleTreeNode>();
+	private TreeMap<String,ExtensibleTreeNode> childNodes = new TreeMap<String,ExtensibleTreeNode>();
 	private Map<String,Object> attributes = new HashMap<String,Object>();
 	
 	public ExtensibleTreeNode() {
@@ -27,7 +27,7 @@ public class ExtensibleTreeNode {
 	/**
 	 * @return the childNodes
 	 */
-	public Map<String, ExtensibleTreeNode> getChildNodes() {
+	public TreeMap<String, ExtensibleTreeNode> getChildNodes() {
 		return childNodes;
 	}
 	/**
@@ -51,7 +51,7 @@ public class ExtensibleTreeNode {
 	/**
 	 * @param childNodes the childNodes to set
 	 */
-	public void setChildNodes(Map<String, ExtensibleTreeNode> childNodes) {
+	public void setChildNodes(TreeMap<String, ExtensibleTreeNode> childNodes) {
 		this.childNodes = childNodes;
 	}
 	/**
