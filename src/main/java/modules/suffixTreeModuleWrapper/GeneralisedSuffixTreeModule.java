@@ -2,6 +2,7 @@ package modules.suffixTreeModuleWrapper;
 
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -12,6 +13,7 @@ import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
 import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
+import modules.suffixTree.suffixTree.applications.ResultToLabelListListener;
 import modules.suffixTree.suffixTree.applications.ResultToRepresentationListener;
 import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.suffixTree.applications.TreeWalker;
@@ -21,6 +23,7 @@ import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeF
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import common.parallelization.CallbackReceiver;
 import models.SuffixTreeRepresentation;
 
@@ -48,6 +51,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_JSON_DESC = "[text/json] A json representation of the tree build, suitable for clustering.";
 	private static final String OUTPUT_XML_ID = "xml";
 	private static final String OUTPUT_XML_DESC = "[bytestream] An xml representation of the tree build, suitbale for clustering.";
+	private static final String OUTPUT_LIST_ID = "label list";
+	private static final String OUTPUT_LIST_DESC = "[text/plain] A list of labels separated by newline";
 
 	// Container to hold units if provided
 	private ArrayList<Integer> unitList = null;
@@ -96,6 +101,10 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		OutputPort outputXmlPort = new OutputPort(OUTPUT_XML_ID, OUTPUT_XML_DESC, this);
 		outputXmlPort.addSupportedPipe(BytePipe.class);
 		super.addOutputPort(outputXmlPort);
+		
+		OutputPort outputListPort = new OutputPort(OUTPUT_LIST_ID, OUTPUT_LIST_DESC, this);
+		outputListPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputListPort);
 	}
 
 	@Override
@@ -199,6 +208,16 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				xmlOut.outputToAllBytePipes(output.getBytes());
 			} else {
 				LOGGER.info("No port for xml connected, not producing xml output.");
+			}
+			// constructs output of a list of labels, one label on each line
+			final OutputPort listOut = this.getOutputPorts().get(OUTPUT_LIST_ID);
+			if (listOut.isConnected()) {
+				final ResultToLabelListListener listener = new ResultToLabelListListener(suffixTreeAppl);
+				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
+				final TreeSet<String> labels = listener.getLabels();
+				for (String label : labels) {
+					listOut.outputToAllCharPipes(label + "\n");
+				}
 			}
 
 			// no catch block, this should just crash on error
