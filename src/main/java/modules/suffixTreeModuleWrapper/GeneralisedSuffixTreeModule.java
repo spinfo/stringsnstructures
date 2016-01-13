@@ -15,7 +15,7 @@ import modules.OutputPort;
 import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
 import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
 import modules.suffixTree.suffixTree.applications.ResultToLabelListListener;
-import modules.suffixTree.suffixTree.applications.ResultToRepresentationListener;
+import modules.suffixTree.suffixTree.applications.ResultToJsonListener;
 import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.suffixTree.applications.TreeWalker;
 import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
@@ -221,7 +221,6 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 					listOut.outputToAllCharPipes(label + "\n");
 				}
 			}
-
 			// no catch block, this should just crash on error
 		} finally {
 			this.closeAllOutputs();
@@ -269,7 +268,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 
 		// Initialize a new TreeWalkerListener, that directly writes to the
 		// connected outputPort
-		final ResultToRepresentationListener listener = new ResultToRepresentationListener(nodeStack, outputPort);
+		final ResultToJsonListener listener = new ResultToJsonListener(nodeStack, outputPort);
 		TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
 
 		// close the listener

@@ -21,9 +21,9 @@ import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
  * The contract is, that this object writes json that can be deserialized to an
  * instance of <code>SuffixTreeRepresentation</code>.
  */
-public class ResultToRepresentationListener implements ITreeWalkerListener {
+public class ResultToJsonListener implements ITreeWalkerListener {
 
-	private static final Logger LOGGER = Logger.getLogger(ResultToRepresentationListener.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(ResultToJsonListener.class.getName());
 
 	private static final String ENCODING = java.nio.charset.StandardCharsets.UTF_8.name();
 
@@ -42,7 +42,7 @@ public class ResultToRepresentationListener implements ITreeWalkerListener {
 	private JsonWriter writer;
 	private boolean wroteBegin = false;
 
-	public ResultToRepresentationListener(ResultSuffixTreeNodeStack nodeStack, OutputPort outputPort) {
+	public ResultToJsonListener(ResultSuffixTreeNodeStack nodeStack, OutputPort outputPort) {
 		this.nodeStack = nodeStack;
 		this.suffixTreeAppl = this.nodeStack.getSuffixTreeAppl();
 		this.outputPort = outputPort;
