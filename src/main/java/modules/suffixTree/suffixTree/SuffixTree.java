@@ -201,9 +201,6 @@ public class SuffixTree {
 			if (!nodes[active_node].children.containsKey(active_edge())) {
 				int endposition = nodes[active_node].getNodeInfo().getEnd() - 1;
 				if (endposition == 1073741822) {
-					for (int k = 0; k < currentPosition; k++) {
-						System.out.print(text[k]);
-					}
 					LOGGER.fine("Text length: " + text.length);
 				}
 				if ((endposition < 0)  || (endposition == (Integer.MAX_VALUE / 2)-1) || (!(text[endposition] == '$'))) {
