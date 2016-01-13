@@ -15,8 +15,10 @@ public class ResultToLabelListListener implements ITreeWalkerListener {
 
 	@Override
 	public void entryaction(int nodeNr, int level) {
-		final String label = suffixTree.edgeString(nodeNr);
-		labels.add(label);
+		if (nodeNr != suffixTree.getRoot()) {
+			final String label = suffixTree.edgeString(nodeNr);
+			labels.add(label);
+		}
 	}
 
 	@Override
