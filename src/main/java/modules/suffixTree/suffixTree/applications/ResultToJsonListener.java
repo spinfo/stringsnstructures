@@ -30,11 +30,7 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 	// the OutputPort to write to
 	private final OutputPort outputPort;
 
-	// a node stack that the listener can collect nodes on
-	private final ResultSuffixTreeNodeStack nodeStack;
-
-	// the suffixTreeAppl that this class will serialize as retrieved from the
-	// nodeStack
+	// the suffixTreeAppl that this class will serialize
 	private final SuffixTreeAppl suffixTreeAppl;
 
 	// variables needed internally to write the Json representation
@@ -42,9 +38,8 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 	private JsonWriter writer;
 	private boolean wroteBegin = false;
 
-	public ResultToJsonListener(ResultSuffixTreeNodeStack nodeStack, OutputPort outputPort) {
-		this.nodeStack = nodeStack;
-		this.suffixTreeAppl = this.nodeStack.getSuffixTreeAppl();
+	public ResultToJsonListener(SuffixTreeAppl suffixTreeAppl, OutputPort outputPort) {
+		this.suffixTreeAppl = suffixTreeAppl;
 		this.outputPort = outputPort;
 
 		this.outputStream = new ByteArrayOutputStream();
@@ -58,21 +53,13 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 	}
 
 	/**
-	 * This simply pushes the node number of the current node on a stack for
-	 * later processing on the exitaction.
-	 * 
-	 * The reason for this seems to be, that the ResultSuffixTreeNodeStack can
-	 * elegantly get a representation of a node's label on the exitaction.
-	 * 
-	 * Before any node's are processed this also ensures that the beginning of
-	 * the tree was already written.
+	 * Before any node's are processed this ensures that the beginning of
+	 * the tree is written.
 	 */
 	@Override
 	public void entryaction(int nodeNr, int level) throws IOException {
 		if (!this.wroteBegin)
 			writeBegin();
-
-		this.nodeStack.push(nodeNr);
 	}
 
 	/**
@@ -85,30 +72,21 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 		// the node's label and identifying number are simply retrieved from the
 		// node stack. The identifying nodeNr is strictly necessary, so we do
 		// not catch the possible EmptyStackException at this point
-		final String label = this.nodeStack.writeStack();
-		int stackedNodeNr = this.nodeStack.pop();
-
-		if (stackedNodeNr != nodeNr) {
-			LOGGER.severe(
-					"Stacked node nr does not match the node number given by the TreeWalker. Maybe something went wrong in the nodeStack?");
+		final String label;
+		if (nodeNr == suffixTreeAppl.getRoot()) {
+			label = "";
+		} else {
+			label = suffixTreeAppl.edgeString(nodeNr);
 		}
 
 		// For the rest of the information we need to retrieve the node
-		final GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTreeAppl.nodes[stackedNodeNr]);
+		final GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTreeAppl.nodes[nodeNr]);
 		final ArrayList<TextStartPosInfo> nodeList = node.getStartPositionOfSuffix();
 		final int frequency = nodeList.size();
 
-		// TODO write a comment explaining this... (Copied from
-		// ResultToXmlListener)
-		if (!this.nodeStack.empty()) {
-			final int mother = this.nodeStack.peek();
-			final GeneralisedSuffixTreeNode motherNode = ((GeneralisedSuffixTreeNode) suffixTreeAppl.nodes[mother]);
-			motherNode.getStartPositionOfSuffix().addAll(nodeList);
-		}
-
 		// output the beginning of the NodeRepresentation
 		writer.beginObject();
-		writer.name("number").value(stackedNodeNr);
+		writer.name("number").value(nodeNr);
 		writer.name("label").value(label);
 		writer.name("frequency").value(frequency);
 
