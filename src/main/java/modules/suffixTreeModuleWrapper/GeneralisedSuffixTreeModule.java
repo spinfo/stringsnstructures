@@ -13,7 +13,6 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
-import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
 import modules.suffixTree.suffixTree.applications.ResultToLabelListListener;
 import modules.suffixTree.suffixTree.applications.ResultToJsonListener;
 import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
@@ -101,7 +100,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		OutputPort outputXmlPort = new OutputPort(OUTPUT_XML_ID, OUTPUT_XML_DESC, this);
 		outputXmlPort.addSupportedPipe(BytePipe.class);
 		super.addOutputPort(outputXmlPort);
-		
+
 		OutputPort outputListPort = new OutputPort(OUTPUT_LIST_ID, OUTPUT_LIST_DESC, this);
 		outputListPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputListPort);
@@ -220,6 +219,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				for (String label : labels) {
 					listOut.outputToAllCharPipes(label + "\n");
 				}
+			} else {
+				LOGGER.info("No port for plain text label list connected, output skipped.");
 			}
 
 		} catch (Exception e) {
@@ -266,12 +267,9 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	 * @throws IOException
 	 */
 	private void writeJsonOutput(SuffixTreeAppl suffixTreeAppl, OutputPort outputPort) throws IOException {
-		// A node stack for the Listener to work with
-		ResultSuffixTreeNodeStack nodeStack = new ResultSuffixTreeNodeStack(suffixTreeAppl);
-
-		// Initialize a new TreeWalkerListener, that directly writes to the
-		// connected outputPort
-		final ResultToJsonListener listener = new ResultToJsonListener(nodeStack, outputPort);
+		// Initialize and use a new TreeWalkerListener, that directly writes to
+		// the connected outputPort
+		final ResultToJsonListener listener = new ResultToJsonListener(suffixTreeAppl, outputPort);
 		TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
 
 		// close the listener
