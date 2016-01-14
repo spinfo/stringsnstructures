@@ -471,7 +471,7 @@ public class SeqTreePropController extends ModuleImpl {
 			}
 			
 			if (termNode) {
-				lastCophVal = 1;
+				lastCophVal = 0;
 			}
 			this.subCophTrees.put(lastStr, lastCophVal);
 			this.subSackinTrees.put(lastStr,lastSackinVal);
