@@ -69,9 +69,7 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 	@Override
 	public void exitaction(int nodeNr, int level) throws IOException {
 
-		// the node's label and identifying number are simply retrieved from the
-		// node stack. The identifying nodeNr is strictly necessary, so we do
-		// not catch the possible EmptyStackException at this point
+		// Output the node's label, root gets a blank label
 		final String label;
 		if (nodeNr == suffixTreeAppl.getRoot()) {
 			label = "";
