@@ -64,7 +64,7 @@ public class TreeBuilderV3Module extends ModuleImpl {
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions()
 				.put(PROPERTYKEY_OUTERINPUTDELIMITER,
-						"Regular expression to use as outer segmentation delimiter for the input (to discern independent strings from each other); set to '\\\\z' for single string input.");
+						"<p>The <i>outer input delimiter</i> is used to discern strings from each other that will be inserted into the resulting tree independently, resulting into a <i>Generalised Suffix Tree</i>.</p><p>The value is interpreted as a <i>Regular Expression</i>, e.g. '$' marks the end of a line and '\\$' means the actual dollar sign; set to '\\z' for single string input.</p>");
 		this.getPropertyDescriptions()
 				.put(PROPERTYKEY_INNERINPUTDELIMITER,
 						"Regular expression to use as inner segmentation delimiter for the input; leave empty for char-by-char segmentation.");
