@@ -14,6 +14,7 @@ public class SeqNewickNodeV2 {
 	private String nodeValue; //string saved in the node
 	private int nodeCounter; //Zaehler value
 	HashMap<String, SeqNewickNodeV2> childNodes;
+	private Map<String,Object> attributes = new HashMap<String,Object>();
 	
 	//end variables
 	
@@ -70,6 +71,12 @@ public class SeqNewickNodeV2 {
 		return ++this.nodeCounter;
 	}
 		
+	/**
+	 * @param attributes the attributes to set
+	 */
+	public void setAttributes(Map<String, Object> attributes) {
+		this.attributes = attributes;
+	}
 	//end setters
 	
 	//getters:
@@ -96,7 +103,12 @@ public class SeqNewickNodeV2 {
 	public Map<String, SeqNewickNodeV2> getChildNodes() {
 		return this.childNodes;
 	}
-		
+	/**
+	 * @return the attributes
+	 */
+	public Map<String, Object> getAttributes() {
+		return attributes;
+	}
 	//end getters
 	//end methods
 }
