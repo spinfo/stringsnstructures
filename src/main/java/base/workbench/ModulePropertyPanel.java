@@ -16,6 +16,9 @@ import javax.swing.JTextField;
  */
 public class ModulePropertyPanel extends JPanel implements KeyListener {
 
+	public static final String DESCRIPTIONBOX_PREFIX = "<html><div style='width:300px; background-color:FFFFFF;'>";
+	public static final String DESCRIPTIONBOX_SUFFIX = "</div></html>";
+	
 	private static final long serialVersionUID = -1586278882294925349L;
 	private PropertyQuadrupel property;
 	private JTextField valueTextField;
@@ -41,11 +44,13 @@ public class ModulePropertyPanel extends JPanel implements KeyListener {
 	private void initialize(){
 		// Clear old components (if present)
 		this.removeAll();
+		// Create description text
+		String description = DESCRIPTIONBOX_PREFIX+"<h1 style='font-size:12px;'>"+this.property.getKey()+"</h1>"+this.property.getDescription()+DESCRIPTIONBOX_SUFFIX;
 		// Create labels and input fields according to given property
 		JLabel keyLabel = new JLabel(this.property.getKey()+" ");
-		keyLabel.setToolTipText(this.property.getDescription());
+		keyLabel.setToolTipText(description);
 		this.valueTextField = new JTextField();
-		this.valueTextField.setToolTipText(this.property.getDescription());
+		this.valueTextField.setToolTipText(description);
 		this.valueTextField.addKeyListener(this);
 		if (this.property.getValue() != null){
 			this.valueTextField.setText(this.property.getValue());
