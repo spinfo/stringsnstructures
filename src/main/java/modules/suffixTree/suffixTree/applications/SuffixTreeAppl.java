@@ -159,7 +159,6 @@ public class SuffixTreeAppl extends SuffixTree {
 
 				} /* char in edge not equal to char in edge */
 				else {
-					System.out.println();
 					{
 						write(1,
 								"ExtActivePoint return 3 SuffixTreeAppl.longestPath 2: ",
@@ -197,7 +196,6 @@ public class SuffixTreeAppl extends SuffixTree {
 		for (int i = 0; i <= this.getCurrentPosition(); i++) {
 			LOGGER.fine("" + text[i]);
 		}
-		System.out.println();
 	}
 
 	// *************************************** Print Suffix Tree

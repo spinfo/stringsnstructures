@@ -360,12 +360,11 @@ public class SuffixTree {
 				text[i] = textStr.charAt(i);
 				LOGGER.fine("" + text[i]);
 			}
-			System.out.println();
 			// System.out.print("text (phase): ");
 			for (int i = 0; i < text.length; i++) {
 				LOGGER.finer("Char: " + text[i]);
-				if (text[i] == '$')
-					System.out.println();
+				//if (text[i] == '$')
+				//	System.out.println();
 			}
 		}
 
