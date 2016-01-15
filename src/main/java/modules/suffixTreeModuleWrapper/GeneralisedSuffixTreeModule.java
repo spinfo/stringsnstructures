@@ -2,8 +2,10 @@ package modules.suffixTreeModuleWrapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.TreeSet;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -15,6 +17,7 @@ import modules.OutputPort;
 import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
 import modules.suffixTree.suffixTree.applications.ResultToLabelListListener;
 import modules.suffixTree.suffixTree.applications.ResultToJsonListener;
+import modules.suffixTree.suffixTree.applications.ResultToLabelFreqListListener;
 import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.suffixTree.applications.TreeWalker;
 import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
@@ -52,6 +55,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_XML_DESC = "[bytestream] An xml representation of the tree build, suitbale for clustering.";
 	private static final String OUTPUT_LIST_ID = "label list";
 	private static final String OUTPUT_LIST_DESC = "[text/plain] A list of labels separated by newline";
+	private static final String OUTPUT_FREQ_LIST_ID = "label frequencies list";
+	private static final String OUTPUT_FREQ_LIST_DESC = "[text/plain] A list of labels with frequencies separated by newline.";
 
 	// Container to hold units if provided
 	private ArrayList<Integer> unitList = null;
@@ -104,6 +109,10 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		OutputPort outputListPort = new OutputPort(OUTPUT_LIST_ID, OUTPUT_LIST_DESC, this);
 		outputListPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputListPort);
+
+		OutputPort outputFreqListPort = new OutputPort(OUTPUT_FREQ_LIST_ID, OUTPUT_FREQ_LIST_DESC, this);
+		outputFreqListPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputFreqListPort);
 	}
 
 	@Override
@@ -196,7 +205,6 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			// connected
 			final OutputPort jsonOut = this.getOutputPorts().get(OUTPUT_JSON_ID);
 			if (jsonOut.isConnected()) {
-
 				writeJsonOutput(suffixTreeAppl, jsonOut);
 			} else {
 				LOGGER.info("No port for json connected, not producing json output.");
@@ -210,17 +218,25 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.info("No port for xml connected, not producing xml output.");
 			}
-			// constructs output of a list of labels, one label on each line
+			// writes output of a list of labels, one label on each line
 			final OutputPort listOut = this.getOutputPorts().get(OUTPUT_LIST_ID);
 			if (listOut.isConnected()) {
 				final ResultToLabelListListener listener = new ResultToLabelListListener(suffixTreeAppl);
 				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
-				final TreeSet<String> labels = listener.getLabels();
+				final Set<String> labels = listener.getLabels();
 				for (String label : labels) {
 					listOut.outputToAllCharPipes(label + "\n");
 				}
 			} else {
 				LOGGER.info("No port for plain text label list connected, output skipped.");
+			}
+			// writes output of a list of labels with frequencies, one label per
+			// line
+			final OutputPort freqListOut = this.getOutputPorts().get(OUTPUT_FREQ_LIST_ID);
+			if (freqListOut.isConnected()) {
+				writeLabelFrequencyListOutput(suffixTreeAppl, freqListOut);
+			} else {
+				LOGGER.info("No port for label frequency list connecte, output skipped.");
 			}
 
 		} catch (Exception e) {
@@ -274,6 +290,40 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 
 		// close the listener
 		listener.finishWriting();
+	}
+
+	/**
+	 * Writes a list of labels for the provided suffix tree to the output port
+	 * followed by frequencies for these labels.
+	 * 
+	 * @param suffixTreeAppl
+	 *            the tree to get the labels and frequencies from
+	 * @param outputPort
+	 *            the output port to write to
+	 * @throws IOException
+	 */
+	private void writeLabelFrequencyListOutput(SuffixTreeAppl suffixTreeAppl, OutputPort outputPort)
+			throws IOException {
+		// traverse the tree to get a map for output
+		final ResultToLabelFreqListListener listener = new ResultToLabelFreqListListener(suffixTreeAppl);
+		TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
+		final Map<String, List<Integer>> labelsToFrequencies = listener.getLabelsToFrequencies();
+		// construcht output line by line
+		final StringBuilder sb = new StringBuilder();
+		List<Integer> frequencies = null;
+		for (String label : labelsToFrequencies.keySet()) {
+			sb.append(label);
+			sb.append(" ");
+			frequencies = labelsToFrequencies.get(label);
+			for (Integer frequency : frequencies) {
+				sb.append(frequency);
+				sb.append(" ");
+			}
+			sb.setCharAt(sb.length() - 1, '\n');
+			// output the line and reset string builder
+			outputPort.outputToAllCharPipes(sb.toString());
+			sb.setLength(0);
+		}
 	}
 
 	@Override
