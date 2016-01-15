@@ -2,23 +2,23 @@ package modules.suffixTree.suffixTree.applications;
 
 import java.util.TreeSet;
 
+import modules.suffixTree.suffixTree.SuffixTree;
+
 public class ResultToLabelListListener implements ITreeWalkerListener {
 	
 	private TreeSet<String> labels;
 	
-	private SuffixTreeAppl suffixTree;
+	private SuffixTree suffixTree;
 	
-	public ResultToLabelListListener(SuffixTreeAppl suffixTree) {
+	public ResultToLabelListListener(SuffixTree suffixTree) {
 		this.labels = new TreeSet<String>();
 		this.suffixTree = suffixTree;
 	}
 
 	@Override
 	public void entryaction(int nodeNr, int level) {
-		if (nodeNr != suffixTree.getRoot()) {
-			final String label = suffixTree.edgeString(nodeNr);
-			labels.add(label);
-		}
+		final String label = suffixTree.edgeString(nodeNr);
+		labels.add(label);
 	}
 
 	@Override

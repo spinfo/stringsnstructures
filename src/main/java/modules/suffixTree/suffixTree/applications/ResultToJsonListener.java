@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import com.google.gson.stream.JsonWriter;
 
 import modules.OutputPort;
+import modules.suffixTree.suffixTree.SuffixTree;
 import modules.suffixTree.suffixTree.node.GeneralisedSuffixTreeNode;
 import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
 
@@ -30,16 +31,16 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 	// the OutputPort to write to
 	private final OutputPort outputPort;
 
-	// the suffixTreeAppl that this class will serialize
-	private final SuffixTreeAppl suffixTreeAppl;
+	// the suffixTree that this class will serialize
+	private final SuffixTree suffixTree;
 
 	// variables needed internally to write the Json representation
 	private final ByteArrayOutputStream outputStream;
 	private JsonWriter writer;
 	private boolean wroteBegin = false;
 
-	public ResultToJsonListener(SuffixTreeAppl suffixTreeAppl, OutputPort outputPort) {
-		this.suffixTreeAppl = suffixTreeAppl;
+	public ResultToJsonListener(SuffixTree suffixTree, OutputPort outputPort) {
+		this.suffixTree = suffixTree;
 		this.outputPort = outputPort;
 
 		this.outputStream = new ByteArrayOutputStream();
@@ -71,14 +72,14 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 
 		// Output the node's label, root gets a blank label
 		final String label;
-		if (nodeNr == suffixTreeAppl.getRoot()) {
+		if (nodeNr == suffixTree.getRoot()) {
 			label = "";
 		} else {
-			label = suffixTreeAppl.edgeString(nodeNr);
+			label = suffixTree.edgeString(nodeNr);
 		}
 
 		// For the rest of the information we need to retrieve the node
-		final GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTreeAppl.nodes[nodeNr]);
+		final GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTree.nodes[nodeNr]);
 		final ArrayList<TextStartPosInfo> nodeList = node.getStartPositionOfSuffix();
 		final int frequency = nodeList.size();
 
@@ -134,8 +135,8 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 		}
 
 		writer.beginObject();
-		writer.name("unitCount").value(suffixTreeAppl.unitCount);
-		writer.name("nodeCount").value(suffixTreeAppl.getCurrentNode());
+		writer.name("unitCount").value(suffixTree.unitCount);
+		writer.name("nodeCount").value(suffixTree.getCurrentNode());
 		writer.name("nodes");
 		writer.beginArray();
 		flushOutput();
