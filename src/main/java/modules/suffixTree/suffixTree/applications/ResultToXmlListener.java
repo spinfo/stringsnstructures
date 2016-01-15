@@ -2,6 +2,7 @@ package modules.suffixTree.suffixTree.applications;
 
 import java.util.ArrayList;
 
+import modules.suffixTree.suffixTree.SuffixTree;
 import modules.suffixTree.suffixTree.node.GeneralisedSuffixTreeNode;
 import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
 
@@ -11,52 +12,38 @@ import modules.suffixTree.suffixTree.node.textStartPosInfo.TextStartPosInfo;
  */
 public class ResultToXmlListener implements ITreeWalkerListener {
 
-	XmlPrintWriter out;
+	// the XmlPrintWriter to use for writing 
+	private final XmlPrintWriter out;
 	
-	// a node stack that the listener can collect nodes on
-	private final ResultSuffixTreeNodeStack nodeStack;
+	// the SuffixTree to serialize
+	private final SuffixTree suffixTree;
 
 	// cstr
-	public ResultToXmlListener(XmlPrintWriter o, ResultSuffixTreeNodeStack nodeStack) {
+	public ResultToXmlListener(SuffixTree suffixTree, XmlPrintWriter o) {
+		this.suffixTree = suffixTree;
 		this.out = o;
-		this.nodeStack = nodeStack;
 	}
 
 	/**
-	 * This simply pushes the node number of the current node on a stack for
-	 * later processing on the exitaction.
-	 * 
-	 * The reason for this seems to be, that the ResultSuffixTreeNodeStack can
-	 * elegantly get a representation of a node's label on the exitaction.
+	 * Nothing is done on the entry action.
 	 */
 	@Override
 	public void entryaction(int nodeNr, int level) {
-		this.nodeStack.push(nodeNr);
+		// do nothing
 	}
 
 	@Override
 	public void exitaction(int nodeNr, int level) {
-		final SuffixTreeAppl suffixTreeAppl = this.nodeStack.getSuffixTreeAppl();
 		
-		String label = this.nodeStack.writeStack();
+		final String label = suffixTree.edgeString(nodeNr);
 
-		if (this.nodeStack.empty()) {
-			return;
-		}
-		int stackedNodeNr = this.nodeStack.pop();
-		GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTreeAppl.nodes[stackedNodeNr]);
+		GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTree.nodes[nodeNr]);
 		ArrayList<TextStartPosInfo> nodeList = node.getStartPositionOfSuffix();
-		if (!this.nodeStack.empty()) {
-			int mother = this.nodeStack.peek();
-			GeneralisedSuffixTreeNode motherNode = ((GeneralisedSuffixTreeNode) suffixTreeAppl.nodes[mother]);
 
-			motherNode.getStartPositionOfSuffix().addAll(nodeList);
-
-		}
 		// node(nr)
 		out.printTag("node", true, 1, true);
 		out.printTag("number", true, 2, false);
-		out.printInt(stackedNodeNr);
+		out.printInt(nodeNr);
 		out.printTag("number", false, 0, true);
 		// edge label
 		out.printTag("label", true, 2, false);

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import modules.suffixTree.suffixTree.applications.ResultSuffixTreeNodeStack;
 import modules.suffixTree.suffixTree.applications.ResultToXmlListener;
 import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.suffixTree.applications.TreeWalker;
@@ -186,7 +185,6 @@ public class GeneralisedSuffixTreeMain {
 	
 	// lets the tree's representation be printed to XMLPrintWriter out
 	private static void persistSuffixTreeToXml(XmlPrintWriter out, SuffixTreeAppl suffixTree) {
-		final ResultSuffixTreeNodeStack nodeStack = new ResultSuffixTreeNodeStack(suffixTree);
 
 		try {
 			out.printTag("output", true, 0, true);
@@ -198,7 +196,7 @@ public class GeneralisedSuffixTreeMain {
 			out.printInt(suffixTree.getCurrentNode());
 			out.printTag("nodes", false, 0, true);
 
-			ResultToXmlListener listener = new ResultToXmlListener(out, nodeStack);
+			ResultToXmlListener listener = new ResultToXmlListener(suffixTree, out);
 			TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
 			LOGGER.fine("rootnr: " + suffixTree.getRoot());
 			out.printTag("output", false, 0, true);

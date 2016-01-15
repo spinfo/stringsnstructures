@@ -3,6 +3,7 @@ package modules.suffixTree.suffixTree.applications;
 import java.util.ArrayList;
 import java.util.Stack;
 
+@Deprecated
 public class ResultSuffixTreeNodeStack {
 
 	private Stack<Integer> stack;

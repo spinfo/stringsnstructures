@@ -380,10 +380,14 @@ public class SuffixTree {
 	}
 
 	public String edgeString(int node) {
-		return new String(Arrays.copyOfRange(
-				this.text,
-				this.nodes[node].getStart(),
-				Math.min(this.getCurrentPosition() + 1,
-						this.nodes[node].getEnd(this.getPosition() + 1))));
+		if (node == this.getRoot()) {
+			return "";
+		} else {
+			return new String(Arrays.copyOfRange(
+					this.text,
+					this.nodes[node].getStart(),
+					Math.min(this.getCurrentPosition() + 1,
+							this.nodes[node].getEnd(this.getPosition() + 1))));	
+		}
 	}
 }
