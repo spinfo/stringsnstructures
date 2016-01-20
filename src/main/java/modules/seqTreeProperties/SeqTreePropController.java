@@ -58,6 +58,9 @@ public class SeqTreePropController extends ModuleImpl {
 	// total number of leaves of the tree
 	private int totalNumOfLeaves;
 	
+	// total number of innernodes for all sub trees
+	private HashMap<String, Integer> subTreeInnerNodes;
+	
 	//longestPath = height of the tree
 	private int longestPath;
 	
@@ -179,22 +182,28 @@ public class SeqTreePropController extends ModuleImpl {
 		
 		sortByPathLength();
 		calculateProps();
-		seqPropertiesOutput = "Longest Path for inner nodes:\t" + longestPath + "\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Longest Path (for leaves):\t" + (longestPath + 1) + "\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Average length of paths:\t" + avPathLen + "\n";
 		
-		seqPropertiesOutput = seqPropertiesOutput + "Average Sackin index of paths:\t" + avSackinIndex + "\n";
+		//prepare the output for general parameters and statistics for the whole tree
+		seqPropertiesOutput = "Longest Path for inner nodes:\t" + this.longestPath + "\n";
+		seqPropertiesOutput = seqPropertiesOutput + "Longest Path (for leaves):\t" + (this.longestPath + 1) + "\n";
+		seqPropertiesOutput = seqPropertiesOutput + "Average length of paths:\t" + this.avPathLen + "\n";
+		
+		seqPropertiesOutput = seqPropertiesOutput + "Average Sackin index of paths:\t" + this.avSackinIndex + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Average cophenetic index of paths:\t" + this.avCopheneticIndex + "\n";
-		seqPropertiesOutput = seqPropertiesOutput + "Total number of leaves:\t" + totalNumOfLeaves + "\n";
+		seqPropertiesOutput = seqPropertiesOutput + "Total number of leaves:\t" + this.totalNumOfLeaves + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Sackin index:\t" + this.sackinIndexVal + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Cophenetic index:\t" + this.copheneticIndexVal + "\n";
 		
-		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\tcophenetic index\n";
-		for (SeqProperties i : seqPropertiesSorted) {
+		//prepare the extracted parameters for subtrees
+		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\tcophenetic index\tnumber of leaves\tnumber of inner nodes\n";
+		for (SeqProperties i : this.seqPropertiesSorted) {
 			if (i.getNodeName().equals("^")) {
-				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() + "\t" + this.sackinIndexVal + "\t" + this.copheneticIndexVal + "\n";
+				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() 
+				+ "\t" + this.sackinIndexVal + "\t" + this.copheneticIndexVal + "\t" + this.totalNumOfLeaves + "\n";
 			} else {
-				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() + "\t" + this.subSackinTrees.get(i.getNodeName()) + "\t" + this.subCophTrees.get(i.getNodeName()) + "\n";
+				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() 
+				+ "\t" + this.subSackinTrees.get(i.getNodeName()) + "\t" + this.subCophTrees.get(i.getNodeName()) 
+				+ "\t" + i.getLeafNum() + "\t" + this.subCophTrees.get(i.getNodeName()) + "\n";
 			}
 		}
 	}
@@ -447,9 +456,18 @@ public class SeqTreePropController extends ModuleImpl {
 			}
 		}
 		
+		// string variable holding the current edge label
 		String lastStr = "";
+		
+		// integer variable holding the current value for the cophenetic index for a parituclar sub tree
 		int lastCophVal = 0;
+		
+		// integer variable holding the current value for the sackin index for a parituclar sub tree
 		int lastSackinVal = 0;
+		
+		// integer variable holding the number of internal nodes for the current sub tree
+		int currTreeInnerNodes = 0;
+		
 		boolean termNode = true;
 		for (SeqProperties j : seqPropertiesSortedInverted) {
 			lastStr = j.getNodeName();
@@ -466,7 +484,8 @@ public class SeqTreePropController extends ModuleImpl {
 				
 				//increase Sackin index only if the lastStr is a substring of the current sequence OR if it is equal
 				if (i.getNodeName().length() >= lastStr.length() && (i.getNodeName().equals(lastStr) || i.getNodeName().substring(0, lastStr.length()).equals(lastStr))) {
-					lastSackinVal += this.sackinIndex.get(i.getNodeName()).getNodeNumber(); 
+					lastSackinVal += this.sackinIndex.get(i.getNodeName()).getNodeNumber();
+					currTreeInnerNodes ++;
 				}
 			}
 			
@@ -475,6 +494,7 @@ public class SeqTreePropController extends ModuleImpl {
 			}
 			this.subCophTrees.put(lastStr, lastCophVal);
 			this.subSackinTrees.put(lastStr,lastSackinVal);
+			this.subTreeInnerNodes.put(lastStr,currTreeInnerNodes);
 			lastCophVal = 0;
 			lastSackinVal = 0;
 			termNode = true;
