@@ -15,6 +15,7 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.suffixTree.applications.ResultToJsonListener;
+import modules.suffixTree.applications.ResultToLabelChildCountListListener;
 import modules.suffixTree.applications.ResultToLabelFreqListListener;
 import modules.suffixTree.applications.ResultToLabelListListener;
 import modules.suffixTree.applications.SuffixTreeAppl;
@@ -31,6 +32,9 @@ import common.parallelization.CallbackReceiver;
  * 
  * Alternatively reads a simple String of '$'-separated sentences and does the
  * same.
+ * 
+ * Alternative outputs are available: Either a plain list of labels or one with
+ * added information for the label's occurences (e.g. child count).
  * 
  * @author David Neugebauer
  */
@@ -56,6 +60,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_LIST_DESC = "[text/plain] A list of labels separated by newline";
 	private static final String OUTPUT_FREQ_LIST_ID = "label frequencies list";
 	private static final String OUTPUT_FREQ_LIST_DESC = "[text/plain] A list of labels with frequencies separated by newline.";
+	private static final String OUTPUT_CHILDCOUNT_LIST_ID = "label child count list";
+	private static final String OUTPUT_CHILDCOUNT_LIST_DESC = "[text/plain] A list of labels with child counts for each occurence, separated by newline.";
 
 	// Container to hold units if provided
 	private ArrayList<Integer> unitList = null;
@@ -97,21 +103,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		inputUnitsPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputUnitsPort);
 
-		OutputPort outputJsonPort = new OutputPort(OUTPUT_JSON_ID, OUTPUT_JSON_DESC, this);
-		outputJsonPort.addSupportedPipe(CharPipe.class);
-		super.addOutputPort(outputJsonPort);
-
-		OutputPort outputXmlPort = new OutputPort(OUTPUT_XML_ID, OUTPUT_XML_DESC, this);
-		outputXmlPort.addSupportedPipe(BytePipe.class);
-		super.addOutputPort(outputXmlPort);
-
-		OutputPort outputListPort = new OutputPort(OUTPUT_LIST_ID, OUTPUT_LIST_DESC, this);
-		outputListPort.addSupportedPipe(CharPipe.class);
-		super.addOutputPort(outputListPort);
-
-		OutputPort outputFreqListPort = new OutputPort(OUTPUT_FREQ_LIST_ID, OUTPUT_FREQ_LIST_DESC, this);
-		outputFreqListPort.addSupportedPipe(CharPipe.class);
-		super.addOutputPort(outputFreqListPort);
+		this.setupOutputPorts();
 	}
 
 	@Override
@@ -233,9 +225,23 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			// line
 			final OutputPort freqListOut = this.getOutputPorts().get(OUTPUT_FREQ_LIST_ID);
 			if (freqListOut.isConnected()) {
-				writeLabelFrequencyListOutput(suffixTreeAppl, freqListOut);
+				// traverse the tree to get a map for output and output it
+				// afterwards
+				final ResultToLabelFreqListListener listener = new ResultToLabelFreqListListener(suffixTreeAppl);
+				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
+				this.writeLabelIntegerListOutput(listener.getLabelsToFrequencies(), freqListOut);
 			} else {
-				LOGGER.info("No port for label frequency list connecte, output skipped.");
+				LOGGER.info("No port for label frequency list connected, output skipped.");
+			}
+			// writes output of a list of labels with child counts for the
+			// respective nodes, one label
+			// per line
+			final OutputPort childCountListOut = this.getOutputPorts().get(OUTPUT_CHILDCOUNT_LIST_ID);
+			if (childCountListOut.isConnected()) {
+				final ResultToLabelChildCountListListener listener = new ResultToLabelChildCountListListener(
+						suffixTreeAppl);
+				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
+				this.writeLabelIntegerListOutput(listener.getLabelsToChildCounts(), childCountListOut);
 			}
 
 		} catch (Exception e) {
@@ -292,30 +298,21 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	}
 
 	/**
-	 * Writes a list of labels for the provided suffix tree to the output port
-	 * followed by frequencies for these labels.
-	 * 
-	 * @param suffixTreeAppl
-	 *            the tree to get the labels and frequencies from
-	 * @param outputPort
-	 *            the output port to write to
+	 * This is used internally to output a list of labels mapped to some
+	 * integers
+	 *
 	 * @throws IOException
 	 */
-	private void writeLabelFrequencyListOutput(SuffixTreeAppl suffixTreeAppl, OutputPort outputPort)
+	private void writeLabelIntegerListOutput(final Map<String, List<Integer>> labelsToIntegers, OutputPort outputPort)
 			throws IOException {
-		// traverse the tree to get a map for output
-		final ResultToLabelFreqListListener listener = new ResultToLabelFreqListListener(suffixTreeAppl);
-		TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
-		final Map<String, List<Integer>> labelsToFrequencies = listener.getLabelsToFrequencies();
-		// construcht output line by line
 		final StringBuilder sb = new StringBuilder();
-		List<Integer> frequencies = null;
-		for (String label : labelsToFrequencies.keySet()) {
+		List<Integer> integers = null;
+		for (String label : labelsToIntegers.keySet()) {
 			sb.append(label);
 			sb.append(" ");
-			frequencies = labelsToFrequencies.get(label);
-			for (Integer frequency : frequencies) {
-				sb.append(frequency);
+			integers = labelsToIntegers.get(label);
+			for (Integer integer : integers) {
+				sb.append(integer);
 				sb.append(" ");
 			}
 			sb.setCharAt(sb.length() - 1, '\n');
@@ -329,5 +326,30 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	public void applyProperties() throws Exception {
 		super.setDefaultsIfMissing();
 		super.applyProperties();
+	}
+
+	// this is normally done in the constructor, but was moved here to
+	// remove clutter from it
+	private void setupOutputPorts() {
+		OutputPort outputJsonPort = new OutputPort(OUTPUT_JSON_ID, OUTPUT_JSON_DESC, this);
+		outputJsonPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputJsonPort);
+
+		OutputPort outputXmlPort = new OutputPort(OUTPUT_XML_ID, OUTPUT_XML_DESC, this);
+		outputXmlPort.addSupportedPipe(BytePipe.class);
+		super.addOutputPort(outputXmlPort);
+
+		OutputPort outputListPort = new OutputPort(OUTPUT_LIST_ID, OUTPUT_LIST_DESC, this);
+		outputListPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputListPort);
+
+		OutputPort outputFreqListPort = new OutputPort(OUTPUT_FREQ_LIST_ID, OUTPUT_FREQ_LIST_DESC, this);
+		outputFreqListPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputFreqListPort);
+
+		OutputPort outputChildCountListPort = new OutputPort(OUTPUT_CHILDCOUNT_LIST_ID, OUTPUT_CHILDCOUNT_LIST_DESC,
+				this);
+		outputChildCountListPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputChildCountListPort);
 	}
 }
