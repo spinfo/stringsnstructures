@@ -14,16 +14,15 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.suffixTree.suffixMain.GeneralisedSuffixTreeMain;
-import modules.suffixTree.suffixTree.applications.ResultToLabelListListener;
-import modules.suffixTree.suffixTree.applications.ResultToJsonListener;
-import modules.suffixTree.suffixTree.applications.ResultToLabelFreqListListener;
-import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
-import modules.suffixTree.suffixTree.applications.TreeWalker;
-import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
-import modules.suffixTree.suffixTree.node.info.End;
-import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
-
+import modules.suffixTree.applications.ResultToJsonListener;
+import modules.suffixTree.applications.ResultToLabelFreqListListener;
+import modules.suffixTree.applications.ResultToLabelListListener;
+import modules.suffixTree.applications.SuffixTreeAppl;
+import modules.suffixTree.applications.TreeWalker;
+import modules.suffixTree.main.GeneralisedSuffixTreeMain;
+import modules.suffixTree.node.End;
+import modules.suffixTree.node.ExtActivePoint;
+import modules.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
 import common.parallelization.CallbackReceiver;
 
 /**
