@@ -32,7 +32,7 @@ public class ResultToLabelFreqListListener implements ITreeWalkerListener {
 		final List<Integer> frequencies = labelsToFrequencies.getOrDefault(label, new LinkedList<Integer>());
 		// For the rest of the information we need to retrieve the node
 		final GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTree.nodes[nodeNr]);
-		final ArrayList<TextStartPosInfo> nodeList = node.getStartPositionOfSuffix();
+		final ArrayList<TextStartPosInfo> nodeList = node.getStartPositionInformation();
 		// add everything and return
 		frequencies.add(nodeList.size());
 		labelsToFrequencies.put(label, frequencies);

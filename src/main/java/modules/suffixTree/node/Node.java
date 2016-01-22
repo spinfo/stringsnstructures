@@ -22,15 +22,37 @@ public abstract class Node {
 		this.nodeInfo = nodeInfo;
 	}
 
-	public abstract void addStartPositionOfSuffix(Object startPositionOfSuffix);
+	/**
+	 * Add information about the start of the suffix that was read producing
+	 * this (leaf) node.
+	 * 
+	 * @param startPositionOfSuffix
+	 *            depending on the suffix tree used this can be a simple integer
+	 *            or a TextStartPosInfo object
+	 */
+	public abstract void addStartPositionInformation(Object startPositionOfSuffix);
 
-	public abstract Object getStartPositionOfSuffix();
+	/**
+	 * Get information about the start of the suffix that was read producing
+	 * this (leaf) node
+	 * 
+	 * @param startPositionOfSuffix
+	 *            depending on the suffix tree used this can be a simple integer
+	 *            or a List of TextStartPosInfo objects
+	 */
+	public abstract Object getStartPositionInformation();
 
-	public abstract void printStartPositionOfSuffix(PrintWriter out);
+	/**
+	 * Print information about the start of the suffix that was read producing
+	 * this (leaf) node
+	 * 
+	 * @param out
+	 *            the PrintWriter to write to
+	 */
+	public abstract void printStartPositionInformation(PrintWriter out);
 
 	public int edgeLength(int position) {
-		return Math.min(this.nodeInfo.getEnd(), position + 1)
-				- nodeInfo.getStart();
+		return Math.min(this.nodeInfo.getEnd(), position + 1) - nodeInfo.getStart();
 	}
 
 	public int getStart() {

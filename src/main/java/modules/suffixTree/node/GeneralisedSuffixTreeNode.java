@@ -5,25 +5,25 @@ import java.util.ArrayList;
 
 public class GeneralisedSuffixTreeNode extends Node {
 
-	private ArrayList<TextStartPosInfo> startPositionOfSuffix;
+	private ArrayList<TextStartPosInfo> textStartPositionInfos;
 
 	public GeneralisedSuffixTreeNode(NodeInfo nodeInfo) {
 		super(nodeInfo);
-		startPositionOfSuffix = new ArrayList<TextStartPosInfo>();
+		textStartPositionInfos = new ArrayList<TextStartPosInfo>();
 
 	}
 
-	// is called in xxxNodeFactory
-	public void addStartPositionOfSuffix(Object startPosition) {
-		this.startPositionOfSuffix.add((TextStartPosInfo) startPosition);
+	// is called in the NodeFactory for GST nodes
+	public void addStartPositionInformation(Object startPosition) {
+		this.textStartPositionInfos.add((TextStartPosInfo) startPosition);
 	}
 
-	public ArrayList<TextStartPosInfo> getStartPositionOfSuffix() {
-		return this.startPositionOfSuffix;
+	public ArrayList<TextStartPosInfo> getStartPositionInformation() {
+		return this.textStartPositionInfos;
 	}
 
-	public void printStartPositionOfSuffix(PrintWriter out) {
-		for (TextStartPosInfo startPos : this.startPositionOfSuffix) {
+	public void printStartPositionInformation(PrintWriter out) {
+		for (TextStartPosInfo startPos : this.textStartPositionInfos) {
 			out.print(startPos.text + " " + startPos.startPositionOfSuffix
 					+ "\n");
 		}

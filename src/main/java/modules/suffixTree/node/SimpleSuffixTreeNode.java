@@ -12,16 +12,19 @@ public class SimpleSuffixTreeNode extends Node {
 		// {leafCount++;this.addStartPositionOfSuffix(leafCount);}
 	}
 
-	// is called in xxxNodeFactory
-	public void addStartPositionOfSuffix(Object startPositionOfSuffix) {
+	// is called in NodeFactory for Simple Suffix Tree
+	@Override
+	public void addStartPositionInformation(Object startPositionOfSuffix) {
 		this.startPositionOfSuffix = (int) startPositionOfSuffix;
 	}
 
-	public Object getStartPositionOfSuffix() {
+	@Override
+	public Object getStartPositionInformation() {
 		return this.startPositionOfSuffix;
 	}
 
-	public void printStartPositionOfSuffix(PrintWriter out) {
-		out.print(this.getStartPositionOfSuffix());
+	@Override
+	public void printStartPositionInformation(PrintWriter out) {
+		out.print(this.getStartPositionInformation());
 	}
 }

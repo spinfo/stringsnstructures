@@ -70,17 +70,16 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 	@Override
 	public void exitaction(int nodeNr, int level) throws IOException {
 
-		// Output the node's label, root gets a blank label
-		final String label;
-		if (nodeNr == suffixTree.getRoot()) {
-			label = "";
-		} else {
-			label = suffixTree.edgeString(nodeNr);
-		}
+		// Get the node's label, root gets a blank label
+		final String label = suffixTree.edgeString(nodeNr);
 
 		// For the rest of the information we need to retrieve the node
 		final GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTree.nodes[nodeNr]);
-		final ArrayList<TextStartPosInfo> nodeList = node.getStartPositionOfSuffix();
+		
+		// If the current node is a leaf node, retrieve it's position
+		// information that acts as a list of all occurences of the path through
+		// the tree that ends in this node
+		final ArrayList<TextStartPosInfo> nodeList = node.getStartPositionInformation();
 		final int frequency = nodeList.size();
 
 		// output the beginning of the NodeRepresentation

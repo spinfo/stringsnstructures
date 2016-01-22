@@ -260,7 +260,7 @@ public class SuffixTree {
 					active_length++;
 
 					if (ch == '$') {
-						nodes[child_node].addStartPositionOfSuffix
+						nodes[child_node].addStartPositionInformation
 								(new TextStartPosInfo(unit, textNr, ++leafCount));
 						active_length--;
 						write(1, messageFrom, "new startposition ");

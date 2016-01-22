@@ -12,7 +12,7 @@ public class SimpleSuffixTreeNodeFactory extends NodeFactory {
 		// leaf
 		if (nodeInfo.getEnd() == suffixTree.oo.getEnd()) {
 			suffixTree.leafCount++;
-			node.addStartPositionOfSuffix(suffixTree.leafCount);
+			node.addStartPositionInformation(suffixTree.leafCount);
 		}
 		;
 		return node;

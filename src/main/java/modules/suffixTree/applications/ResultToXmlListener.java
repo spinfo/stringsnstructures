@@ -12,9 +12,9 @@ import modules.suffixTree.node.TextStartPosInfo;
  */
 public class ResultToXmlListener implements ITreeWalkerListener {
 
-	// the XmlPrintWriter to use for writing 
+	// the XmlPrintWriter to use for writing
 	private final XmlPrintWriter out;
-	
+
 	// the SuffixTree to serialize
 	private final SuffixTree suffixTree;
 
@@ -34,11 +34,15 @@ public class ResultToXmlListener implements ITreeWalkerListener {
 
 	@Override
 	public void exitaction(int nodeNr, int level) {
-		
+
 		final String label = suffixTree.edgeString(nodeNr);
 
 		GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTree.nodes[nodeNr]);
-		ArrayList<TextStartPosInfo> nodeList = node.getStartPositionOfSuffix();
+
+		// If the current node is a leaf node, retrieve it's position
+		// information that acts as a list of all occurences of the path through
+		// the tree that ends in this node
+		ArrayList<TextStartPosInfo> occurenceList = node.getStartPositionInformation();
 
 		// node(nr)
 		out.printTag("node", true, 1, true);
@@ -50,7 +54,7 @@ public class ResultToXmlListener implements ITreeWalkerListener {
 		out.print(label);
 		out.printTag("label", false, 0, true);
 
-		int freq = nodeList.size();
+		int freq = occurenceList.size();
 		out.printTag("frequency", true, 2, false);
 		out.print(freq);
 		out.printTag("frequency", false, 0, true);
@@ -58,7 +62,7 @@ public class ResultToXmlListener implements ITreeWalkerListener {
 
 		for (int i = 0; i < freq; i++) {
 			out.printTag("patternInfo", true, 3, true);
-			TextStartPosInfo inf = nodeList.get(i);
+			TextStartPosInfo inf = occurenceList.get(i);
 
 			out.printTag("typeNr", true, 4, false);
 			out.printInt(inf.unit);

@@ -248,7 +248,7 @@ public class SuffixTreeAppl extends SuffixTree {
 		if (this.nodes[x].children.size() == 0) {
 
 			out.print("\tnode" + x + " [label=\"" + x + "\n");
-			this.nodes[x].printStartPositionOfSuffix(out);
+			this.nodes[x].printStartPositionInformation(out);
 			if ((x == hotNode1) || (x == hotNode2))
 				out.println("\",style=filled,shape=circle,fillcolor=red,width=.6,height=.6]");
 			else
