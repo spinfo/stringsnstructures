@@ -6,13 +6,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import modules.suffixTree.suffixTree.SuffixTree;
-import modules.suffixTree.suffixTree.applications.SearchResult;
-import modules.suffixTree.suffixTree.applications.SuffixTreeAppl;
-import modules.suffixTree.suffixTree.node.Node;
-import modules.suffixTree.suffixTree.node.activePoint.ExtActivePoint;
-import modules.suffixTree.suffixTree.node.info.End;
-import modules.suffixTree.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
+import modules.suffixTree.SuffixTree;
+import modules.suffixTree.applications.SearchResult;
+import modules.suffixTree.applications.SuffixTreeAppl;
+import modules.suffixTree.node.End;
+import modules.suffixTree.node.ExtActivePoint;
+import modules.suffixTree.node.Node;
+import modules.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
 
 import org.junit.Assert;
 import org.junit.Before;

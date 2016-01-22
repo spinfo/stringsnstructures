@@ -1,7 +1,7 @@
 package base;
 
 import modules.preprocess.PreprocessMain;
-import modules.suffixTree.suffixTree.applications.CompressSuffixTree;
+import modules.suffixTree.applications.CompressSuffixTree;
 
 public class Application {
 
