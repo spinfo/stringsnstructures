@@ -468,6 +468,8 @@ public class SeqTreePropController extends ModuleImpl {
 		// integer variable holding the number of internal nodes for the current sub tree
 		int currTreeInnerNodes = 0;
 		
+		// create subTreeInnerNodes object
+		this.subTreeInnerNodes = new HashMap<String,Integer>();
 		boolean termNode = true;
 		for (SeqProperties j : seqPropertiesSortedInverted) {
 			lastStr = j.getNodeName();
