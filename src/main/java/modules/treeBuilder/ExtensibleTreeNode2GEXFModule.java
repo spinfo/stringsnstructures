@@ -5,11 +5,13 @@ import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Graph;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Mode;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Node;
+import it.uniroma1.dis.wsngroup.gexf4j.core.data.Attribute;
 import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeClass;
 import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeList;
 import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeType;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.GexfImpl;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.StaxGraphWriter;
+import it.uniroma1.dis.wsngroup.gexf4j.core.impl.data.AttributeImpl;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.data.AttributeListImpl;
 
 import java.util.Calendar;
@@ -116,8 +118,11 @@ public class ExtensibleTreeNode2GEXFModule extends ModuleImpl {
 		AttributeList attrList = new AttributeListImpl(AttributeClass.NODE);
 		graph.getAttributeLists().add(attrList);
 		
+		AttributeImpl counterAttrib = new AttributeImpl("0", AttributeType.STRING, "nodeCounter");
+		attrList.add(0, counterAttrib);
+		
 		Iterator<String> nodeAttributeKeys = rootNode.getAttributes().keySet().iterator();
-		int counter = 0;
+		int counter = 1;
 		while(nodeAttributeKeys.hasNext()){
 			String nodeAttribute = nodeAttributeKeys.next();
 			attrList.createAttribute(""+counter, AttributeType.STRING, nodeAttribute);
@@ -158,14 +163,15 @@ public class ExtensibleTreeNode2GEXFModule extends ModuleImpl {
 		
 		Node gexfNode = graph.createNode();
 		gexfNode.setLabel(childLabel);
-		gexfNode.setSize(node.getNodeCounter());
+		gexfNode.setSize(1);
 		
 		if (gexfParentNode != null){
 			gexfParentNode.connectTo(""+edgeId, "child", EdgeType.DIRECTED, gexfNode);
 			edgeId++;
 		}
 		
-		for (int i=0; i<attrList.size(); i++){
+		gexfNode.getAttributeValues().addValue(attrList.get(0),""+node.getNodeCounter());
+		for (int i=1; i<attrList.size(); i++){
 			if (node.getAttributes().get(attrList.get(i)) != null)
 				gexfNode.getAttributeValues().addValue(attrList.get(i),node.getAttributes().get(attrList.get(i)).toString());
 		}
