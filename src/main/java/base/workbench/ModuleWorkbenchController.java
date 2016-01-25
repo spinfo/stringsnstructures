@@ -21,7 +21,11 @@ import modules.bagOfWords.BagsOfWordsDistancesModule;
 import modules.bagOfWords.BagsOfWordsModule;
 import modules.basemodules.BufferModule;
 import modules.basemodules.ConsoleWriterModule;
+import modules.basemodules.ExampleGsonDeserialization;
+import modules.basemodules.ExampleGsonSerialization;
 import modules.basemodules.ExampleModule;
+//TODO: import your module
+import modules.basemodules.ExampleRandString;
 import modules.basemodules.ExternalCommandModule;
 import modules.basemodules.FileFinderModule;
 import modules.basemodules.FileReaderModule;
@@ -46,19 +50,15 @@ import modules.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringModuleWrapper;
 import modules.suffixTreeModuleWrapper.GeneralisedSuffixTreeModule;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
+import modules.treeBuilder.ExtensibleTreeNode2GEXFModule;
 import modules.treeBuilder.TreeBalanceIndexModule;
 import modules.treeBuilder.TreeBuilder;
-import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder.TreeBuilderV2Module;
+import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
-
-//TODO: import your module
-import modules.basemodules.ExampleRandString;
-import modules.basemodules.ExampleGsonSerialization;
-import modules.basemodules.ExampleGsonDeserialization;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -381,6 +381,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		exampleGsonDeserializationProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleGsonDeserialization.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		exampleGsonDeserialization.applyProperties();
 		
+		// ExtensibleTreeNode2GEXFModule
+		Properties extensibleTreeNode2GEXFModuleProperties = new Properties();
+		ExtensibleTreeNode2GEXFModule extensibleTreeNode2GEXFModule  = new ExtensibleTreeNode2GEXFModule(moduleNetwork, 
+				extensibleTreeNode2GEXFModuleProperties);
+		extensibleTreeNode2GEXFModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, extensibleTreeNode2GEXFModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		extensibleTreeNode2GEXFModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -426,6 +433,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(exampleRandString.getName(), exampleRandString);
 		availableModules.put(exampleGsonSerialization.getName(), exampleGsonSerialization);
 		availableModules.put(exampleGsonDeserialization.getName(), exampleGsonDeserialization);
+		availableModules.put(extensibleTreeNode2GEXFModule.getName(), extensibleTreeNode2GEXFModule);
 	}
 	
 	/**
