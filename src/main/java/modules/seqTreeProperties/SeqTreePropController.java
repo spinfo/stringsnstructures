@@ -499,6 +499,7 @@ public class SeqTreePropController extends ModuleImpl {
 			this.subTreeInnerNodes.put(lastStr,currTreeInnerNodes);
 			lastCophVal = 0;
 			lastSackinVal = 0;
+			currTreeInnerNodes = 0;
 			termNode = true;
 		}
 				
