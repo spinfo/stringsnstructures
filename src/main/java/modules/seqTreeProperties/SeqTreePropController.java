@@ -203,7 +203,7 @@ public class SeqTreePropController extends ModuleImpl {
 			} else {
 				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() 
 				+ "\t" + this.subSackinTrees.get(i.getNodeName()) + "\t" + this.subCophTrees.get(i.getNodeName()) 
-				+ "\t" + i.getLeafNum() + "\t" + this.subCophTrees.get(i.getNodeName()) + "\n";
+				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getNodeName()) + "\n";
 			}
 		}
 	}
