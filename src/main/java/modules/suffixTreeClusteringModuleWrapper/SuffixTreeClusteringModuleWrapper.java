@@ -98,9 +98,9 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// module description
-		this.setDescription("<html><h1>SuffixTreeClusteringWrapper</h1><p>This is a wrapper to modularize the clustering process.<br/>"
+		this.setDescription("This is a wrapper to modularize the clustering process.<br/>"
 				+ "It takes two inputs:<br/>"
-				+ "<ul type =\"disc\" ><li>KWIP suffix tree result in xml format</li><li>the suffix tree itself in xml format</li></ul></p></html>");
+				+ "<ul type =\"disc\" ><li>KWIP suffix tree result in xml format</li><li>the suffix tree itself in xml format</li></ul>");
 		
 		// Add module category
 		this.setCategory("VectorClustering");

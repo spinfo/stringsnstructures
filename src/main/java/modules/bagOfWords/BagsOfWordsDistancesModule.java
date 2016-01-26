@@ -42,10 +42,10 @@ public class BagsOfWordsDistancesModule extends ModuleImpl {
 
 	// Name and description of this module for the User
 	private final static String MODULE_NAME = "BagsOfWordsDistancesModule";
-	private final static String MODULE_DESCRIPTION = "<html><p>Module to determine the distance between Bags of Words.</p>"
-			+ "<p>Currently supports Levenshtein distance, i.e. output is the number of<br/>"
-			+ "substitutions, deletions or additions of words that would be needed to<br/>"
-			+ "transform one Bag of Words into another.<p></html>";
+	private final static String MODULE_DESCRIPTION = "<p>Module to determine the distance between Bags of Words.</p>"
+			+ "<p>Currently supports Levenshtein distance, i.e. output is the number of "
+			+ "substitutions, deletions or additions of words that would be needed to "
+			+ "transform one Bag of Words into another.<p>";
 
 	// Property describing whether the distance should be normalized
 	private final static String PROPERTYKEY_NORMALIZE_DISTANCE = "Normalize distance";

@@ -36,7 +36,7 @@ public abstract class AbstractModulePortButton extends JButton {
 			buttonText = buttonText.substring(0, maxlength)+"…";
 		super.setText(buttonText);
 		super.setFont(font);
-		super.setToolTipText(port.getName()+": "+port.getDescription());
+		super.setToolTipText("<html><div width=\"200\" style='background-color:FFFFFF;'><b>"+port.getName()+"</b>: "+port.getDescription()+"</div></html>");
 		this.setHorizontalTextPosition(textposition);
 		this.setAlignmentX(alignment);
 		this.setHorizontalAlignment(alignment);

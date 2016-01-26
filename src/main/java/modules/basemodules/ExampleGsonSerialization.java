@@ -51,7 +51,7 @@ public class ExampleGsonSerialization extends ModuleImpl {
 		super.addOutputPort(outputPort);
 		
 		//Add module description
-		this.setDescription("<html><h1>JSON Serialization Example</h1><p>Example Module: Serializing a plain test string.<br/> Output is JSON format.</p></html>");
+		this.setDescription("Example Module: Serializing a plain test string.<br/> Output is JSON format.");
 		
 		//Add module category
 		this.setCategory("Examples");

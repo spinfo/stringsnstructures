@@ -26,8 +26,9 @@ public class ModuleJTreeCellRenderer extends DefaultTreeCellRenderer {
 				&& DefaultMutableTreeNode.class.isAssignableFrom(value.getClass())
 				&& ((DefaultMutableTreeNode)value).getUserObject() != null
 				&& Module.class.isAssignableFrom(((DefaultMutableTreeNode)value).getUserObject().getClass())){
+			Module module = (Module)((DefaultMutableTreeNode)value).getUserObject();
 			// Set tooltip to selected module's description
-			setToolTipText(((Module)((DefaultMutableTreeNode)value).getUserObject()).getDescription());
+			setToolTipText("<html><div style='background-color:FFFFFF;' width=\"500\"><h1 style='font-size:12px;'>"+module.getName()+"</h1><p>"+module.getDescription()+"</p></div></html>");
 		} else
 			setToolTipText(null);
 		

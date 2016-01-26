@@ -38,20 +38,20 @@ public class ExternalCommandModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("<html>Executes an external system command.<br/>Can use streamed character or byte input as command stdin.</html>");
+		this.setDescription("Executes an external system command.<br/>Can use streamed character or byte input as command stdin.");
 		
 		// Add module category
 		this.setCategory("I/O");
 
 		// Add property descriptions (obligatory for every property!)
-		this.getPropertyDescriptions().put(PROPERTYKEY_COMMAND, "<html>Command to execute. Please specify the complete path.<br/>"
-				+ "Explicit parameters can be separated by using ',' (comma) as a delimiter<br/>"
-				+ "(use '\\,' if you want a literal comma). Most of the times with linux/unix<br/>"
-				+ "it is best to wrap the command in a shell, in this case meaning that you<br/>"
-				+ "prefix your command with '/bin/sh,-c,'. On MS Windows, please use '\\\\'<br/>"
-				+ "as path separator.</html>");
-		this.getPropertyDescriptions().put(PROPERTYKEY_WORKDIR, "<html>Working directory to execute the command in. Please specify the complete path.<br/>"
-				+ "On MS Windows, use '\\\\' as path separator.</html>");
+		this.getPropertyDescriptions().put(PROPERTYKEY_COMMAND, "Command to execute. Please specify the complete path.<br/>"
+				+ "Explicit parameters can be separated by using ',' (comma) as a delimiter "
+				+ "(use '\\,' if you want a literal comma). Most of the times with linux/unix "
+				+ "it is best to wrap the command in a shell, in this case meaning that you "
+				+ "prefix your command with '/bin/sh,-c,'. On MS Windows, please use '\\\\' "
+				+ "as path separator.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_WORKDIR, "Working directory to execute the command in. Please specify the complete path. "
+				+ "On MS Windows, use '\\\\' as path separator.");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "External Command Module"); // Property key for module name is defined in parent class

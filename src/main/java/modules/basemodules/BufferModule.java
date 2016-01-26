@@ -21,7 +21,7 @@ public class BufferModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("<html><h1>Buffer module</h1><p>Stores input until the pipe closes and only then writes it to the output.</p></html>");
+		this.setDescription("Stores input until the pipe closes and only then writes it to the output.");
 		
 		// Add module category
 		this.setCategory("I/O");

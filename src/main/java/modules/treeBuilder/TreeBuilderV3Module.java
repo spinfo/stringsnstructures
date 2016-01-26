@@ -56,7 +56,7 @@ public class TreeBuilderV3Module extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Add module description
-		this.setDescription("<html><h1>TreeBuilder v3 module</h1><p>Can process larger datasets more quickly and has the capability to construct Generalised Suffix Trees.</p><p>Replaces TreeBuilder v2 module.</p></html>");
+		this.setDescription("<p>Can process larger datasets more quickly and has the capability to construct Generalised Suffix Trees.</p><p>Replaces TreeBuilder v2 module.</p>");
 
 		// Add module category
 		this.setCategory("Tree-building");

@@ -35,7 +35,7 @@ public class ExampleModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("<html><h1>Example module.</h1><p>Segments two inputs and entwines them.</p><p>Among other things, you can use it<br/><ul><li>as a template to base your own modules on,</li><li>to review basic practices, like I/O,</li><li>and to get an overview of the standard implementations needed.</li></ul></p></html>");
+		this.setDescription("<p>Segments two inputs and entwines them.</p><p>Among other things, you can use it<br/><ul><li>as a template to base your own modules on,</li><li>to review basic practices, like I/O,</li><li>and to get an overview of the standard implementations needed.</li></ul></p>");
 		
 		// Add module category
 		this.setCategory("Examples");

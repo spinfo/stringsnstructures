@@ -51,7 +51,7 @@ public class ExtensibleTreeNode2GEXFModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Add module description
-		this.setDescription("<html><h1>ExtensibleTreeNode to GEXF converter module.</h1><p>Converts trees based on the ExtensibleTreeNode into a GEXF graph.</p></html>");
+		this.setDescription("Converts trees based on the ExtensibleTreeNode into a GEXF graph.");
 
 		// Add module category
 		this.setCategory("Experimental/WiP");

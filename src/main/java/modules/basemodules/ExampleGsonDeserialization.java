@@ -49,7 +49,7 @@ public class ExampleGsonDeserialization extends ModuleImpl {
 		super.addOutputPort(outputPort);
 		
 		//Add module description
-		this.setDescription("<html><h1>JSON Deserialization Example</h1><p>Example Module: Deserializing a test string in JSON format.<br/> Output is plain text.</p></html>");
+		this.setDescription("Example Module: Deserializing a test string in JSON format.<br/> Output is plain text.");
 		
 		//Add module category
 		this.setCategory("Examples");
