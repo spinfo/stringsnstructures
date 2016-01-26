@@ -5,7 +5,6 @@ import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Graph;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Mode;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Node;
-import it.uniroma1.dis.wsngroup.gexf4j.core.data.Attribute;
 import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeClass;
 import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeList;
 import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeType;
