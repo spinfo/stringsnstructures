@@ -1,7 +1,5 @@
 package modules.suffixTree.applications;
 
-import java.io.IOException;
-
 public interface ITreeWalkerListener {
 
 	/**
@@ -14,7 +12,7 @@ public interface ITreeWalkerListener {
 	 *            the level of the node below the node that the TreeWalker
 	 *            started to walk on
 	 */
-	void entryaction(int nodeNr, int level) throws IOException;
+	void entryaction(int nodeNr, int level) throws Exception;
 
 
 	/**
@@ -27,5 +25,5 @@ public interface ITreeWalkerListener {
 	 *            the level of the node below the node that the TreeWalker
 	 *            started to walk on
 	 */
-	void exitaction(int nodeNr, int level) throws IOException;
+	void exitaction(int nodeNr, int level) throws Exception;
 }

@@ -3,16 +3,24 @@ package modules.suffixTree.applications;
 import java.util.ArrayList;
 import java.util.Stack;
 
-@Deprecated
+import modules.suffixTree.SuffixTree;
+
+/**
+ * Simple wrapper around a java.util.Stack of integers that represent node nrs
+ * in the tree.
+ * 
+ * TODO This could probably be refactored to just extend Stack instead of
+ * using one.
+ */
 public class ResultSuffixTreeNodeStack {
 
 	private Stack<Integer> stack;
 
 	private ArrayList<SuffixDescription> resultListOfSuffixesFromTerminalToRoot;
 
-	private SuffixTreeAppl suffixTree = null;
+	private SuffixTree suffixTree = null;
 
-	public ResultSuffixTreeNodeStack(SuffixTreeAppl suffixTree) {
+	public ResultSuffixTreeNodeStack(SuffixTree suffixTree) {
 		this.stack = new Stack<Integer>();
 		this.suffixTree = suffixTree;
 	}
@@ -106,20 +114,22 @@ public class ResultSuffixTreeNodeStack {
 	public boolean empty() {
 		return this.stack.empty();
 	}
-	
+
 	/**
 	 * Look at the nodeNr at the top of the stack, but do not remove it.
+	 * 
 	 * @return the nodeNr at the top of the stack
 	 */
 	public int peek() {
 		return this.stack.peek();
 	}
-	
+
 	/**
 	 * Get the SuffixTreeAppl that this node stack ist bound to.
+	 * 
 	 * @return a SuffixTreeAppl
 	 */
-	public SuffixTreeAppl getSuffixTreeAppl() {
+	public SuffixTree getSuffixTreeAppl() {
 		return this.suffixTree;
 	}
 

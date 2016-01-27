@@ -287,7 +287,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	 *            the OutputPort to write to
 	 * @throws IOException
 	 */
-	private void writeJsonOutput(SuffixTreeAppl suffixTreeAppl, OutputPort outputPort) throws IOException {
+	private void writeJsonOutput(SuffixTreeAppl suffixTreeAppl, OutputPort outputPort) throws Exception {
 		// Initialize and use a new TreeWalkerListener, that directly writes to
 		// the connected outputPort
 		final ResultToJsonListener listener = new ResultToJsonListener(suffixTreeAppl, outputPort);

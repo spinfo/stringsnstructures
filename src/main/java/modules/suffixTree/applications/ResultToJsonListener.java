@@ -4,8 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.google.gson.stream.JsonWriter;
@@ -21,8 +20,11 @@ import modules.suffixTree.node.TextStartPosInfo;
  * 
  * The contract is, that this object writes json that can be deserialized to an
  * instance of <code>SuffixTreeRepresentation</code>.
+ * 
+ * Extends AbstractNodeStackListener such that information on the child nodes is
+ * available on the exit action.
  */
-public class ResultToJsonListener implements ITreeWalkerListener {
+public class ResultToJsonListener extends AbstractNodeStackListener implements ITreeWalkerListener {
 
 	private static final Logger LOGGER = Logger.getLogger(ResultToJsonListener.class.getName());
 
@@ -30,8 +32,8 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 
 	// the OutputPort to write to
 	private final OutputPort outputPort;
-
-	// the suffixTree that this class will serialize
+	
+	// the suffix tree this will work on
 	private final SuffixTree suffixTree;
 
 	// variables needed internally to write the Json representation
@@ -40,6 +42,8 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 	private boolean wroteBegin = false;
 
 	public ResultToJsonListener(SuffixTree suffixTree, OutputPort outputPort) {
+		super(suffixTree);
+		
 		this.suffixTree = suffixTree;
 		this.outputPort = outputPort;
 
@@ -58,9 +62,12 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 	 * the tree is written.
 	 */
 	@Override
-	public void entryaction(int nodeNr, int level) throws IOException {
-		if (!this.wroteBegin)
+	public void entryaction(int nodeNr, int level) throws Exception {
+		super.entryaction(nodeNr, level);
+
+		if (!this.wroteBegin) {
 			writeBegin();
+		}
 	}
 
 	/**
@@ -68,18 +75,15 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 	 * to the suffix tree representation.
 	 */
 	@Override
-	public void exitaction(int nodeNr, int level) throws IOException {
-
-		// Get the node's label, root gets a blank label
-		final String label = suffixTree.edgeString(nodeNr);
-
-		// For the rest of the information we need to retrieve the node
-		final GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTree.nodes[nodeNr]);
+	public void exitaction(int nodeNr, int level) throws Exception {
+		// get the current node and node label from the superclass
+		// that node matches the one identified by param nodeNr
+		final String label = super.getCurrentNodeLabel();
+		final GeneralisedSuffixTreeNode node = super.getCurrentNode();
 		
-		// If the current node is a leaf node, retrieve it's position
-		// information that acts as a list of all occurences of the path through
-		// the tree that ends in this node
-		final ArrayList<TextStartPosInfo> nodeList = node.getStartPositionInformation();
+		// Retrieve the position information. The superclass has made sure that
+		// the position information of all children is included in this list
+		final List<TextStartPosInfo> nodeList = node.getStartPositionInformation();
 		final int frequency = nodeList.size();
 
 		// output the beginning of the NodeRepresentation
@@ -105,6 +109,9 @@ public class ResultToJsonListener implements ITreeWalkerListener {
 		// outputport
 		writer.endObject();
 		this.flushOutput();
+		
+		// make sure that the node stack is handled correctly
+		super.exitaction(nodeNr, level);
 	}
 
 	/**

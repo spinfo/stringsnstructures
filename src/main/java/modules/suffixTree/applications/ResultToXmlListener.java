@@ -1,6 +1,6 @@
 package modules.suffixTree.applications;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import modules.suffixTree.SuffixTree;
 import modules.suffixTree.node.GeneralisedSuffixTreeNode;
@@ -9,40 +9,37 @@ import modules.suffixTree.node.TextStartPosInfo;
 /**
  * A TreeWalkerListener that outputs the trees nodes directly to an
  * XmlPrintWriter.
+ * 
+ * Extends AbstractNodeStackListener such that information on the child nodes is
+ * available on the exit action.
  */
-public class ResultToXmlListener implements ITreeWalkerListener {
+public class ResultToXmlListener extends AbstractNodeStackListener implements ITreeWalkerListener {
 
 	// the XmlPrintWriter to use for writing
 	private final XmlPrintWriter out;
 
-	// the SuffixTree to serialize
-	private final SuffixTree suffixTree;
+	public ResultToXmlListener(SuffixTree suffixTree, XmlPrintWriter xmlPrintWriter) {
+		// call parent constructor to setup the nodeStack
+		super(suffixTree);
 
-	// cstr
-	public ResultToXmlListener(SuffixTree suffixTree, XmlPrintWriter o) {
-		this.suffixTree = suffixTree;
-		this.out = o;
-	}
-
-	/**
-	 * Nothing is done on the entry action.
-	 */
-	@Override
-	public void entryaction(int nodeNr, int level) {
-		// do nothing
+		this.out = xmlPrintWriter;
 	}
 
 	@Override
-	public void exitaction(int nodeNr, int level) {
+	public void entryaction(int nodeNr, int level) throws Exception {
+		super.entryaction(nodeNr, level);
+	}
 
-		final String label = suffixTree.edgeString(nodeNr);
+	@Override
+	public void exitaction(int nodeNr, int level) throws Exception {
+		// get the current node and node label from the superclass
+		// that node matches the one identified by param nodeNr
+		final String label = super.getCurrentNodeLabel();
+		final GeneralisedSuffixTreeNode node = super.getCurrentNode();
 
-		GeneralisedSuffixTreeNode node = ((GeneralisedSuffixTreeNode) suffixTree.nodes[nodeNr]);
-
-		// If the current node is a leaf node, retrieve it's position
-		// information that acts as a list of all occurences of the path through
-		// the tree that ends in this node
-		ArrayList<TextStartPosInfo> occurenceList = node.getStartPositionInformation();
+		// Retrieve the position information. The superclass has made sure that
+		// the position information of all children is included in this list
+		final List<TextStartPosInfo> occurenceList = node.getStartPositionInformation();
 
 		// node(nr)
 		out.printTag("node", true, 1, true);
@@ -77,5 +74,8 @@ public class ResultToXmlListener implements ITreeWalkerListener {
 		}
 		out.printTag("type", false, 2, true);
 		out.printTag("node", false, 1, true);
+
+		// make sure that the node stack is handled correctly
+		super.exitaction(nodeNr, level);
 	}
 }
