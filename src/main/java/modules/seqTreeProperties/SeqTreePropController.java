@@ -192,10 +192,14 @@ public class SeqTreePropController extends ModuleImpl {
 		seqPropertiesOutput = seqPropertiesOutput + "Average cophenetic index of paths:\t" + this.avCopheneticIndex + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Total number of leaves:\t" + this.totalNumOfLeaves + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Sackin index:\t" + this.sackinIndexVal + "\n";
+		this.seqPropertiesOutput = this.seqPropertiesOutput + "max Sackin index:\t" + ((Math.pow((double)this.totalNumOfLeaves,2)-(double)this.totalNumOfLeaves - 2)/2) + "\n";
+		
 		seqPropertiesOutput = seqPropertiesOutput + "Cophenetic index:\t" + this.copheneticIndexVal + "\n";
+		this.seqPropertiesOutput = this.seqPropertiesOutput + "max cophenetic index:\t" + ((this.totalNumOfLeaves-2)*(this.totalNumOfLeaves-1)*(this.totalNumOfLeaves)/6) + "\n";
 		
 		//prepare the extracted parameters for subtrees
-		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\tcophenetic index\tnumber of leaves\tnumber of inner nodes\n";
+		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\tcophenetic index\tnumber of leaves\t"
+				+ "number of inner nodes\tmax Sackin index\tmax cophenetic index\n";
 		for (SeqProperties i : this.seqPropertiesSorted) {
 			if (i.getNodeName().equals("^")) {
 				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() 
@@ -203,7 +207,10 @@ public class SeqTreePropController extends ModuleImpl {
 			} else {
 				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() 
 				+ "\t" + this.subSackinTrees.get(i.getNodeName()) + "\t" + this.subCophTrees.get(i.getNodeName()) 
-				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getNodeName()) + "\n";
+				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getNodeName()) + "\t"
+				+ ((Math.pow((double)i.getLeafNum(),2)-(double)i.getLeafNum()-2)/2)
+				+ ((i.getLeafNum()-2)*(i.getLeafNum()-1)*i.getLeafNum()/6)
+				+ "\n";
 			}
 		}
 	}

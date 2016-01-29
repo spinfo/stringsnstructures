@@ -52,7 +52,7 @@ public final class TfIdfFeatures {
 		for (Node node : terms) {
 			// der tf-idf-Wert des Terms:
 			Double tfIdf = tfIdf(node);
-			if (tfIdf > 0) {
+			if (tfIdf > 0 && !(tfIdf.isNaN())) {
 				ok = true;
 			}
 			values.add(tfIdf);
