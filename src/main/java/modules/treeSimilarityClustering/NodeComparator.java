@@ -136,7 +136,7 @@ public class NodeComparator {
 
 		// Ermitteln, ob die ExtensibleTreeNode gleichwertig sind
 		if (ExtensibleTreeNode1 != null && ExtensibleTreeNode2 != null && ExtensibleTreeNode1.getNodeValue().equals(ExtensibleTreeNode2.getNodeValue())){
-			ergebnisExtensibleTreeNode.getAttributes().put("match", new Boolean(true));
+			ergebnisExtensibleTreeNode.getAttributes().put(MetaNode.KEY_MATCHING, new Boolean(true));
 		}
 
 		// Ggf. Werte der uebergebenen ExtensibleTreeNode aufaddieren und Kinder hinzufuegen
@@ -286,7 +286,7 @@ public class NodeComparator {
 
 		// Zaehlerwerte ermitteln (der WurzelExtensibleTreeNode wird ignoriert)
 		if (ebene > 0){
-			if (Boolean.parseBoolean(ExtensibleTreeNode.getAttributes().get("match").toString())) {
+			if (Boolean.parseBoolean(ExtensibleTreeNode.getAttributes().get(MetaNode.KEY_MATCHING).toString())) {
 				// Treffer - zum Ergebnis addieren
 				ExtensibleTreeNodeMatches[0] += ExtensibleTreeNode.getNodeCounter()
 						* Math.pow(ebene, ebenenexponent);
@@ -326,13 +326,13 @@ public class NodeComparator {
 		ExtensibleTreeNode neuerExtensibleTreeNode = new ExtensibleTreeNode();
 		neuerExtensibleTreeNode.setNodeValue(k.getNodeValue());
 		neuerExtensibleTreeNode.setNodeCounter(k.getNodeCounter());
-		neuerExtensibleTreeNode.getAttributes().put("match",Boolean.parseBoolean(k.getAttributes().get("match").toString()));
+		neuerExtensibleTreeNode.getAttributes().put(MetaNode.KEY_MATCHING,Boolean.parseBoolean(k.getAttributes().get(MetaNode.KEY_MATCHING).toString()));
 		
 		// KindExtensibleTreeNode durchlaufen
 		Iterator<ExtensibleTreeNode> kinder = k.getChildNodes().values().iterator();
 		while(kinder.hasNext()){
 			ExtensibleTreeNode kind = kinder.next();
-			if (Boolean.parseBoolean(kind.getAttributes().get("match").toString())){
+			if (Boolean.parseBoolean(kind.getAttributes().get(MetaNode.KEY_MATCHING).toString())){
 				ExtensibleTreeNode neuesKind = this.trefferBaum(kind);
 				neuerExtensibleTreeNode.getChildNodes().put(neuesKind.getNodeValue(), neuesKind);
 			}
