@@ -135,18 +135,18 @@ public class NodeComparator {
 		ExtensibleTreeNode ergebnisExtensibleTreeNode = new ExtensibleTreeNode();
 
 		// Ermitteln, ob die ExtensibleTreeNode gleichwertig sind
-		if (ExtensibleTreeNode1 != null && ExtensibleTreeNode2 != null && ExtensibleTreeNode1.getName().equals(ExtensibleTreeNode2.getName())){
-			ergebnisExtensibleTreeNode.setMatch(true);
+		if (ExtensibleTreeNode1 != null && ExtensibleTreeNode2 != null && ExtensibleTreeNode1.getNodeValue().equals(ExtensibleTreeNode2.getNodeValue())){
+			ergebnisExtensibleTreeNode.getAttributes().put("match", new Boolean(true));
 		}
 
 		// Ggf. Werte der uebergebenen ExtensibleTreeNode aufaddieren und Kinder hinzufuegen
 		if (ExtensibleTreeNode1 != null) {
-			ergebnisExtensibleTreeNode.setZaehler(ergebnisExtensibleTreeNode.getZaehler()
-					+ ExtensibleTreeNode1.getZaehler());
-			ergebnisExtensibleTreeNode.setName(ExtensibleTreeNode1.getName());
+			ergebnisExtensibleTreeNode.setNodeCounter(ergebnisExtensibleTreeNode.getNodeCounter()
+					+ ExtensibleTreeNode1.getNodeCounter());
+			ergebnisExtensibleTreeNode.setNodeValue(ExtensibleTreeNode1.getNodeValue());
 
 			// Schleife ueber Kinder des ersten ExtensibleTreeNodes
-			Iterator<String> k1Kinder = ExtensibleTreeNode1.getKinder().keySet().iterator();
+			Iterator<String> k1Kinder = ExtensibleTreeNode1.getChildNodes().keySet().iterator();
 			while (k1Kinder.hasNext()) {
 
 				// Variable fuer neuen KindExtensibleTreeNode definieren
@@ -158,47 +158,47 @@ public class NodeComparator {
 				// Pruefen, ob ExtensibleTreeNode2 existiert und ebenfalls ein solches Kind
 				// hat
 				if (ExtensibleTreeNode2 != null
-						&& ExtensibleTreeNode2.getKinder().containsKey(k1KindName)) {
+						&& ExtensibleTreeNode2.getChildNodes().containsKey(k1KindName)) {
 					// Kind mit diesem Namen gefunden, steige hinab
-					kindExtensibleTreeNode = this.verschmelzeBaeume(ExtensibleTreeNode1.getKinder()
+					kindExtensibleTreeNode = this.verschmelzeBaeume(ExtensibleTreeNode1.getChildNodes()
 							.get(k1KindName),
-							ExtensibleTreeNode2.getKinder().get(k1KindName));
+							ExtensibleTreeNode2.getChildNodes().get(k1KindName));
 
 				} else {
 					// Kein Kind mit diesem Namen gefunden oder ExtensibleTreeNode2 ist
 					// Null, steige hinab
-					kindExtensibleTreeNode = this.verschmelzeBaeume(ExtensibleTreeNode1.getKinder()
+					kindExtensibleTreeNode = this.verschmelzeBaeume(ExtensibleTreeNode1.getChildNodes()
 							.get(k1KindName), null);
 
 				}
 
 				// Neuen KindExtensibleTreeNode an Ergebnis anfuegen
-				ergebnisExtensibleTreeNode.getKinder().put(k1KindName, kindExtensibleTreeNode);
+				ergebnisExtensibleTreeNode.getChildNodes().put(k1KindName, kindExtensibleTreeNode);
 
 			}
 		}
 		if (ExtensibleTreeNode2 != null) {
-			ergebnisExtensibleTreeNode.setZaehler(ergebnisExtensibleTreeNode.getZaehler()
-					+ ExtensibleTreeNode2.getZaehler());
+			ergebnisExtensibleTreeNode.setNodeCounter(ergebnisExtensibleTreeNode.getNodeCounter()
+					+ ExtensibleTreeNode2.getNodeCounter());
 
 			// Namen ggf. anhaengen
 			if (ExtensibleTreeNode1 != null
-					&& !(ExtensibleTreeNode1.getName().equals(ExtensibleTreeNode2.getName()))) {
+					&& !(ExtensibleTreeNode1.getNodeValue().equals(ExtensibleTreeNode2.getNodeValue()))) {
 				
 				// Namen der ExtensibleTreeNode in lexikographischer Reihenfolge abbilden
 				String neuerExtensibleTreeNodeName;
-				if (ExtensibleTreeNode1.getName().compareTo(ExtensibleTreeNode2.getName())<0){
-					neuerExtensibleTreeNodeName = ExtensibleTreeNode1.getName() + " / " + ExtensibleTreeNode2.getName();
+				if (ExtensibleTreeNode1.getNodeValue().compareTo(ExtensibleTreeNode2.getNodeValue())<0){
+					neuerExtensibleTreeNodeName = ExtensibleTreeNode1.getNodeValue() + " / " + ExtensibleTreeNode2.getNodeValue();
 				} else {
-					neuerExtensibleTreeNodeName = ExtensibleTreeNode2.getName() + " / " + ExtensibleTreeNode1.getName();
+					neuerExtensibleTreeNodeName = ExtensibleTreeNode2.getNodeValue() + " / " + ExtensibleTreeNode1.getNodeValue();
 				}
-				ergebnisExtensibleTreeNode.setName(neuerExtensibleTreeNodeName);
+				ergebnisExtensibleTreeNode.setNodeValue(neuerExtensibleTreeNodeName);
 			} else {
-				ergebnisExtensibleTreeNode.setName(ExtensibleTreeNode2.getName());
+				ergebnisExtensibleTreeNode.setNodeValue(ExtensibleTreeNode2.getNodeValue());
 			}
 
 			// Schleife ueber Kinder des ersten ExtensibleTreeNodes
-			Iterator<String> k2Kinder = ExtensibleTreeNode2.getKinder().keySet().iterator();
+			Iterator<String> k2Kinder = ExtensibleTreeNode2.getChildNodes().keySet().iterator();
 			while (k2Kinder.hasNext()) {
 
 				// Variable fuer neuen KindExtensibleTreeNode definieren
@@ -209,29 +209,29 @@ public class NodeComparator {
 
 				// Falls dieser ExtensibleTreeNode schon im Ergebnis existiert, kann
 				// abgebrochen werden
-				if (ergebnisExtensibleTreeNode.getKinder().containsKey(k2KindName)) {
+				if (ergebnisExtensibleTreeNode.getChildNodes().containsKey(k2KindName)) {
 					continue;
 				}
 
 				// Pruefen, ob ExtensibleTreeNode2 existiert und ebenfalls ein solches Kind
 				// hat
 				if (ExtensibleTreeNode1 != null
-						&& ExtensibleTreeNode1.getKinder().containsKey(k2KindName)) {
+						&& ExtensibleTreeNode1.getChildNodes().containsKey(k2KindName)) {
 					// Kind mit diesem Namen gefunden, steige hinab
-					kindExtensibleTreeNode = this.verschmelzeBaeume(ExtensibleTreeNode1.getKinder()
+					kindExtensibleTreeNode = this.verschmelzeBaeume(ExtensibleTreeNode1.getChildNodes()
 							.get(k2KindName),
-							ExtensibleTreeNode2.getKinder().get(k2KindName));
+							ExtensibleTreeNode2.getChildNodes().get(k2KindName));
 
 				} else {
 					// Kein Kind mit diesem Namen gefunden oder ExtensibleTreeNode2 ist
 					// Null, steige hinab
 					kindExtensibleTreeNode = this.verschmelzeBaeume(null, ExtensibleTreeNode2
-							.getKinder().get(k2KindName));
+							.getChildNodes().get(k2KindName));
 
 				}
 
 				// Neuen KindExtensibleTreeNode an Ergebnis anfuegen
-				ergebnisExtensibleTreeNode.getKinder().put(k2KindName, kindExtensibleTreeNode);
+				ergebnisExtensibleTreeNode.getChildNodes().put(k2KindName, kindExtensibleTreeNode);
 			}
 		}
 
@@ -286,26 +286,26 @@ public class NodeComparator {
 
 		// Zaehlerwerte ermitteln (der WurzelExtensibleTreeNode wird ignoriert)
 		if (ebene > 0){
-			if (ExtensibleTreeNode.isMatch()) {
+			if (Boolean.parseBoolean(ExtensibleTreeNode.getAttributes().get("match").toString())) {
 				// Treffer - zum Ergebnis addieren
-				ExtensibleTreeNodeMatches[0] += ExtensibleTreeNode.getZaehler()
+				ExtensibleTreeNodeMatches[0] += ExtensibleTreeNode.getNodeCounter()
 						* Math.pow(ebene, ebenenexponent);
 			}
 			// Zaehlerwert zur Gesamtzahl addieren
 			if (ebenenFaktorNurAufTrefferAnwenden){
-				ExtensibleTreeNodeMatches[1] += ExtensibleTreeNode.getZaehler();
+				ExtensibleTreeNodeMatches[1] += ExtensibleTreeNode.getNodeCounter();
 			} else {
-				ExtensibleTreeNodeMatches[1] += ExtensibleTreeNode.getZaehler()* Math.pow(ebene, ebenenexponent);
+				ExtensibleTreeNodeMatches[1] += ExtensibleTreeNode.getNodeCounter()* Math.pow(ebene, ebenenexponent);
 			}
 		}
 
 		if (ebene < maxebene || maxebene <0) {
 			// Kinder durchlaufen
-			Iterator<String> kinder = ExtensibleTreeNode.getKinder().keySet().iterator();
+			Iterator<String> kinder = ExtensibleTreeNode.getChildNodes().keySet().iterator();
 			while (kinder.hasNext()) {
 				String kindName = kinder.next();
 				Double[] kindExtensibleTreeNodeMatches = ermittleExtensibleTreeNodeTrefferwert(ExtensibleTreeNode
-						.getKinder().get(kindName), ebene + 1, maxebene,
+						.getChildNodes().get(kindName), ebene + 1, maxebene,
 						ebenenexponent);
 				ExtensibleTreeNodeMatches[0] += kindExtensibleTreeNodeMatches[0];
 				ExtensibleTreeNodeMatches[1] += kindExtensibleTreeNodeMatches[1];
@@ -324,17 +324,17 @@ public class NodeComparator {
 		
 		// ExtensibleTreeNode kopieren
 		ExtensibleTreeNode neuerExtensibleTreeNode = new ExtensibleTreeNode();
-		neuerExtensibleTreeNode.setName(k.getName());
-		neuerExtensibleTreeNode.setZaehler(k.getZaehler());
-		neuerExtensibleTreeNode.setMatch(k.isMatch());
+		neuerExtensibleTreeNode.setNodeValue(k.getNodeValue());
+		neuerExtensibleTreeNode.setNodeCounter(k.getNodeCounter());
+		neuerExtensibleTreeNode.getAttributes().put("match",Boolean.parseBoolean(k.getAttributes().get("match").toString()));
 		
 		// KindExtensibleTreeNode durchlaufen
-		Iterator<ExtensibleTreeNode> kinder = k.getKinder().values().iterator();
+		Iterator<ExtensibleTreeNode> kinder = k.getChildNodes().values().iterator();
 		while(kinder.hasNext()){
 			ExtensibleTreeNode kind = kinder.next();
-			if (kind.isMatch()){
+			if (Boolean.parseBoolean(kind.getAttributes().get("match").toString())){
 				ExtensibleTreeNode neuesKind = this.trefferBaum(kind);
-				neuerExtensibleTreeNode.getKinder().put(neuesKind.getName(), neuesKind);
+				neuerExtensibleTreeNode.getChildNodes().put(neuesKind.getNodeValue(), neuesKind);
 			}
 		}
 		
