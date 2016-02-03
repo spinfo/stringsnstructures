@@ -114,7 +114,7 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		
 		// property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "SuffixTreeClusteringWrapper"); 
-		this.getPropertyDefaultValues().put(PROPERTYKEY_CLUST, "NJ");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_CLUST, "KM");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_VECTYPE, "TF-IDF");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_CORPNAME, "myCorpus");
 		
@@ -125,7 +125,7 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		InputPort inputPortTree = new InputPort(INPUTIDTREE, "[text/xml] Input of an XML representation of the suffix tree.", this);
 		inputPortTree.addSupportedPipe(BytePipe.class);
 		
-		OutputPort outputPort = new OutputPort(OUTPUTID, "Plain text character output.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "[text] Plain text character output.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 		
 		// add I/O ports to instance

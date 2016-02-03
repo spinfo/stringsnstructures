@@ -59,6 +59,8 @@ import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
+import modules.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
+import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringWrapperV2;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -388,6 +390,20 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		extensibleTreeNode2GEXFModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, extensibleTreeNode2GEXFModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		extensibleTreeNode2GEXFModule.applyProperties();
 		
+		// SuffixTreeVectorizationWrapperController
+		Properties suffixTreeVectorizationWrapperControllerProperties = new Properties();
+		SuffixTreeVectorizationWrapperController suffixTreeVectorizationWrapperController  = new SuffixTreeVectorizationWrapperController(moduleNetwork, 
+				suffixTreeVectorizationWrapperControllerProperties);
+		suffixTreeVectorizationWrapperControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeVectorizationWrapperController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		suffixTreeVectorizationWrapperController.applyProperties();
+		
+		// SuffixTreeClusteringWrapperV2
+		Properties suffixTreeClusteringWrapperV2Properties = new Properties();
+		SuffixTreeClusteringWrapperV2 suffixTreeClusteringWrapperV2  = new SuffixTreeClusteringWrapperV2(moduleNetwork, 
+				suffixTreeClusteringWrapperV2Properties);
+		suffixTreeClusteringWrapperV2Properties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeClusteringWrapperV2.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		suffixTreeClusteringWrapperV2.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -434,6 +450,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(exampleGsonSerialization.getName(), exampleGsonSerialization);
 		availableModules.put(exampleGsonDeserialization.getName(), exampleGsonDeserialization);
 		availableModules.put(extensibleTreeNode2GEXFModule.getName(), extensibleTreeNode2GEXFModule);
+		availableModules.put(suffixTreeVectorizationWrapperController.getName(), suffixTreeVectorizationWrapperController);
+		availableModules.put(suffixTreeClusteringWrapperV2.getName(), suffixTreeClusteringWrapperV2);
 	}
 	
 	/**
