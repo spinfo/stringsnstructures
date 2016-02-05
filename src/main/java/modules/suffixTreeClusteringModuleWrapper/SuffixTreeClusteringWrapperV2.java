@@ -3,10 +3,12 @@ package modules.suffixTreeClusteringModuleWrapper;
 //java standard imports:
 import java.util.Properties;
 import java.util.List;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 //modularization imports:
 import modules.CharPipe;
+import modules.BytePipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
@@ -18,19 +20,19 @@ import modules.suffixTreeClustering.clustering.flat.FlatClusterer;
 import modules.suffixTreeClustering.clustering.hierarchical.HierarchicalCluster;
 import modules.suffixTreeClustering.clustering.hierarchical.HierarchicalClusterer;
 import modules.suffixTreeClustering.clustering.neighborjoin.NeighborJoining;
+import modules.suffixTreeClustering.data.Node;
 import modules.suffixTreeClustering.data.Type;
 import modules.suffixTreeClustering.st_interface.SuffixTreeInfo;
+import modules.suffixTreeVectorizationWrapper.SuffixTreeInfoSer;
 
 //JSON gson imports
-import com.google.gson.Gson;
+//import com.google.gson.Gson;
 
 /**
  * This is a wrapper to modularize the vectorization process. 
  * @author Christopher Kraus
  * parts of this code are refactored from neumannm
  */
-
-//TODO: ATTENTION THIS MODULE IS STILL EXPERIMENTAL!
 
 public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 	
@@ -47,6 +49,9 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 	// variable for saving the corpus 
 	private SuffixTreeInfo corpus;
 	
+	// serializable SuffixTreeInfo variable 
+	private SuffixTreeInfoSer corpusSer;
+	
 	// variable which holds the types
 	private List<Type> types;
 	
@@ -60,7 +65,7 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 	private String clustResult;
 	
 	// definitions of I/O variables
-	private final String INPUTIDTREEVEC = "JSON vector";
+	private final String INPUTID = "byteInput";
 	private final String OUTPUTID = "output";
 	
 	// end variables
@@ -93,8 +98,8 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 	this.getPropertyDefaultValues().put(PROPERTYKEY_CORPNAME, "myCorpus");
 	
 	// I/O definition
-	InputPort inputPortVec = new InputPort(INPUTIDTREEVEC, "[JSON] Vector after \"SuffixTreeInfo\" in JSON format.", this);
-	inputPortVec.addSupportedPipe(CharPipe.class);
+	InputPort inputPortVec = new InputPort(INPUTID, "[byte] deserialized vector after \"SuffixTreeInfoSer\".", this);
+	inputPortVec.addSupportedPipe(BytePipe.class);
 	
 	OutputPort outputPort = new OutputPort(OUTPUTID, "[text] Plain text character output.", this);
 	outputPort.addSupportedPipe(CharPipe.class);
@@ -108,11 +113,23 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 	// process()
 	@Override
 	public boolean process() throws Exception {
+				
+		// byte input
+		BytePipe pipe = (BytePipe) this.getInputPorts().get(INPUTID).getPipe();
+		ObjectInputStream oiStream = new ObjectInputStream(pipe.getInput());
+		this.corpusSer = (SuffixTreeInfoSer) oiStream.readObject();
+		oiStream.close();
 		
-		Gson gson = new Gson();
-		this.corpus = gson.fromJson(this.getInputPorts().get(this.INPUTIDTREEVEC).getInputReader(), SuffixTreeInfo.class);
+		// Prepare proper SuffixTreeInfor object "corpus" with all vectors.
+		this.corpus = new SuffixTreeInfo();
+		this.corpus.setNumberOfNodes(this.corpusSer.getNumberOfNodes());
+		this.corpus.setNumberOfTypes(this.corpusSer.getNumberOfTypes());
+		this.corpus.setTypes(this.corpusSer.getTypes());
+		for (Node i : this.corpusSer.getNodes()) {
+			this.corpus.addNode(i);
+		}
 
-		types = new ArrayList<Type>(corpus.getTypes());
+		types = new ArrayList<Type>(this.corpus.getTypes());
 		
 		// selection of the clustering type
 		switch (clusterType) {

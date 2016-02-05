@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.List;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.util.Iterator;
 
 //modularization imports:
@@ -35,8 +36,6 @@ import com.google.gson.GsonBuilder;
  * parts of this code are refactored from neumannm
  */
 
-//TODO: ATTENTION THIS MODULE IS STILL EXPERIMENTAL!
-
 public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 	
 	// property keys:
@@ -64,6 +63,9 @@ public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 	// variable for saving the corpus 
 	private SuffixTreeInfo corpus;
 	
+	// variable to create a serializable corpus information
+	private SuffixTreeInfoSer corpusSer;
+	
 	// the type of vector which should be created
 	private String vecType;
 	private FeatureType vectorType;
@@ -71,7 +73,8 @@ public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 	// definitions of I/O variables
 	private final String INPUTIDTREERES = "KWIP xml Result";
 	private final String INPUTIDTREE = "suffixTree";
-	private final String OUTPUTID = "output";
+	private final String OUTPUTJSONID = "toJson";
+	private final String OUTPUTID = "byteOutput";
 	
 	// end variables
 	
@@ -109,13 +112,19 @@ public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 		InputPort inputPortTree = new InputPort(INPUTIDTREE, "[text/xml] Input of an XML representation of the suffix tree.", this);
 		inputPortTree.addSupportedPipe(BytePipe.class);
 		
-		OutputPort outputPort = new OutputPort(OUTPUTID, "[JSON] Output: Vector after \"SuffixTreeInfo\" in JSON format.", this);
-		outputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputJsonPort = new OutputPort(OUTPUTJSONID, "[JSON] Output: Vector after \"SuffixTreeInfo\" in JSON format.", this);
+		outputJsonPort.addSupportedPipe(CharPipe.class);
+		
+		OutputPort outputPort = new OutputPort(OUTPUTID, "[byte] serilalized vector output after \"SuffixTreeInfoSer\".", this);
+		outputPort.addSupportedPipe(BytePipe.class);
+		
+		
 		
 		// add I/O ports to instance
 		super.addInputPort(inputPortTreeRes);
 		super.addInputPort(inputPortTree);
 		
+		super.addOutputPort(outputJsonPort);
 		super.addOutputPort(outputPort);
 	}
 	
@@ -123,7 +132,10 @@ public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 	
 	@Override
 	public boolean process() throws Exception {
-				
+		
+		//Step 1: Read all necessary information from the KWIP (see step 1.1) and the GST module (see step 1.2).
+		
+		// Step 1.1: Read the "key-words in phrase" (KWIP) xml-output.
 		try {
 			kwipInStream = this.getInputPorts().get(INPUTIDTREERES).getInputStream();
 			kwipStreamReader = new KwipXmlStreamReader (kwipInStream);
@@ -132,8 +144,6 @@ public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 		}
 		
 		List<Type> kwipTypes = this.kwipStreamReader.read();
-//		for (Type type : kwipTypes)
-//			System.out.println(type);
 
 		Map<Integer, String> typeStrings = null;
 		try {
@@ -142,7 +152,7 @@ public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 			e.printStackTrace();
 		}
 		
-		// read the suffix tree
+		// Step 1.2: Read the generalized suffix tree (as xml-output).
 		try {
 			suffixTreeInStream = this.getInputPorts().get(INPUTIDTREE).getInputStream();
 			treeXmlStreamReader = new XmlStreamReader (suffixTreeInStream);
@@ -150,23 +160,11 @@ public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		/*
-		// print nodes for debugging
-		for (Node node : corpus.getNodes()) {
-			System.out.println(node);
-		}
-
-		for (Type type : corpus.getTypes()) {
-			System.out.println(type);
-		}
-
-		System.out.println("---------------------------");
-		*/
-		
-		// step 2: go through the list and search for each node its unit and
-		// remember the absolute value for each unit after tf/idf.
-		// afterwards save the results in the vector.
+				
+		// Step 2: go through the list and search for each node its unit and
+		// remember the absolute value for each unit after either tf/idf, tf/df or binary information.
+		// Binary information in this case means that occurrences are noted as "1" and non-occurrences are noted as "0".
+		// Afterwards save the results in the vector.
 		
 		switch (this.vecType) {
 		case "TF-IDF":
@@ -183,21 +181,34 @@ public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 			break;
 		}
 		
+		// Assign "vector features" (values for each vector component) to each vector.
 		for (Type doc : corpus.getTypes()) {
 				doc.calculateVector(corpus, vectorType);
 
-			/*
-			// for debugging
-			System.out.print("[");
-			for (Double val : doc.getVector().getValues()) {
-				System.out.print(val.doubleValue() + ", ");
-			}
-			System.out.println("]");
-			*/
 		}
 		
+		//Step 3: Write the output into a format and ship it to a particular clustering module
+		//(actually step 3 would be the clustering).
+		
+		// Prepare serializable corpusSer object.
+		this.corpusSer = new SuffixTreeInfoSer();
+		this.corpusSer.setNumberOfNodes(this.corpus.getNumberOfNodes());
+		this.corpusSer.setNumberOfTypes(this.corpus.getNumberOfTypes());
+		this.corpusSer.setTypes(this.corpus.getTypes());
+		this.corpusSer.convertNodes(this.corpus.getNodes());
+		
+		// Prepare byte output for several output pipes.
+		Iterator <Pipe> it = this.getOutputPorts().get(OUTPUTID).getPipes(BytePipe.class).iterator();
+		while(it.hasNext()) {
+			BytePipe currPipe = (BytePipe) it.next();
+			ObjectOutputStream ooStream = new ObjectOutputStream(currPipe.getOutput());
+			ooStream.writeObject(this.corpusSer);
+			ooStream.close();
+		}
+		
+		// Prepare Json output.
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		Iterator<Pipe> charPipes = this.getOutputPorts().get(OUTPUTID).getPipes(CharPipe.class).iterator();
+		Iterator<Pipe> charPipes = this.getOutputPorts().get(OUTPUTJSONID).getPipes(CharPipe.class).iterator();
 		while (charPipes.hasNext()){
 			gson.toJson(this.corpus, ((CharPipe)charPipes.next()).getOutput());
 		}

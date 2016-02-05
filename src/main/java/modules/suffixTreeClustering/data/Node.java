@@ -4,14 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.io.Serializable;
 
 /**
  * Class representing a Node in a Suffix Tree.
  * 
  * @author neumannm
  */
-public class Node implements Comparable<Node> {
+public class Node implements Comparable<Node>, Serializable {
 
+	private static final long serialVersionUID = -4707623970053959251L;
 	private String pathLabel;
 	private Integer nodeNumber;
 	// how many different documents share this node:

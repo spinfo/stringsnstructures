@@ -3,6 +3,7 @@ package modules.suffixTreeClustering.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.io.Serializable;
 import modules.suffixTreeClustering.features.BinaryFeatures;
 import modules.suffixTreeClustering.features.FeatureType;
 import modules.suffixTreeClustering.features.FeatureVector;
@@ -10,8 +11,9 @@ import modules.suffixTreeClustering.features.TfDfFeatures;
 import modules.suffixTreeClustering.features.TfIdfFeatures;
 import modules.suffixTreeClustering.st_interface.SuffixTreeInfo;
 
-public final class Type implements Comparable<Type> {
+public final class Type implements Comparable<Type>, Serializable{
 
+	private static final long serialVersionUID = 3107232124498491072L;
 	private int ID;
 	private FeatureVector vector;
 	private String string;

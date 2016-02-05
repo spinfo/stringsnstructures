@@ -1,6 +1,7 @@
 package modules.suffixTreeClustering.features;
 
 import java.util.Arrays;
+import java.io.Serializable;
 
 /**
  * Class representing a Document Vector. A vector is initialized with vector
@@ -8,8 +9,9 @@ import java.util.Arrays;
  * 
  * @author neumannm
  */
-public final class FeatureVector {
+public final class FeatureVector implements Serializable {
 
+	private static final long serialVersionUID = 4735812009246952588L;
 	private Double[] features;
 
 	@Override
