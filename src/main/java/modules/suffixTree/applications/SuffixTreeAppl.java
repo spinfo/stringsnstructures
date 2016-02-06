@@ -77,20 +77,8 @@ public class SuffixTreeAppl extends SuffixTree {
 			return null;
 		else if (!nodes[node].children.containsKey(str.charAt(phase))) {
 
-			LOGGER.warning("ExtActivePoint return 1 no fitting child");
-			return new ExtActivePoint(node, activeEdgeInConcatinatedText/*
-																		 * this.
-																		 * nodes
-																		 * [
-																		 * node]
-																		 * .
-																		 * getEnd
-																		 * (
-																		 * this.
-																		 * getPosition
-																		 * ())
-																		 * active_edge
-																		 */,
+			LOGGER.fine("ExtActivePoint return 1 no fitting child");
+			return new ExtActivePoint(node, activeEdgeInConcatinatedText /* this.nodes[node].getEnd(this.getPosition()) active_edge*/,
 					0/* active_length */, phase);
 		} else {
 
