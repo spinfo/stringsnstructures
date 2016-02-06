@@ -107,6 +107,20 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	public boolean process() throws Exception {
 		boolean result = true;
 
+		// Ports for output the production of which will alter the tree.
+		// NOTE: Only one of these outputs can be chosen.
+		// We check this early before the tree is produced as that may take some
+		// time.
+		final OutputPort jsonOut = this.getOutputPorts().get(OUTPUT_JSON_ID);
+		final OutputPort xmlOut = this.getOutputPorts().get(OUTPUT_XML_ID);
+		final OutputPort labelDataOut = this.getOutputPorts().get(OUTPUT_LABEL_DATA_ID);
+
+		int treeModifyingOutputs = 0;
+		if (jsonOut.isConnected()) treeModifyingOutputs += 1;
+		if (xmlOut.isConnected()) treeModifyingOutputs += 1;
+		if (labelDataOut.isConnected()) treeModifyingOutputs += 1;
+		if (treeModifyingOutputs > 1) throw new Exception("Only one of these Outputs can be chosen: xml, json, label-data.");
+
 		try {
 			// take the current time
 			long startTime = System.nanoTime();
@@ -195,23 +209,6 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			// stop time taken for building the tree
 			long treeFinished = System.nanoTime();
 
-			// construct the JSON output and write it to the output port if
-			// connected
-			final OutputPort jsonOut = this.getOutputPorts().get(OUTPUT_JSON_ID);
-			if (jsonOut.isConnected()) {
-				writeJsonOutput(suffixTreeAppl, jsonOut);
-			} else {
-				LOGGER.info("No port for json connected, not producing json output.");
-			}
-			// construct the XML output and write it to the output port if
-			// connected
-			final OutputPort xmlOut = this.getOutputPorts().get(OUTPUT_XML_ID);
-			if (xmlOut.isConnected()) {
-				final String output = GeneralisedSuffixTreeMain.persistSuffixTreeToXmlString(suffixTreeAppl);
-				xmlOut.outputToAllBytePipes(output.getBytes());
-			} else {
-				LOGGER.info("No port for xml connected, not producing xml output.");
-			}
 			// writes output of a list of labels, one label on each line
 			final OutputPort listOut = this.getOutputPorts().get(OUTPUT_LIST_ID);
 			if (listOut.isConnected()) {
@@ -224,12 +221,18 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.info("No port for plain text label list connected, output skipped.");
 			}
-
-			// writes output of label data as a csv table
-			// NOTE: this has to be performed after any other outputs, as the
-			// Listener uses a node stack, that alters and deletes the tree's
-			// nodes
-			final OutputPort labelDataOut = this.getOutputPorts().get(OUTPUT_LABEL_DATA_ID);
+			// construct the JSON output
+			if (jsonOut.isConnected()) {
+				writeJsonOutput(suffixTreeAppl, jsonOut);
+			}
+			// construct the XML output
+			if (xmlOut.isConnected()) {
+				final String output = GeneralisedSuffixTreeMain.persistSuffixTreeToXmlString(suffixTreeAppl);
+				xmlOut.outputToAllBytePipes(output.getBytes());
+			} else {
+				LOGGER.info("No port for xml connected, not producing xml output.");
+			}
+			// construct the label-data output
 			if (labelDataOut.isConnected()) {
 				final ResutlToGstLabelDataListener listener = new ResutlToGstLabelDataListener(suffixTreeAppl);
 				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
