@@ -49,6 +49,7 @@ import modules.seqTreeProperties.SeqTreePropController;
 import modules.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringModuleWrapper;
 import modules.suffixTreeModuleWrapper.GeneralisedSuffixTreeModule;
+import modules.suffixTreeModuleWrapper.LabelDataMergeModule;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.ExtensibleTreeNode2GEXFModule;
 import modules.treeBuilder.TreeBalanceIndexModule;
@@ -403,6 +404,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				suffixTreeClusteringWrapperV2Properties);
 		suffixTreeClusteringWrapperV2Properties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeClusteringWrapperV2.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		suffixTreeClusteringWrapperV2.applyProperties();
+
+		// LabelDataMergeModule
+		Properties labelDataMergeModuleProperties = new Properties();
+		LabelDataMergeModule labelDataMergeModule = new LabelDataMergeModule(moduleNetwork, labelDataMergeModuleProperties);
+		labelDataMergeModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, labelDataMergeModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		labelDataMergeModule.applyProperties();	
 		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -452,6 +459,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(extensibleTreeNode2GEXFModule.getName(), extensibleTreeNode2GEXFModule);
 		availableModules.put(suffixTreeVectorizationWrapperController.getName(), suffixTreeVectorizationWrapperController);
 		availableModules.put(suffixTreeClusteringWrapperV2.getName(), suffixTreeClusteringWrapperV2);
+		availableModules.put(labelDataMergeModule.getName(), labelDataMergeModule);
 	}
 	
 	/**
