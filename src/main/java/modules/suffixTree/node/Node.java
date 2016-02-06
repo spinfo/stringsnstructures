@@ -23,6 +23,12 @@ public abstract class Node {
 	}
 
 	/**
+	 * An integer signifying the number of leaves below the node. This count is
+	 * set after the tree is constructed, not automatically during construction.
+	 */
+	public int sumOfLeaves = 0;
+
+	/**
 	 * Add information about the start of the suffix that was read producing
 	 * this (leaf) node.
 	 * 

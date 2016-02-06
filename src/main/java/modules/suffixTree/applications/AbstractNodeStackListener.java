@@ -4,9 +4,11 @@ import modules.suffixTree.SuffixTree;
 import modules.suffixTree.node.GeneralisedSuffixTreeNode;
 
 /**
- * This abstract listener provides behavior for depth-first traversal of a tree,
+ * This abstract listener provides behaviour for depth-first traversal of a tree,
  * where all children of a given node must be present while processing the node
  * on the exitaction.
+ * 
+ * Tree nodes are considered to be GeneralisedSuffixTreeNodes.
  * 
  * The client has to make sure, that the TreeWalker used with a listener
  * extending this class does walk the tree in depth-first order.
@@ -38,6 +40,11 @@ public abstract class AbstractNodeStackListener implements ITreeWalkerListener {
 	@Override
 	public void entryaction(int nodeNr, int level) throws Exception {
 		this.nodeStack.push(nodeNr);
+		// if the node has position information on the entry action it is a leaf node
+		final GeneralisedSuffixTreeNode node = (GeneralisedSuffixTreeNode) this.suffixTree.nodes[nodeNr];
+		if(node.getStartPositionInformation().size() > 0) {
+			node.sumOfLeaves = 1;
+		}
 	}
 
 	/**
@@ -54,16 +61,19 @@ public abstract class AbstractNodeStackListener implements ITreeWalkerListener {
 
 		// if the node nr given and the current node Nr on top of the stack do
 		// not match the tree was not traversed in the right order
+		// this pops the current node from the stack. After that the parent of
+		// the current node is on top of the stack
 		final int stackedNodeNr = nodeStack.pop();
 		if (nodeNr != stackedNodeNr) {
 			throw new Exception("Differing node nrs encountered on tree listener.");
 		}
 
 		// Push all TextStartPositionInformations of the current node to the
-		// parent
+		// parent and add this node's leaf sum to that of the parent
 		final GeneralisedSuffixTreeNode parentNode = getCurrentNode();
 		if (parentNode != null) {
 			parentNode.getStartPositionInformation().addAll(node.getStartPositionInformation());
+			parentNode.sumOfLeaves += node.sumOfLeaves;
 		}
 	}
 
@@ -80,6 +90,8 @@ public abstract class AbstractNodeStackListener implements ITreeWalkerListener {
 	/**
 	 * Convenience method to peek at the node currently on top of the stack and
 	 * return it.
+	 * 
+	 * @return the node on top or null if none is present
 	 */
 	protected GeneralisedSuffixTreeNode getCurrentNode() {
 		if (nodeStack.empty()) {
@@ -87,5 +99,45 @@ public abstract class AbstractNodeStackListener implements ITreeWalkerListener {
 		} else {
 			return (GeneralisedSuffixTreeNode) suffixTree.nodes[nodeStack.peek()];
 		}
+	}
+
+	/**
+	 * Convenience method to peek at the node currently at the top of the stack
+	 * and return it's parent node.
+	 * 
+	 * @return the top node's parent or null if no top node or no parent is
+	 *         present
+	 */
+	protected GeneralisedSuffixTreeNode getCurrentNodeParent() {
+		GeneralisedSuffixTreeNode result = null;
+		if (!nodeStack.empty()) {
+			int top = nodeStack.pop();
+			// after the top node is popped, the next node on the stack is the
+			// parent
+			result = getCurrentNode();
+			// restore previous order
+			nodeStack.push(top);
+		}
+		return result;
+	}
+
+	/**
+	 * Convenience method to peek at the node currently at the top of the stack
+	 * and count it's siblings.
+	 * 
+	 * @return the amount of the current node's siblings
+	 */
+	protected int getCurrentNodeSiblingCount() throws Exception {
+		int result = 0;
+		final GeneralisedSuffixTreeNode parent = getCurrentNodeParent();
+		if (parent != null) {
+			result = parent.children.size() - 1;
+		}
+		// if there is a parent there has to have been a child an thus
+		// parent.children cannot be < 1
+		if (result < 0) {
+			throw new Exception("Wrong number of children for node. Is the node stack stacked in the right order?");
+		}
+		return result;
 	}
 }

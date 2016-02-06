@@ -2,7 +2,6 @@ package modules.suffixTreeModuleWrapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -15,9 +14,8 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.suffixTree.applications.ResultToJsonListener;
-import modules.suffixTree.applications.ResultToLabelChildCountListListener;
-import modules.suffixTree.applications.ResultToLabelFreqListListener;
 import modules.suffixTree.applications.ResultToLabelListListener;
+import modules.suffixTree.applications.ResutlToGstLabelDataListener;
 import modules.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.applications.TreeWalker;
 import modules.suffixTree.main.GeneralisedSuffixTreeMain;
@@ -25,6 +23,7 @@ import modules.suffixTree.node.End;
 import modules.suffixTree.node.ExtActivePoint;
 import modules.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
 import common.parallelization.CallbackReceiver;
+import models.GstLabelData;
 
 /**
  * Module Reads from KWIP modules output into a suffix tree. Constructs a
@@ -58,10 +57,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_XML_DESC = "[bytestream] An xml representation of the tree build, suitbale for clustering.";
 	private static final String OUTPUT_LIST_ID = "label list";
 	private static final String OUTPUT_LIST_DESC = "[text/plain] A list of labels separated by newline";
-	private static final String OUTPUT_FREQ_LIST_ID = "label frequencies list";
-	private static final String OUTPUT_FREQ_LIST_DESC = "[text/plain] A list of labels with frequencies separated by newline.";
-	private static final String OUTPUT_CHILDCOUNT_LIST_ID = "label child count list";
-	private static final String OUTPUT_CHILDCOUNT_LIST_DESC = "[text/plain] A list of labels with child counts for each occurence, separated by newline.";
+	private static final String OUTPUT_LABEL_DATA_ID = "label data";
+	private static final String OUTPUT_LABEL_DATA_DESC = "[text/csv] Prints a csv table with label information.";
 
 	// Container to hold units if provided
 	private ArrayList<Integer> unitList = null;
@@ -111,6 +108,9 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		boolean result = true;
 
 		try {
+			// take the current time
+			long startTime = System.nanoTime();
+			
 			// read the whole text once, necessary to know the text's length
 			final String text = readStringFromInputPort(this.getInputPorts().get(INPUT_TEXT_ID));
 
@@ -191,6 +191,9 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.warning("Did not find terminator char: " + TERMINATOR);
 			}
+			
+			// stop time taken for building the tree
+			long treeFinished = System.nanoTime();
 
 			// construct the JSON output and write it to the output port if
 			// connected
@@ -221,28 +224,21 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.info("No port for plain text label list connected, output skipped.");
 			}
-			// writes output of a list of labels with frequencies, one label per
-			// line
-			final OutputPort freqListOut = this.getOutputPorts().get(OUTPUT_FREQ_LIST_ID);
-			if (freqListOut.isConnected()) {
-				// traverse the tree to get a map for output and output it
-				// afterwards
-				final ResultToLabelFreqListListener listener = new ResultToLabelFreqListListener(suffixTreeAppl);
+			// writes output of label data as a csv table
+			final OutputPort labelDataOut = this.getOutputPorts().get(OUTPUT_LABEL_DATA_ID);
+			if (labelDataOut.isConnected()) {
+				final ResutlToGstLabelDataListener listener = new ResutlToGstLabelDataListener(suffixTreeAppl);
 				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
-				this.writeLabelIntegerListOutput(listener.getLabelsToFrequencies(), freqListOut);
+				this.writeGstLabelData(listener.getLabelsToGstData(), labelDataOut);
 			} else {
-				LOGGER.info("No port for label frequency list connected, output skipped.");
+				LOGGER.info("No port for label data connected, output skipped.");
 			}
-			// writes output of a list of labels with child counts for the
-			// respective nodes, one label
-			// per line
-			final OutputPort childCountListOut = this.getOutputPorts().get(OUTPUT_CHILDCOUNT_LIST_ID);
-			if (childCountListOut.isConnected()) {
-				final ResultToLabelChildCountListListener listener = new ResultToLabelChildCountListListener(
-						suffixTreeAppl);
-				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
-				this.writeLabelIntegerListOutput(listener.getLabelsToChildCounts(), childCountListOut);
-			}
+			
+			// log time taken for building the tree and generating output
+			long timeTaken = treeFinished - startTime;
+			LOGGER.info("Building the tree took: " + timeTaken + "ns (~ " + (timeTaken / 1000000000) + "s)");
+			timeTaken = System.nanoTime() - treeFinished;
+			LOGGER.info("Writing output took: " + timeTaken + "ns (~ " + (timeTaken / 1000000000) + "s)");
 
 		} catch (Exception e) {
 			result = false;
@@ -297,25 +293,19 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		listener.finishWriting();
 	}
 
-	/**
-	 * This is used internally to output a list of labels mapped to some
-	 * integers
-	 *
-	 * @throws IOException
-	 */
-	private void writeLabelIntegerListOutput(final Map<String, List<Integer>> labelsToIntegers, OutputPort outputPort)
+	private void writeGstLabelData(final Map<String, GstLabelData> labelsToData, OutputPort outputPort)
 			throws IOException {
 		final StringBuilder sb = new StringBuilder();
-		List<Integer> integers = null;
-		for (String label : labelsToIntegers.keySet()) {
-			sb.append(label);
-			sb.append(" ");
-			integers = labelsToIntegers.get(label);
-			for (Integer integer : integers) {
-				sb.append(integer);
-				sb.append(" ");
-			}
-			sb.setCharAt(sb.length() - 1, '\n');
+		GstLabelData data = null;
+		// output the header
+		sb.append(GstLabelData.getCsvHeader());
+		sb.append("\n");
+		// output the labels line by line
+		for (final String label : labelsToData.keySet()) {
+			data = labelsToData.get(label);
+			data.toCsv(sb);
+			sb.append("\n");
+			
 			// output the line and reset string builder
 			outputPort.outputToAllCharPipes(sb.toString());
 			sb.setLength(0);
@@ -343,13 +333,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		outputListPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputListPort);
 
-		OutputPort outputFreqListPort = new OutputPort(OUTPUT_FREQ_LIST_ID, OUTPUT_FREQ_LIST_DESC, this);
-		outputFreqListPort.addSupportedPipe(CharPipe.class);
-		super.addOutputPort(outputFreqListPort);
-
-		OutputPort outputChildCountListPort = new OutputPort(OUTPUT_CHILDCOUNT_LIST_ID, OUTPUT_CHILDCOUNT_LIST_DESC,
-				this);
-		outputChildCountListPort.addSupportedPipe(CharPipe.class);
-		super.addOutputPort(outputChildCountListPort);
+		OutputPort outputLabelDataPort = new OutputPort(OUTPUT_LABEL_DATA_ID, OUTPUT_LABEL_DATA_DESC, this);
+		outputLabelDataPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputLabelDataPort);
 	}
 }
