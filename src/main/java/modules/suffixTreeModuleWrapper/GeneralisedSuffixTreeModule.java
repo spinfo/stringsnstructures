@@ -110,7 +110,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		try {
 			// take the current time
 			long startTime = System.nanoTime();
-			
+
 			// read the whole text once, necessary to know the text's length
 			final String text = readStringFromInputPort(this.getInputPorts().get(INPUT_TEXT_ID));
 
@@ -191,7 +191,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.warning("Did not find terminator char: " + TERMINATOR);
 			}
-			
+
 			// stop time taken for building the tree
 			long treeFinished = System.nanoTime();
 
@@ -224,7 +224,11 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.info("No port for plain text label list connected, output skipped.");
 			}
+
 			// writes output of label data as a csv table
+			// NOTE: this has to be performed after any other outputs, as the
+			// Listener uses a node stack, that alters and deletes the tree's
+			// nodes
 			final OutputPort labelDataOut = this.getOutputPorts().get(OUTPUT_LABEL_DATA_ID);
 			if (labelDataOut.isConnected()) {
 				final ResutlToGstLabelDataListener listener = new ResutlToGstLabelDataListener(suffixTreeAppl);
@@ -233,7 +237,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.info("No port for label data connected, output skipped.");
 			}
-			
+
 			// log time taken for building the tree and generating output
 			long timeTaken = treeFinished - startTime;
 			LOGGER.info("Building the tree took: " + timeTaken + "ns (~ " + (timeTaken / 1000000000) + "s)");
@@ -305,7 +309,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			data = labelsToData.get(label);
 			data.toCsv(sb);
 			sb.append("\n");
-			
+
 			// output the line and reset string builder
 			outputPort.outputToAllCharPipes(sb.toString());
 			sb.setLength(0);

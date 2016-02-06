@@ -4,9 +4,12 @@ import modules.suffixTree.SuffixTree;
 import modules.suffixTree.node.GeneralisedSuffixTreeNode;
 
 /**
- * This abstract listener provides behaviour for depth-first traversal of a tree,
- * where all children of a given node must be present while processing the node
- * on the exitaction.
+ * This abstract listener provides behaviour for depth-first traversal of a
+ * tree, where all children of a given node must be present while processing the
+ * node on the exitaction.
+ * 
+ * Tree's nodes are altered during the entryaction and the tree's references to
+ * the nodes is deleted on the exitaction.
  * 
  * Tree nodes are considered to be GeneralisedSuffixTreeNodes.
  * 
@@ -35,20 +38,25 @@ public abstract class AbstractNodeStackListener implements ITreeWalkerListener {
 	}
 
 	/**
-	 * On entry of a node that node is simply pushed on the stack
+	 * On entry of a node that node is pushed on the stack and it's leaf count
+	 * is increased.
 	 */
 	@Override
 	public void entryaction(int nodeNr, int level) throws Exception {
 		this.nodeStack.push(nodeNr);
-		// if the node has position information on the entry action it is a leaf node
+		// if the node has position information on the entry action it is a leaf
+		// node
 		final GeneralisedSuffixTreeNode node = (GeneralisedSuffixTreeNode) this.suffixTree.nodes[nodeNr];
-		if(node.getStartPositionInformation().size() > 0) {
+		if (node.getStartPositionInformation().size() > 0) {
 			node.sumOfLeaves = 1;
 		}
 	}
 
 	/**
 	 * This should be called on the last line of the exit action.
+	 * 
+	 * NOTE: The tree's reference to the current node is deleted before this
+	 * method exits. It is then no longer available from the tree's node list.
 	 * 
 	 * On exit of a node, the TextStartInformation objects are added to the
 	 * parent node, such that when it's own exitaction is processed information
@@ -75,6 +83,9 @@ public abstract class AbstractNodeStackListener implements ITreeWalkerListener {
 			parentNode.getStartPositionInformation().addAll(node.getStartPositionInformation());
 			parentNode.sumOfLeaves += node.sumOfLeaves;
 		}
+
+		// remove the suffix tree's reference to the node processed
+		this.suffixTree.nodes[nodeNr] = null;
 	}
 
 	/**
