@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -39,6 +40,14 @@ public abstract class CallbackReceiverImpl implements
 	protected void registerFailureCallback(Thread process, Action action){
 		process.setUncaughtExceptionHandler(this);
 		this.failActions.put(process, action);
+	}
+	
+	/**
+	 * Returns a set of threads currently registered.
+	 * @return Set of threads
+	 */
+	public Set<Thread> getRegisteredThreads(){
+		return this.successActions.keySet();
 	}
 	
 	@Override
