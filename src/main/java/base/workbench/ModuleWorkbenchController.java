@@ -57,6 +57,7 @@ import modules.treeBuilder.TreeBuilderV2Module;
 import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
+import modules.treeSimilarityClustering.TreeSimilarityClusteringModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
 
@@ -388,6 +389,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		extensibleTreeNode2GEXFModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, extensibleTreeNode2GEXFModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		extensibleTreeNode2GEXFModule.applyProperties();
 		
+		// ExtensibleTreeNode2GEXFModule
+		Properties treeSimilarityClusteringModuleProperties = new Properties();
+		TreeSimilarityClusteringModule treeSimilarityClusteringModule  = new TreeSimilarityClusteringModule(moduleNetwork, 
+				treeSimilarityClusteringModuleProperties);
+		treeSimilarityClusteringModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeSimilarityClusteringModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		treeSimilarityClusteringModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -434,6 +442,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(exampleGsonSerialization.getName(), exampleGsonSerialization);
 		availableModules.put(exampleGsonDeserialization.getName(), exampleGsonDeserialization);
 		availableModules.put(extensibleTreeNode2GEXFModule.getName(), extensibleTreeNode2GEXFModule);
+		availableModules.put(treeSimilarityClusteringModule.getName(), treeSimilarityClusteringModule);
 	}
 	
 	/**

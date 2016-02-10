@@ -286,7 +286,7 @@ public class NodeComparator {
 
 		// Zaehlerwerte ermitteln (der WurzelExtensibleTreeNode wird ignoriert)
 		if (ebene > 0){
-			if (Boolean.parseBoolean(ExtensibleTreeNode.getAttributes().get(MetaNode.KEY_MATCHING).toString())) {
+			if (ExtensibleTreeNode.getAttributes().get(MetaNode.KEY_MATCHING) != null && Boolean.parseBoolean(ExtensibleTreeNode.getAttributes().get(MetaNode.KEY_MATCHING).toString())) {
 				// Treffer - zum Ergebnis addieren
 				ExtensibleTreeNodeMatches[0] += ExtensibleTreeNode.getNodeCounter()
 						* Math.pow(ebene, ebenenexponent);
