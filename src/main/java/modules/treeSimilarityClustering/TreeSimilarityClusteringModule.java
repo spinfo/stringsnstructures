@@ -190,10 +190,12 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 				Entry<String, ExtensibleTreeNode> typeToCompareTo = typesRemainder.next();
 				// Run comparison
 				Double comparisonResult = comparator.vergleiche(type.getValue(), typeToCompareTo.getValue());
-				// Add weighted edge to graph
-				Edge edge = graphNodes.get(type.getKey()).connectTo(""+edgeId, "similar", EdgeType.UNDIRECTED, graphNodes.get(typeToCompareTo.getKey()));
-				edge.setWeight(comparisonResult.floatValue());
-				this.edgeId++;
+				// Add weighted edge to graph (if weight is above 0.0)
+				if (comparisonResult.floatValue() > 0.0f){
+					Edge edge = graphNodes.get(type.getKey()).connectTo(""+edgeId, "similar", EdgeType.UNDIRECTED, graphNodes.get(typeToCompareTo.getKey()));
+					edge.setWeight(comparisonResult.floatValue());
+					this.edgeId++;
+				}
 			}
 		}
 		
