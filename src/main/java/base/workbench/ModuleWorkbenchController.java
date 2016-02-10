@@ -48,8 +48,10 @@ import modules.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
 import modules.seqTreeProperties.SeqTreePropController;
 import modules.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringModuleWrapper;
+import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringWrapperV2;
 import modules.suffixTreeModuleWrapper.GeneralisedSuffixTreeModule;
 import modules.suffixTreeModuleWrapper.LabelDataMergeModule;
+import modules.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.ExtensibleTreeNode2GEXFModule;
 import modules.treeBuilder.TreeBalanceIndexModule;
@@ -58,10 +60,9 @@ import modules.treeBuilder.TreeBuilderV2Module;
 import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
+import modules.treeSimilarityClustering.TreeSimilarityClusteringModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
-import modules.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
-import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringWrapperV2;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -410,6 +411,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		LabelDataMergeModule labelDataMergeModule = new LabelDataMergeModule(moduleNetwork, labelDataMergeModuleProperties);
 		labelDataMergeModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, labelDataMergeModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		labelDataMergeModule.applyProperties();	
+
+		// TreeSimilarityClusteringModule
+		Properties treeSimilarityClusteringModuleProperties = new Properties();
+		TreeSimilarityClusteringModule treeSimilarityClusteringModule = new TreeSimilarityClusteringModule(moduleNetwork, treeSimilarityClusteringModuleProperties);
+		treeSimilarityClusteringModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeSimilarityClusteringModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		treeSimilarityClusteringModule.applyProperties();	
 		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -460,6 +467,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(suffixTreeVectorizationWrapperController.getName(), suffixTreeVectorizationWrapperController);
 		availableModules.put(suffixTreeClusteringWrapperV2.getName(), suffixTreeClusteringWrapperV2);
 		availableModules.put(labelDataMergeModule.getName(), labelDataMergeModule);
+		availableModules.put(treeSimilarityClusteringModule.getName(), treeSimilarityClusteringModule);
 	}
 	
 	/**
