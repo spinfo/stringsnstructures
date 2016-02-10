@@ -1,5 +1,6 @@
 package modules.treeSimilarityClustering;
 
+import it.uniroma1.dis.wsngroup.gexf4j.core.Edge;
 import it.uniroma1.dis.wsngroup.gexf4j.core.EdgeType;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Graph;
@@ -17,6 +18,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import models.ExtensibleTreeNode;
@@ -102,20 +104,22 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		Map<String,ExtensibleTreeNode> typeMap = new HashMap<String,ExtensibleTreeNode>();
 		typeMap.putAll(rootNode.getChildNodes());
 		
-		// Instantiate GEXF writer
+		// Instantiate GEXF writer ...
 		Gexf gexf = new GexfImpl();
 
+		// ... metadata
 		Calendar date = Calendar.getInstance();
 		gexf.getMetadata().setLastModified(date.getTime())
 				.setCreator("Uni Koeln, Strings & Structures Project").setDescription("Tree Similarity Quotient Cluster");
 		gexf.setVisualization(true);
 
+		// ... graph
 		Graph graph = gexf.getGraph();
 		graph.setDefaultEdgeType(EdgeType.UNDIRECTED).setMode(Mode.STATIC);
 		
+		// ... attributes
 		AttributeList attrList = new AttributeListImpl(AttributeClass.NODE);
 		graph.getAttributeLists().add(attrList);
-		
 		AttributeImpl counterAttrib = new AttributeImpl("0", AttributeType.STRING, "nodeCounter");
 		attrList.add(0, counterAttrib);
 		
@@ -127,12 +131,73 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 			counter++;
 		}
 		
-		// TODO Compare node tree branches
+		/*
+		 * Add nodes to graph and store a link to the created graph nodes in a map.
+		 * We have to do this in advance to be able to insert the edges without hassle.
+		 */
+		// Map to store the node label <-> graph node relationship
+		Map<String,Node> graphNodes = new HashMap<String,Node>();
 		
-		// Iterate through tree
-		edgeId = 0;
-		this.convertToGEXF(rootNode, graph, null, attrList, "^");
+		// Node comparator
+		NodeComparator comparator = new NodeComparator();
 		
+		// Reset edge id
+		this.edgeId = 0;
+		
+		// Loop over types
+		Iterator<Entry<String, ExtensibleTreeNode>> types = typeMap.entrySet().iterator();
+		while (types.hasNext()) {
+
+			// Determine next type to compare
+			Entry<String, ExtensibleTreeNode> type = types.next();
+
+			// Add to graph
+			Node newNode = graph.createNode();
+			
+			// Apply attributes
+			newNode.setLabel(type.getKey());
+			newNode.getAttributeValues().addValue(counterAttrib, ""+type.getValue().getNodeCounter());
+			
+			// Other attributes
+			/*Iterator<Attribute> attributes = attrList.iterator();
+			while(attributes.hasNext()){
+				Attribute attribute = attributes.next();
+				
+			}*/
+			
+			// Store in map
+			graphNodes.put(type.getKey(), newNode);
+		}
+		
+		/*
+		 *  Compare every type to every other. We will do this by separating one by one
+		 *  from the list and comparing it to the remainder. 
+		 */
+		
+		// Loop over types again
+		types = typeMap.entrySet().iterator();
+		while(types.hasNext()){
+			
+			// Determine next type to compare
+			Entry<String, ExtensibleTreeNode> type = types.next();
+			// Remove it from list
+			types.remove();
+			
+			// Loop over remainder
+			Iterator<Entry<String, ExtensibleTreeNode>> typesRemainder = typeMap.entrySet().iterator();
+			while(typesRemainder.hasNext()){
+				// Determine next type to compare to the previously determined
+				Entry<String, ExtensibleTreeNode> typeToCompareTo = typesRemainder.next();
+				// Run comparison
+				Double comparisonResult = comparator.vergleiche(type.getValue(), typeToCompareTo.getValue());
+				// Add weighted edge to graph
+				Edge edge = graphNodes.get(type.getKey()).connectTo(""+edgeId, "similar", EdgeType.UNDIRECTED, graphNodes.get(typeToCompareTo.getKey()));
+				edge.setWeight(comparisonResult.floatValue());
+				this.edgeId++;
+			}
+		}
+		
+		// Write graph to output(s)
 		StaxGraphWriter graphWriter = new StaxGraphWriter();
 		
 		Iterator<OutputPort> outputPorts = this.getOutputPorts().values().iterator();
@@ -150,38 +215,6 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 
 		// Done
 		return true;
-	}
-	
-	/**
-	 * Recursively converts an ExtensibleTreeNode and its children into GEXF, adding them to the specified GEXF graph.
-	 * @param node ExtensibleTreeNode node
-	 * @param graph GEXF graph
-	 * @param gexfParentNode GEXF parent node
-	 * @param attrList List of attributes to include
-	 */
-	private void convertToGEXF(ExtensibleTreeNode node, Graph graph, Node gexfParentNode, AttributeList attrList, String childLabel){
-		
-		Node gexfNode = graph.createNode();
-		gexfNode.setLabel(childLabel);
-		gexfNode.setSize(1);
-		
-		if (gexfParentNode != null){
-			gexfParentNode.connectTo(""+edgeId, "child", EdgeType.DIRECTED, gexfNode);
-			edgeId++;
-		}
-		
-		gexfNode.getAttributeValues().addValue(attrList.get(0),""+node.getNodeCounter());
-		for (int i=1; i<attrList.size(); i++){
-			if (node.getAttributes().get(attrList.get(i)) != null)
-				gexfNode.getAttributeValues().addValue(attrList.get(i),node.getAttributes().get(attrList.get(i)).toString());
-		}
-		
-		Iterator<String> childLabels = node.getChildNodes().keySet().iterator();
-		while (childLabels.hasNext()){
-			String label = childLabels.next();
-			this.convertToGEXF(node.getChildNodes().get(label), graph, gexfNode, attrList, label);
-		}
-		
 	}
 
 	@Override
