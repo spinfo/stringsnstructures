@@ -17,6 +17,7 @@ public interface Module extends CallbackProcess {
 	public static final int STATUSCODE_FAILURE = 1;
 	public static final int STATUSCODE_RUNNING = 2;
 	public static final int STATUSCODE_NOTYETRUN = 3;
+	public static final String[] STATUSMESSAGES = new String[]{"successful","failed","running","idle"};
 	
 	/**
 	 * Returns a map of available input ports (key=identifier).

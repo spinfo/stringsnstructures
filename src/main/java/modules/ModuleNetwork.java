@@ -511,7 +511,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		while (modules.hasNext()) {
 			// Print module status
 			Module module = modules.next();
-			result.append(module.getName()+":\t"+module.getStatus()+"\n");
+			result.append(module.getName()+":\t"+Module.STATUSMESSAGES[module.getStatus()]+"\n");
 		}
 
 		return result.toString();
