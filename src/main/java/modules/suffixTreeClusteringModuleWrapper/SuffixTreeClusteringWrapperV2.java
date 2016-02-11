@@ -25,8 +25,6 @@ import modules.suffixTreeClustering.data.Type;
 import modules.suffixTreeClustering.st_interface.SuffixTreeInfo;
 import modules.suffixTreeVectorizationWrapper.SuffixTreeInfoSer;
 
-//JSON gson imports
-//import com.google.gson.Gson;
 
 /**
  * This is a wrapper to modularize the vectorization process. 
