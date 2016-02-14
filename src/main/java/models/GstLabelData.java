@@ -34,6 +34,14 @@ public class GstLabelData {
 	public GstLabelData() {
 	}
 
+	public void merge(GstLabelData other) {
+		this.getLevels().addAll(other.getLevels());
+		this.getSiblingCounts().addAll(other.getSiblingCounts());
+		this.getChildCounts().addAll(other.getChildCounts());
+		this.getOccurenceCounts().addAll(other.getOccurenceCounts());
+		this.getLeafCounts().addAll(other.getLeafCounts());
+	}
+
 	/**
 	 * @return a line of csv as a representation of this objects values
 	 */
@@ -86,7 +94,7 @@ public class GstLabelData {
 
 		final GstLabelData result = new GstLabelData();
 		if (tokens[0].startsWith("\"") && tokens[0].endsWith("\"") && tokens[0].length() >= 2) {
-			result.setLabel(tokens[0].substring(1, tokens[0].length()-1));
+			result.setLabel(tokens[0].substring(1, tokens[0].length() - 1));
 		} else {
 			result.setLabel(tokens[0]);
 		}
@@ -120,7 +128,9 @@ public class GstLabelData {
 	 *            the siblingCounts to set
 	 */
 	public void setSiblingCounts(List<Integer> siblingCounts) {
-		this.siblingCounts = siblingCounts;
+		if (siblingCounts != null) {
+			this.siblingCounts = siblingCounts;
+		}
 	}
 
 	/**
@@ -135,7 +145,9 @@ public class GstLabelData {
 	 *            the childCounts to set
 	 */
 	public void setChildCounts(List<Integer> childCounts) {
-		this.childCounts = childCounts;
+		if (childCounts != null) {
+			this.childCounts = childCounts;
+		}
 	}
 
 	/**
@@ -150,7 +162,9 @@ public class GstLabelData {
 	 *            the occurenceCounts to set
 	 */
 	public void setOccurenceCounts(List<Integer> occurenceCounts) {
-		this.occurenceCounts = occurenceCounts;
+		if (occurenceCounts != null) {
+			this.occurenceCounts = occurenceCounts;
+		}
 	}
 
 	/**
@@ -165,7 +179,9 @@ public class GstLabelData {
 	 *            the leafCounts to set
 	 */
 	public void setLeafCounts(List<Integer> leafCounts) {
-		this.leafCounts = leafCounts;
+		if (leafCounts != null) {
+			this.leafCounts = leafCounts;
+		}
 	}
 
 	/**
@@ -180,7 +196,9 @@ public class GstLabelData {
 	 *            the levels to set
 	 */
 	public void setLevels(List<Integer> levels) {
-		this.levels = levels;
+		if (levels != null) {
+			this.levels = levels;
+		}
 	}
 
 	/**
@@ -195,7 +213,9 @@ public class GstLabelData {
 	 *            the label to set
 	 */
 	public void setLabel(String label) {
-		this.label = label;
+		if (label != null) {
+			this.label = label;
+		}
 	}
 
 	/**
