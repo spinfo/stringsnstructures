@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import models.ExtensibleTreeNode;
 import modules.CharPipe;
@@ -32,7 +33,6 @@ import modules.OutputPort;
 import modules.Pipe;
 
 import com.google.gson.Gson;
-
 import common.parallelization.CallbackReceiver;
 
 public class TreeSimilarityClusteringModule extends ModuleImpl {
@@ -153,7 +153,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		Map<String,Node> graphNodes = new HashMap<String,Node>();
 		
 		// Node comparator
-		NodeComparator comparator = new NodeComparator();
+		//NodeComparator comparator = new NodeComparator();
 		
 		// Progress
 		Progress progress = new Progress(typeMap.size());
@@ -220,17 +220,28 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 				}
 				executor.execute(comparisonProcess);
 				
+				/* old non-smp way
 				Double comparisonResult = comparator.vergleiche(type.getValue(), typeToCompareTo.getValue());
 				// Add weighted edge to graph (if weight is above 0.0)
 				if (comparisonResult.floatValue() > this.minSimilarity){
 					Edge edge = graphNodes.get(type.getKey()).connectTo(""+edgeId, "similar", EdgeType.UNDIRECTED, graphNodes.get(typeToCompareTo.getKey()));
 					edge.setWeight(comparisonResult.floatValue());
 					this.edgeId++;
-				}
+				}*/
 			}
 			
 			// Shutdown executor service
 			executor.shutdown();
+			executor.awaitTermination(5000l, TimeUnit.MILLISECONDS);
+			
+			// Put the results into the graph
+			Iterator<Entry<String, Double>> comparisonResults = comparisonResultMap.entrySet().iterator();
+			while(comparisonResults.hasNext()){
+				Entry<String, Double> comparisonResult = comparisonResults.next();
+				Edge edge = graphNodes.get(type.getKey()).connectTo(""+edgeId, "similar", EdgeType.UNDIRECTED, graphNodes.get(comparisonResult.getKey()));
+				edge.setWeight(comparisonResult.getValue().floatValue());
+				this.edgeId++;
+			}
 		}
 		
 		// Remove nodes not reaching the minimum degree range, if one is specified // DOES NOT WORK; APPARENTLY NODES CANNOT BE REMOVED
