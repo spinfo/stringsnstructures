@@ -20,6 +20,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import models.ExtensibleTreeNode;
 import modules.CharPipe;
@@ -29,6 +32,7 @@ import modules.OutputPort;
 import modules.Pipe;
 
 import com.google.gson.Gson;
+
 import common.parallelization.CallbackReceiver;
 
 public class TreeSimilarityClusteringModule extends ModuleImpl {
@@ -37,6 +41,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 	// it with)
 	public static final String PROPERTYKEY_MINSIMILARITY = "minimum similarity";
 	public static final String PROPERTYKEY_MINDEGREE = "minimum degree";
+	public static final String PROPERTYKEY_MAXPARALLELTHREADS = "maximum threads";
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "suffix tree";
@@ -45,7 +50,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 
 	// Local variables
 	private long edgeId;
-	//private int maxParallelThreads = 8;
+	private int maxParallelThreads = 8;
 	private float minSimilarity = 0.0f;
 	//private int minDegree = 0;
 
@@ -59,6 +64,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		this.setDescription("Clusters elements of the first layer below the root node of specified trees by comparing them to one another, calculating a similarity quotient for each pairing in the process. The elements will then be inserted into a GEXF graph with edge weights set according to their respective similarity quotient. For details, see Magister thesis <i>Experimente zur Strukturbildung in natürlicher Sprache</i>, Marcel Boeing, Universität zu Köln, 2014.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINSIMILARITY, "Minimum similarity value that will result in an edge being created.");
 		//this.getPropertyDescriptions().put(PROPERTYKEY_MINDEGREE, "Minimum node degree. Nodes with fewer connections will be removed from the graph prior to output.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_MAXPARALLELTHREADS, "Maximum number of parallel threads the module will spawn.");
 		
 		// Add module category
 		this.setCategory("Experimental/WiP");
@@ -67,6 +73,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Tree Similarity Clustering");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MINSIMILARITY, "0.0");
 		//this.getPropertyDefaultValues().put(PROPERTYKEY_MINDEGREE, "0");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXPARALLELTHREADS, "8");
 
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT,
@@ -148,6 +155,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		// Node comparator
 		NodeComparator comparator = new NodeComparator();
 		
+		// Progress
+		Progress progress = new Progress(typeMap.size());
+		
 		// Reset edge id
 		this.edgeId = 0;
 		
@@ -181,9 +191,6 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		 *  from the list and comparing it to the remainder. 
 		 */
 		
-		// Create executor service
-		//ExecutorService executor = Executors.newFixedThreadPool(this.maxParallelThreads);
-		
 		// Loop over types again
 		types = typeMap.entrySet().iterator();
 		while(types.hasNext()){
@@ -193,12 +200,26 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 			// Remove it from list
 			types.remove();
 			
+			// Create executor service
+			ExecutorService executor = Executors.newFixedThreadPool(this.maxParallelThreads);
+			
+			// Map for comparison results
+			final ConcurrentHashMap<String,Double> comparisonResultMap = new ConcurrentHashMap<String,Double>();
+			
 			// Loop over remainder
 			Iterator<Entry<String, ExtensibleTreeNode>> typesRemainder = typeMap.entrySet().iterator();
 			while(typesRemainder.hasNext()){
 				// Determine next type to compare to the previously determined
 				Entry<String, ExtensibleTreeNode> typeToCompareTo = typesRemainder.next();
 				// Run comparison
+				Runnable comparisonProcess;
+				if (reversedRootNode != null){
+					comparisonProcess = new ComparisonProcess(new Double(this.minSimilarity), type.getValue(), typeToCompareTo.getValue(), reversedRootNode.getChildNodes().get(type.getKey()), reversedRootNode.getChildNodes().get(typeToCompareTo.getKey()), comparisonResultMap, progress);
+				} else {
+					comparisonProcess = new ComparisonProcess(new Double(this.minSimilarity), type.getValue(), typeToCompareTo.getValue(), comparisonResultMap, progress);
+				}
+				executor.execute(comparisonProcess);
+				
 				Double comparisonResult = comparator.vergleiche(type.getValue(), typeToCompareTo.getValue());
 				// Add weighted edge to graph (if weight is above 0.0)
 				if (comparisonResult.floatValue() > this.minSimilarity){
@@ -207,6 +228,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 					this.edgeId++;
 				}
 			}
+			
+			// Shutdown executor service
+			executor.shutdown();
 		}
 		
 		// Remove nodes not reaching the minimum degree range, if one is specified // DOES NOT WORK; APPARENTLY NODES CANNOT BE REMOVED
@@ -252,6 +276,13 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 						.get(PROPERTYKEY_MINDEGREE));
 		if (minDegreeString != null)
 		this.minDegree = Integer.parseInt(minDegreeString);*/
+		
+		String maxParallelThreadsString = this.getProperties().getProperty(
+				PROPERTYKEY_MINDEGREE,
+				this.getPropertyDefaultValues()
+						.get(PROPERTYKEY_MINDEGREE));
+		if (maxParallelThreadsString != null)
+		this.maxParallelThreads = Integer.parseInt(maxParallelThreadsString);
 		
 		String minSimilarityString = this.getProperties().getProperty(
 				PROPERTYKEY_MINSIMILARITY,
