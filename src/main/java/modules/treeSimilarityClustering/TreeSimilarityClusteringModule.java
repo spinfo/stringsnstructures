@@ -35,8 +35,8 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 
 	// Define property keys (every setting has to have a unique key to associate
 	// it with)
-	//public static final String PROPERTYKEY_DELIMITER_INPUT = "input delimiter";
-	//public static final String PROPERTYKEY_DELIMITER_OUTPUT = "output delimiter";
+	public static final String PROPERTYKEY_MINSIMILARITY = "minimum similarity";
+	public static final String PROPERTYKEY_MINDEGREE = "minimum degree";
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "suffix tree";
@@ -45,6 +45,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 
 	// Local variables
 	private long edgeId;
+	//private int maxParallelThreads = 8;
+	private float minSimilarity = 0.0f;
+	//private int minDegree = 0;
 
 	public TreeSimilarityClusteringModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -54,12 +57,16 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 
 		// Add module description
 		this.setDescription("Clusters elements of the first layer below the root node of specified trees by comparing them to one another, calculating a similarity quotient for each pairing in the process. The elements will then be inserted into a GEXF graph with edge weights set according to their respective similarity quotient. For details, see Magister thesis <i>Experimente zur Strukturbildung in natürlicher Sprache</i>, Marcel Boeing, Universität zu Köln, 2014.");
-
+		this.getPropertyDescriptions().put(PROPERTYKEY_MINSIMILARITY, "Minimum similarity value that will result in an edge being created.");
+		//this.getPropertyDescriptions().put(PROPERTYKEY_MINDEGREE, "Minimum node degree. Nodes with fewer connections will be removed from the graph prior to output.");
+		
 		// Add module category
 		this.setCategory("Experimental/WiP");
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Tree Similarity Clustering");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MINSIMILARITY, "0.0");
+		//this.getPropertyDefaultValues().put(PROPERTYKEY_MINDEGREE, "0");
 
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT,
@@ -120,7 +127,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		// ... attributes
 		AttributeList attrList = new AttributeListImpl(AttributeClass.NODE);
 		graph.getAttributeLists().add(attrList);
-		AttributeImpl counterAttrib = new AttributeImpl("0", AttributeType.STRING, "nodeCounter");
+		AttributeImpl counterAttrib = new AttributeImpl("0", AttributeType.LONG, "nodeCounter");
 		attrList.add(0, counterAttrib);
 		
 		Iterator<String> nodeAttributeKeys = rootNode.getAttributes().keySet().iterator();
@@ -174,6 +181,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		 *  from the list and comparing it to the remainder. 
 		 */
 		
+		// Create executor service
+		//ExecutorService executor = Executors.newFixedThreadPool(this.maxParallelThreads);
+		
 		// Loop over types again
 		types = typeMap.entrySet().iterator();
 		while(types.hasNext()){
@@ -191,13 +201,23 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 				// Run comparison
 				Double comparisonResult = comparator.vergleiche(type.getValue(), typeToCompareTo.getValue());
 				// Add weighted edge to graph (if weight is above 0.0)
-				if (comparisonResult.floatValue() > 0.0f){
+				if (comparisonResult.floatValue() > this.minSimilarity){
 					Edge edge = graphNodes.get(type.getKey()).connectTo(""+edgeId, "similar", EdgeType.UNDIRECTED, graphNodes.get(typeToCompareTo.getKey()));
 					edge.setWeight(comparisonResult.floatValue());
 					this.edgeId++;
 				}
 			}
 		}
+		
+		// Remove nodes not reaching the minimum degree range, if one is specified // DOES NOT WORK; APPARENTLY NODES CANNOT BE REMOVED
+		/*if (this.minDegree > 0){
+			Iterator<Node> nodes = graphNodes.values().iterator();
+			while(nodes.hasNext()){
+				Node node = nodes.next();
+				if (node.getEdges().size()<this.minDegree)
+					nodes.remove();
+			}
+		}*/
 		
 		// Write graph to output(s)
 		StaxGraphWriter graphWriter = new StaxGraphWriter();
@@ -226,14 +246,19 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		super.setDefaultsIfMissing();
 
 		// Apply own properties
-		/*this.inputdelimiter = this.getProperties().getProperty(
-				PROPERTYKEY_DELIMITER_INPUT,
+		/*String minDegreeString = this.getProperties().getProperty(
+				PROPERTYKEY_MINDEGREE,
 				this.getPropertyDefaultValues()
-						.get(PROPERTYKEY_DELIMITER_INPUT));
-		this.outputdelimiter = this.getProperties().getProperty(
-				PROPERTYKEY_DELIMITER_OUTPUT,
+						.get(PROPERTYKEY_MINDEGREE));
+		if (minDegreeString != null)
+		this.minDegree = Integer.parseInt(minDegreeString);*/
+		
+		String minSimilarityString = this.getProperties().getProperty(
+				PROPERTYKEY_MINSIMILARITY,
 				this.getPropertyDefaultValues().get(
-						PROPERTYKEY_DELIMITER_OUTPUT));*/
+						PROPERTYKEY_MINSIMILARITY));
+		if (minSimilarityString != null)
+		this.minSimilarity = Float.parseFloat(minSimilarityString);
 
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
