@@ -5,8 +5,10 @@ import java.util.Properties;
 import java.util.List;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 //modularization imports:
+import modules.Pipe;
 import modules.CharPipe;
 import modules.BytePipe;
 import modules.InputPort;
@@ -24,6 +26,10 @@ import modules.suffixTreeClustering.data.Node;
 import modules.suffixTreeClustering.data.Type;
 import modules.suffixTreeClustering.st_interface.SuffixTreeInfo;
 import modules.suffixTreeVectorizationWrapper.SuffixTreeInfoSer;
+
+//google gson imports
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 
 /**
@@ -62,9 +68,13 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 	//the result of the clustering
 	private String clustResult;
 	
+	// flat cluster kmeans result
+	List<FlatCluster> kmeansRes;
+	
 	// definitions of I/O variables
 	private final String INPUTID = "byteInput";
 	private final String OUTPUTID = "output";
+	private final String OUTPUTJSONID = "json";
 	
 	// end variables
 	
@@ -102,10 +112,14 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 	OutputPort outputPort = new OutputPort(OUTPUTID, "[text] Plain text character output.", this);
 	outputPort.addSupportedPipe(CharPipe.class);
 	
+	OutputPort outputJsonPort = new OutputPort(OUTPUTJSONID, "[JSON] text character output.", this);
+	outputJsonPort.addSupportedPipe(CharPipe.class);
+	
 	// add I/O ports to instance
 	super.addInputPort(inputPortVec);
 	
 	super.addOutputPort(outputPort);
+	super.addOutputPort(outputJsonPort);
 	}
 	
 	// process()
@@ -148,6 +162,16 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 		// put the results into the output char pipe
 		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.clustResult);
 		
+		Iterator <Pipe> jsonPipes = this.getOutputPorts().get(OUTPUTJSONID).getPipes(CharPipe.class).iterator();
+		
+		while(jsonPipes.hasNext()) {
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			gson.toJson(this.kmeansRes, ((CharPipe)jsonPipes.next()).getOutput());
+		}
+		
+		// put the results of each clustering into an appropriate JSON format. But this is not that easy to do, as there are 3 different
+		// output formats: FlatCluster, HierachialCluster, NeighborJoining. How to combine the output formats to one?
+		
 		// close outputs
 		this.closeAllOutputs();
 		
@@ -174,13 +198,14 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 	
 	private void clusterFlat(List<Type> types, String name) {
 		FlatClusterer f_analysis = new FlatClusterer(types);
-		//LOGGER.info("Flaches Clustern von " + types.size() + " Types");
+		
 		List<FlatCluster> fClusters = f_analysis.analyse(3, 10);
+		this.kmeansRes = fClusters;
 		for (FlatCluster cluster : fClusters) {
 			System.out.println(cluster.getMedoid().getString());
 		}
 		this.clustResult = f_analysis.toDot();
-		// System.out.println(dot);
+		
 	}
 
 	private void clusterHierarchical(List<Type> types,

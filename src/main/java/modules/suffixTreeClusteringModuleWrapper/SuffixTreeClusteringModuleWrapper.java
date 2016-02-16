@@ -103,7 +103,7 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 				+ "<ul type =\"disc\" ><li>KWIP suffix tree result in xml format</li><li>the suffix tree itself in xml format</li></ul>");
 		
 		// Add module category
-		this.setCategory("VectorClustering");
+		this.setCategory("Deprecated");
 		
 		// property descriptions 
 		this.getPropertyDescriptions().put(PROPERTYKEY_CLUST, "Three possible clustering types: \"NJ\" "

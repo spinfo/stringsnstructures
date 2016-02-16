@@ -79,6 +79,7 @@ public final class FlatClusterer {
 		List<FlatCluster> result = new CopyOnWriteArrayList<FlatCluster>(
 				clusters);
 		/* Wir betrachten jedes Dokument in jedem Cluster: */
+		// TODO: Is document really the correct term here? Should it not be type instead?
 		for (FlatCluster currentCluster : result) {
 			for (Type document : currentCluster) {
 				/*
