@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
+import common.StringUtil;
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.InputPort;
@@ -37,12 +38,28 @@ public class LabelDataMergeModule extends modules.ModuleImpl {
 			+ "occurrence l mean,occurrence r mean,occurrence mean,leaves l mean,leaves r mean,leaves mean,levels l mean,levels r mean,levels mean,"
 			+ "siblings l,siblings r,children l,children r,occurences l,occurences r,leaves l,leaves r,levels l,levels r";
 
+	// whether and how labels should be trimmed of whitespace, either
+	// * do not trim whitespace
+	// * trim all whitespace at start and end
+	// * trim whitespace only after the label in the direction of reading
+	private static enum BlankTrimming {
+		NONE, ALL, FOLLOWING
+	};
+
+	private static final String PROPERTYKEY_BLANK_TRIM = "Blank Trimming";
+	private static final String PROPERTYDESCRIPTION_BLANK_TRIM = "Blanks can be ignored in direction of reading (\"FOLLOWING\", default) or generally (\"ALL\") or not at all (\"NONE\").";
+	private BlankTrimming blankTrimming;
+
 	public LabelDataMergeModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
 
 		// Set the modules name and description
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, MODULE_NAME);
 		this.setDescription(MODULE_DESCRIPTION);
+
+		// Set default behaviour for whitespace trimming
+		this.getPropertyDescriptions().put(PROPERTYKEY_BLANK_TRIM, PROPERTYDESCRIPTION_BLANK_TRIM);
+		this.getPropertyDefaultValues().put(PROPERTYKEY_BLANK_TRIM, "FOLLOWING");
 
 		// Add module category
 		this.setCategory("Tree-building");
@@ -68,52 +85,98 @@ public class LabelDataMergeModule extends modules.ModuleImpl {
 		final InputPort labelsReversedPort = this.getInputPorts().get(INPUT_LABELS_REV_ID);
 		final OutputPort outputPort = this.getOutputPorts().get(OUTPUT_ID);
 
-		final String[] rowsOne = NEWLINE_PATTERN.split(super.readStringFromInputPort(labelsPort));
-		final String[] rowsTwo = NEWLINE_PATTERN.split(super.readStringFromInputPort(labelsReversedPort));
+		final String[] rowsLeft = NEWLINE_PATTERN.split(super.readStringFromInputPort(labelsPort));
+		final String[] rowsRight = NEWLINE_PATTERN.split(super.readStringFromInputPort(labelsReversedPort));
 
 		// the input row to start with
 		int startRowNo = 2;
 
 		// variables for data objects from the first and second input (text
-		// starting l or r)
-		GstLabelData left = null;
-		GstLabelData right = null;
+		// reading started left or right)
+		GstLabelData dataLeft = null;
+		GstLabelData dataRight = null;
 
-		// parse rows from the reversed input and add them to a map containing
-		// only those labels
-		final Map<String, GstLabelData> labelData = new TreeMap<String, GstLabelData>();
+		// parse rows from the reversed input and add them to a map
+		final Map<String, GstLabelData> labelDataRight = new TreeMap<String, GstLabelData>();
 		final StringBuilder sb = new StringBuilder();
-		for (int i = (startRowNo - 1); i < rowsTwo.length; i++) {
-			right = GstLabelData.fromCsv(rowsTwo[i]);
+		String label = null;
+		for (int i = (startRowNo - 1); i < rowsRight.length; i++) {
+			dataRight = GstLabelData.fromCsv(rowsRight[i]);
 
 			// re-reverse the label
-			sb.append(right.getLabel()).reverse();
-			right.setLabel(sb.toString());
+			label = sb.append(dataRight.getLabel()).reverse().toString();
 			sb.setLength(0);
+			// trim blanks if ordered to
+			switch (this.blankTrimming) {
+			case FOLLOWING:
+				// left hand side is the end in direction of reading
+				label = StringUtil.ltrim(label);
+				break;
+			case ALL:
+				label = label.trim();
+				break;
+			case NONE:
+				break;
+			}
+			dataRight.setLabel(label);
+			addOrMergeDataInMap(dataRight, labelDataRight);
+		}
 
-			labelData.put(right.getLabel(), right);
+		// parse rows from the normal input, and put them in a map
+		final Map<String, GstLabelData> labelDataLeft = new TreeMap<String, GstLabelData>();
+		sb.setLength(0);
+		label = null;
+		for (int i = (startRowNo - 1); i < rowsLeft.length; i++) {
+			dataLeft = GstLabelData.fromCsv(rowsLeft[i]);
+			switch (this.blankTrimming) {
+			case FOLLOWING:
+				// right hand side is the end in direction of reading
+				label = StringUtil.rtrim(dataLeft.getLabel());
+				break;
+			case ALL:
+				label = dataLeft.getLabel().trim();
+				break;
+			case NONE:
+				label = dataLeft.getLabel();
+				break;
+			}
+			dataLeft.setLabel(label);
+			addOrMergeDataInMap(dataLeft, labelDataLeft);
 		}
 
 		// output the header
 		outputPort.outputToAllCharPipes(CSV_HEADER + System.lineSeparator());
 
-		// parse rows of the other input, If a label matches one from the
-		// re-reversed input, output the merged results.
-		for (int i = (startRowNo - 1); i < rowsOne.length; i++) {
-			left = GstLabelData.fromCsv(rowsOne[i]);
+		// traverse the map of labels from the right (often smaller in size)
+		// and output all matches with that from the left
+		for (final String labelRight : labelDataRight.keySet()) {
+			dataRight = labelDataRight.get(labelRight);
 
 			// check for a match
-			right = labelData.get(left.getLabel());
-			if (right != null) {
-				// ignore root and single space label
-				if (!left.getLabel().isEmpty() && !left.getLabel().equals(" ")) {
-					writeCsvLine(left, right, outputPort);
+			dataLeft = labelDataLeft.get(labelRight);
+			if (dataLeft != null) {
+				// ignore root/empty labels
+				if (!dataLeft.getLabel().isEmpty() && !dataLeft.getLabel().equals(" ")) {
+					writeCsvLine(dataLeft, dataRight, outputPort);
 				}
 			}
 		}
 
 		this.closeAllOutputs();
 		return true;
+	}
+
+	// adds the labelData to the map and merges it's information with another
+	// data object, if one exists for the same label
+	// (this is only strictly necessary if whitespace was stripped from some
+	// labels as some previously distinct labels might then become identical to
+	// other existing labels)
+	private void addOrMergeDataInMap(GstLabelData data, Map<String, GstLabelData> map) {
+		final GstLabelData other = map.get(data.getLabel());
+		if (other != null) {
+			data.merge(other);
+		}
+		map.put(data.getLabel(), data);
 	}
 
 	private void writeCsvLine(GstLabelData left, GstLabelData right, OutputPort outputPort) throws IOException {
@@ -181,6 +244,16 @@ public class LabelDataMergeModule extends modules.ModuleImpl {
 	@Override
 	public void applyProperties() throws Exception {
 		super.setDefaultsIfMissing();
+
+		final String whitespaceBehaviour = this.getProperties().getProperty(PROPERTYKEY_BLANK_TRIM);
+		if("ALL".equals(whitespaceBehaviour)) {
+			this.blankTrimming = BlankTrimming.ALL;
+		} else if("NONE".equals(whitespaceBehaviour)) {
+			this.blankTrimming = BlankTrimming.NONE;
+		} else {
+			this.blankTrimming = BlankTrimming.FOLLOWING;
+		}
+
 		super.applyProperties();
 	}
 
