@@ -73,6 +73,9 @@ public class SeqTreePropController extends ModuleImpl {
 	// cophenetic indexes for subtrees
 	HashMap<String, Integer> subCophTrees;
 	
+	// This variable saves the frequency spectrum of singletons, doublet and triplets 
+	private HashMap<Integer, Integer> freqSpectrum;
+	
 	//variables for calculating the Sackin index
 	private HashMap<String, SeqSackinIndex> sackinIndex;
 	private ArrayList<Integer> sackinIndexLeavesList;
@@ -212,6 +215,16 @@ public class SeqTreePropController extends ModuleImpl {
 				+ ((i.getLeafNum()-2)*(i.getLeafNum()-1)*i.getLeafNum()/6)
 				+ "\n";
 			}
+		}
+		
+		// Put the results for the frequency analysis into the output.
+		this.seqPropertiesOutput = this.seqPropertiesOutput + "\n";
+		this.seqPropertiesOutput = this.seqPropertiesOutput + "number of terminal branches" + "\tfrequency\n";
+		this.seqPropertiesOutput = this.seqPropertiesOutput + "1\t" + this.totalNumOfLeaves + "\n";
+		Iterator <Entry<Integer,Integer>> itFreq = this.freqSpectrum.entrySet().iterator();
+		while (itFreq.hasNext()) {
+			HashMap.Entry <Integer, Integer> freqPair = (HashMap.Entry<Integer, Integer>) itFreq.next();
+			this.seqPropertiesOutput = this.seqPropertiesOutput + "\t" + freqPair.getKey() + "\t" + freqPair.getValue()  + "\n";
 		}
 	}
 	
@@ -455,12 +468,16 @@ public class SeqTreePropController extends ModuleImpl {
 		this.subCophTrees = new HashMap<String, Integer> ();
 		this.subSackinTrees = new HashMap<String, Integer> ();
 		
+		// create freqSpectrum object
+		this.freqSpectrum = new HashMap <Integer, Integer> ();
+				
 		ArrayList <SeqProperties> seqPropertiesSortedInverted = new ArrayList <SeqProperties> ();
 		
 		for (SeqProperties i : this.seqPropertiesSorted) {
 			if (!(i.getNodeName() == "^")) {
 				seqPropertiesSortedInverted.add(0, i);
 			}
+			this.calcFreqSeq(i.getLeafNum());
 		}
 		
 		// string variable holding the current edge label
@@ -495,6 +512,8 @@ public class SeqTreePropController extends ModuleImpl {
 				if (i.getNodeName().length() >= lastStr.length() && (i.getNodeName().equals(lastStr) || i.getNodeName().substring(0, lastStr.length()).equals(lastStr))) {
 					lastSackinVal += this.sackinIndex.get(i.getNodeName()).getNodeNumber();
 					currTreeInnerNodes ++;
+					// Find out the amount of singletons, doublets, triplets etc. in the whole tree.
+					//this.calcFreqSeq(i.getLeafNum());
 				}
 			}
 			
@@ -509,8 +528,19 @@ public class SeqTreePropController extends ModuleImpl {
 			currTreeInnerNodes = 0;
 			termNode = true;
 		}
+		
+		
 				
 		this.avSackinIndex = (double) this.sackinIndexVal / (double) this.averagePathLength.size();
 		this.avCopheneticIndex = (double) this.copheneticIndexVal / (double) this.averagePathLength.size();
+	}
+	
+	// Increase number of singletons, doublets, triplets etc. in dependence of previous results
+	public void calcFreqSeq (int freq)  {
+		if (!this.freqSpectrum.containsKey(freq)) {
+			this.freqSpectrum.put(freq,1);
+		} else {
+			this.freqSpectrum.put(freq, this.freqSpectrum.get(freq) + 1);
+		}
 	}
 }
