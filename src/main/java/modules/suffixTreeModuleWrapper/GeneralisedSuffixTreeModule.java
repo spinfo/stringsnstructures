@@ -1,6 +1,7 @@
 package modules.suffixTreeModuleWrapper;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
@@ -59,6 +60,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_LIST_DESC = "[text/plain] A list of labels separated by newline";
 	private static final String OUTPUT_LABEL_DATA_ID = "label data";
 	private static final String OUTPUT_LABEL_DATA_DESC = "[text/csv] Prints a csv table with label information.";
+	private static final String OUTPUT_DOT_FILE_ID = "dot file";
+	private static final String OUTPUT_DOT_FILE_DESC = "Prints a graphical representation of the tree as a .dot file.";
 
 	// Container to hold units if provided
 	private ArrayList<Integer> unitList = null;
@@ -221,6 +224,23 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.info("No port for plain text label list connected, output skipped.");
 			}
+			final OutputPort dotOut = this.getOutputPorts().get(OUTPUT_DOT_FILE_ID);
+			if (dotOut.isConnected()) {
+				// get a PipedWriter from the OutputPipe to write to
+				final CharPipe dotOutPipe = (CharPipe)dotOut.getPipes().get(CharPipe.class).get(0);
+				final PrintWriter writer = new PrintWriter(dotOutPipe.getOutput());
+				// the heading for the tree graphics is the beginning of the text
+				final int headingEnd = text.length() > 100 ? 100 : text.length() - 1;
+				String heading = text.substring(0, headingEnd);
+				if(heading.length() == 100) heading += "...";
+				// output is done by the tree class
+				suffixTreeAppl.printTree(heading, -1, -1, -1, writer);
+				dotOut.close();
+			} else {
+				LOGGER.info("No port for .dot-file connected, output skipped.");
+			}
+			// NOTE: potentially destructive outputs that alter the tree (json,
+			// xml, label-data) are made last
 			// construct the JSON output
 			if (jsonOut.isConnected()) {
 				writeJsonOutput(suffixTreeAppl, jsonOut);
@@ -343,5 +363,9 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		OutputPort outputLabelDataPort = new OutputPort(OUTPUT_LABEL_DATA_ID, OUTPUT_LABEL_DATA_DESC, this);
 		outputLabelDataPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputLabelDataPort);
+		
+		OutputPort outputDotFilePort = new OutputPort(OUTPUT_DOT_FILE_ID, OUTPUT_DOT_FILE_DESC, this);
+		outputDotFilePort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputDotFilePort);
 	}
 }

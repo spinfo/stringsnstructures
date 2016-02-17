@@ -13,7 +13,6 @@ public class SuffixTreeAppl extends SuffixTree {
 	private static final Logger LOGGER = Logger.getGlobal();
 	// .getLogger(SuffixTreeAppl.class.getName());
 
-	PrintWriter out;
 	private int nr = 0;
 
 	public SuffixTreeAppl(int len, NodeFactory nodeFactory) {
@@ -194,45 +193,51 @@ public class SuffixTreeAppl extends SuffixTree {
 	 * output is written into st.dot file. In order to see the suffix tree as a
 	 * PNG image, run the following command: dot -Tpng -O st.dot
 	 */
-
 	@Override
 	public void printTree(String message, int hotNode1, int hotNode2,
 			int active_length) {
 		LOGGER.entering(this.getClass().getName(), "printTree", new Object[] {
 				hotNode1, hotNode2, active_length });
+
 		try {
-			out = new PrintWriter(new FileWriter("st" + String.valueOf(nr)
-					+ ".dot"));
+			final PrintWriter out = new PrintWriter(new FileWriter("st" + String.valueOf(nr) + ".dot"));
 			nr++;
 			LOGGER.finer("printTree nr " + nr);
-			out.println("digraph {");
-			out.println("\trankdir = TB;");
-			out.println("\tedge [arrowsize=0.4,fontsize=10]");
-
-			out.println("\tmessage[label=\"" + message
-					+ "\",shape=box,color=white]");
-			if (hotNode1 == 1)
-				out.println("\tnode1 [label=\"1\",style=filled,fillcolor=red,shape=circle,width=.6,height=.6];");
-			else
-				out.println("\tnode1 [label=\"1\",style=filled,fillcolor=lightgrey,shape=circle,width=.6,height=.6];");
-			out.println("//------leaves------");
-			printLeaves(this.getRoot(), hotNode1, hotNode2);
-			out.println("//------internal nodes------");
-			printInternalNodes(this.getRoot(), hotNode1, hotNode2);
-			out.println("//------edges------");
-			out.println("\tmessage -> node1 [color=white]");
-			printEdges(this.getRoot(), hotNode1, hotNode2, active_length);
-			out.println("//------suffix links------");
-			printSuffixLinks(this.getRoot(), hotNode1, hotNode2);
-			out.println("}");
-			out.close();
+			this.printTree(message, hotNode1, hotNode2, active_length, out);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		LOGGER.exiting(this.getClass().getName(), "printTree");
 	}
+	
+	public void printTree(String message, int hotNode1, int hotNode2, int active_length, PrintWriter out) {
 
-	void printLeaves(int x, int hotNode1, int hotNode2) {
+        out.println("digraph {");
+        out.println("\trankdir = TB;");
+        out.println("\tedge [arrowsize=0.4,fontsize=10]");
+
+        out.println("\tmessage[label=\"" + message
+                + "\",shape=box,color=white]");
+        if (hotNode1 == 1)
+            out.println("\tnode1 [label=\"1\",style=filled,fillcolor=red,shape=circle,width=.6,height=.6];");
+        else
+            out.println("\tnode1 [label=\"1\",style=filled,fillcolor=lightgrey,shape=circle,width=.6,height=.6];");
+        out.println("//------leaves------");
+        this.printLeaves(this.getRoot(), hotNode1, hotNode2, out);
+        out.println("//------internal nodes------");
+        this.printInternalNodes(this.getRoot(), hotNode1, hotNode2, out);
+        out.println("//------edges------");
+        out.println("\tmessage -> node1 [color=white]");
+        this.printEdges(this.getRoot(), hotNode1, hotNode2, active_length, out);
+        out.println("//------suffix links------");
+        this.printSuffixLinks(this.getRoot(), hotNode1, hotNode2, out);
+        out.println("}");
+        out.close();
+
+	}
+
+	void printLeaves(int x, int hotNode1, int hotNode2, PrintWriter out) {
 		if (this.nodes[x].children.size() == 0) {
 
 			out.print("\tnode" + x + " [label=\"" + x + "\n");
@@ -244,11 +249,11 @@ public class SuffixTreeAppl extends SuffixTree {
 
 		} else {
 			for (int child : this.nodes[x].children.values())
-				printLeaves(child, hotNode1, hotNode2);
+				printLeaves(child, hotNode1, hotNode2, out);
 		}
 	}
 
-	void printInternalNodes(int x, int hotNode1, int hotNode2) {
+	void printInternalNodes(int x, int hotNode1, int hotNode2, PrintWriter out) {
 		if (x != this.getRoot() && this.nodes[x].children.size() > 0)
 			if ((x == hotNode1) || (x == hotNode2))
 				out.println("\tnode"
@@ -264,10 +269,10 @@ public class SuffixTreeAppl extends SuffixTree {
 						+ "\",style=filled,fillcolor=lightgrey,shape=circle,width=.6,height=.6]");
 
 		for (int child : this.nodes[x].children.values())
-			printInternalNodes(child, hotNode1, hotNode2);
+			printInternalNodes(child, hotNode1, hotNode2, out);
 	}
 
-	void printEdges(int x, int hotNode1, int hotNode2, int active_length) {
+	void printEdges(int x, int hotNode1, int hotNode2, int active_length, PrintWriter out) {
 		for (int child : this.nodes[x].children.values()) {
 			if ((x == hotNode1) && (child == hotNode2)) {
 				String edgeString = "";
@@ -283,11 +288,11 @@ public class SuffixTreeAppl extends SuffixTree {
 			} else
 				out.println("\tnode" + x + " -> node" + child + " [label=\""
 						+ edgeString(child) + "\",weight=3]");
-			printEdges(child, hotNode1, hotNode2, active_length);
+			printEdges(child, hotNode1, hotNode2, active_length, out);
 		}
 	}
 
-	void printSuffixLinks(int x, int hotNode1, int hotNode2) {
+	void printSuffixLinks(int x, int hotNode1, int hotNode2, PrintWriter out) {
 		if (this.nodes[x].link > 0)
 			if (((x == hotNode1) && (this.nodes[x].link == hotNode2))
 					|| ((x == hotNode2) && (this.nodes[x].link == hotNode1)))
@@ -297,7 +302,7 @@ public class SuffixTreeAppl extends SuffixTree {
 				out.println("\tnode" + x + " -> node" + this.nodes[x].link
 						+ " [label=\"\",weight=1,style=dotted]");
 		for (int child : this.nodes[x].children.values())
-			printSuffixLinks(child, hotNode1, hotNode2);
+			printSuffixLinks(child, hotNode1, hotNode2, out);
 	}
 
 }
