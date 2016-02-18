@@ -67,6 +67,7 @@ public class GstLabelData {
 			printIntList(list, sb);
 			sb.append(",");
 		}
+		sb.setLength(sb.length() - 1);
 	}
 
 	// prints a list of integers separated by spaces to the stringbuilder
