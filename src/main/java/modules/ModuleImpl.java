@@ -20,6 +20,7 @@ public abstract class ModuleImpl implements Module {
 	private Map<String, String> propertyDescriptions = new HashMap<String, String>();
 	private Map<String, String> propertyDefaultValues = new HashMap<String, String>();
 	private int status = Module.STATUSCODE_NOTYETRUN;
+	private String statusDetail = null;
 	private String description = "(no description)";
 	private Map<String,InputPort> inputPorts;
 	private Map<String,OutputPort> outputPorts;
@@ -30,6 +31,7 @@ public abstract class ModuleImpl implements Module {
 		super();
 		this.callbackReceiver = callbackReceiver;
 		this.setProperties(properties);
+		this.setStatusDetail(null);
 		this.getPropertyDescriptions().put(PROPERTYKEY_NAME,
 				"The module instance's name");
 		// Add default values
@@ -295,6 +297,16 @@ public abstract class ModuleImpl implements Module {
 	@Override
 	public void setCategory(String category) {
 		this.category = category;
+	}
+	
+	@Override
+	public String getStatusDetail() {
+		return statusDetail;
+	}
+
+	@Override
+	public void setStatusDetail(String statusDetail) {
+		this.statusDetail = statusDetail;
 	}
 
 }

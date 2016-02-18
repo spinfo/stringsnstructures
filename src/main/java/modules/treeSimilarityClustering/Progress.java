@@ -1,26 +1,35 @@
 package modules.treeSimilarityClustering;
 
+/**
+ * Can be used to track the progress of a module processing data composed of individual elements.
+ * @author Marcel Boeing
+ *
+ */
 public class Progress {
-	private long verbleibend;
-	private long verarbeitet;
-	public Progress(long verbleibend) {
-		this(verbleibend, 0l);
+	private long queued;
+	private long processed;
+	public Progress(long queued) {
+		this(queued, 0l);
 	}
-	public Progress(long verbleibend, long verarbeitet) {
+	public Progress(long queued, long processed) {
 		super();
-		this.verbleibend = verbleibend;
-		this.verarbeitet = verarbeitet;
+		this.queued = queued;
+		this.processed = processed;
 	}
-	public synchronized long getVerbleibend(){
-		return verbleibend;
+	public synchronized long getQueued(){
+		return queued;
 	}
-	public synchronized long getVerarbeitet(){
-		return verarbeitet;
+	public synchronized long getProcessed(){
+		return processed;
 	}
-	public synchronized void setVerbleibend(long verbleibend){
-		this.verbleibend = verbleibend;
+	public synchronized void setQueued(long queued){
+		this.queued = queued;
 	}
-	public synchronized void setVerarbeitet(long verarbeitet){
-		this.verarbeitet = verarbeitet;
+	public synchronized void setProcessed(long processed){
+		this.processed = processed;
+	}
+	public synchronized void countOne(){
+		this.processed+=1;
+		this.queued-=1;
 	}
 }

@@ -60,7 +60,7 @@ public class ComparisonProcess implements CallbackProcess {
 		}
 		
 		// Progress nachhalten
-		progress.setVerarbeitet(progress.getVerarbeitet()+1);
+		progress.countOne();
 	}
 	
 	private void vergleicheMulti(Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode1, ExtensibleTreeNode vergleichsExtensibleTreeNode1, ExtensibleTreeNode ExtensibleTreeNode2, ExtensibleTreeNode vergleichsExtensibleTreeNode2, ConcurrentHashMap<String,Double> verknuepfungen){
@@ -76,7 +76,7 @@ public class ComparisonProcess implements CallbackProcess {
 		}
 		
 		// Progress nachhalten
-		progress.setVerarbeitet(progress.getVerarbeitet()+1);
+		progress.countOne();
 	}
 
 	@Override

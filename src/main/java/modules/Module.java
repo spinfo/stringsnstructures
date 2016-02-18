@@ -121,5 +121,17 @@ public interface Module extends CallbackProcess {
 	 * @param category Category name
 	 */
 	public void setCategory(String category);
+	
+	/**
+	 * Gives detail information about the module's current status (may be null).
+	 * @return String with status details or null
+	 */
+	public String getStatusDetail();
+	
+	/**
+	 * Set detail information about the module's current status (may be null).
+	 * @param statusDetail String with status details or null
+	 */
+	public void setStatusDetail(String statusDetail);
 
 }

@@ -155,9 +155,6 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		// Node comparator
 		//NodeComparator comparator = new NodeComparator();
 		
-		// Progress
-		Progress progress = new Progress(typeMap.size());
-		
 		// Reset edge id
 		this.edgeId = 0;
 		
@@ -185,6 +182,36 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 			// Store in map
 			graphNodes.put(type.getKey(), newNode);
 		}
+		
+
+		// Track progress
+		int elementsToCompare = typeMap.size();
+		long comparisonsToConduct = (long) ((Math.pow(elementsToCompare, 2)/2)-elementsToCompare);
+		
+		final Progress progress = new Progress(comparisonsToConduct);
+		final TreeSimilarityClusteringModule module = this;
+		
+		Thread progressIndicator = new Thread() {
+			@Override
+			public void run() {
+				try {
+					long intervallMs = 5000;
+					while (progress.getQueued()>0){
+						Thread.sleep(intervallMs);
+						long queued = progress.getQueued();
+						long processed = progress.getProcessed();
+						long perMinute = processed*(60000/intervallMs);
+						long minsRemaining = queued/perMinute;
+						module.setStatusDetail("Comparisons in queue: "+queued+" @ "+perMinute+" per minute ("+minsRemaining+" minutes remaining)");
+						progress.setProcessed(0l);
+					}
+					module.setStatusDetail(null);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		progressIndicator.start();
 		
 		/*
 		 *  Compare every type to every other. We will do this by separating one by one
