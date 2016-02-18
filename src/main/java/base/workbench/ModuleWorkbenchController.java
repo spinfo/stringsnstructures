@@ -17,6 +17,7 @@ import modules.ModuleNetwork;
 import modules.ModuleNetworkGsonSerializer;
 import modules.ModuleTreeGsonDeserializer;
 import modules.artificialSeqs.CreateArtificialSeqs;
+import modules.artificialSeqs.CreateArtificialSeqsContent;
 import modules.bagOfWords.BagsOfWordsDistancesModule;
 import modules.bagOfWords.BagsOfWordsModule;
 import modules.basemodules.BufferModule;
@@ -209,6 +210,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				createArtificialSeqsProperties);
 		createArtificialSeqsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, createArtificialSeqs.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		createArtificialSeqs.applyProperties();
+		
+		// Prepare CreateArtificialSeqsContent module
+		Properties createArtificialSeqsContentProperties = new Properties();
+		CreateArtificialSeqsContent createArtificialSeqsContent = new CreateArtificialSeqsContent(moduleNetwork,
+				createArtificialSeqsContentProperties);
+		createArtificialSeqsContentProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, createArtificialSeqsContent.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		createArtificialSeqsContent.applyProperties();
 		
 		// Prepare SeqMemory module
 		Properties SeqMemoryProperties = new Properties();
@@ -438,6 +446,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(asciiGraphModule.getName(),asciiGraphModule);
 		availableModules.put(paradigmenErmittlerModul.getName(),paradigmenErmittlerModul);
 		availableModules.put(createArtificialSeqs.getName(),createArtificialSeqs);
+		availableModules.put(createArtificialSeqsContent.getName(),createArtificialSeqsContent);
 		availableModules.put(seqMemory.getName(),seqMemory);
 		availableModules.put(seqTreePropController.getName(),seqTreePropController);
 		availableModules.put(seqSuffixTrie2SuffixTreeController.getName(),seqSuffixTrie2SuffixTreeController);
