@@ -413,7 +413,9 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		Iterator<Module> modules = this.moduleList.iterator();
 		while (modules.hasNext()) {
 			// Reset module
-			modules.next().resetOutputs();
+			Module module = modules.next();
+			module.setStatusDetail(null);
+			module.resetOutputs();
 		}
 	}
 	
