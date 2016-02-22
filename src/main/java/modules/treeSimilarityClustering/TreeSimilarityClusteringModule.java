@@ -70,7 +70,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_MAXCOMPARISONDEPTH, "Maximum depth of the individual tree branches that will be used for comparison (-1 for no max.).");
 		
 		// Add module category
-		this.setCategory("Experimental/WiP");
+		this.setCategory("Clustering");
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Tree Similarity Clustering");

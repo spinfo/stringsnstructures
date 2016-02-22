@@ -60,7 +60,7 @@ public class SeqMemory extends modules.ModuleImpl {
 		// Add module description
 		this.setDescription("Splits a DNA sequences (or any other continuous string) into a defined number of fragments with random length.");	
 		// Add module category
-		this.setCategory("Basic text processing");	
+		this.setCategory("Segmentation");	
 	}
 	//end constructors
 	

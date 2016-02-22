@@ -37,6 +37,9 @@ public class Neo4jOutputModule extends ModuleImpl {
 		inputPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputPort);
 		
+		// Add category
+		this.setCategory("I/O");
+		
 		// Add description for properties
 		this.getPropertyDescriptions().put(PROPERTYKEY_NEO4JURI, "URI of the Neo4j DB.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_NEO4JUSR, "Username for Neo4J access.");
