@@ -105,6 +105,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		// Instantiate JSON parser
 		Gson gson = new Gson();
 		
+		// Updating status detail
+		this.setStatusDetail("Parsing input");
+		
 		// Read tree from input & parse it
 		ExtensibleTreeNode rootNode = gson.fromJson(this.getInputPorts().get(ID_INPUT).getInputReader(), ExtensibleTreeNode.class);
 		
@@ -161,6 +164,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		
 		// Reset edge id
 		this.edgeId = 0;
+		
+		// Updating status detail
+		this.setStatusDetail("Inserting "+typeMap.size()+" nodes into the graph");
 		
 		// Loop over types
 		Iterator<Entry<String, ExtensibleTreeNode>> types = typeMap.entrySet().iterator();
@@ -287,6 +293,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		
 		// Write graph to output(s)
 		StaxGraphWriter graphWriter = new StaxGraphWriter();
+
+		// Updating status detail
+		this.setStatusDetail("Writing graph to output");
 		
 		Iterator<OutputPort> outputPorts = this.getOutputPorts().values().iterator();
 		while(outputPorts.hasNext()){
@@ -297,6 +306,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 				graphWriter.writeToStream(gexf, pipe.getOutput(), "UTF-8");
 			}
 		}
+		
+		// Updating status detail
+		this.setStatusDetail(null);
 
 		// Close outputs (important!)
 		this.closeAllOutputs();
