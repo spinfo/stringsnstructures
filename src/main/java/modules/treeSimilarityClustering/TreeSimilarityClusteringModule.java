@@ -42,6 +42,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 	public static final String PROPERTYKEY_MINSIMILARITY = "minimum similarity";
 	public static final String PROPERTYKEY_MINDEGREE = "minimum degree";
 	public static final String PROPERTYKEY_MAXPARALLELTHREADS = "maximum threads";
+	public static final String PROPERTYKEY_MAXCOMPARISONDEPTH = "maximum comparison depth";
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "suffix tree";
@@ -52,6 +53,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 	private long edgeId;
 	private int maxParallelThreads = 8;
 	private float minSimilarity = 0.0f;
+	private int maxComparisonDepth = -1;
 	//private int minDegree = 0;
 
 	public TreeSimilarityClusteringModule(CallbackReceiver callbackReceiver,
@@ -65,6 +67,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINSIMILARITY, "Minimum similarity value that will result in an edge being created.");
 		//this.getPropertyDescriptions().put(PROPERTYKEY_MINDEGREE, "Minimum node degree. Nodes with fewer connections will be removed from the graph prior to output.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MAXPARALLELTHREADS, "Maximum number of parallel threads the module will spawn.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_MAXCOMPARISONDEPTH, "Maximum depth of the individual tree branches that will be used for comparison (-1 for no max.).");
 		
 		// Add module category
 		this.setCategory("Experimental/WiP");
@@ -74,6 +77,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MINSIMILARITY, "0.0");
 		//this.getPropertyDefaultValues().put(PROPERTYKEY_MINDEGREE, "0");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXPARALLELTHREADS, "8");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXCOMPARISONDEPTH, "-1");
 
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT,
@@ -241,9 +245,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 				// Run comparison
 				Runnable comparisonProcess;
 				if (reversedRootNode != null){
-					comparisonProcess = new ComparisonProcess(new Double(this.minSimilarity), type.getValue(), typeToCompareTo.getValue(), reversedRootNode.getChildNodes().get(type.getKey()), reversedRootNode.getChildNodes().get(typeToCompareTo.getKey()), comparisonResultMap, progress);
+					comparisonProcess = new ComparisonProcess(this.maxComparisonDepth, new Double(this.minSimilarity), type.getValue(), typeToCompareTo.getValue(), reversedRootNode.getChildNodes().get(type.getKey()), reversedRootNode.getChildNodes().get(typeToCompareTo.getKey()), comparisonResultMap, progress);
 				} else {
-					comparisonProcess = new ComparisonProcess(new Double(this.minSimilarity), type.getValue(), typeToCompareTo.getValue(), comparisonResultMap, progress);
+					comparisonProcess = new ComparisonProcess(this.maxComparisonDepth, new Double(this.minSimilarity), type.getValue(), typeToCompareTo.getValue(), comparisonResultMap, progress);
 				}
 				executor.execute(comparisonProcess);
 				
@@ -328,6 +332,13 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 						PROPERTYKEY_MINSIMILARITY));
 		if (minSimilarityString != null)
 		this.minSimilarity = Float.parseFloat(minSimilarityString);
+		
+		String maxComparisonDepthString = this.getProperties().getProperty(
+				PROPERTYKEY_MAXCOMPARISONDEPTH,
+				this.getPropertyDefaultValues().get(
+						PROPERTYKEY_MAXCOMPARISONDEPTH));
+		if (maxComparisonDepthString != null)
+		this.maxComparisonDepth = Integer.parseInt(maxComparisonDepthString);
 
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();

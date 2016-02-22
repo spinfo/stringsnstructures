@@ -14,21 +14,23 @@ public class ComparisonProcess implements CallbackProcess {
 	private ExtensibleTreeNode vergleichsExtensibleTreeNode2;
 	private ConcurrentHashMap<String,Double> verknuepfungen;
 	private Progress progress;
+	private int maxComparisonDepth;
 
 
-	public ComparisonProcess(Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode,
+	public ComparisonProcess(int maxComparisonDepth, Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode,
 			ExtensibleTreeNode vergleichsExtensibleTreeNode,
 			ConcurrentHashMap<String, Double> verknuepfungen,
 			Progress Progress) {
-		this(schwellwert, ExtensibleTreeNode, vergleichsExtensibleTreeNode, null, null, verknuepfungen, Progress);
+		this(maxComparisonDepth, schwellwert, ExtensibleTreeNode, vergleichsExtensibleTreeNode, null, null, verknuepfungen, Progress);
 	}
 	
-	public ComparisonProcess(Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode,
+	public ComparisonProcess(int maxComparisonDepth, Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode,
 			ExtensibleTreeNode vergleichsExtensibleTreeNode, ExtensibleTreeNode ExtensibleTreeNode2,
 			ExtensibleTreeNode vergleichsExtensibleTreeNode2,
 			ConcurrentHashMap<String, Double> verknuepfungen,
 			Progress Progress) {
 		super();
+		this.maxComparisonDepth = maxComparisonDepth;
 		this.schwellwert = schwellwert;
 		this.ExtensibleTreeNode = ExtensibleTreeNode;
 		this.vergleichsExtensibleTreeNode = vergleichsExtensibleTreeNode;
@@ -41,15 +43,16 @@ public class ComparisonProcess implements CallbackProcess {
 	@Override
 	public void run() {
 		if (this.vergleichsExtensibleTreeNode2 != null && this.ExtensibleTreeNode2 != null){
-			vergleicheMulti(schwellwert, ExtensibleTreeNode, vergleichsExtensibleTreeNode, ExtensibleTreeNode2, vergleichsExtensibleTreeNode2, verknuepfungen);
+			vergleicheMulti(maxComparisonDepth,schwellwert, ExtensibleTreeNode, vergleichsExtensibleTreeNode, ExtensibleTreeNode2, vergleichsExtensibleTreeNode2, verknuepfungen);
 		} else {
-			vergleiche(schwellwert, ExtensibleTreeNode, vergleichsExtensibleTreeNode, verknuepfungen);
+			vergleiche(maxComparisonDepth,schwellwert, ExtensibleTreeNode, vergleichsExtensibleTreeNode, verknuepfungen);
 		}
 	}
 	
-	private void vergleiche(Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode, ExtensibleTreeNode vergleichsExtensibleTreeNode, ConcurrentHashMap<String,Double> verknuepfungen){
+	private void vergleiche(int maxComparisonDepth, Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode, ExtensibleTreeNode vergleichsExtensibleTreeNode, ConcurrentHashMap<String,Double> verknuepfungen){
 		// Komparator instanziieren
 		NodeComparator komparator = new NodeComparator();
+		komparator.setMaximaleAuswertungsEbene(maxComparisonDepth);
 		
 		// Vergleich anstellen
 		Double uebereinstimmungsQuotient = komparator.vergleiche(ExtensibleTreeNode, vergleichsExtensibleTreeNode);
@@ -63,9 +66,10 @@ public class ComparisonProcess implements CallbackProcess {
 		progress.countOne();
 	}
 	
-	private void vergleicheMulti(Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode1, ExtensibleTreeNode vergleichsExtensibleTreeNode1, ExtensibleTreeNode ExtensibleTreeNode2, ExtensibleTreeNode vergleichsExtensibleTreeNode2, ConcurrentHashMap<String,Double> verknuepfungen){
+	private void vergleicheMulti(int maxComparisonDepth, Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode1, ExtensibleTreeNode vergleichsExtensibleTreeNode1, ExtensibleTreeNode ExtensibleTreeNode2, ExtensibleTreeNode vergleichsExtensibleTreeNode2, ConcurrentHashMap<String,Double> verknuepfungen){
 		// Komparator instanziieren
 		NodeComparator komparator = new NodeComparator();
+		komparator.setMaximaleAuswertungsEbene(maxComparisonDepth);
 		
 		// Vergleiche anstellen
 		Double uebereinstimmungsQuotient = (komparator.vergleiche(ExtensibleTreeNode1, vergleichsExtensibleTreeNode1) + komparator.vergleiche(ExtensibleTreeNode2, vergleichsExtensibleTreeNode2)) / 2d;
