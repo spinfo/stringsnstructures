@@ -1,6 +1,7 @@
 package modules.seqTreeProperties;
 
 import java.util.Properties;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,10 +39,16 @@ import common.parallelization.CallbackReceiver;
 public class SeqTreePropController extends ModuleImpl {
 		
 	//property keys:
-		/*no property keys*/
+	private static final String PROPERTYKEY_FREQOUT = "Print out tree frequencies?";
 	//end keys
 
 	//variables:
+	
+	// boolean variable which decides whether or not display the tree frequencies
+	private boolean freqOut;
+	
+	// String variable holding the tree frequency output.
+	private String freqOutString = "";
 	
 	//HashMap to save the properties of each inner node of the tree 
 	private HashMap<String, SeqProperties> seqProperties;
@@ -74,7 +81,7 @@ public class SeqTreePropController extends ModuleImpl {
 	HashMap<String, Integer> subCophTrees;
 	
 	// This variable saves the frequency spectrum of singletons, doublet and triplets 
-	private HashMap<Integer, Integer> freqSpectrum;
+	private TreeMap<Integer, Integer> freqSpectrum;
 	
 	//variables for calculating the Sackin index
 	private HashMap<String, SeqSackinIndex> sackinIndex;
@@ -96,6 +103,8 @@ public class SeqTreePropController extends ModuleImpl {
 	private SeqPropertyNode rootNode;
 	private final String INPUTID = "input";
 	private final String OUTPUTID = "output";
+	private final String FREQOUTID = "treeFreqOut";
+	
 	//private HashMap<String, SeqPropertyNode> seqNodes;
 	//end variables
 	
@@ -105,22 +114,26 @@ public class SeqTreePropController extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Add property descriptions
-			/*no property keys */
+		this.getPropertyDescriptions().put(PROPERTYKEY_FREQOUT, "\"true\": show tree frequencies</br>" + 
+				"\"false\": do not show tree frequencies");
 		
 		// Add property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Sequence Tree Properties");
-		
+		this.getPropertyDefaultValues().put(PROPERTYKEY_FREQOUT, "false");
 		
 		// set up newickOutput
 		this.seqPropertiesOutput = new String();
 		
 		// Define I/O
-		InputPort inputPort = new InputPort(INPUTID, "TODO.", this);
+		InputPort inputPort = new InputPort(INPUTID, "[Json] tree input from the </br>treeBuilder2OutputV2 module", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(OUTPUTID, "TODO.", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "[plain text] sequency properties output</br>in table like form", this);
 		outputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputTreePort = new OutputPort(FREQOUTID, "[tsv] tree frequencies</br>as tsv table", this);
+		outputTreePort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputPort);
 		super.addOutputPort(outputPort);
+		super.addOutputPort(outputTreePort);
 		
 	}
 	//end constructors
@@ -153,6 +166,11 @@ public class SeqTreePropController extends ModuleImpl {
 		
 		//write the tree properties into the output
 		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.getSeqProperties());
+		
+		if (this.freqOut) {
+			//write the tree frequencies into the output
+			this.getOutputPorts().get(FREQOUTID).outputToAllCharPipes(this.freqOutString);
+		}
 								
 		// Close outputs (important!)
 		this.closeAllOutputs();
@@ -166,7 +184,8 @@ public class SeqTreePropController extends ModuleImpl {
 		super.setDefaultsIfMissing();
 		
 		// Apply own properties
-			/*no property keys*/
+		this.freqOut = Boolean.parseBoolean(this.getProperties().getProperty((PROPERTYKEY_FREQOUT), this.getPropertyDefaultValues().get(PROPERTYKEY_FREQOUT)));
+		
 		// Apply parent object's properties
 		super.applyProperties();
 	}
@@ -217,14 +236,13 @@ public class SeqTreePropController extends ModuleImpl {
 			}
 		}
 		
-		// Put the results for the frequency analysis into the output.
-		this.seqPropertiesOutput = this.seqPropertiesOutput + "\n";
-		this.seqPropertiesOutput = this.seqPropertiesOutput + "number of terminal branches" + "\tfrequency\n";
-		this.seqPropertiesOutput = this.seqPropertiesOutput + "1\t" + this.totalNumOfLeaves + "\n";
-		Iterator <Entry<Integer,Integer>> itFreq = this.freqSpectrum.entrySet().iterator();
-		while (itFreq.hasNext()) {
-			HashMap.Entry <Integer, Integer> freqPair = (HashMap.Entry<Integer, Integer>) itFreq.next();
-			this.seqPropertiesOutput = this.seqPropertiesOutput + "\t" + freqPair.getKey() + "\t" + freqPair.getValue()  + "\n";
+		if (this.freqOut) {
+			// Put the results for the frequency analysis into the output.
+			this.freqOutString = this.freqOutString + "number of terminal branches" + "\tfrequency\n";
+			this.freqOutString = this.freqOutString + "1\t" + this.totalNumOfLeaves + "\n";
+			for (int i : this.freqSpectrum.keySet()) {
+				this.freqOutString = this.freqOutString + "\t" + i + "\t" + freqSpectrum.get(i)  + "\n";
+			}
 		}
 	}
 	
@@ -469,7 +487,7 @@ public class SeqTreePropController extends ModuleImpl {
 		this.subSackinTrees = new HashMap<String, Integer> ();
 		
 		// create freqSpectrum object
-		this.freqSpectrum = new HashMap <Integer, Integer> ();
+		this.freqSpectrum = new TreeMap <Integer, Integer> ();
 				
 		ArrayList <SeqProperties> seqPropertiesSortedInverted = new ArrayList <SeqProperties> ();
 		
@@ -477,7 +495,9 @@ public class SeqTreePropController extends ModuleImpl {
 			if (!(i.getNodeName() == "^")) {
 				seqPropertiesSortedInverted.add(0, i);
 			}
-			this.calcFreqSeq(i.getLeafNum());
+			if (this.freqOut) {
+				this.calcFreqSeq(i.getLeafNum());
+			}
 		}
 		
 		// string variable holding the current edge label
@@ -512,8 +532,6 @@ public class SeqTreePropController extends ModuleImpl {
 				if (i.getNodeName().length() >= lastStr.length() && (i.getNodeName().equals(lastStr) || i.getNodeName().substring(0, lastStr.length()).equals(lastStr))) {
 					lastSackinVal += this.sackinIndex.get(i.getNodeName()).getNodeNumber();
 					currTreeInnerNodes ++;
-					// Find out the amount of singletons, doublets, triplets etc. in the whole tree.
-					//this.calcFreqSeq(i.getLeafNum());
 				}
 			}
 			
