@@ -208,11 +208,16 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 					long intervallMs = 5000;
 					while (progress.getQueued()>0){
 						Thread.sleep(intervallMs);
-						long queued = progress.getQueued();
-						long processed = progress.getProcessed();
-						long perMinute = processed*(60000/intervallMs);
-						long minsRemaining = queued/perMinute;
-						module.setStatusDetail("Comparisons in queue: "+queued+" @ "+perMinute+" per minute ("+minsRemaining+" minutes remaining)");
+						try {
+							long queued = progress.getQueued();
+							long processed = progress.getProcessed();
+							long perMinute = processed * (60000 / intervallMs);
+							long minsRemaining = queued / perMinute;
+							module.setStatusDetail("Comparisons in queue: " + queued + " @ " + perMinute
+									+ " per minute (" + minsRemaining + " minutes remaining)");
+						} catch (ArithmeticException e1) {
+							module.setStatusDetail(null);
+						}
 						progress.setProcessed(0l);
 					}
 					module.setStatusDetail(null);
