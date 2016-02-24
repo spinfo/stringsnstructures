@@ -230,7 +230,7 @@ public class SeqTreePropController extends ModuleImpl {
 				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getPathLength() 
 				+ "\t" + this.subSackinTrees.get(i.getNodeName()) + "\t" + this.subCophTrees.get(i.getNodeName()) 
 				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getNodeName()) + "\t"
-				+ ((Math.pow((double)i.getLeafNum(),2)-(double)i.getLeafNum()-2)/2)
+				+ ((Math.pow((double)i.getLeafNum(),2)-(double)i.getLeafNum()-2)/2) + "\t"
 				+ ((i.getLeafNum()-2)*(i.getLeafNum()-1)*i.getLeafNum()/6)
 				+ "\n";
 			}
