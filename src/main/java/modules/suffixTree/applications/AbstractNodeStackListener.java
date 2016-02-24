@@ -6,10 +6,11 @@ import modules.suffixTree.node.GeneralisedSuffixTreeNode;
 /**
  * This abstract listener provides behaviour for depth-first traversal of a
  * tree, where all children of a given node must be present while processing the
- * node on the exitaction.
+ * node on the exit action.
  * 
- * Tree's nodes are altered during the entryaction and the tree's references to
- * the nodes is deleted on the exitaction.
+ * Tree's nodes are altered during the entry action and the tree's references to
+ * the nodes is deleted on the exit action unless explicitly prevented by
+ * setDestroyingNodesOnExitaction
  * 
  * Tree nodes are considered to be GeneralisedSuffixTreeNodes.
  * 
@@ -25,6 +26,9 @@ public abstract class AbstractNodeStackListener implements ITreeWalkerListener {
 
 	// a node stack to push the nodes on as we traverse the tree
 	private final ResultSuffixTreeNodeStack nodeStack;
+
+	// whether the nodes should be destroyed on the exitaction
+	private boolean isDestroyingNodesOnExitaction = true;
 
 	/**
 	 * an initializer for subclasses to setup all necessary variables
@@ -85,7 +89,9 @@ public abstract class AbstractNodeStackListener implements ITreeWalkerListener {
 		}
 
 		// remove the suffix tree's reference to the node processed
-		this.suffixTree.nodes[nodeNr] = null;
+		if (this.isDestroyingNodesOnExitaction) {
+			this.suffixTree.nodes[nodeNr] = null;
+		}
 	}
 
 	/**
@@ -143,12 +149,29 @@ public abstract class AbstractNodeStackListener implements ITreeWalkerListener {
 		final GeneralisedSuffixTreeNode parent = getCurrentNodeParent();
 		if (parent != null) {
 			result = parent.children.size() - 1;
+			// if there is a parent there has to have been a child an thus
+			// parent.children cannot be < 1
+			if (result < 0) {
+				throw new Exception("Wrong number of children for node. Is the node stack stacked in the right order?");
+			}
 		}
-		// if there is a parent there has to have been a child an thus
-		// parent.children cannot be < 1
-		if (result < 0) {
-			throw new Exception("Wrong number of children for node. Is the node stack stacked in the right order?");
-		}
+
 		return result;
 	}
+
+	/**
+	 * @return whether nodes are destroyed at the end of the exitaction
+	 */
+	protected boolean isDestroyingNodesOnExitaction() {
+		return isDestroyingNodesOnExitaction;
+	}
+
+	/**
+	 * @param destructive
+	 *            whether to destroy nodes at the end of the exitaction
+	 */
+	protected void setDestroyingNodesOnExitaction(boolean destructive) {
+		this.isDestroyingNodesOnExitaction = destructive;
+	}
+
 }
