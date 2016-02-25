@@ -64,6 +64,7 @@ import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 import modules.treeSimilarityClustering.TreeSimilarityClusteringModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
+import modules.seqNewickExporter.SeqQueryController;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -426,6 +427,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		treeSimilarityClusteringModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeSimilarityClusteringModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeSimilarityClusteringModule.applyProperties();	
 		
+		// SeqQueryController
+		Properties seqQueryControllerProperties = new Properties();
+		SeqQueryController seqQueryController = new SeqQueryController(moduleNetwork, seqQueryControllerProperties);
+		seqQueryControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqQueryController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		seqQueryController.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -477,6 +484,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(suffixTreeClusteringWrapperV2.getName(), suffixTreeClusteringWrapperV2);
 		availableModules.put(labelDataMergeModule.getName(), labelDataMergeModule);
 		availableModules.put(treeSimilarityClusteringModule.getName(), treeSimilarityClusteringModule);
+		availableModules.put(seqQueryController.getName(), seqQueryController);
 	}
 	
 	/**
