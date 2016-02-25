@@ -263,7 +263,7 @@ public class SeqQueryController extends ModuleImpl {
 		// Continue searching for sub nodes.
 		for (int i = currEdgePos; i < (this.queryPathLabel.length() + 1); i ++ ) {
 			
-			if (mainNode.getChildNodes().containsKey(this.queryPathLabel.substring(currEdgePos, i))) {
+			if (node.getChildNodes().containsKey(this.queryPathLabel.substring(currEdgePos, i))) {
 				resultNode = queryIteration(this.queryPathLabel.substring(currEdgePos, i), i , node.getChildNodes().get(this.queryPathLabel.substring(currEdgePos, i)) );
 				break;
 			}
