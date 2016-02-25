@@ -1,5 +1,7 @@
 package modules.vectorAnalysis;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.StringTokenizer;
@@ -68,6 +70,9 @@ public class VectorAnalysisModule extends ModuleImpl {
 		Scanner inputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
 		inputScanner.useDelimiter("\\n");
 
+		// Map for vector analysis data
+		Map<String,VectorAnalysisData> vectorAnalysisDataMap = new HashMap<String,VectorAnalysisData>();
+		
 		// Read csv head (first line)
 		if (inputScanner.hasNext()){
 			String headerLine = inputScanner.next();
@@ -89,6 +94,7 @@ public class VectorAnalysisModule extends ModuleImpl {
 			StringTokenizer tokenizer = new StringTokenizer(dataLine,",");
 			while (tokenizer.hasMoreTokens()) {
 				// TODO process data
+				
 			}
 			
 			// Write to outputs
