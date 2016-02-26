@@ -35,6 +35,10 @@ public class BagOfWords {
 			
 			i++;
 		}
+		
+		// TODO: I do not know whether the buffered reader should be closed here.
+		br.close();
+		
 		System.out.println("Number of types: "+map.size() );
 		//for (String key : map.keySet()) {
 	        //System.out.println(key + " " + map.get(key));
