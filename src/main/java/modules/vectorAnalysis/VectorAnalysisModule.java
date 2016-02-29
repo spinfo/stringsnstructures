@@ -1,10 +1,12 @@
 package modules.vectorAnalysis;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import modules.CharPipe;
 import modules.InputPort;
@@ -70,20 +72,21 @@ public class VectorAnalysisModule extends ModuleImpl {
 		Scanner inputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
 		inputScanner.useDelimiter("\\n");
 
-		// Map for vector analysis data
-		Map<String,VectorAnalysisData> vectorAnalysisDataMap = new HashMap<String,VectorAnalysisData>();
+		// Minkowski Distance matrix
+		Map<String,Map<String,Double>> minkowskiDistanceMatrix = new HashMap<String,Map<String,Double>>();
 		
-		// Read csv head (first line)
-		if (inputScanner.hasNext()){
+		// Read csv head (skip first field)
+		if (inputScanner.hasNext() && (inputScanner.next()==null||true) && inputScanner.hasNext()){
 			String headerLine = inputScanner.next();
 			StringTokenizer tokenizer = new StringTokenizer(headerLine,",");
 			while (tokenizer.hasMoreTokens()) {
-				// TODO process types/headers
+				String type = tokenizer.nextToken();
+				minkowskiDistanceMatrix.put(type, new HashMap<String,Double>());
 			}
 		} else {
 			inputScanner.close();
 			this.closeAllOutputs();
-			throw new Exception("There does not seem to be any input data; I cannot continue.");
+			throw new Exception("Invalid header line; aborting.");
 		}
 		
 		// Input read loop
@@ -91,15 +94,44 @@ public class VectorAnalysisModule extends ModuleImpl {
 			// Determine next segment
 			String dataLine = inputScanner.next();
 			
-			StringTokenizer tokenizer = new StringTokenizer(dataLine,",");
-			while (tokenizer.hasMoreTokens()) {
-				// TODO process data
-				
+			// Explode data line
+			String[] data = dataLine.split(",");
+			
+			// Check whether the row has at least one true data field
+			if (data.length<2){
+				inputScanner.close();
+				throw new Exception("I happened upon an empty data row -- rekon something is wrong here.");
 			}
 			
-			// Write to outputs
+			// Determine type the current dataset belongs to (first field of row)
+			String type = data[0];
+			
+			// Keep track of sum
+			double sum = 0d;
+
+			// Process the remaining fields of the current row
+			TreeSet<Double> sortedValues = new TreeSet<Double>();
+			for (int i=1; i<data.length; i++) {
+				Double value = Double.parseDouble(data[i]);
+				sum += value.doubleValue();
+				sortedValues.add(value);
+			}
+			
+			// Calculate average
+			double average = sum/new Double(data.length-1).doubleValue();
+			
+			// Calculate aberration
+			TreeSet<Double> sortedAberrationValues = new TreeSet<Double>();
+			Iterator<Double> valueIterator = sortedValues.iterator();
+			while (valueIterator.hasNext()) {
+				Double value = valueIterator.next();
+				Double aberration = value - average;
+				sortedAberrationValues.add(aberration);
+			}
 
 		}
+		
+		// TODO calculate Minkowski-Metrics (Merkl 2015, Bioinformatik, p 159) for all lines, comparing each one to every other
 
 		// Close input scanner
 		inputScanner.close();
