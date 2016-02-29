@@ -1,6 +1,8 @@
 package models;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
@@ -310,17 +312,27 @@ public class NamedFieldMatrix {
 	
 	/**
 	 * Reads CSV data from specified string and returns a NamedFieldMatrix object instance.
-	 * @param csvString CSV data
+	 * @param csvReader String containing CSV formatted data
 	 * @return NamedFieldMatrix instance
 	 * @throws Exception Thrown if the CSV input cannot be parsed
 	 */
 	public static NamedFieldMatrix parseCSV(String csvString) throws Exception {
+		return NamedFieldMatrix.parseCSV(new StringReader(csvString));
+	}
+	
+	/**
+	 * Reads CSV data from specified reader and returns a NamedFieldMatrix object instance.
+	 * @param csvReader Reader instance providing CSV formatted data
+	 * @return NamedFieldMatrix instance
+	 * @throws Exception Thrown if the CSV input cannot be parsed
+	 */
+	public static NamedFieldMatrix parseCSV(Reader csvReader) throws Exception {
 		
 		// Instantiate matrix
 		NamedFieldMatrix matrix = new NamedFieldMatrix();
 		
 		// Use scanner for input
-		Scanner input = new Scanner(csvString);
+		Scanner input = new Scanner(csvReader);
 		input.useDelimiter("\\n");
 		
 		// Read csv head row
