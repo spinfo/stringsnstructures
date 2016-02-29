@@ -1,7 +1,9 @@
 package models;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -304,6 +306,46 @@ public class NamedFieldMatrix {
 			}
 		}
 		LOGGER.info("REISZE X: " + colMax);
+	}
+	
+	/**
+	 * Reads CSV data from specified string and returns a NamedFieldMatrix object instance.
+	 * @param csvString CSV data
+	 * @return NamedFieldMatrix instance
+	 * @throws Exception Thrown if the CSV input cannot be parsed
+	 */
+	public static NamedFieldMatrix parseCSV(String csvString) throws Exception {
+		
+		// Instantiate matrix
+		NamedFieldMatrix matrix = new NamedFieldMatrix();
+		
+		// Use scanner for input
+		Scanner input = new Scanner(csvString);
+		input.useDelimiter("\\n");
+		
+		// Read csv head row
+		String[] colNames = null;
+		if (input.hasNext()){
+			colNames = input.next().split(",");
+		} else {
+			input.close();
+			throw new IOException("Cannot parse CSV data -- no head row found.");
+		}
+		
+		// Read data rows
+		while (input.hasNext()){
+			String[] data = input.next().split(",");
+			// Store data into matrix (assuming the first column contains the dataset names)
+			for (int i=1; i<data.length && i<colNames.length; i++){
+				Double value = 0d; // Default value for empty string input
+				if (data[i] != null && !data[i].isEmpty())
+					value = Double.parseDouble(data[i]);
+				matrix.addValue(data[0], colNames[i], value);
+			}
+		}
+		
+		input.close();
+		return matrix;
 	}
 
 }
