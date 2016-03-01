@@ -11,6 +11,12 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+
+import common.ListLoggingHandler;
+import common.parallelization.CallbackReceiver;
 import modules.Module;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
@@ -44,6 +50,7 @@ import modules.paradigmSegmenter.ParadigmenErmittlerModul;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
 import modules.seqNewickExporter.SeqNewickExporterController;
 import modules.seqNewickExporter.SeqNewickExporterControllerV2;
+import modules.seqNewickExporter.SeqQueryController;
 import modules.seqSplitting.SeqMemory;
 import modules.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
 import modules.seqTreeProperties.SeqTreePropController;
@@ -62,15 +69,9 @@ import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 import modules.treeSimilarityClustering.TreeSimilarityClusteringModule;
+import modules.vectorAnalysis.VectorAnalysisModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
-import modules.seqNewickExporter.SeqQueryController;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import common.ListLoggingHandler;
-import common.parallelization.CallbackReceiver;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -431,7 +432,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		Properties seqQueryControllerProperties = new Properties();
 		SeqQueryController seqQueryController = new SeqQueryController(moduleNetwork, seqQueryControllerProperties);
 		seqQueryControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqQueryController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		seqQueryController.applyProperties();
+		seqQueryController.applyProperties();	
+		
+		// VectorAnalysisModule
+		Properties vectorAnalysisModuleProperties = new Properties();
+		VectorAnalysisModule vectorAnalysisModule = new VectorAnalysisModule(moduleNetwork, vectorAnalysisModuleProperties);
+		vectorAnalysisModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, vectorAnalysisModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		vectorAnalysisModule.applyProperties();
 		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -485,6 +492,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(labelDataMergeModule.getName(), labelDataMergeModule);
 		availableModules.put(treeSimilarityClusteringModule.getName(), treeSimilarityClusteringModule);
 		availableModules.put(seqQueryController.getName(), seqQueryController);
+		availableModules.put(vectorAnalysisModule.getName(), vectorAnalysisModule);
 	}
 	
 	/**

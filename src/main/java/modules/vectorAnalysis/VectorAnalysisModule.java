@@ -3,17 +3,21 @@ package modules.vectorAnalysis;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-
-import common.parallelization.CallbackReceiver;
 
 public class VectorAnalysisModule extends ModuleImpl {
 
@@ -40,7 +44,7 @@ public class VectorAnalysisModule extends ModuleImpl {
 		this.setCategory("Experimental/WiP");
 
 		// Add property descriptions (obligatory for every property!)
-		this.getPropertyDescriptions().put(PROPERTYKEY_EXPONENT, "Exponent for contrast amplification");
+		this.getPropertyDescriptions().put(PROPERTYKEY_EXPONENT, "Exponent for contrast amplification (NOT YET IMPLEMENTED)");
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Vector Analysis Module");
@@ -75,19 +79,17 @@ public class VectorAnalysisModule extends ModuleImpl {
 		// Minkowski Distance matrix
 		Map<String,Map<String,Double>> minkowskiDistanceMatrix = new HashMap<String,Map<String,Double>>();
 		
-		// Read csv head (skip first field)
-		if (inputScanner.hasNext() && (inputScanner.next()==null||true) && inputScanner.hasNext()){
-			String headerLine = inputScanner.next();
-			StringTokenizer tokenizer = new StringTokenizer(headerLine,",");
-			while (tokenizer.hasMoreTokens()) {
-				String type = tokenizer.nextToken();
-				minkowskiDistanceMatrix.put(type, new HashMap<String,Double>());
-			}
+		// Skip csv head (we will sort the data lines individually anyway, so no sense in keeping track of the edge labels)
+		if (inputScanner.hasNext()){
+			inputScanner.next();
 		} else {
 			inputScanner.close();
 			this.closeAllOutputs();
-			throw new Exception("Invalid header line; aborting.");
+			throw new Exception("The CSV input is zero lines; aborting.");
 		}
+		
+		// Map to store the sorted aberration sets for each type
+		Map<String,Set<Double>> aberrationValuesMap = new HashMap<String,Set<Double>>();
 		
 		// Input read loop
 		while (inputScanner.hasNext()) {
@@ -128,19 +130,86 @@ public class VectorAnalysisModule extends ModuleImpl {
 				Double aberration = value - average;
 				sortedAberrationValues.add(aberration);
 			}
+			
+			// Store calculated aberration values in map
+			aberrationValuesMap.put(type, sortedAberrationValues);
 
 		}
 		
-		// TODO calculate Minkowski-Metrics (Merkl 2015, Bioinformatik, p 159) for all lines, comparing each one to every other
+		// Calculate Minkowski-Distances (Merkl 2015, Bioinformatik, p 159) for all lines, comparing each to one another.
+		
+		// Iterate through map, removing the current item from it and comparing it to the remainder.
+		Iterator<Entry<String, Set<Double>>> types = aberrationValuesMap.entrySet().iterator();
+		while(types.hasNext()){
+			
+			// Remove entry
+			Entry<String, Set<Double>> entry = types.next();
+			types.remove();
+			
+			// Create result map for current entry
+			Map<String,Double> distanceMap = new HashMap<String,Double>();
+			
+			// Add result map to result matrix
+			minkowskiDistanceMatrix.put(entry.getKey(), distanceMap);
+			
+			// Second level iteration to compare the current entry with the rest
+			Iterator<Entry<String, Set<Double>>> remainingTypes = aberrationValuesMap.entrySet().iterator();
+			while(remainingTypes.hasNext()){
+				
+				Entry<String, Set<Double>> comparisonEntry = remainingTypes.next();
+				
+				// Calculate distance
+				double distance = this.calculateMinkowskiDistance(entry.getValue(), comparisonEntry.getValue());
+				
+				// Store result
+				distanceMap.put(comparisonEntry.getKey(), distance);
+				
+			}
+			
+		}
 		
 		// Close input scanner
 		inputScanner.close();
 
+		// Output matrix (TODO preliminary; JSON in lieu of a more suitable format)
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(gson.toJson(minkowskiDistanceMatrix));
+		
 		// Close outputs (important!)
 		this.closeAllOutputs();
 
 		// Done
 		return true;
+	}
+	
+	/**
+	 * Calculates the Minkowski-Distance of two n-dimensional vectors.
+	 * @See MERKL, Rainer 2015, Bioinformatik, p.159
+	 * @See https://en.wikipedia.org/wiki/Minkowski_distance
+	 * @param vectorA First vector
+	 * @param vectorB Second vector
+	 * @return Minkowski-Distance
+	 * @throws Exception Thrown if vectors are null or of different length
+	 */
+	private double calculateMinkowskiDistance(Set<Double> vectorA, Set<Double> vectorB) throws Exception{
+		
+		// Check input
+		if (vectorA==null || vectorB==null || vectorA.size()!=vectorB.size()){
+			throw new Exception("Sets must both be non-null and equal in length.");
+		}
+		
+		// Prepare result variable
+		double result = 0d;
+		
+		// Compute distance
+		Iterator<Double> aIterator = vectorA.iterator();
+		Iterator<Double> bIterator = vectorB.iterator();
+		while(aIterator.hasNext() && bIterator.hasNext()){
+			result += Math.pow(Math.abs(aIterator.next()-bIterator.next()),2d);
+		}
+		result = Math.sqrt(result);
+		
+		return result;
 	}
 
 	@Override
