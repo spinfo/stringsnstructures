@@ -118,7 +118,7 @@ public class VectorAnalysisModule extends ModuleImpl {
 			}
 			
 			// Calculate average
-			double average = sum/new Double(data.length-1).doubleValue();
+			double average = sum/new Double(data.length).doubleValue();
 			
 			// Calculate aberration
 			TreeSet<Double> sortedAberrationValues = new TreeSet<Double>();
@@ -132,7 +132,7 @@ public class VectorAnalysisModule extends ModuleImpl {
 		}
 		
 		// TODO calculate Minkowski-Metrics (Merkl 2015, Bioinformatik, p 159) for all lines, comparing each one to every other
-
+		
 		// Close input scanner
 		inputScanner.close();
 
