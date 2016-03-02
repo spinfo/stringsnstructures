@@ -7,17 +7,16 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import common.parallelization.CallbackReceiver;
 
 public class VectorAnalysisModule extends ModuleImpl {
 
@@ -30,7 +29,7 @@ public class VectorAnalysisModule extends ModuleImpl {
 	private static final String ID_OUTPUT = "output";
 
 	// Local variables
-	private int exponent = 1;
+	private double exponent = 1.0d;
 
 	public VectorAnalysisModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 
@@ -44,11 +43,11 @@ public class VectorAnalysisModule extends ModuleImpl {
 		this.setCategory("Experimental/WiP");
 
 		// Add property descriptions (obligatory for every property!)
-		this.getPropertyDescriptions().put(PROPERTYKEY_EXPONENT, "Exponent for contrast amplification (NOT YET IMPLEMENTED)");
+		this.getPropertyDescriptions().put(PROPERTYKEY_EXPONENT, "Exponent for aberration amplification [double]. Takes effect if value is above one.");
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Vector Analysis Module");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_EXPONENT, "1");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_EXPONENT, "1.0");
 
 		// Define I/O
 		/*
@@ -122,23 +121,29 @@ public class VectorAnalysisModule extends ModuleImpl {
 			// Calculate average
 			double average = sum/new Double(data.length).doubleValue();
 			
-			// Calculate aberration
+			// Calculate aberration values
 			TreeSet<Double> sortedAberrationValues = new TreeSet<Double>();
 			Iterator<Double> valueIterator = sortedValues.iterator();
 			while (valueIterator.hasNext()) {
 				Double value = valueIterator.next();
 				Double aberration = value - average;
+				// Apply exponent if it is greater than one
+				if (this.exponent > 1)
+					aberration = Math.pow(aberration, this.exponent);
+				// Store aberration value in set
 				sortedAberrationValues.add(aberration);
 			}
 			
-			// Store calculated aberration values in map
+			// Store calculated aberration value set in map
 			aberrationValuesMap.put(type, sortedAberrationValues);
 
 		}
 		
-		// Calculate Minkowski-Distances (Merkl 2015, Bioinformatik, p 159) for all lines, comparing each to one another.
-		
-		// Iterate through map, removing the current item from it and comparing it to the remainder.
+		/*
+		 * Iterate through map, removing the current item from it and comparing
+		 * it to the remainder (to avoid comparing a pair twice [A-B and B-A] or
+		 * an element to itself).
+		 */
 		Iterator<Entry<String, Set<Double>>> types = aberrationValuesMap.entrySet().iterator();
 		while(types.hasNext()){
 			
@@ -222,7 +227,7 @@ public class VectorAnalysisModule extends ModuleImpl {
 		String exponentString = this.getProperties().getProperty(PROPERTYKEY_EXPONENT,
 				this.getPropertyDefaultValues().get(PROPERTYKEY_EXPONENT));
 		if (exponentString != null && !exponentString.isEmpty())
-			this.exponent = Integer.parseInt(exponentString);
+			this.exponent = Double.parseDouble(exponentString);
 
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
