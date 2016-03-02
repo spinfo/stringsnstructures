@@ -29,7 +29,7 @@ public class VectorAnalysisModule extends ModuleImpl {
 	private static final String ID_OUTPUT = "output";
 
 	// Local variables
-	private double exponent = 1.0d;
+	private double exponent = 0.0d;
 
 	public VectorAnalysisModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 
@@ -43,11 +43,11 @@ public class VectorAnalysisModule extends ModuleImpl {
 		this.setCategory("Experimental/WiP");
 
 		// Add property descriptions (obligatory for every property!)
-		this.getPropertyDescriptions().put(PROPERTYKEY_EXPONENT, "Exponent for aberration amplification [double]. Takes effect if value is above one.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_EXPONENT, "Exponent for aberration amplification [double]; Aberration is taken times 2^E. Takes effect if value is above zero.");
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Vector Analysis Module");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_EXPONENT, "1.0");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_EXPONENT, "0.0");
 
 		// Define I/O
 		/*
@@ -128,8 +128,8 @@ public class VectorAnalysisModule extends ModuleImpl {
 				Double value = valueIterator.next();
 				Double aberration = value - average;
 				// Apply exponent if it is greater than one
-				if (this.exponent > 1)
-					aberration = Math.pow(aberration, this.exponent);
+				if (this.exponent > 0d)
+					aberration = aberration * Math.pow(2d, this.exponent);
 				// Store aberration value in set
 				sortedAberrationValues.add(aberration);
 			}
