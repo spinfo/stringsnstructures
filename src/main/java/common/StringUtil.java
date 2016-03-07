@@ -40,4 +40,19 @@ public class StringUtil {
 		return str.substring(0, i + 1);
 	}
 
+	/**
+	 * Check whether a string has any non-whitespace content
+	 * 
+	 * @param str
+	 *            The string to test
+	 * @return true if str is null, empty or whitesapce-only, else false
+	 */
+	public static boolean isBlank(String str) {
+		if (str == null)
+			return true;
+		if (str.isEmpty())
+			return true;
+		return str.trim().isEmpty();
+	}
+
 }
