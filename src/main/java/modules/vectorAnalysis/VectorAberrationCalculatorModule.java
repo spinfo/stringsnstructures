@@ -115,8 +115,8 @@ public class VectorAberrationCalculatorModule extends ModuleImpl {
 				sortedValues.add(value);
 			}
 			
-			// Calculate average
-			double average = sum/new Double(data.length).doubleValue();
+			// Calculate average (data-length-1 to exclude the label field from average calculation)
+			double average = sum/new Double(data.length-1).doubleValue();
 			
 			// Calculate aberration values
 			TreeSet<Double> sortedAberrationValues = new TreeSet<Double>();
