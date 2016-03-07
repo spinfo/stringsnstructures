@@ -34,7 +34,7 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 		this.setDescription("Calculates the minkowski distances for the specified Map of Sets.");
 		
 		// Add module category
-		this.setCategory("Experimental/WiP");
+		this.setCategory("Clustering");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Minkowski Distance Matrix");

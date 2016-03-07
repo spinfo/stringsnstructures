@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import common.parallelization.CallbackProcess;
 import common.parallelization.CallbackReceiver;
 import models.ExtensibleTreeNode;
+import modules.ProgressWatcher;
 
 public class ComparisonProcess implements CallbackProcess {
 	private Double schwellwert;
@@ -13,14 +14,14 @@ public class ComparisonProcess implements CallbackProcess {
 	private ExtensibleTreeNode ExtensibleTreeNode2;
 	private ExtensibleTreeNode vergleichsExtensibleTreeNode2;
 	private ConcurrentHashMap<String,Double> verknuepfungen;
-	private Progress progress;
+	private ProgressWatcher progress;
 	private int maxComparisonDepth;
 
 
 	public ComparisonProcess(int maxComparisonDepth, Double schwellwert, ExtensibleTreeNode ExtensibleTreeNode,
 			ExtensibleTreeNode vergleichsExtensibleTreeNode,
 			ConcurrentHashMap<String, Double> verknuepfungen,
-			Progress Progress) {
+			ProgressWatcher Progress) {
 		this(maxComparisonDepth, schwellwert, ExtensibleTreeNode, vergleichsExtensibleTreeNode, null, null, verknuepfungen, Progress);
 	}
 	
@@ -28,7 +29,7 @@ public class ComparisonProcess implements CallbackProcess {
 			ExtensibleTreeNode vergleichsExtensibleTreeNode, ExtensibleTreeNode ExtensibleTreeNode2,
 			ExtensibleTreeNode vergleichsExtensibleTreeNode2,
 			ConcurrentHashMap<String, Double> verknuepfungen,
-			Progress Progress) {
+			ProgressWatcher Progress) {
 		super();
 		this.maxComparisonDepth = maxComparisonDepth;
 		this.schwellwert = schwellwert;
