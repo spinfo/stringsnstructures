@@ -8,7 +8,7 @@ import java.util.Arrays;
  http://stackoverflow.com/questions/9452701/ukkonens-suffix-tree-algorithm-in-plain-english
  */
 
-class BaseSuffixTree {
+public class BaseSuffixTree {
 	static final int oo = Integer.MAX_VALUE / 2;
 	static int position=-1;
 	PrintWriter out;
@@ -266,6 +266,10 @@ class BaseSuffixTree {
 		return false;
 	}
 	
+	// return the root nodes node nr
+	public int getRoot() {
+		return root;
+	}
 
 } // class st	
 

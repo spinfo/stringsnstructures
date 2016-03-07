@@ -39,7 +39,7 @@ class Node {
 		// start
 		this.positionList.add(new PositionInfo(start));
 		// end
-		if (end==SuffixTree.oo)this.positionList.add(ST.OO);else this.positionList.add(new PositionInfo(end));
+		if (end==SuffixTree.oo)this.positionList.add(GST.OO);else this.positionList.add(new PositionInfo(end));
 		// textNr
 		this.positionList.add(new PositionInfo(textNr));
 	}
