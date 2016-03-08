@@ -40,6 +40,8 @@ public class BagsOfWordsModule extends ModuleImpl {
 	private final static String INPUT_GST_DESC = "[text/json] Suffix Tree Representation (class: SuffixTreeRepresentation)";
 	private final static String INPUT_SIMPLE_ID = "Simple";
 	private final static String INPUT_SIMPLE_DESC = "[text/plain] A newline separated List of sentences.";
+	private final static String INPUT_TEXT_ID = "Simple labels";
+	private final static String INPUT_TEXT_DESC = "[text/plain] A newline separated List of labels.";
 	private final static String OUTPUT_BOW_ID = "BoW";
 	private final static String OUTPUT_BOW_DESC = "[text/json] Bags of Words (class: TreeMap<Integer,TreeMap<String,Integer>>)";
 
@@ -73,7 +75,11 @@ public class BagsOfWordsModule extends ModuleImpl {
 		InputPort inputSimplePort = new InputPort(INPUT_SIMPLE_ID, INPUT_SIMPLE_DESC, this);
 		inputSimplePort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputSimplePort);
-
+		
+		InputPort inputSimpleText = new InputPort(INPUT_TEXT_ID, INPUT_TEXT_DESC, this);
+		inputSimplePort.addSupportedPipe(CharPipe.class);
+		super.addInputPort(inputSimpleText);
+		
 		OutputPort outputPort = new OutputPort(OUTPUT_BOW_ID, OUTPUT_BOW_DESC, this);
 		outputPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputPort);
@@ -95,6 +101,7 @@ public class BagsOfWordsModule extends ModuleImpl {
 			// two input sources are possible
 			final InputPort gstPort = this.getInputPorts().get(INPUT_GST_ID);
 			final InputPort simplePort = this.getInputPorts().get(INPUT_SIMPLE_ID);
+			final InputPort simpleText = this.getInputPorts().get(INPUT_TEXT_ID);
 
 			// parse the input and delegate building of bags of words to the
 			// appropriate function
@@ -108,7 +115,13 @@ public class BagsOfWordsModule extends ModuleImpl {
 				text = this.readStringFromInputPort(simplePort);
 				final String[] sentences = Pattern.compile("\r\n|\n|\r").split(text);
 				bagsOfWords = BagOfWordsFactory.build(sentences);
-			} else {
+			} else if (simpleText.isConnected()) {
+				text = this.readStringFromInputPort(simpleText);
+				final String[] labels = Pattern.compile("\r\n|\n|\r").split(text);
+				bagsOfWords = BagOfWordsFactory.build(labels);
+			} 
+			
+			else {
 				throw new Exception("Either gst input or simple input has to be connected.");
 			}
 

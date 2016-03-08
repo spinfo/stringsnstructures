@@ -73,6 +73,41 @@ class BagOfWordsFactory {
 	}
 
 	/**
+	 * From a list of labels build a map mapping label occurences to Bags of
+	 * Words of those labels.
+	 * 
+	 * @param labels
+	 *            The labels to convert to Bags of Words
+	 * @return A map mapping labels to bags of Words
+	 */
+	public static Map<Integer, TreeMap<String, Integer>> buildFromLabels(final String[] labels) {
+		final HashMap<Integer, TreeMap<String, Integer>> bagsOfWords = new HashMap<Integer, TreeMap<String, Integer>>();
+		// traverse sentences and build a list of words
+		for (String label : labels) {
+			final TreeMap<String, Integer> bag = BagOfWordsFactory.build(label);
+			// add the produced bag to the result if not empty
+			if (bag.size() > 0) {
+				
+				Integer i = 1;
+				if(!bagsOfWords.containsKey(bag)){
+					bagsOfWords.put(i, bag);
+				}
+				else if(bagsOfWords.containsKey(bag)){
+//					int val = map.get(line);
+//					val = val + 1;
+					bagsOfWords.put(bag.get(bag) + 1, bag);
+					
+				}
+				
+				i++;
+			}
+			
+		}
+		return bagsOfWords;
+	}
+	
+	
+	/**
 	 * From a SuffixTreeRepresentation build a map mapping sentences numbers to
 	 * bags of words. Sentence numbers are the trees pattern numbers. Words are
 	 * taken to be the tree's node's labels.
