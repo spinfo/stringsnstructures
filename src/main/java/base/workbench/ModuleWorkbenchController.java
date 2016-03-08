@@ -11,12 +11,6 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-
-import common.ListLoggingHandler;
-import common.parallelization.CallbackReceiver;
 import modules.Module;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
@@ -69,9 +63,16 @@ import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 import modules.treeSimilarityClustering.TreeSimilarityClusteringModule;
-import modules.vectorAnalysis.VectorAnalysisModule;
+import modules.vectorAnalysis.MinkowskiDistanceMatrixModule;
+import modules.vectorAnalysis.VectorAberrationCalculatorModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import common.ListLoggingHandler;
+import common.parallelization.CallbackReceiver;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -434,11 +435,17 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		seqQueryControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqQueryController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		seqQueryController.applyProperties();	
 		
-		// VectorAnalysisModule
+		// VectorAberrationCalculatorModule
 		Properties vectorAnalysisModuleProperties = new Properties();
-		VectorAnalysisModule vectorAnalysisModule = new VectorAnalysisModule(moduleNetwork, vectorAnalysisModuleProperties);
+		VectorAberrationCalculatorModule vectorAnalysisModule = new VectorAberrationCalculatorModule(moduleNetwork, vectorAnalysisModuleProperties);
 		vectorAnalysisModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, vectorAnalysisModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		vectorAnalysisModule.applyProperties();
+		
+		// MinkowskiDistanceMatrixModule
+		Properties minkowskiDistanceMatrixModuleProperties = new Properties();
+		MinkowskiDistanceMatrixModule minkowskiDistanceMatrixModule = new MinkowskiDistanceMatrixModule(moduleNetwork, minkowskiDistanceMatrixModuleProperties);
+		minkowskiDistanceMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, minkowskiDistanceMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		minkowskiDistanceMatrixModule.applyProperties();
 		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -493,6 +500,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(treeSimilarityClusteringModule.getName(), treeSimilarityClusteringModule);
 		availableModules.put(seqQueryController.getName(), seqQueryController);
 		availableModules.put(vectorAnalysisModule.getName(), vectorAnalysisModule);
+		availableModules.put(minkowskiDistanceMatrixModule.getName(), minkowskiDistanceMatrixModule);
 	}
 	
 	/**

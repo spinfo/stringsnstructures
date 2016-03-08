@@ -16,6 +16,7 @@ import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.suffixTree.applications.ResultToJsonListener;
 import modules.suffixTree.applications.ResultToLabelListListener;
+import modules.suffixTree.applications.ResultToLabelSuccessorMatrixListener;
 import modules.suffixTree.applications.ResutlToGstLabelDataListener;
 import modules.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.applications.TreeWalker;
@@ -25,6 +26,7 @@ import modules.suffixTree.node.ExtActivePoint;
 import modules.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
 import common.parallelization.CallbackReceiver;
 import models.GstLabelData;
+import models.NamedFieldMatrix;
 
 /**
  * Module Reads from KWIP modules output into a suffix tree. Constructs a
@@ -62,6 +64,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_LABEL_DATA_DESC = "[text/csv] Prints a csv table with label information.";
 	private static final String OUTPUT_DOT_FILE_ID = "dot file";
 	private static final String OUTPUT_DOT_FILE_DESC = "Prints a graphical representation of the tree as a .dot file.";
+	private static final String OUTPUT_SUCCESSORS_MATRIX_ID = "successor label matrix";
+	private static final String OUTPUT_SUCCESSORS_MATRIX_DESC = "[text/csv] A matrix with labels on the y-axis, successor strings on the x-axis and counts in the field.";
 
 	// Container to hold units if provided
 	private ArrayList<Integer> unitList = null;
@@ -121,7 +125,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		int treeModifyingOutputs = 0;
 		if (jsonOut.isConnected()) treeModifyingOutputs += 1;
 		if (xmlOut.isConnected()) treeModifyingOutputs += 1;
-		if (labelDataOut.isConnected()) treeModifyingOutputs += 1;
+		if (labelDataOut.isConnected())	treeModifyingOutputs += 1;
 		if (treeModifyingOutputs > 1) throw new Exception("Only one of these Outputs can be chosen: xml, json, label-data.");
 
 		try {
@@ -188,6 +192,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 					// does
 					nextText = text.substring(start, end + 1);
 					extActivePoint = suffixTreeAppl.longestPath(nextText, 0, 1, start, true);
+					
 					if (extActivePoint == null) {
 						LOGGER.warning(" GeneralisedSuffixTreeMain activePoint null");
 						break;
@@ -224,21 +229,41 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			} else {
 				LOGGER.info("No port for plain text label list connected, output skipped.");
 			}
+			// writes output of a graphical dot file
 			final OutputPort dotOut = this.getOutputPorts().get(OUTPUT_DOT_FILE_ID);
 			if (dotOut.isConnected()) {
 				// get a PipedWriter from the OutputPipe to write to
-				final CharPipe dotOutPipe = (CharPipe)dotOut.getPipes().get(CharPipe.class).get(0);
+				final CharPipe dotOutPipe = (CharPipe) dotOut.getPipes().get(CharPipe.class).get(0);
 				final PrintWriter writer = new PrintWriter(dotOutPipe.getOutput());
-				// the heading for the tree graphics is the beginning of the text
+				// the heading for the tree graphics is the beginning of the
+				// text
 				final int headingEnd = text.length() > 100 ? 100 : text.length() - 1;
 				String heading = text.substring(0, headingEnd);
-				if(heading.length() == 100) heading += "...";
+				if (heading.length() == 100)
+					heading += "...";
 				// output is done by the tree class
 				suffixTreeAppl.printTree(heading, -1, -1, -1, writer);
 				dotOut.close();
 			} else {
 				LOGGER.info("No port for .dot-file connected, output skipped.");
 			}
+			// writes output of the labels to successors matrix
+			final OutputPort successorsOut = this.getOutputPorts().get(OUTPUT_SUCCESSORS_MATRIX_ID);
+			if(successorsOut.isConnected()) {
+				final ResultToLabelSuccessorMatrixListener listener = new ResultToLabelSuccessorMatrixListener(suffixTreeAppl);
+				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
+				
+				NamedFieldMatrix matrix = listener.getMatrix();
+				successorsOut.outputToAllCharPipes(matrix.csvHeader());
+				for (int i = 0; i < matrix.getRowAmount(); i++) {
+					successorsOut.outputToAllCharPipes(matrix.csvLine(i));
+				}
+				
+				successorsOut.close();
+			} else {
+				LOGGER.info("No port for label successors matrix connected, output skipped");
+			}
+			
 			// NOTE: potentially destructive outputs that alter the tree (json,
 			// xml, label-data) are made last
 			// construct the JSON output
@@ -363,9 +388,14 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		OutputPort outputLabelDataPort = new OutputPort(OUTPUT_LABEL_DATA_ID, OUTPUT_LABEL_DATA_DESC, this);
 		outputLabelDataPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputLabelDataPort);
-		
+
 		OutputPort outputDotFilePort = new OutputPort(OUTPUT_DOT_FILE_ID, OUTPUT_DOT_FILE_DESC, this);
 		outputDotFilePort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputDotFilePort);
+		
+		OutputPort outputSuccessorsMatrixPort = new OutputPort(OUTPUT_SUCCESSORS_MATRIX_ID, OUTPUT_SUCCESSORS_MATRIX_DESC, this);
+		outputSuccessorsMatrixPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputSuccessorsMatrixPort);
 	}
 }
+

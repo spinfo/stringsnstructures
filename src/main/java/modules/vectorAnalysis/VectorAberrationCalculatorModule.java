@@ -3,7 +3,6 @@ package modules.vectorAnalysis;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
@@ -16,9 +15,10 @@ import modules.OutputPort;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import common.parallelization.CallbackReceiver;
 
-public class VectorAnalysisModule extends ModuleImpl {
+public class VectorAberrationCalculatorModule extends ModuleImpl {
 
 	// Define property keys (every setting has to have a unique key to associate
 	// it with)
@@ -31,22 +31,22 @@ public class VectorAnalysisModule extends ModuleImpl {
 	// Local variables
 	private double exponent = 0.0d;
 
-	public VectorAnalysisModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
+	public VectorAberrationCalculatorModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 
 		// Call parent constructor
 		super(callbackReceiver, properties);
 
 		// Add module description
-		this.setDescription("<p>Analyses and re-sorts vectors.</p>");
+		this.setDescription("Calculates aberration for elements within the input vectors, re-sorting them afterwards.");
 
 		// Add module category
-		this.setCategory("Experimental/WiP");
+		this.setCategory("Vectorization");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_EXPONENT, "Exponent for aberration amplification [double]; Aberration is taken times 2^E. Takes effect if value is above zero.");
 
 		// Add property defaults (_should_ be provided for every property)
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Vector Analysis Module");
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Vector Aberration Calculator");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_EXPONENT, "0.0");
 
 		// Define I/O
@@ -59,7 +59,7 @@ public class VectorAnalysisModule extends ModuleImpl {
 		 */
 		InputPort inputPort = new InputPort(ID_INPUT, "Vector input; expects comma separated values.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Output.", this);
+		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Output; JSON-encoded Map of Sets (Map<String,Set<Double>>).", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 
 		// Add I/O ports to instance (don't forget...)
@@ -74,9 +74,6 @@ public class VectorAnalysisModule extends ModuleImpl {
 		// Construct scanner instances for input segmentation
 		Scanner inputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
 		inputScanner.useDelimiter("\\n");
-
-		// Minkowski Distance matrix
-		Map<String,Map<String,Double>> minkowskiDistanceMatrix = new HashMap<String,Map<String,Double>>();
 		
 		// Skip csv head (we will sort the data lines individually anyway, so no sense in keeping track of the edge labels)
 		if (inputScanner.hasNext()){
@@ -118,8 +115,8 @@ public class VectorAnalysisModule extends ModuleImpl {
 				sortedValues.add(value);
 			}
 			
-			// Calculate average
-			double average = sum/new Double(data.length).doubleValue();
+			// Calculate average (data-length-1 to exclude the label field from average calculation)
+			double average = sum/new Double(data.length-1).doubleValue();
 			
 			// Calculate aberration values
 			TreeSet<Double> sortedAberrationValues = new TreeSet<Double>();
@@ -139,82 +136,18 @@ public class VectorAnalysisModule extends ModuleImpl {
 
 		}
 		
-		/*
-		 * Iterate through map, removing the current item from it and comparing
-		 * it to the remainder (to avoid comparing a pair twice [A-B and B-A] or
-		 * an element to itself).
-		 */
-		Iterator<Entry<String, Set<Double>>> types = aberrationValuesMap.entrySet().iterator();
-		while(types.hasNext()){
-			
-			// Remove entry
-			Entry<String, Set<Double>> entry = types.next();
-			types.remove();
-			
-			// Create result map for current entry
-			Map<String,Double> distanceMap = new HashMap<String,Double>();
-			
-			// Add result map to result matrix
-			minkowskiDistanceMatrix.put(entry.getKey(), distanceMap);
-			
-			// Second level iteration to compare the current entry with the rest
-			Iterator<Entry<String, Set<Double>>> remainingTypes = aberrationValuesMap.entrySet().iterator();
-			while(remainingTypes.hasNext()){
-				
-				Entry<String, Set<Double>> comparisonEntry = remainingTypes.next();
-				
-				// Calculate distance
-				double distance = this.calculateMinkowskiDistance(entry.getValue(), comparisonEntry.getValue());
-				
-				// Store result
-				distanceMap.put(comparisonEntry.getKey(), distance);
-				
-			}
-			
-		}
-		
 		// Close input scanner
 		inputScanner.close();
 
-		// Output matrix (TODO preliminary; JSON in lieu of a more suitable format)
+		// Output distances
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(gson.toJson(minkowskiDistanceMatrix));
+		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(gson.toJson(aberrationValuesMap));
 		
 		// Close outputs (important!)
 		this.closeAllOutputs();
 
 		// Done
 		return true;
-	}
-	
-	/**
-	 * Calculates the Minkowski-Distance of two n-dimensional vectors.
-	 * @See MERKL, Rainer 2015, Bioinformatik, p.159
-	 * @See https://en.wikipedia.org/wiki/Minkowski_distance
-	 * @param vectorA First vector
-	 * @param vectorB Second vector
-	 * @return Minkowski-Distance
-	 * @throws Exception Thrown if vectors are null or of different length
-	 */
-	private double calculateMinkowskiDistance(Set<Double> vectorA, Set<Double> vectorB) throws Exception{
-		
-		// Check input
-		if (vectorA==null || vectorB==null || vectorA.size()!=vectorB.size()){
-			throw new Exception("Sets must both be non-null and equal in length.");
-		}
-		
-		// Prepare result variable
-		double result = 0d;
-		
-		// Compute distance
-		Iterator<Double> aIterator = vectorA.iterator();
-		Iterator<Double> bIterator = vectorB.iterator();
-		while(aIterator.hasNext() && bIterator.hasNext()){
-			result += Math.pow(Math.abs(aIterator.next()-bIterator.next()),2d);
-		}
-		result = Math.sqrt(result);
-		
-		return result;
 	}
 
 	@Override

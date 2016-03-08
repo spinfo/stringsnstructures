@@ -1,17 +1,17 @@
-package modules.treeSimilarityClustering;
+package modules;
 
 /**
  * Can be used to track the progress of a module processing data composed of individual elements.
  * @author Marcel Boeing
  *
  */
-public class Progress {
+public class ProgressWatcher {
 	private long queued;
 	private long processed;
-	public Progress(long queued) {
+	public ProgressWatcher(long queued) {
 		this(queued, 0l);
 	}
-	public Progress(long queued, long processed) {
+	public ProgressWatcher(long queued, long processed) {
 		super();
 		this.queued = queued;
 		this.processed = processed;

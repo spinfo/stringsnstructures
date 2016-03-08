@@ -31,6 +31,8 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.Pipe;
+import modules.ProgressWatcher;
+import modules.ProgressWatcherThread;
 
 import com.google.gson.Gson;
 import common.parallelization.CallbackReceiver;
@@ -43,6 +45,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 	public static final String PROPERTYKEY_MINDEGREE = "minimum degree";
 	public static final String PROPERTYKEY_MAXPARALLELTHREADS = "maximum threads";
 	public static final String PROPERTYKEY_MAXCOMPARISONDEPTH = "maximum comparison depth";
+	public static final String PROPERTYKEY_PROGRESSWATCHERINTERVAL = "status update interval (ms)";
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "suffix tree";
@@ -54,6 +57,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 	private int maxParallelThreads = 8;
 	private float minSimilarity = 0.0f;
 	private int maxComparisonDepth = -1;
+	private long progressWatcherInterval = 10000l;
 	//private int minDegree = 0;
 
 	public TreeSimilarityClusteringModule(CallbackReceiver callbackReceiver,
@@ -66,8 +70,9 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		this.setDescription("Clusters elements of the first layer below the root node of specified trees by comparing them to one another, calculating a similarity quotient for each pairing in the process. The elements will then be inserted into a GEXF graph with edge weights set according to their respective similarity quotient. For details, see Magister thesis <i>Experimente zur Strukturbildung in natürlicher Sprache</i>, Marcel Boeing, Universität zu Köln, 2014.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINSIMILARITY, "Minimum similarity value that will result in an edge being created.");
 		//this.getPropertyDescriptions().put(PROPERTYKEY_MINDEGREE, "Minimum node degree. Nodes with fewer connections will be removed from the graph prior to output.");
-		this.getPropertyDescriptions().put(PROPERTYKEY_MAXPARALLELTHREADS, "Maximum number of parallel threads the module will spawn.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_MAXPARALLELTHREADS, "Maximum number of parallel threads the module will spawn (in addition to its own thread and the ProgressWatcher's).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MAXCOMPARISONDEPTH, "Maximum depth of the individual tree branches that will be used for comparison (-1 for no max.).");
+		this.getPropertyDescriptions().put(PROPERTYKEY_PROGRESSWATCHERINTERVAL, "Interval (in milliseconds) that the module will give out details about the progress in. It will also calculate an estimated time remaining, so larger values may yield more precise information. Default is 10 seconds (10000 ms); minimum is 250 ms.");
 		
 		// Add module category
 		this.setCategory("Clustering");
@@ -78,6 +83,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		//this.getPropertyDefaultValues().put(PROPERTYKEY_MINDEGREE, "0");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXPARALLELTHREADS, "8");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXCOMPARISONDEPTH, "-1");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_PROGRESSWATCHERINTERVAL, "10000");
 
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT,
@@ -106,7 +112,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		Gson gson = new Gson();
 		
 		// Updating status detail
-		this.setStatusDetail("Parsing input");
+		this.setStatusDetail("Receiving/parsing input");
 		
 		// Read tree from input & parse it
 		ExtensibleTreeNode rootNode = gson.fromJson(this.getInputPorts().get(ID_INPUT).getInputReader(), ExtensibleTreeNode.class);
@@ -194,38 +200,13 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		}
 		
 
-		// Track progress
+		// Calculate amount of work that lies ahead
 		int elementsToCompare = typeMap.size();
 		long comparisonsToConduct = (long) ((Math.pow(elementsToCompare, 2)/2)-elementsToCompare);
 		
-		final Progress progress = new Progress(comparisonsToConduct);
-		final TreeSimilarityClusteringModule module = this;
-		
-		Thread progressIndicator = new Thread() {
-			@Override
-			public void run() {
-				try {
-					long intervallMs = 5000;
-					while (progress.getQueued()>0){
-						Thread.sleep(intervallMs);
-						try {
-							long queued = progress.getQueued();
-							long processed = progress.getProcessed();
-							long perMinute = processed * (60000 / intervallMs);
-							long minsRemaining = queued / perMinute;
-							module.setStatusDetail("Comparisons in queue: " + queued + " @ " + perMinute
-									+ " per minute (" + minsRemaining + " minutes remaining)");
-						} catch (ArithmeticException e1) {
-							module.setStatusDetail(null);
-						}
-						progress.setProcessed(0l);
-					}
-					module.setStatusDetail(null);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		};
+		// Track progress
+		ProgressWatcher progress = new ProgressWatcher(comparisonsToConduct);
+		Thread progressIndicator = new ProgressWatcherThread(progress,this, this.progressWatcherInterval);
 		progressIndicator.start();
 		
 		/*
@@ -261,15 +242,6 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 					comparisonProcess = new ComparisonProcess(this.maxComparisonDepth, new Double(this.minSimilarity), type.getValue(), typeToCompareTo.getValue(), comparisonResultMap, progress);
 				}
 				executor.execute(comparisonProcess);
-				
-				/* old non-smp way
-				Double comparisonResult = comparator.vergleiche(type.getValue(), typeToCompareTo.getValue());
-				// Add weighted edge to graph (if weight is above 0.0)
-				if (comparisonResult.floatValue() > this.minSimilarity){
-					Edge edge = graphNodes.get(type.getKey()).connectTo(""+edgeId, "similar", EdgeType.UNDIRECTED, graphNodes.get(typeToCompareTo.getKey()));
-					edge.setWeight(comparisonResult.floatValue());
-					this.edgeId++;
-				}*/
 			}
 			
 			// Shutdown executor service
@@ -356,6 +328,19 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 						PROPERTYKEY_MAXCOMPARISONDEPTH));
 		if (maxComparisonDepthString != null)
 		this.maxComparisonDepth = Integer.parseInt(maxComparisonDepthString);
+		
+		String progressWatcherIntervalString = this.getProperties().getProperty(
+				PROPERTYKEY_PROGRESSWATCHERINTERVAL,
+				this.getPropertyDefaultValues().get(
+						PROPERTYKEY_PROGRESSWATCHERINTERVAL));
+		if (maxComparisonDepthString != null){
+			long value = Integer.parseInt(progressWatcherIntervalString);
+			if (value>250l)
+				this.progressWatcherInterval = value;
+		}
+			
+		
+		
 
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
