@@ -11,6 +11,12 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+
+import common.ListLoggingHandler;
+import common.parallelization.CallbackReceiver;
 import modules.Module;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
@@ -65,14 +71,9 @@ import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
 import modules.treeSimilarityClustering.TreeSimilarityClusteringModule;
 import modules.vectorAnalysis.MinkowskiDistanceMatrixModule;
 import modules.vectorAnalysis.VectorAberrationCalculatorModule;
+import modules.vectorAnalysis.VectorMedianCalculatorModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import common.ListLoggingHandler;
-import common.parallelization.CallbackReceiver;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -447,6 +448,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		minkowskiDistanceMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, minkowskiDistanceMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		minkowskiDistanceMatrixModule.applyProperties();
 		
+		// VectorMedianCalculatorModule
+		Properties vectorMedianCalculatorModuleProperties = new Properties();
+		VectorMedianCalculatorModule vectorMedianCalculatorModule = new VectorMedianCalculatorModule(moduleNetwork, vectorMedianCalculatorModuleProperties);
+		vectorMedianCalculatorModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, vectorMedianCalculatorModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		vectorMedianCalculatorModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -501,6 +508,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(seqQueryController.getName(), seqQueryController);
 		availableModules.put(vectorAnalysisModule.getName(), vectorAnalysisModule);
 		availableModules.put(minkowskiDistanceMatrixModule.getName(), minkowskiDistanceMatrixModule);
+		availableModules.put(vectorMedianCalculatorModule.getName(), vectorMedianCalculatorModule);
 	}
 	
 	/**
