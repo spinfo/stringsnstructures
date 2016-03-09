@@ -56,7 +56,6 @@ public class BaseSuffixTree {
 	// if end of text is reached ('$') and last suffix is implicitly contained in previously built suffix
 	// tree (e.g. given two texts aaabxy$aaazxy$, last suffix is xy$, here the (existing) suffixes
 	// y$ and & must be counted in suffix tree
-	
 	void addRemainingSuffixesAtEndOfText(int active_node,int active_edge, int nrText){
 		
 		System.out.println("addRemainingSuffixesAtEndOfText: remainder:"+remainder+
@@ -76,13 +75,12 @@ public class BaseSuffixTree {
 				active_edge = position - remainder + 1;
 			} else
 				active_node = nodes[active_node].link > 0 ? nodes[active_node].link : root; 
-				
+			
 			if (!nodes[active_node].next.containsKey(active_edge())) 
 					{System.out.println("addRemainingSuffixesAtEndOfText error");
 					int x= 3/0;}
 			else {
-					
-					// there might be branching nodes between achtive_node and terminal node;
+					// there might be branching nodes between active_node and terminal node;
 					// so walk down to terminal node
 					
 					int onset=0; // onset will be summed up when walking down
@@ -93,10 +91,10 @@ public class BaseSuffixTree {
 					while(!(nodes[next].isTerminal())) {
 						onset=onset+(nodes[next].getEnd(0)-nodes[next].getStart(0));
 						next = nodes[next].next.get(this.text[active_edge+onset]);							
-					}; 
+					};
 					System.out.println("addRemainingSuffixesAtEndOfText before addPos");
 					// update terminal node
-					nodes[next].addPos(start, position, nrText);				
+					nodes[next].addPos(start, position, nrText);
 			}
 			
 		}
@@ -230,20 +228,23 @@ public class BaseSuffixTree {
 	
 	//jr
 	int longestPath(String nextText,int node/*root*/){
-		
-		System.out.println();
-		for (int i=0;i<nextText.length();i++){
+		int localActiveEdge=0;int i=0;
+		System.out.println("longestPath nextText: "+nextText);
+		for (i=0;i<nextText.length();i++){
 			// find edge
 			if (nodes[node].next.containsKey(nextText.charAt(i))){
 				int child_node = this.nodes[node].next.get(nextText.charAt(i));
+				System.out.println("child_node: "+child_node);
+				localActiveEdge=0;
 				// compare edge
 				int pos=i+1;// pos is index for position in nextText
 				for (int j=this.nodes[child_node].getStart(0)+1;j<this.nodes[child_node].getEnd(0);j++){
 					if (this.text[j]==nextText.charAt(pos)) {
 						pos++;
-						System.out.print(this.text[j]);
+						localActiveEdge++;
+						System.out.print("equal sign j: "+j+" "+this.text[j]);
 					}
-					else {System.out.println();
+					else {System.out.println("not equal sign");
 						setActivePoint(node,this.nodes[child_node].getStart(0),
 								j-this.nodes[child_node].getStart(0));
 						return pos;
@@ -254,11 +255,11 @@ public class BaseSuffixTree {
 				node=child_node;// next node (child)
 			}
 			else {System.out.println();setActivePoint(node,0,0);return i;
-			}	
+			}
 		} // for
-		setActivePoint(node,0,0);
+		setActivePoint(node,0,localActiveEdge);
 		System.out.println();
-		return 0;
+		return i;
 	} // longestPath
 	
 	// mostly like longestpath, toDo
