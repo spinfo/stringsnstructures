@@ -46,6 +46,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 	public static final String PROPERTYKEY_MAXPARALLELTHREADS = "maximum threads";
 	public static final String PROPERTYKEY_MAXCOMPARISONDEPTH = "maximum comparison depth";
 	public static final String PROPERTYKEY_PROGRESSWATCHERINTERVAL = "status update interval (ms)";
+	public static final String PROPERTYKEY_MINTOKENAMOUNT = "minimum amount of tokens";
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "suffix tree";
@@ -56,6 +57,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 	private long edgeId;
 	private int maxParallelThreads = 8;
 	private float minSimilarity = 0.0f;
+	private int minTokenAmount = 1;
 	private int maxComparisonDepth = -1;
 	private long progressWatcherInterval = 10000l;
 	//private int minDegree = 0;
@@ -73,6 +75,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_MAXPARALLELTHREADS, "Maximum number of parallel threads the module will spawn (in addition to its own thread and the ProgressWatcher's).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MAXCOMPARISONDEPTH, "Maximum depth of the individual tree branches that will be used for comparison (-1 for no max.).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_PROGRESSWATCHERINTERVAL, "Interval (in milliseconds) that the module will give out details about the progress in. It will also calculate an estimated time remaining, so larger values may yield more precise information. Default is 10 seconds (10000 ms); minimum is 250 ms.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_MINTOKENAMOUNT, "Minimum amount of tokens a type must have to enter comparison.");
 		
 		// Add module category
 		this.setCategory("Clustering");
@@ -84,6 +87,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXPARALLELTHREADS, "8");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXCOMPARISONDEPTH, "-1");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_PROGRESSWATCHERINTERVAL, "10000");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MINTOKENAMOUNT, "1");
 
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT,
@@ -129,7 +133,18 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 
 		// Map of elements to compare to each other (first degree tree children)
 		Map<String,ExtensibleTreeNode> typeMap = new HashMap<String,ExtensibleTreeNode>();
-		typeMap.putAll(rootNode.getChildNodes());
+		
+		// Insert child nodes of the root node into a map (and apply node counter filter if set)
+		if (this.minTokenAmount>1){
+			Iterator<Entry<String, ExtensibleTreeNode>> rootChildren = rootNode.getChildNodes().entrySet().iterator();
+			while (rootChildren.hasNext()){
+				Entry<String, ExtensibleTreeNode> node = rootChildren.next();
+				if (node.getValue().getNodeCounter()>=this.minTokenAmount)
+					typeMap.put(node.getKey(), node.getValue());
+			}
+		} else {
+			typeMap.putAll(rootNode.getChildNodes());
+		}
 		
 		// Instantiate GEXF writer ...
 		Gexf gexf = new GexfImpl();
@@ -333,10 +348,20 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 				PROPERTYKEY_PROGRESSWATCHERINTERVAL,
 				this.getPropertyDefaultValues().get(
 						PROPERTYKEY_PROGRESSWATCHERINTERVAL));
-		if (maxComparisonDepthString != null){
-			long value = Integer.parseInt(progressWatcherIntervalString);
+		if (progressWatcherIntervalString != null){
+			long value = Long.parseLong(progressWatcherIntervalString);
 			if (value>250l)
 				this.progressWatcherInterval = value;
+		}
+		
+		String minTokenAmountString = this.getProperties().getProperty(
+				PROPERTYKEY_MINTOKENAMOUNT,
+				this.getPropertyDefaultValues().get(
+						PROPERTYKEY_MINTOKENAMOUNT));
+		if (minTokenAmountString != null){
+			int value = Integer.parseInt(minTokenAmountString);
+			if (value>250l)
+				this.minTokenAmount = value;
 		}
 			
 		
