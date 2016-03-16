@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 
-class Node {
+public class Node {
 
 	/*
 	 * There is no need to create an "Edge" class. Information about the
@@ -21,7 +21,7 @@ class Node {
 	// value of this element is oo, i.e. maximal value; at the end, when '$' is reached, value is 
 	// replaced by actual position value
 	ArrayList<PositionInfo> positionList;
-	public TreeMap<Character, Integer> next = new TreeMap<Character, Integer>();
+	TreeMap<Character, Integer> next = new TreeMap<Character, Integer>();
 
 	// cstr
 	public Node(int start, int end, int nr) {
@@ -31,7 +31,7 @@ class Node {
 					
 	}// Node
 	
-	boolean isTerminal() {
+	public boolean isTerminal() {
 		return ((this.next==null) || (this.next.size()==0));
 	}
 	
@@ -68,5 +68,9 @@ class Node {
 
 	public int edgeLength() {
 		return Math.min(this.getEnd(0),SuffixTree.position + 1) - this.getStart(0);
+	}
+	
+	public Integer getNext(char edgeBegin) {
+		return this.next.get(edgeBegin);
 	}
 }// Node

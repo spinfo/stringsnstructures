@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 
 // SuffixTree extends BaseSuffixTree which contains the proper Ukkonen Generalized SuffixTree algorithm.
 // Here print methods are added
-class SuffixTree extends BaseSuffixTree {
+public class SuffixTree extends BaseSuffixTree {
 	
 	public SuffixTree(int length) {
 		super(length);
@@ -16,7 +16,7 @@ class SuffixTree extends BaseSuffixTree {
 
 
 //-------------------------------------printTree-------------------------------------------------------------
-	void printTree() {
+	public void printTree() {
 		try {
 				out = new PrintWriter(new FileWriter("st.dot"));
 		    } catch (IOException e) {

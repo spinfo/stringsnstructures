@@ -23,6 +23,10 @@ public class BaseSuffixTree {
 		nodes = new Node[2 * length + 2];
 		text = new char[length];
 		root = active_node = newNode(-1, -1, 0);
+
+		// reset position in case there was a tree created earlier
+		// TODO: change position to a non-static variable
+		position = -1;
 	}
 
 	
@@ -209,7 +213,7 @@ public class BaseSuffixTree {
 	 */
 
 	// changed jr till '$';
-	String edgeString(int node) {
+	public String edgeString(int node) {
 		int end=nodes[node].getEnd(0);
 		if (end==oo) {
 			for (end=nodes[node].getStart(0);end<=oo;end++) {
@@ -278,6 +282,20 @@ public class BaseSuffixTree {
 	// return the root nodes node nr
 	public int getRoot() {
 		return root;
+	}
+	
+	// return the node corresponding to nodeNr
+	public Node getNode(int nodeNr) {
+		try {
+			return this.nodes[nodeNr];
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+	
+	// return the number of nodes in the tree
+	public int getNodeAmount() {
+		return currentNode;
 	}
 
 } // class st	
