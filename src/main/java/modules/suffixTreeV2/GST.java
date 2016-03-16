@@ -48,8 +48,11 @@ public class GST {
 		
 		for (int i = 0; i < inText.length(); i++) {
 			System.out.println("i: "+i+" ch: "+inText.charAt(i));
+
 			st.addChar(inText.charAt(i), nrText);
-			if (inText.charAt(i) == '$') {
+			// while loop as completely repeated texts are possible
+			while(inText.charAt(i) == '$') {
+				System.out.println("while i: "+i);
 				
 				// set value for end in leaves
 				GST.OO.val=i+1;
@@ -57,6 +60,8 @@ public class GST {
 				GST.OO = new PositionInfo(st.oo);
 				nrText++;
 				int end = findChar(inText, i + 1, '$');
+				System.out.println("findChar end: "+end);
+				// inText end not reached
 				if (end > i) {
 					nextinText = inText.substring(i + 1, end + 1);
 					System.out.println("nextText: "+nextinText);
@@ -72,15 +77,25 @@ public class GST {
 					System.out.println();
 					i=i+res;
 					
-					
-				}
+					// res must be greater 0; otherwise endless while loop
+					if((res!=0)&& (inText.charAt(i)=='$')) {
+					// next text is completely contained in suffix tree (i.e. it is a complete repeat of a
+					// precedent text). In this case, addChar won't be called
+						System.out.println(" $ found");
+						
+						st.nodes[st.active_node].addPos(i-res, end-1, nrText);					
+						st.addRemainingSuffixesAtEndOfText(st.active_node,st.active_edge, nrText);
+						
+					}else break;
+
+				} else break;// if end > i; inText end reached
 				
-			}
-		}
+			}// while
+		}// for (int i = 0; i < inText.length(); i++)
 		
 		return st;
 	    
-	}//st
+	}
 	
 	
 	public static void main(String... args) throws Exception {

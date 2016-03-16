@@ -75,11 +75,14 @@ public class BaseSuffixTree {
 				active_edge = position - remainder + 1;
 			} else
 				active_node = nodes[active_node].link > 0 ? nodes[active_node].link : root; 
-			
+
+			System.out.println("addRemainingSuffixesAtEndOfText before containsKey: remainder:"+remainder+
+						" active_node: "+active_node+ " active_length: "+active_length+ " active_edge: "+active_edge);
 			if (!nodes[active_node].next.containsKey(active_edge())) 
 					{System.out.println("addRemainingSuffixesAtEndOfText error");
 					int x= 3/0;}
 			else {
+					
 					// there might be branching nodes between active_node and terminal node;
 					// so walk down to terminal node
 					
@@ -90,6 +93,9 @@ public class BaseSuffixTree {
 					int start=position-(nodes[next].getEnd(0)-nodes[next].getStart(0));
 					while(!(nodes[next].isTerminal())) {
 						onset=onset+(nodes[next].getEnd(0)-nodes[next].getStart(0));
+						System.out.println("Start: "+ nodes[next].getStart(0)+
+						" End: "+nodes[next].getEnd(0) + " onset: "+onset+ " position "+position+
+						" active_edge: "+active_edge+ " remainder: "+remainder);
 						next = nodes[next].next.get(this.text[active_edge+onset]);							
 					};
 					System.out.println("addRemainingSuffixesAtEndOfText before addPos");
@@ -104,7 +110,7 @@ public class BaseSuffixTree {
 		this.text[++position] = ch;
 		needSuffixLink = -1;
 		remainder++;
-		if (ch=='$') System.out.println("addChar: "+ch+" remainder:"+remainder+" nrText: "+nrText);
+		/*if (ch=='$')*/ System.out.println("addChar: "+ch+" remainder:"+remainder+" nrText: "+nrText);
 		while (remainder > 0) {
 			if (active_length == 0)
 				active_edge = position;
@@ -219,10 +225,12 @@ public class BaseSuffixTree {
 		this.active_edge=active_edge;
 		this.active_length=active_length;
 		System.out.print
-		("setActivePoint node: "+node+ " active_edge: "+this.text[active_edge]+ " active_length: "
+		("setActivePoint node: "+node+ " active_edge: "+active_edge+" "+this.text[active_edge]+ " active_length: "
 		+active_length+ " ");
 		for (int i=active_edge;i<active_edge+active_length;i++)System.out.print(this.text[i]);
-		System.out.println();			
+		System.out.println();	
+		//------------------------
+		//active_edge++;
 	}
 	
 	
@@ -257,7 +265,7 @@ public class BaseSuffixTree {
 			else {System.out.println();setActivePoint(node,0,0);return i;
 			}
 		} // for
-		setActivePoint(node,0,localActiveEdge);
+		setActivePoint(node,nodes[node].getStart(0),localActiveEdge);
 		System.out.println();
 		return i;
 	} // longestPath
