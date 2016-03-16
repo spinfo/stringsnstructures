@@ -1,9 +1,13 @@
 package modules.suffixTreeV2;
 
 import java.io.*;
+import java.util.List;
+import java.util.logging.Logger;
 
 
 public class GST {
+	private static final Logger LOGGER = Logger.getLogger(GST.class.getName());
+	
 	BufferedReader in;
 	
 	static PositionInfo OO;
@@ -21,7 +25,7 @@ public class GST {
 	}
 
 	// cstr
-	public static SuffixTree buildGST(Reader inputReader) throws Exception {
+	public static SuffixTree buildGST(Reader inputReader, List<Integer> typeContextNrs) throws Exception {
 		int nrText = 0;
 		 
 		String line,inText="",nextinText;		
@@ -32,7 +36,10 @@ public class GST {
 	    }
 	    in.close();
 	    System.out.println(inText);
-		// in = new BufferedReader(new InputStreamReader(System.in));
+	    
+	    if(typeContextNrs != null) {
+	    	LOGGER.info(typeContextNrs.toString());
+	    }
 		
 		
 		SuffixTree st = new SuffixTree(inText.length());
@@ -87,7 +94,7 @@ public class GST {
 	    }
 	    System.out.println("You entered : " + filename);
 	    
-		SuffixTree st = GST.buildGST(new FileReader(filename+".txt"));
+		SuffixTree st = GST.buildGST(new FileReader(filename+".txt"), null);
 		
 		st.printTree();
 	}

@@ -1,6 +1,8 @@
 package modules.suffixTreeModuleWrapper;
 
 import java.io.BufferedReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import common.parallelization.CallbackReceiver;
@@ -37,8 +39,8 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 	// Variables describing I/O
 	private static final String INPUT_TEXT_ID = "plain";
 	private static final String INPUT_TEXT_DESC = "[text/plain] Takes a plaintext representation of the KWIP result.";
-	private static final String INPUT_UNITS_ID = "units";
-	private static final String INPUT_UNITS_DESC = "[text/plain] Takes a unit list (numbers of available types) from the KWIP result";
+	private static final String INPUT_TYPE_CONTEXT_ID = "type context nrs";
+	private static final String INPUT_TYPE_CONTEXT_NRS_DESC = "[text/plain] Takes a list of numbers of available type contexts from the KWIP result";
 //	private static final String OUTPUT_JSON_ID = "json";
 //	private static final String OUTPUT_JSON_DESC = "[text/json] A json representation of the tree build, suitable for clustering.";
 //	private static final String OUTPUT_XML_ID = "xml";
@@ -88,7 +90,7 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 		inputTextPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputTextPort);
 
-		InputPort inputUnitsPort = new InputPort(INPUT_UNITS_ID, INPUT_UNITS_DESC, this);
+		InputPort inputUnitsPort = new InputPort(INPUT_TYPE_CONTEXT_ID, INPUT_TYPE_CONTEXT_NRS_DESC, this);
 		inputUnitsPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputUnitsPort);
 
@@ -101,23 +103,47 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 	 */
 	@Override
 	public boolean process() throws Exception {
-
-		BufferedReader textReader = new BufferedReader(super.getInputPorts().get(INPUT_TEXT_ID).getInputReader());
 		
-		BaseSuffixTree suffixTree = GST.buildGST(textReader);
+		boolean result = true;
 		
-		// output a simple list of labels
-		final OutputPort labelsOut = this.getOutputPorts().get(OUTPUT_LIST_ID);
-		if (labelsOut.isConnected()) {
-			final ResultLabelListListener listener = new ResultLabelListListener(suffixTree);
-			TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
-			for(String label : listener.getLabels()) {
-				labelsOut.outputToAllCharPipes(label + System.lineSeparator());
+		try {
+		
+			// read in the list of type context nrs if the port is connected, else leave it null
+			List<Integer> contextNrs = null;
+			final InputPort contextNrsIn = this.getInputPorts().get(INPUT_TYPE_CONTEXT_ID);
+			if(contextNrsIn.isConnected()) {
+				contextNrs = new ArrayList<Integer>();
+				final BufferedReader contextNrsReader = new BufferedReader(contextNrsIn.getInputReader());
+				String line = null;
+				
+				while ((line = contextNrsReader.readLine()) != null) {
+					contextNrs.add(Integer.parseInt(line));
+				}
 			}
-			labelsOut.close();
+			
+			// build the tree
+			final BufferedReader textReader = new BufferedReader(this.getInputPorts().get(INPUT_TEXT_ID).getInputReader());
+			BaseSuffixTree suffixTree = GST.buildGST(textReader, contextNrs);
+			
+			// output a simple list of labels
+			final OutputPort labelsOut = this.getOutputPorts().get(OUTPUT_LIST_ID);
+			if (labelsOut.isConnected()) {
+				final ResultLabelListListener listener = new ResultLabelListListener(suffixTree);
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+
+				for(String label : listener.getLabels()) {
+					labelsOut.outputToAllCharPipes(label + System.lineSeparator());
+				}
+			}
+
+		} catch (Exception e) {
+			result = false;
+			throw e;
+		} finally {
+			this.closeAllOutputs();
 		}
 		
-		return true;
+		return result;
 	}
 
 	// this is normally done in the constructor, but was moved here to
