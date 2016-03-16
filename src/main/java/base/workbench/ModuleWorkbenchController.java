@@ -68,6 +68,7 @@ import modules.treeBuilder.TreeBuilderV2Module;
 import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
+import modules.treeSimilarityClustering.GexfFilterModule;
 import modules.treeSimilarityClustering.TreeSimilarityClusteringModule;
 import modules.vectorAnalysis.MinkowskiDistanceMatrixModule;
 import modules.vectorAnalysis.VectorAberrationCalculatorModule;
@@ -454,6 +455,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		vectorMedianCalculatorModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, vectorMedianCalculatorModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		vectorMedianCalculatorModule.applyProperties();
 		
+		// GexfFilterModule
+		Properties gexfFilterModuleProperties = new Properties();
+		GexfFilterModule gexfFilterModule = new GexfFilterModule(moduleNetwork, gexfFilterModuleProperties);
+		gexfFilterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, gexfFilterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		gexfFilterModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -509,6 +516,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(vectorAnalysisModule.getName(), vectorAnalysisModule);
 		availableModules.put(minkowskiDistanceMatrixModule.getName(), minkowskiDistanceMatrixModule);
 		availableModules.put(vectorMedianCalculatorModule.getName(), vectorMedianCalculatorModule);
+		availableModules.put(gexfFilterModule.getName(), gexfFilterModule);
 	}
 	
 	/**
