@@ -42,17 +42,15 @@ public class SuffixTree extends BaseSuffixTree {
 	void printLeaves(int x) {
 		if (nodes[x].next.size() == 0){
 			String positionlabel="";
-			for (int i=0;i<nodes[x].positionList.size();i=i+3) {
-				// nrText
-				positionlabel=positionlabel+"\n "+nodes[x].positionList.get(i+2).val+" "+
+			for (int i = 0 ; i< nodes[x].getPositionsAmount() ; i++) {
+				// textNr
+				positionlabel += "\n " + nodes[x].getTextNr(i) + " " +
 				// anf
-				nodes[x].positionList.get(i).val+" "+	
+				nodes[x].getStart(i) + " " +	
 				// end
-				nodes[x].positionList.get(i+1).val;
-				
+				nodes[x].getEnd(i);
 			}
 			out.println("\tnode" + x + " [label=\""+x /* +"\" */ + positionlabel +"\",shape=circle]");
-			
 		}
 			
 		else 
