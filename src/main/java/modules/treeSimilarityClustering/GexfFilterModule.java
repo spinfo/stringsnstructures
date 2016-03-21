@@ -48,14 +48,14 @@ public class GexfFilterModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Add module description
-		this.setDescription("Filters GEXF data according to the specified parameters.");
+		this.setDescription("Filters GEXF data according to the specified parameters. Expects nodes to have the attribute 'nodeCounter' indicating the amount of tokens associated.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINSIMILARITY,
 				"Minimum similarity value an edge must have to be kept in the graph.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINTOKENAMOUNT,
 				"Minimum amount of tokens a type must have to be kept in the graph.");
 
 		// Add module category
-		this.setCategory("Experimental/WiP");
+		this.setCategory("Clustering");
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "GEXF Filter");
@@ -63,7 +63,7 @@ public class GexfFilterModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MINTOKENAMOUNT, "2");
 
 		// Define I/O
-		InputPort inputPort = new InputPort(ID_INPUT, "GEXF graph.", this);
+		InputPort inputPort = new InputPort(ID_INPUT, "GEXF graph. Nodes must have the attribute 'nodeCounter'.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort(ID_OUTPUT, "GEXF graph (filtered).", this);
 		outputPort.addSupportedPipe(CharPipe.class);
