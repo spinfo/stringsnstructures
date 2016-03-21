@@ -9,6 +9,7 @@ import java.util.Arrays;
  */
 
 public class BaseSuffixTree {
+
 	static final int oo = Integer.MAX_VALUE / 2;
 	static int position=-1;
 	PrintWriter out;
@@ -25,7 +26,8 @@ public class BaseSuffixTree {
 		root = active_node = newNode(-1, -1, 0);
 
 		// reset position in case there was a tree created earlier
-		// TODO: change position to a non-static variable
+		// TODO: change position to a non-static variable to allow 
+		// 		 for multiple instances of this class
 		position = -1;
 	}
 
@@ -47,7 +49,6 @@ public class BaseSuffixTree {
 	}
 
 	boolean walkDown(int next) {
-		System.out.println("walkDown: active_length: "+active_length+ " edgeLength: " +nodes[next].edgeLength());
 		if (active_length >= nodes[next].edgeLength()) {
 			active_edge += nodes[next].edgeLength();
 			active_length -= nodes[next].edgeLength();
@@ -61,10 +62,6 @@ public class BaseSuffixTree {
 	// tree (e.g. given two texts aaabxy$aaazxy$, last suffix is xy$, here the (existing) suffixes
 	// y$ and & must be counted in suffix tree
 	void addRemainingSuffixesAtEndOfText(int active_node,int active_edge, int nrText){
-		
-		System.out.println("addRemainingSuffixesAtEndOfText: remainder:"+remainder+
-		" active_node: "+active_node+ " active_length: "+active_length+ " active_edge: "+active_edge);
-		
 		while (remainder > 1){
 			remainder--;
 			// from addChar, find active_node
@@ -77,14 +74,13 @@ public class BaseSuffixTree {
 				*/
 				active_length--;
 				active_edge = position - remainder + 1;
-			} else
+			} else {
 				active_node = nodes[active_node].link > 0 ? nodes[active_node].link : root; 
+			}
 
-			System.out.println("addRemainingSuffixesAtEndOfText before containsKey: remainder:"+remainder+
-						" active_node: "+active_node+ " active_length: "+active_length+ " active_edge: "+active_edge);
-			if (!nodes[active_node].next.containsKey(active_edge())) 
-					{System.out.println("addRemainingSuffixesAtEndOfText error");
-					int x= 3/0;}
+			if (!nodes[active_node].next.containsKey(active_edge())) {
+				throw new IllegalStateException("addRemainingSuffixesAtEndOfText error");
+			}
 			else {
 					
 					// there might be branching nodes between active_node and terminal node;
@@ -97,12 +93,8 @@ public class BaseSuffixTree {
 					int start=position-(nodes[next].getEnd(0)-nodes[next].getStart(0));
 					while(!(nodes[next].isTerminal())) {
 						onset=onset+(nodes[next].getEnd(0)-nodes[next].getStart(0));
-						System.out.println("Start: "+ nodes[next].getStart(0)+
-						" End: "+nodes[next].getEnd(0) + " onset: "+onset+ " position "+position+
-						" active_edge: "+active_edge+ " remainder: "+remainder);
 						next = nodes[next].next.get(this.text[active_edge+onset]);							
 					};
-					System.out.println("addRemainingSuffixesAtEndOfText before addPos");
 					// update terminal node
 					nodes[next].addPos(start, position, nrText);
 			}
@@ -114,7 +106,6 @@ public class BaseSuffixTree {
 		this.text[++position] = ch;
 		needSuffixLink = -1;
 		remainder++;
-		/*if (ch=='$')*/ System.out.println("addChar: "+ch+" remainder:"+remainder+" nrText: "+nrText);
 		while (remainder > 0) {
 			if (active_length == 0)
 				active_edge = position;
@@ -129,29 +120,24 @@ public class BaseSuffixTree {
 				*/
 			} else {
 				int next = nodes[active_node].next.get(active_edge());
-				if (walkDown(next))
-					{System.out.println("nach walkdown");
+				if (walkDown(next)) {
 					continue; /* observation 2:
 						If at some point active_length is greater or equal to the length of 
 						current edge (edge_length), we move our active point down 
 						until edge_length is not strictly greater than active_length.
 					*/
-					}
+				}
 				if (this.text[nodes[next].getStart(0) + active_length] == ch) { 
 					// end of text, for further texts in GST
-					if (ch=='$') {System.out.println("End of text in GST");
+					if (ch=='$') {
 						if (nodes[next].isTerminal()){
-							System.out.println("before addPos");
 							int start=position-(nodes[next].getEnd(0)-nodes[next].getStart(0));
 							nodes[next].addPos(start, position, nrText);
-							int link= nodes[next].link;
-							System.out.println("link: "+link);
-							//
 							addRemainingSuffixesAtEndOfText(active_node,active_edge, nrText);
 						}// if  ..isTerminal
-							else {System.out.println("error in addChar terminal");
-								int x= 3/0;
-							}
+						else {
+							throw new IllegalStateException("error in addChar terminal");
+						}
 					}// if (ch=='$')
 					/* observation 1:
 					 	When the final suffix we need to insert is found to exist in the tree already, 
@@ -165,8 +151,7 @@ public class BaseSuffixTree {
 					 leaving the tree unchanged. BUT if there is an internal node marked as needing suffix link, 
 					 we must connect that node with our current active node through a suffix link.
 					 */
-					
-					
+
 					break;
 				}
 				int split = newNode(nodes[next].getStart(0), nodes[next].getStart(0) + active_length, nrText);
@@ -222,11 +207,6 @@ public class BaseSuffixTree {
 		this.active_node=node;
 		this.active_edge=active_edge;
 		this.active_length=active_length;
-		System.out.print
-		("setActivePoint node: "+node+ " active_edge: "+active_edge+" "+this.text[active_edge]+ " active_length: "
-		+active_length+ " ");
-		for (int i=active_edge;i<active_edge+active_length;i++)System.out.print(this.text[i]);
-		System.out.println();	
 		//------------------------
 		//active_edge++;
 	}
@@ -235,12 +215,10 @@ public class BaseSuffixTree {
 	//jr
 	int longestPath(String nextText,int node/*root*/){
 		int localActiveEdge=0;int i=0;
-		System.out.println("longestPath nextText: "+nextText);
 		for (i=0;i<nextText.length();i++){
 			// find edge
 			if (nodes[node].next.containsKey(nextText.charAt(i))){
 				int child_node = this.nodes[node].next.get(nextText.charAt(i));
-				System.out.println("child_node: "+child_node);
 				localActiveEdge=0;
 				// compare edge
 				int pos=i+1;// pos is index for position in nextText
@@ -248,9 +226,8 @@ public class BaseSuffixTree {
 					if (this.text[j]==nextText.charAt(pos)) {
 						pos++;
 						localActiveEdge++;
-						System.out.print("equal sign j: "+j+" "+this.text[j]);
 					}
-					else {System.out.println("not equal sign");
+					else {
 						setActivePoint(node,this.nodes[child_node].getStart(0),
 								j-this.nodes[child_node].getStart(0));
 						return pos;
@@ -260,15 +237,16 @@ public class BaseSuffixTree {
 				i=pos-1;
 				node=child_node;// next node (child)
 			}
-			else {System.out.println();setActivePoint(node,0,0);return i;
+			else {
+				setActivePoint(node,0,0);
+				return i;
 			}
 		} // for
 		setActivePoint(node,nodes[node].getStart(0),localActiveEdge);
-		System.out.println();
 		return i;
 	} // longestPath
 	
-	// mostly like longestpath, toDo
+	// TODO: implement, mostly like longestpath
 	boolean findPattern(String pattern, int node /*root*/){
 		return false;
 	}

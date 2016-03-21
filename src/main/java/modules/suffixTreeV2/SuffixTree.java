@@ -73,8 +73,6 @@ public class SuffixTree extends BaseSuffixTree {
 	void printEdges(int x) {
 		for (int child : nodes[x].next.values()) {
 			out.println("\tnode" + x + " -> node" + child + "[label=\"" + edgeString(child) + "\",weight=3]");
-			System.out.println("\tnode" + x + " -> node" + child + " " + nodes[child].getTextNr(0) + " [label=\""
-					+ edgeString(child) + "\",weight=3]");
 			printEdges(child);
 		}
 	}
