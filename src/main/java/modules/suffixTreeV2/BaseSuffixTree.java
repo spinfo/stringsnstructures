@@ -206,12 +206,6 @@ public class BaseSuffixTree {
 		}// while remainder
 	}// addChar
 
-	/*
-	 * printing the Suffix Tree in a format understandable by graphviz. The
-	 * output is written into st.dot file. In order to see the suffix tree
-	 * as a PNG image, run the following command: dot -Tpng -O st.dot
-	 */
-
 	// changed jr till '$';
 	public String edgeString(int node) {
 		int end=nodes[node].getEnd(0);
