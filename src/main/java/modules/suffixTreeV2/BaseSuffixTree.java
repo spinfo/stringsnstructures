@@ -1,6 +1,5 @@
 package modules.suffixTreeV2;
 
-import java.io.PrintWriter;
 import java.util.Arrays;
 
 /*
@@ -12,7 +11,6 @@ public class BaseSuffixTree {
 
 	static final int oo = Integer.MAX_VALUE / 2;
 	static int position=-1;
-	PrintWriter out;
 	Node[] nodes;
 	char[] text;
 	int root, currentNode, needSuffixLink, remainder;

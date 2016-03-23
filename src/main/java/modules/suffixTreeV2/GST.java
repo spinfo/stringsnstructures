@@ -96,9 +96,15 @@ public class GST {
 	    }
 	    System.out.println("You entered : " + filename);
 	    
-		SuffixTree st = GST.buildGST(new FileReader(filename+".txt"), null);
+	    final FileReader in = new FileReader(filename+".txt");
+	    final PrintWriter out = new PrintWriter(new FileWriter("st.dot"));
+	    
+		SuffixTree st = GST.buildGST(in, null);
+		st.printTree(out);
 		
-		st.printTree();
+		in.close();
+		out.close();
+		System.out.println("All done.");
 	}
 
 }

@@ -1,6 +1,7 @@
 package modules.suffixTreeModuleWrapper;
 
 import java.io.BufferedReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -10,9 +11,9 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.suffixTreeV2.BaseSuffixTree;
 import modules.suffixTreeV2.GST;
 import modules.suffixTreeV2.ResultLabelListListener;
+import modules.suffixTreeV2.SuffixTree;
 import modules.suffixTreeV2.TreeWalker;
 
 /**
@@ -49,8 +50,8 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 	private static final String OUTPUT_LIST_DESC = "[text/plain] A list of labels separated by newline";
 //	private static final String OUTPUT_LABEL_DATA_ID = "label data";
 //	private static final String OUTPUT_LABEL_DATA_DESC = "[text/csv] Prints a csv table with label information.";
-//	private static final String OUTPUT_DOT_FILE_ID = "dot file";
-//	private static final String OUTPUT_DOT_FILE_DESC = "Prints a graphical representation of the tree as a .dot file.";
+	private static final String OUTPUT_DOT_FILE_ID = "dot file";
+	private static final String OUTPUT_DOT_FILE_DESC = "Prints a graphical representation of the tree as a graphviz .dot file.";
 //	private static final String OUTPUT_SUCCESSORS_MATRIX_ID = "successor label matrix";
 //	private static final String OUTPUT_SUCCESSORS_MATRIX_DESC = "[text/csv] A matrix with labels on the y-axis, successor strings on the x-axis and counts in the field.";
 
@@ -123,7 +124,7 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 			
 			// build the tree
 			final BufferedReader textReader = new BufferedReader(this.getInputPorts().get(INPUT_TEXT_ID).getInputReader());
-			BaseSuffixTree suffixTree = GST.buildGST(textReader, contextNrs);
+			final SuffixTree suffixTree = GST.buildGST(textReader, contextNrs);
 			
 			// output a simple list of labels
 			final OutputPort labelsOut = this.getOutputPorts().get(OUTPUT_LIST_ID);
@@ -134,6 +135,15 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 				for(String label : listener.getLabels()) {
 					labelsOut.outputToAllCharPipes(label + System.lineSeparator());
 				}
+			}
+			
+			// output a graphical representation as a graphviz .dot file
+			final OutputPort dotOut = this.getOutputPorts().get(OUTPUT_DOT_FILE_ID);
+			if (dotOut.isConnected()) {
+				final CharPipe dotOutPipe = (CharPipe) dotOut.getPipes().get(CharPipe.class).get(0);
+				final PrintWriter writer = new PrintWriter(dotOutPipe.getOutput());
+				suffixTree.printTree(writer);
+				dotOut.close();
 			}
 
 		} catch (Exception e) {
@@ -164,11 +174,11 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 //		OutputPort outputLabelDataPort = new OutputPort(OUTPUT_LABEL_DATA_ID, OUTPUT_LABEL_DATA_DESC, this);
 //		outputLabelDataPort.addSupportedPipe(CharPipe.class);
 //		super.addOutputPort(outputLabelDataPort);
-//
-//		OutputPort outputDotFilePort = new OutputPort(OUTPUT_DOT_FILE_ID, OUTPUT_DOT_FILE_DESC, this);
-//		outputDotFilePort.addSupportedPipe(CharPipe.class);
-//		super.addOutputPort(outputDotFilePort);
-//
+
+		OutputPort outputDotFilePort = new OutputPort(OUTPUT_DOT_FILE_ID, OUTPUT_DOT_FILE_DESC, this);
+		outputDotFilePort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputDotFilePort);
+
 //		OutputPort outputSuccessorsMatrixPort = new OutputPort(OUTPUT_SUCCESSORS_MATRIX_ID,
 //				OUTPUT_SUCCESSORS_MATRIX_DESC, this);
 //		outputSuccessorsMatrixPort.addSupportedPipe(CharPipe.class);

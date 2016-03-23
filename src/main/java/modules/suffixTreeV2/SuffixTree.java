@@ -1,10 +1,6 @@
 package modules.suffixTreeV2;
 
-
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
-
 
 // SuffixTree extends BaseSuffixTree which contains the proper Ukkonen Generalized SuffixTree algorithm.
 // Here print methods are added
@@ -16,30 +12,24 @@ public class SuffixTree extends BaseSuffixTree {
 
 
 //-------------------------------------printTree-------------------------------------------------------------
-	public void printTree() {
-		try {
-				out = new PrintWriter(new FileWriter("st.dot"));
-		    } catch (IOException e) {
-		        e.printStackTrace();
-		}
-	
+	public void printTree(final PrintWriter out) {
 		out.println("digraph {");
 		out.println("\trankdir = LR;");
 		out.println("\tedge [arrowsize=0.4,fontsize=10]");
 		out.println("\tnode1 [label=\"\",style=filled,fillcolor=lightgrey,shape=circle,width=.1,height=.1];");
 		out.println("//------leaves------");
-		printLeaves(root);
+		printLeaves(root, out);
 		out.println("//------internal nodes------");
-		printInternalNodes(root);
+		printInternalNodes(root, out);
 		out.println("//------edges------");
-		printEdges(root);
+		printEdges(root, out);
 		out.println("//------suffix links------");
-		printSLinks(root);
+		printSLinks(root, out);
 		out.println("}");
 		out.close();
 	}
 
-	void printLeaves(int x) {
+	private void printLeaves(int x, final PrintWriter out) {
 		if (nodes[x].next.size() == 0){
 			String positionlabel="";
 			for (int i = 0 ; i< nodes[x].getPositionsAmount() ; i++) {
@@ -55,31 +45,31 @@ public class SuffixTree extends BaseSuffixTree {
 			
 		else 
 			for (int child : nodes[x].next.values())
-				printLeaves(child);
+				printLeaves(child, out);
 		
 	}
 
-	void printInternalNodes(int x) {
+	private void printInternalNodes(int x, final PrintWriter out) {
 		if (x != root && nodes[x].next.size() > 0)
 			out.println("\tnode" + x
 					+ " [label=\""+x+"\",style=filled,fillcolor=lightgrey,shape=circle,width=.07,height=.07]");
 
 		for (int child : nodes[x].next.values())
-			printInternalNodes(child);
+			printInternalNodes(child, out);
 	}
 
-	void printEdges(int x) {
+	private void printEdges(int x, final PrintWriter out) {
 		for (int child : nodes[x].next.values()) {
 			out.println("\tnode" + x + " -> node" + child + "[label=\"" + edgeString(child) + "\",weight=3]");
-			printEdges(child);
+			printEdges(child, out);
 		}
 	}
 
-	void printSLinks(int x) {
+	private void printSLinks(int x, final PrintWriter out) {
 		if (nodes[x].link > 0)
 			out.println("\tnode" + x + " -> node" + nodes[x].link + " [label=\"\",weight=1,style=dotted]");
 		for (int child : nodes[x].next.values())
-			printSLinks(child);
+			printSLinks(child, out);
 	}
 
 	
