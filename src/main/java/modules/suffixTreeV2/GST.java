@@ -1,6 +1,7 @@
 package modules.suffixTreeV2;
 
 import java.io.*;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -25,7 +26,7 @@ public class GST {
 	}
 
 	// cstr
-	public static SuffixTree buildGST(Reader inputReader, List<Integer> typeContextNrs) throws Exception {
+	public static SuffixTree buildGST(Reader inputReader, List<Integer> typeContextEndIndices) throws Exception {
 		int nrText = 0;
 		 
 		String line,inText="",nextinText;		
@@ -35,15 +36,18 @@ public class GST {
 	    	if(line.charAt(line.length()-1)=='$')inText=inText+line; else inText=inText+" "+line;
 	    }
 	    in.close();
-	    
-	    if(typeContextNrs != null) {
-	    	LOGGER.info(typeContextNrs.toString());
-	    }
-		
 		
 		SuffixTree st = new SuffixTree(inText.length());
 		GST.OO=new PositionInfo(st.oo);// end value for leaves; is changed if final '$' is reached
 									  // generate new st.OO for next text
+		
+	    if(typeContextEndIndices != null) {
+	    	LOGGER.info(typeContextEndIndices.toString());
+	    	// copy the list to not harm the input
+	    	typeContextEndIndices = new LinkedList<Integer>(typeContextEndIndices);
+	    	// initialise the type context numbers
+	    	st.incrementTypeContext();
+	    }
 		
 		for (int i = 0; i < inText.length(); i++) {
 			st.addChar(inText.charAt(i), nrText);
@@ -53,7 +57,26 @@ public class GST {
 				GST.OO.val=i+1;
 				// generate new element for next text
 				GST.OO = new PositionInfo(st.oo);
+
 				nrText++;
+				// DONT COMMIT, TODO: remove log messages, extract into private method
+				System.out.println("Starting next Text: " + nrText);
+				// Handle incrementation of type contexts if provided
+				if (typeContextEndIndices != null) {
+					// if type context end indices are provided, they may never be empty at this step
+					if (typeContextEndIndices.isEmpty()) {
+						throw new IllegalStateException(
+							"The type context end numbers provided cannot be aligned with the texts provided. At char: " + i);
+					}
+					// If the type context end index matches the text number, one type context is completed.
+					// Entering the next context is marked by incrementing the current type context.
+					if (typeContextEndIndices.get(0) == nrText) {
+						System.out.println("Finished type context " + st.getCurrentTypeContext() + " at: " + i);
+						st.incrementTypeContext();
+						typeContextEndIndices.remove(0);
+					}
+				}
+
 				int end = findChar(inText, i + 1, '$');
 				// inText end not reached
 				if (end > i) {
@@ -70,7 +93,10 @@ public class GST {
 					if((res!=0)&& (inText.charAt(i)=='$')) {
 					// next text is completely contained in suffix tree (i.e. it is a complete repeat of a
 					// precedent text). In this case, addChar won't be called
-						st.nodes[st.active_node].addPos(i-res, end-1, nrText);					
+						st.nodes[st.active_node].addPos(i-res, end-1, nrText, st.getCurrentTypeContext());
+
+						System.out.println("adding Pos in GST: " + (i-res) + " " + (end-1) + " " + nrText + " " + st.getCurrentTypeContext());
+
 						st.addRemainingSuffixesAtEndOfText(st.active_node,st.active_edge, nrText);
 						
 					}else break;
@@ -79,6 +105,11 @@ public class GST {
 				
 			}// while
 		}// for (int i = 0; i < inText.length(); i++)
+		
+		if(typeContextEndIndices != null && !typeContextEndIndices.isEmpty()) {
+			throw new IllegalStateException(
+					"Some type context end numbers were not handled. First remaining end: " + typeContextEndIndices.get(0));
+		}
 		
 		return st;
 	    

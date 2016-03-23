@@ -13,9 +13,9 @@ public class Node {
 	 */
 
 	int link;
-	// positionList is an ArrayList of PositionInfo which contains three elements for
-	// nonterminal nodes (first:start, second:end, third:textNr, triples) 
-	// and n * three elements(triple) for terminal nodes, 
+	// positionList is an ArrayList of PositionInfo which contains four elements for
+	// nonterminal nodes (first:start, second:end, third:textNr, fourth: typeContext) 
+	// and n * four elements (quadruple) for terminal nodes, 
 	// i.e. n = number of texts ending in the terminal;
 	// Special case for end of leaves: end value element is equal for all leaves for a given text;
 	// value of this element is oo, i.e. maximal value; at the end, when '$' is reached, value is 
@@ -24,18 +24,19 @@ public class Node {
 	TreeMap<Character, Integer> next = new TreeMap<Character, Integer>();
 
 	// cstr
-	public Node(int start, int end, int nr) {
-		
+	public Node(int start, int end, int nr, int typeContextNr) {
 		this.positionList=new ArrayList<PositionInfo>(4);
-		this.addPos(start, end, nr);
-					
+		this.addPos(start, end, nr, typeContextNr);
 	}// Node
 	
 	public boolean isTerminal() {
 		return ((this.next==null) || (this.next.size()==0));
 	}
 	
-	void addPos(int start,int end, int textNr){				
+	// This should be the only place where new positionInfo objects are added to
+	// the positionInfo list. This ensures, that all four fields are actually filled
+	// and can later be retrieved by indexing to the n*4th position.
+	void addPos(int start,int end, int textNr, int typeContext){
 		// start
 		this.positionList.add(new PositionInfo(start));
 		// end
@@ -46,20 +47,26 @@ public class Node {
 		}
 		// textNr
 		this.positionList.add(new PositionInfo(textNr));
+		// typeContextNr
+		this.positionList.add(new PositionInfo(typeContext));
 	}
 	
 	// getter methods for start, end and textNr
-	// triple ordering of elements is hidden from client
-	int getStart(int pos /* first or last*/) {
+	// quadruple ordering of elements is hidden from client
+	public int getStart(int pos) {
 		return this.positionList.get(getPositionListIndex(pos)).val;
 	}
 	
-	int getEnd(int pos /* first or last*/) {
+	public int getEnd(int pos) {
 		return this.positionList.get(getPositionListIndex(pos)+1).val;
 	}
 	
-	int getTextNr(int pos /* first or last*/) {
+	public int getTextNr(int pos) {
 		return this.positionList.get(getPositionListIndex(pos)+2).val;
+	}
+	
+	public int getTypeContext(int pos) {
+		return this.positionList.get(getPositionListIndex(pos)+3).val;
 	}
 	
 	// setter methods for start, end and textNr
@@ -75,13 +82,17 @@ public class Node {
 		this.positionList.get(getPositionListIndex(pos)+2).val=val;
 	}
 	
+	void setTypeContextNr(int pos, int val) {
+		this.positionList.get(getPositionListIndex(pos)+3).val=val;
+	}
+	
 	// Returns the actual number of positions noted for this node
 	// regardless of their triple ordering
 	public int getPositionsAmount() {
-		if (this.positionList.size() % 3 != 0) {
-			throw new IllegalStateException("Wrong number of elements for position list. Must always contain a multiple of 3 elements.");
+		if (this.positionList.size() % 4 != 0) {
+			throw new IllegalStateException("Wrong number of elements for position list. Must always contain a multiple of 4 elements.");
 		}
-		return (int) (this.positionList.size() / 3);
+		return (int) (this.positionList.size() / 4);
 	}
 
 	public int edgeLength() {
@@ -91,7 +102,7 @@ public class Node {
 	// get the actual index in positionList by multiplying with the
 	// number of elements, that are noted for each position
 	private int getPositionListIndex(int pos) {
-		return pos * 3;
+		return pos * 4;
 	}
 	
 	// return the node index of the node reached by following the edge

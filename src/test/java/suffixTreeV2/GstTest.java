@@ -3,7 +3,11 @@ package suffixTreeV2;
 import static org.junit.Assert.*;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -16,7 +20,7 @@ import modules.suffixTreeV2.SuffixTree;
 public class GstTest {
 
 	@Test
-	public void test() {
+	public void testSimpleInputs() {
 		SuffixTree tree = null;
 		String[][] expectedPaths = null;
 		String input = null;
@@ -93,11 +97,11 @@ public class GstTest {
 		};
 		checkTree(tree, expectedPaths, 29);
 		
-		// reverting the order of words should not change the tree
+		// reverting the order of words should not change the paths
 		tree = buildTree("bbaaab$aabbba$aabccd$bba$aab$");
 		checkTree(tree, expectedPaths, 29);
 		
-		// shuffling the words should not change the tree either
+		// shuffling the words should not change the paths either
 		tree = buildTree("aab$aabbba$bbaaab$bba$aabccd$");
 		checkTree(tree, expectedPaths, 29);
 
@@ -215,11 +219,48 @@ public class GstTest {
 		};
 		checkTree(tree, expectedPaths, 68);
 	}
+	
+	@Test
+	public void testTypeContexts() {
+		SuffixTree tree = null;
+		List<Integer> contextEndIndices = null;
+		List<Integer> expectedTypeContexts = null;
+		String input = null;
 
+		// The input string is a KWIP output for "aa cc$bb cc$bb dd$". This has types 'aa', 'bb', 'cc' and 'dd'
+		// type contexts accordingly are:
+		// type 0: 'aa' => in text 1
+		// type 1: 'bb' => in text 2,3
+		// type 2: 'cc' => in texts 1,2
+		// type 3: 'dd' => in text 3
+		// The input then is the concatenation of texts 1 + 2,3 + 1,2 + 3:
+		input = "aa cc$bb cc$bb dd$aa cc$bb cc$bb dd$";
+		// the type context end indices then give ranges for that set of sentences
+		// 'aa' => context ends with sentence 1
+		// 'bb' => context ends with sentence 3
+		// 'cc' => context ends with sentence 5
+		// 'dd' => context ends with sentence 6
+		contextEndIndices = Arrays.asList(1, 2, 5, 6);
+		tree = buildTree(input, contextEndIndices);
+	
+		// the suffix ' cc' then should exist once in the contexts of 'aa' (type 0) and 'bb' (type 1)
+		// and twice within it's own context (type 2)
+		expectedTypeContexts = Arrays.asList(0, 1, 2, 2);
+		checkTypeContexts(tree, " cc$", expectedTypeContexts);
+		
+		// the same should be true for 'cc$' without leading blank
+		// NOTE: This currently fails.
+		// checkTypeContexts(tree, "cc$", expectedTypeContexts);
+	}
+	
 	private SuffixTree buildTree(final String input) {
+		return buildTree(input, null);
+	}
+
+	private SuffixTree buildTree(final String input, final List<Integer> typeContextNrs) {
 		SuffixTree result = null;
 		try {
-			result = GST.buildGST(new StringReader(input), null);
+			result = GST.buildGST(new StringReader(input), typeContextNrs);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Building the tree failed with error: " + e.getMessage());
@@ -227,6 +268,10 @@ public class GstTest {
 		return result;
 	}
 
+	// Checks that the paths (each path is a String[] of edge strings) exist in the given tree and
+	// checks, that the number of expected nodes matches the count reported by the tree as well as the
+	// actual number of nodes encountered while traversing the path.
+	// Together this should mean, that only those paths paths provided exist in the given tree.
 	private void checkTree(final BaseSuffixTree tree, final String[][] paths, int expectedNodeCount) {
 		assertNotNull("Tree should exist.", tree);
 
@@ -276,6 +321,59 @@ public class GstTest {
 
 		assertTrue("Last node should be a terminal node: " + actualEdge + ".", node.isTerminal());
 		return nodesEncountered;
+	}
+	
+	// Checks that the suffix tree has a path corresponding to the search term ending in
+	// a terminal node. Returns that node or fails if it isn't present.
+	private final Node checkPathExists(final BaseSuffixTree tree, final String path) {
+		final String message = "Expected path: " + path + ": ";
+
+		Integer nextNode = tree.getRoot();
+		Node node = tree.getNode(nextNode);
+		char[] edge = {};
+		int edgeIdx = 0;
+		char actual = '\0';
+
+		for (char expected : path.toCharArray()) {
+			if(edge.length == edgeIdx) {
+				nextNode = node.getNext(expected);
+				assertNotNull(message + "Should find a next node for char: " + expected, nextNode);
+
+				node = tree.getNode(nextNode);
+				assertNotNull(message + "Should get a node for node number: " + nextNode, node);
+				
+				edge = tree.edgeString(nextNode).toCharArray();
+				assertTrue(message + "Edge string should not be empty, node " + nextNode, (edge.length > 0));
+				edgeIdx = 0;
+			}
+			actual = edge[edgeIdx];
+			assertEquals("Chars not matching. Expected '" + expected + "', got '" + actual + "'.", expected, actual);
+			edgeIdx += 1;
+		}
+
+		assertTrue(node.isTerminal());
+		assertEquals("No characters should be left at the end of the last edge.", edge.length, edgeIdx);
+		return node;
+	}
+	
+	// Checks that the path given by a String ends in a leaf node and ensures that the leaf has exactly the
+	// type context numbers, that are expected
+	private void checkTypeContexts(final BaseSuffixTree tree, final String path, final List<Integer> expectedTypeContexts) {
+		System.out.println("Checking type contexts for path: '" + path + "'.");
+
+		// retrieve the leaf node for the path to be checked
+		final Node leaf = checkPathExists(tree, path);
+		final List<Integer> actualContextNrs = new ArrayList<Integer>();
+		
+		// collect type context numbers given in the leaf
+		for(int i = 0; i < leaf.getPositionsAmount(); i++) {
+			System.out.println("Pos " + i + ": "+ leaf.getStart(i) + "-" + leaf.getEnd(i) + " (text: " + leaf.getTextNr(i) + ", context: " + leaf.getTypeContext(i) + ")");
+			actualContextNrs.add(leaf.getTypeContext(i));
+		}
+		// sort both lists and check for equality
+		Collections.sort(actualContextNrs);
+		Collections.sort(expectedTypeContexts);
+		assertTrue("The expected type contexts should match the actual ones.", actualContextNrs.equals(expectedTypeContexts));
 	}
 
 }

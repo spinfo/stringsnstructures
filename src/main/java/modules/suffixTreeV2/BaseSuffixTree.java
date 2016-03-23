@@ -8,31 +8,33 @@ import java.util.Arrays;
  */
 
 public class BaseSuffixTree {
-
+	
 	static final int oo = Integer.MAX_VALUE / 2;
 	static int position=-1;
 	Node[] nodes;
 	char[] text;
 	int root, currentNode, needSuffixLink, remainder;
 
+	// The Suffix tree can be used to note type context numbers in addition
+	// to positions for every node.
+	public static final int NO_TYPE_CONTEXT = -1;
+	private int currentTypeContext = NO_TYPE_CONTEXT;
 	
 	int active_node, active_length, active_edge;
 	
 	public BaseSuffixTree(int length) {
 		nodes = new Node[2 * length + 2];
 		text = new char[length];
-		root = active_node = newNode(-1, -1, 0);
+		root = active_node = newNode(-1, -1, 0, NO_TYPE_CONTEXT);
 
 		// reset position in case there was a tree created earlier
 		// TODO: change position to a non-static variable to allow 
 		// 		 for multiple instances of this class
 		position = -1;
 	}
-
 	
-	
-	int newNode(int start, int end, int nrText) {
-		nodes[++currentNode] = new Node(start, end, nrText);
+	int newNode(int start, int end, int nrText, int typeContextNr) {
+		nodes[++currentNode] = new Node(start, end, nrText, typeContextNr);
 		return currentNode;
 	}
 
@@ -94,7 +96,8 @@ public class BaseSuffixTree {
 						next = nodes[next].next.get(this.text[active_edge+onset]);							
 					};
 					// update terminal node
-					nodes[next].addPos(start, position, nrText);
+					nodes[next].addPos(start, position, nrText, currentTypeContext);
+					System.out.println("adding remaining pos: " + start + " " + position + " " + nrText + " " + currentTypeContext);
 			}
 			
 		}
@@ -108,7 +111,10 @@ public class BaseSuffixTree {
 			if (active_length == 0)
 				active_edge = position;
 			if (!nodes[active_node].next.containsKey(active_edge())) {
-				int leaf = newNode(position, oo, nrText);
+				int leaf = newNode(position, oo, nrText, currentTypeContext);
+
+				System.out.println("new leaf Node: " + position + " " + oo + " " + nrText + " " + currentTypeContext);
+
 				nodes[active_node].next.put(active_edge(), leaf);
 				addSuffixLink(active_node);  
 				/* rule 2:
@@ -130,7 +136,10 @@ public class BaseSuffixTree {
 					if (ch=='$') {
 						if (nodes[next].isTerminal()){
 							int start=position-(nodes[next].getEnd(0)-nodes[next].getStart(0));
-							nodes[next].addPos(start, position, nrText);
+							nodes[next].addPos(start, position, nrText, currentTypeContext);
+
+							System.out.println("adding Pos: " + start + " " + position + " " + nrText + " " + currentTypeContext);
+
 							addRemainingSuffixesAtEndOfText(active_node,active_edge, nrText);
 						}// if  ..isTerminal
 						else {
@@ -152,9 +161,15 @@ public class BaseSuffixTree {
 
 					break;
 				}
-				int split = newNode(nodes[next].getStart(0), nodes[next].getStart(0) + active_length, nrText);
+				int split = newNode(nodes[next].getStart(0), nodes[next].getStart(0) + active_length, nrText, currentTypeContext);
+
+				System.out.println("new split Node: " + nodes[next].getStart(0) + " " + nodes[next].getStart(0) + active_length + " " + nrText + " " + currentTypeContext);
+
 				nodes[active_node].next.put(active_edge(), split);
-				int leaf = newNode(position, oo, nrText);
+				int leaf = newNode(position, oo, nrText, currentTypeContext);
+
+				System.out.println("new leaf Node: " + position + " " + oo + " " + nrText + " " + currentTypeContext);
+
 				nodes[split].next.put(ch, leaf);
 				nodes[next].setStart(0, /*add+=*/nodes[next].getStart(0)+active_length);
 				
@@ -266,6 +281,23 @@ public class BaseSuffixTree {
 	// return the number of nodes in the tree
 	public int getNodeAmount() {
 		return currentNode;
+	}
+	
+	// return the number of the current type context
+	public int getCurrentTypeContext() {
+		return currentTypeContext;
+	}
+	
+	// Increment or initialise the current type context number.
+	// This value will be used when node's positions are assigned to
+	// mark the type context.
+	public int incrementTypeContext() {
+		if(currentTypeContext == NO_TYPE_CONTEXT) {
+			currentTypeContext = 0;
+		} else {
+			currentTypeContext += 1;
+		}
+		return currentTypeContext;
 	}
 
 } // class st	
