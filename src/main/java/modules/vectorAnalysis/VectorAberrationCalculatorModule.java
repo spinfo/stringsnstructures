@@ -59,7 +59,7 @@ public class VectorAberrationCalculatorModule extends ModuleImpl {
 		 */
 		InputPort inputPort = new InputPort(ID_INPUT, "Vector input; expects comma separated values.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Output; JSON-encoded Map of Sets (Map<String,Set<Double>>).", this);
+		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Output; JSON-encoded Map of Sets (Map&lt;String,Set&lt;Double&gt;&gt;).", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 
 		// Add I/O ports to instance (don't forget...)

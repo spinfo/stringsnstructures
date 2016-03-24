@@ -47,9 +47,9 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 		 * to multiple pipe instances at once, input ports can
 		 * in contrast only obtain data from one pipe instance.
 		 */
-		InputPort inputPort = new InputPort(ID_INPUT, "JSON formatted two-dimensional matrix (Map<String,Set<Double>>).", this);
+		InputPort inputPort = new InputPort(ID_INPUT, "JSON formatted two-dimensional matrix (Map&lt;String,Set&lt;Double&gt;&gt;).", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(ID_OUTPUT, "JSON formatted distance matrix output (Map<String,Map<String,Double>>).", this);
+		OutputPort outputPort = new OutputPort(ID_OUTPUT, "JSON formatted distance matrix output (Map&lt;String,Map&lt;String,Double&gt;&gt;).", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 		
 		// Add I/O ports to instance (don't forget...)
