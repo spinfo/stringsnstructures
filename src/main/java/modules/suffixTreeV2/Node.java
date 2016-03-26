@@ -37,6 +37,14 @@ public class Node {
 	// the positionInfo list. This ensures, that all four fields are actually filled
 	// and can later be retrieved by indexing to the n*4th position.
 	void addPos(int start,int end, int textNr, int typeContext){
+		// make sure that the position added is never equal to the last position set
+		if (this.getPositionsAmount() > 0){
+			int lastPos = this.getPositionsAmount() - 1;
+			if ((this.getStart(lastPos) == start) && (this.getEnd(lastPos) == end) 
+					&& (this.getTextNr(lastPos) == textNr)) {
+				throw new IllegalStateException("addPos equal entry start: " + start + " end: " + end + " textNr: " + textNr);
+			}
+		}
 		// start
 		this.positionList.add(new PositionInfo(start));
 		// end
@@ -86,6 +94,14 @@ public class Node {
 		this.positionList.get(getPositionListIndex(pos)+3).val=val;
 	}
 	
+	// if a node is split and if it represents more than one text, all start positions in
+	// the position list of a node must be updated by active_length
+	void updateStartPositions(int active_length) {
+		for (int i = 0; i < this.getPositionsAmount(); i++) {
+			this.setStart(i, this.getStart(i) + active_length);
+		}
+	}
+
 	// Returns the actual number of positions noted for this node
 	// regardless of their triple ordering
 	public int getPositionsAmount() {
@@ -101,7 +117,7 @@ public class Node {
 	
 	// get the actual index in positionList by multiplying with the
 	// number of elements, that are noted for each position
-	private int getPositionListIndex(int pos) {
+	private int getPositionListIndex(final int pos) {
 		return pos * 4;
 	}
 	

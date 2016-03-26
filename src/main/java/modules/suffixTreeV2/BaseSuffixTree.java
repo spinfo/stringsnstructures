@@ -61,47 +61,28 @@ public class BaseSuffixTree {
 	// if end of text is reached ('$') and last suffix is implicitly contained in previously built suffix
 	// tree (e.g. given two texts aaabxy$aaazxy$, last suffix is xy$, here the (existing) suffixes
 	// y$ and & must be counted in suffix tree
-	void addRemainingSuffixesAtEndOfText(int active_node,int active_edge, int nrText){
-		while (remainder > 1){
-			remainder--;
-			// from addChar, find active_node
-			if (active_node == root && active_length > 0) { // to be proved, active_length??
-				/*rule 1:
-				After an insertion from root, the active length is greater than 0:
-			    active_node remains root
-			    active_edge is set to the first character of the new suffix we need to insert, i.e. b
-			    active_length is reduced by 1
-				*/
-				active_length--;
-				active_edge = position - remainder + 1;
-			} else {
-				active_node = nodes[active_node].link > 0 ? nodes[active_node].link : root; 
-			}
+	public void addRemaining(int textNr){
+		int pos=0;
+		int next=this.root;
 
-			if (!nodes[active_node].next.containsKey(active_edge())) {
-				throw new IllegalStateException("addRemainingSuffixesAtEndOfText error");
-			}
-			else {
-					
-					// there might be branching nodes between active_node and terminal node;
-					// so walk down to terminal node
-					
-					int onset=0; // onset will be summed up when walking down
-					
-					int next = nodes[active_node].next.get(this.text[active_edge+onset]);
-					// save start for first next node
-					int start=position-(nodes[next].getEnd(0)-nodes[next].getStart(0));
-					while(!(nodes[next].isTerminal())) {
-						onset=onset+(nodes[next].getEnd(0)-nodes[next].getStart(0));
-						next = nodes[next].next.get(this.text[active_edge+onset]);							
-					};
-					// update terminal node
-					nodes[next].addPos(start, position, nrText, currentTypeContext);
-					System.out.println("adding remaining pos: " + start + " " + position + " " + nrText + " " + currentTypeContext);
-			}
+		for (int i=position-remainder+1;i<=position;i++){
+			pos=i;
+			while (pos<=position) {
+				if (!nodes[next].next.containsKey(this.text[pos]))  {
+					throw new IllegalStateException("addRemaining Error");
+				}
+				else {
+					next = nodes[next].next.get(this.text[pos]);
+					pos+=nodes[next].edgeLength();
+				}
 			
-		}
-	}//addRemainingSuffixesAtEndOfText
+			}// while
+			if (nodes[next].isTerminal()){
+				nodes[next].addPos(pos-nodes[next].edgeLength(), this.oo, textNr, currentTypeContext);
+			}
+			next=this.root;
+		}// for
+	}
 
 	public void addChar(char ch, int nrText) throws Exception {
 		this.text[++position] = ch;
@@ -112,9 +93,6 @@ public class BaseSuffixTree {
 				active_edge = position;
 			if (!nodes[active_node].next.containsKey(active_edge())) {
 				int leaf = newNode(position, oo, nrText, currentTypeContext);
-
-				System.out.println("new leaf Node: " + position + " " + oo + " " + nrText + " " + currentTypeContext);
-
 				nodes[active_node].next.put(active_edge(), leaf);
 				addSuffixLink(active_node);  
 				/* rule 2:
@@ -135,12 +113,7 @@ public class BaseSuffixTree {
 					// end of text, for further texts in GST
 					if (ch=='$') {
 						if (nodes[next].isTerminal()){
-							int start=position-(nodes[next].getEnd(0)-nodes[next].getStart(0));
-							nodes[next].addPos(start, position, nrText, currentTypeContext);
-
-							System.out.println("adding Pos: " + start + " " + position + " " + nrText + " " + currentTypeContext);
-
-							addRemainingSuffixesAtEndOfText(active_node,active_edge, nrText);
+							addRemaining(nrText);
 						}// if  ..isTerminal
 						else {
 							throw new IllegalStateException("error in addChar terminal");
@@ -162,17 +135,12 @@ public class BaseSuffixTree {
 					break;
 				}
 				int split = newNode(nodes[next].getStart(0), nodes[next].getStart(0) + active_length, nrText, currentTypeContext);
-
-				System.out.println("new split Node: " + nodes[next].getStart(0) + " " + nodes[next].getStart(0) + active_length + " " + nrText + " " + currentTypeContext);
-
 				nodes[active_node].next.put(active_edge(), split);
+
 				int leaf = newNode(position, oo, nrText, currentTypeContext);
-
-				System.out.println("new leaf Node: " + position + " " + oo + " " + nrText + " " + currentTypeContext);
-
 				nodes[split].next.put(ch, leaf);
-				nodes[next].setStart(0, /*add+=*/nodes[next].getStart(0)+active_length);
-				
+				nodes[next].updateStartPositions(active_length);
+
 				nodes[split].next.put(this.text[nodes[next].getStart(0)], next);
 				addSuffixLink(split); 
 				/* rule 2:
@@ -204,15 +172,20 @@ public class BaseSuffixTree {
 		}// while remainder
 	}// addChar
 
-	// changed jr till '$';
+	// get the edge string of a node by node number
 	public String edgeString(int node) {
-		int end=nodes[node].getEnd(0);
+		return edgeString(nodes[node]);
+	}
+	
+	// get the edge string of a node
+	public String edgeString(Node node) {
+		int end=node.getEnd(0);
 		if (end==oo) {
-			for (end=nodes[node].getStart(0);end<=oo;end++) {
+			for (end=node.getStart(0);end<=oo;end++) {
 				if (this.text[end]=='$') {end++; break;}
 			}
 		}
-		return new String(Arrays.copyOfRange(this.text, nodes[node].getStart(0), Math.min(position + 1,end)));
+		return new String(Arrays.copyOfRange(this.text, node.getStart(0), Math.min(position + 1,end)));
 	}
 	
 
@@ -286,6 +259,11 @@ public class BaseSuffixTree {
 	// return the number of the current type context
 	public int getCurrentTypeContext() {
 		return currentTypeContext;
+	}
+	
+	// return the whole input as a string, do not expose the underlying char[]
+	public String getText() {
+		return new String(text);
 	}
 	
 	// Increment or initialise the current type context number.

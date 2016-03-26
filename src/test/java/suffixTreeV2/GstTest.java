@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.junit.Test;
 
@@ -18,6 +19,8 @@ import modules.suffixTreeV2.Node;
 import modules.suffixTreeV2.SuffixTree;
 
 public class GstTest {
+	
+	private static final Logger LOGGER = Logger.getLogger(GstTest.class.getName());
 
 	@Test
 	public void testSimpleInputs() {
@@ -249,8 +252,12 @@ public class GstTest {
 		checkTypeContexts(tree, " cc$", expectedTypeContexts);
 		
 		// the same should be true for 'cc$' without leading blank
-		// NOTE: This currently fails.
-		// checkTypeContexts(tree, "cc$", expectedTypeContexts);
+		checkTypeContexts(tree, "cc$", expectedTypeContexts);
+		
+		// check tree nodes for consistency
+		for(int i = tree.getRoot()+1; i < tree.getNodeAmount(); i++) {
+			checkNodeConsistency(tree, tree.getNode(i));;
+		}
 	}
 	
 	private SuffixTree buildTree(final String input) {
@@ -272,7 +279,11 @@ public class GstTest {
 	// checks, that the number of expected nodes matches the count reported by the tree as well as the
 	// actual number of nodes encountered while traversing the path.
 	// Together this should mean, that only those paths paths provided exist in the given tree.
+	//
+	// Additionally every node encountered is checked for consistency for each of it's positions.
 	private void checkTree(final BaseSuffixTree tree, final String[][] paths, int expectedNodeCount) {
+		LOGGER.info("Checking tree with input: " + tree.getText());
+		
 		assertNotNull("Tree should exist.", tree);
 
 		// keep a record of all different nodes encountered while checking
@@ -287,6 +298,10 @@ public class GstTest {
 				expectedNodeCount, tree.getNodeAmount());
 		assertEquals("Reported node count and number of nodes encountered differ.",
 				tree.getNodeAmount(), nodesEncountered.size());
+		
+		for (Node node : nodesEncountered) {
+			checkNodeConsistency(tree, node);
+		}
 	}
 
 	// Checks that all edge strings of the path appear in the order specified.
@@ -356,18 +371,39 @@ public class GstTest {
 		return node;
 	}
 	
+	private void checkNodeConsistency(final BaseSuffixTree tree, Node node) {
+		// root node does not have positions or an edge string, so it needs no checking
+		if (node == tree.getNode(tree.getRoot())) return;
+
+		final String text = tree.getText();
+		final String expected = tree.edgeString(node);
+		String actual = null;
+
+		for(int i = 0; i < node.getPositionsAmount(); i++) {
+			// check that each position would show the same edge string
+			actual = text.substring(node.getStart(i), node.getEnd(i));
+			assertTrue(expected.equals(actual));
+
+			// check that the current position does not equal another of the same node.
+			for(int j = 0; j < node.getPositionsAmount(); j++) {
+				if (i == j) continue;
+				assertFalse("Positions should not be the same.",
+						node.getStart(i) == node.getStart(j) &&
+						node.getEnd(i) == node.getEnd(j) &&
+						node.getTextNr(i) == node.getTextNr(j));
+			}
+		}
+	}
+	
 	// Checks that the path given by a String ends in a leaf node and ensures that the leaf has exactly the
 	// type context numbers, that are expected
 	private void checkTypeContexts(final BaseSuffixTree tree, final String path, final List<Integer> expectedTypeContexts) {
-		System.out.println("Checking type contexts for path: '" + path + "'.");
-
 		// retrieve the leaf node for the path to be checked
 		final Node leaf = checkPathExists(tree, path);
 		final List<Integer> actualContextNrs = new ArrayList<Integer>();
 		
 		// collect type context numbers given in the leaf
 		for(int i = 0; i < leaf.getPositionsAmount(); i++) {
-			System.out.println("Pos " + i + ": "+ leaf.getStart(i) + "-" + leaf.getEnd(i) + " (text: " + leaf.getTextNr(i) + ", context: " + leaf.getTypeContext(i) + ")");
 			actualContextNrs.add(leaf.getTypeContext(i));
 		}
 		// sort both lists and check for equality
