@@ -1,6 +1,6 @@
 package modules.visualizationModules;
 
-import modules.treeBuilder.Knoten;
+import models.ExtensibleTreeNode;
 
 /**
  * Class that wraps a Knoten object with some metadata.
@@ -9,13 +9,13 @@ import modules.treeBuilder.Knoten;
  */
 public class MetaKnoten {
 
-	private Knoten knoten;
+	private ExtensibleTreeNode knoten;
 	private int position;
 	private int r;
 	private int g;
 	private int b;
 	
-	public MetaKnoten(Knoten knoten, int position, int r, int g, int b) {
+	public MetaKnoten(ExtensibleTreeNode knoten, int position, int r, int g, int b) {
 		super();
 		this.knoten = knoten;
 		this.position = position;
@@ -27,14 +27,14 @@ public class MetaKnoten {
 	/**
 	 * @return the knoten
 	 */
-	public Knoten getKnoten() {
+	public ExtensibleTreeNode getKnoten() {
 		return knoten;
 	}
 
 	/**
 	 * @param knoten the knoten to set
 	 */
-	public void setKnoten(Knoten knoten) {
+	public void setKnoten(ExtensibleTreeNode knoten) {
 		this.knoten = knoten;
 	}
 
