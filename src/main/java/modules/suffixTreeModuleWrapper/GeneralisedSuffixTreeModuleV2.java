@@ -1,6 +1,7 @@
 package modules.suffixTreeModuleWrapper;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.suffixTreeV2.GST;
+import modules.suffixTreeV2.ResultEdgeSegmentsListener;
 import modules.suffixTreeV2.ResultLabelListListener;
 import modules.suffixTreeV2.SuffixTree;
 import modules.suffixTreeV2.TreeWalker;
@@ -54,13 +56,8 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 	private static final String OUTPUT_DOT_FILE_DESC = "Prints a graphical representation of the tree as a graphviz .dot file.";
 //	private static final String OUTPUT_SUCCESSORS_MATRIX_ID = "successor label matrix";
 //	private static final String OUTPUT_SUCCESSORS_MATRIX_DESC = "[text/csv] A matrix with labels on the y-axis, successor strings on the x-axis and counts in the field.";
-
-	// Container to hold units if provided
-//	private ArrayList<Integer> unitList = null;
-
-	// Variables for input processing
-//	private static final Pattern NEWLINE_PATTERN = Pattern.compile("\r\n|\n|\r");
-//	private static final char TERMINATOR = '$';
+	private static final String OUTPUT_EDGE_SEGMENTS_ID = "edge segments";
+	private static final String OUTPUT_EDGE_SEGMENTS_DESC = "For each input text an output line is constructed that contains the input split into edges.";
 
 	/**
 	 * Constructor
@@ -109,7 +106,7 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 		
 		try {
 		
-			// read in the list of type context nrs if the port is connected, else leave it null
+			// read in the list of type context end numbers if the port is connected, else leave it null
 			List<Integer> contextNrs = null;
 			final InputPort contextNrsIn = this.getInputPorts().get(INPUT_TYPE_CONTEXT_ID);
 			if(contextNrsIn.isConnected()) {
@@ -122,7 +119,7 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 				}
 			}
 			
-			// build the tree
+			// actually build the tree
 			final BufferedReader textReader = new BufferedReader(this.getInputPorts().get(INPUT_TEXT_ID).getInputReader());
 			final SuffixTree suffixTree = GST.buildGST(textReader, contextNrs);
 			
@@ -143,7 +140,18 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 				final CharPipe dotOutPipe = (CharPipe) dotOut.getPipes().get(CharPipe.class).get(0);
 				final PrintWriter writer = new PrintWriter(dotOutPipe.getOutput());
 				suffixTree.printTree(writer);
-				dotOut.close();
+			}
+			
+			// output a list of edge segments
+			final OutputPort edgeSegmentsOut = this.getOutputPorts().get(OUTPUT_EDGE_SEGMENTS_ID);
+			if (edgeSegmentsOut.isConnected()) {
+				final CharPipe segOutPipe = (CharPipe) edgeSegmentsOut.getPipes().get(CharPipe.class).get(0);
+				final BufferedWriter writer = new BufferedWriter(segOutPipe.getOutput());
+				final ResultEdgeSegmentsListener listener = new ResultEdgeSegmentsListener(suffixTree, writer);
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+				if (!listener.hasCompleted()) {
+					throw new IllegalStateException("Listener did not finish correctly. Result may be wrong.");
+				}
 			}
 
 		} catch (Exception e) {
@@ -183,6 +191,10 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 //				OUTPUT_SUCCESSORS_MATRIX_DESC, this);
 //		outputSuccessorsMatrixPort.addSupportedPipe(CharPipe.class);
 //		super.addOutputPort(outputSuccessorsMatrixPort);
+		
+		OutputPort outputEdgeSegmentsPort = new OutputPort(OUTPUT_EDGE_SEGMENTS_ID, OUTPUT_EDGE_SEGMENTS_DESC, this);
+		outputEdgeSegmentsPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputEdgeSegmentsPort);
 	}
 
 }

@@ -1,5 +1,7 @@
 package modules.suffixTreeV2;
 
+import java.io.IOException;
+
 import modules.suffixTreeV2.BaseSuffixTree;;
 
 public class TreeWalker {
@@ -19,11 +21,12 @@ public class TreeWalker {
 	 * @param listener
 	 *            The listener defining the actions to take on each node
 	 */
-	public static void walk(int startNodeNr, BaseSuffixTree suffixTree, ITreeWalkerListener listener) {
+	public static void walk(int startNodeNr, BaseSuffixTree suffixTree, ITreeWalkerListener listener) throws IOException {
 		walk(startNodeNr, suffixTree, listener, 0);
 	}
 
-	private static void walk(int startNodeNr, BaseSuffixTree suffixTree, ITreeWalkerListener listener, int level) {
+	private static void walk(int startNodeNr, BaseSuffixTree suffixTree, ITreeWalkerListener listener, int level)
+			throws IOException {
 		listener.entryaction(startNodeNr, level);
 
 		for (int childNodeNr : suffixTree.nodes[startNodeNr].next.values()) {
