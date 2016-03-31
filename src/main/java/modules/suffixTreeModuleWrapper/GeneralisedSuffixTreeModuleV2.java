@@ -57,7 +57,7 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 //	private static final String OUTPUT_SUCCESSORS_MATRIX_ID = "successor label matrix";
 //	private static final String OUTPUT_SUCCESSORS_MATRIX_DESC = "[text/csv] A matrix with labels on the y-axis, successor strings on the x-axis and counts in the field.";
 	private static final String OUTPUT_EDGE_SEGMENTS_ID = "edge segments";
-	private static final String OUTPUT_EDGE_SEGMENTS_DESC = "For each input text an output line is constructed that contains the input split into edges.";
+	private static final String OUTPUT_EDGE_SEGMENTS_DESC = "For each input text the output is that path in the tree split into it's edges.";
 
 	/**
 	 * Constructor
