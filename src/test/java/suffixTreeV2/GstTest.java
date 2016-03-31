@@ -2,7 +2,12 @@ package suffixTreeV2;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -225,6 +230,22 @@ public class GstTest {
 	}
 	
 	@Test
+	public void testBigTree() {
+		final InputStream stream = getClass().getClassLoader().getResourceAsStream("line1K");
+		assertNotNull(stream);
+		try {
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+			final String input = reader.readLine();
+			buildAndCheckTree(input);
+		} catch (UnsupportedEncodingException e) {
+			fail("Unsupported encoding: UTF-8. This is really weird and should never actually happen.");
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail("Failed to read the test file.");
+		}
+	}
+	
+	@Test
 	public void testTypeContexts() {
 		SuffixTree tree = null;
 		List<Integer> contextEndIndices = null;
@@ -422,6 +443,9 @@ public class GstTest {
 			}
 		}
 		
+		if (node.isTerminal()) {
+			assertTrue("Terminal node's text should end on '$'.", actual.charAt(actual.length()-1) == '$');
+		}
 	}
 	
 	// Checks that the path given by a String ends in a leaf node and ensures that the leaf has exactly the
