@@ -360,7 +360,7 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 						PROPERTYKEY_MINTOKENAMOUNT));
 		if (minTokenAmountString != null){
 			int value = Integer.parseInt(minTokenAmountString);
-			if (value>250l)
+			if (value>0)
 				this.minTokenAmount = value;
 		}
 			

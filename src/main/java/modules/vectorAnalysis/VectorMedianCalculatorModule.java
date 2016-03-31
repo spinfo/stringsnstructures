@@ -45,7 +45,7 @@ public class VectorMedianCalculatorModule extends ModuleImpl {
 		 */
 		InputPort inputPort = new InputPort(ID_INPUT, "Vector input; expects comma separated values.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Output; JSON-encoded Map (Map<String,Double>).", this);
+		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Output; JSON-encoded Map (Map&lt;String,Double&gt;).", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 
 		// Add I/O ports to instance (don't forget...)

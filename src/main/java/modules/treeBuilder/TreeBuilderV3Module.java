@@ -56,7 +56,17 @@ public class TreeBuilderV3Module extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Add module description
-		this.setDescription("<p>Can process larger datasets more quickly and has the capability to construct Generalised Suffix Trees.</p><p>Replaces TreeBuilder v2 module.</p>");
+		this.setDescription("<p>This module can be used to construct different types of suffix trees from formatted or non-formatted text input. It uses a custom algorithm and runs in approximate linear time (but uses only single thread processing).</p>"
+				+ "<p> The type of tree to build is determined by various parameters. With those, you can build suffix trees that are"
+				+ "<ul>"
+				+ "<li><i>generalised</i> or <i>non-generalised</i>,</li>"
+				+ "<li><i>atomic</i> or <i>compact</i> (see [1], p.189f),</li>"
+				+ "<li>depth-restricted or complete.</li>"
+				+ "</ul></p>"
+				+ "<p>Additionally, the tree will also be generated with a variable for each node that counts how many leafes are below. The output is a JSON-encoded tree consisting of <i>ExtensibleTreeNode</i> objects.</p>"
+				+ "<ol>"
+				+ "<li>Giegerich, Robert, and Stefan Kurtz. &quot;A comparison of imperative and purely functional suffix tree constructions.&quot; Science of Computer Programming 25.2 (1995): 187-218.</li>"
+				+ "</ol>");
 
 		// Add module category
 		this.setCategory("Tree-building");
@@ -70,9 +80,10 @@ public class TreeBuilderV3Module extends ModuleImpl {
 						"Regular expression to use as inner segmentation delimiter for the input; leave empty for char-by-char segmentation.");
 		this.getPropertyDescriptions()
 				.put(PROPERTYKEY_OUTPUTDELIMITER,
-						"String to use as segmentation delimiter for the output; must match with the input delimiter regex; leave empty for char-by-char segmentation.");
-		// this.getPropertyDescriptions().put(PROPERTYKEY_MAXDEPTH,
-		// "Maximum depth for the resulting tree; set to -1 for no constraint.");
+						"String to use as segmentation delimiter for the output; must match with the inner input delimiter regex; leave empty for char-by-char segmentation.");
+		this.getPropertyDescriptions()
+				.put(PROPERTYKEY_MAXDEPTH,
+						"Maximum depth for the resulting tree; set to -1 for no constraint. A setting of 0 will yield a tree one level deep that contains nodes with a length of one (basically the alphabet of the input, respectively the first element of any document for GSTs).");
 		this.getPropertyDescriptions()
 				.put(PROPERTYKEY_OMITREDUNDANTINFO,
 						"Omit redundant information upon creating the tree (do not set nodevalue, since this info is already contained within the parent's child node mapping key).");
@@ -81,17 +92,12 @@ public class TreeBuilderV3Module extends ModuleImpl {
 						"Type of suffix tree to output; possible values are 'compact' and 'atomic'.");
 
 		// Add property defaults (_should_ be provided for every property)
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,
-				"TreeBuilder v3 Module"); // Property key for module name is
-											// defined in parent class
-		this.getPropertyDefaultValues().put(PROPERTYKEY_INNERINPUTDELIMITER,
-				"[\\s]+");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTERINPUTDELIMITER,
-				"\\$");
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "TreeBuilder v3 Module");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_INNERINPUTDELIMITER, "[\\s]+");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTERINPUTDELIMITER, "\\$");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTDELIMITER, " ");
-		// this.getPropertyDefaultValues().put(PROPERTYKEY_MAXDEPTH, "-1");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_OMITREDUNDANTINFO,
-				"true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXDEPTH, "-1");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OMITREDUNDANTINFO, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_STRUCTURE, "compact");
 
 		// Define I/O
@@ -466,13 +472,13 @@ public class TreeBuilderV3Module extends ModuleImpl {
 				&& !this.outputDelimiter.matches(this.innerInputDelimiter))
 			throw new Exception(
 					"The specified output delimiter does not match with the current input delimiter.");
-		/*
-		 * String maxDepthString =
-		 * this.getProperties().getProperty(PROPERTYKEY_MAXDEPTH,
-		 * this.getPropertyDefaultValues().get(PROPERTYKEY_MAXDEPTH)); if
-		 * (maxDepthString != null) this.maxDepth =
-		 * Integer.parseInt(maxDepthString);
-		 */
+		
+		String maxDepthString = this.getProperties().getProperty(
+				PROPERTYKEY_MAXDEPTH,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_MAXDEPTH));
+		if (maxDepthString != null)
+			this.maxDepth = Integer.parseInt(maxDepthString);
+		 
 
 		String omitRedundantInformationString = this.getProperties()
 				.getProperty(
