@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
@@ -25,8 +24,6 @@ import modules.suffixTreeV2.Node;
 import modules.suffixTreeV2.SuffixTree;
 
 public class GstTest {
-	
-	private static final Logger LOGGER = Logger.getLogger(GstTest.class.getName());
 
 	@Test
 	public void testSimpleInputs() {
@@ -299,7 +296,6 @@ public class GstTest {
 	// Performs some basic checks, that a tree built with GST is internally consistent.
 	private void generalTreeCheck(BaseSuffixTree tree, String expectedInput) {
 		final String input = tree.getText();
-		LOGGER.info("Checking tree with input: " + input);
 
 		// check the input texts
 		assertTrue("Input and reported input should match", expectedInput.equals(input));
