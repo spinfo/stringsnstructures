@@ -3,11 +3,9 @@ package modules.suffixTreeV2;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
 
 
 public class GST {
-	private static final Logger LOGGER = Logger.getLogger(GST.class.getName());
 	
 	BufferedReader in;
 	
@@ -40,6 +38,9 @@ public class GST {
 		SuffixTree st = new SuffixTree(inText.length());
 		GST.OO=new PositionInfo(st.oo);// end value for leaves; is changed if final '$' is reached
 									  // generate new st.OO for next text
+
+		// set the beginning of the first text to first letter of the input
+		st.setTextBegin(0, 0);
 		
 	    if(typeContextEndIndices != null) {
 	    	// copy the list to not harm the input
@@ -58,19 +59,14 @@ public class GST {
 				GST.OO = new PositionInfo(st.oo);
 
 				nrText++;
+				// note the beginning of the whole next text in the tree
+				if (i != inText.length() - 1) {
+					st.setTextBegin(nrText, i + 1);
+				}
+
 				// Handle incrementing of type contexts if provided
 				if (typeContextEndIndices != null) {
-					// if type context end indices are provided, they may never be empty at this step
-					if (typeContextEndIndices.isEmpty()) {
-						throw new IllegalStateException(
-							"The type context end numbers provided cannot be aligned with the texts provided. At char: " + i);
-					}
-					// If the type context end index matches the text number, one type context is completed.
-					// Entering the next context is marked by incrementing the current type context.
-					if (typeContextEndIndices.get(0) == nrText) {
-						st.incrementTypeContext();
-						typeContextEndIndices.remove(0);
-					}
+					incrementTypeContexts(st, typeContextEndIndices, nrText);
 				}
 
 				int end = findChar(inText, i + 1, '$');
@@ -93,17 +89,31 @@ public class GST {
 					}else break;
 
 				} else break;// if end > i; inText end reached
-				
 			}// while
+
 		}// for (int i = 0; i < inText.length(); i++)
 		
 		if(typeContextEndIndices != null && !typeContextEndIndices.isEmpty()) {
 			throw new IllegalStateException(
-					"Some type context end numbers were not handled. First remaining end: " + typeContextEndIndices.get(0));
+					"Some type context end numbers were not handled. First remaining textNr: " + typeContextEndIndices.get(0));
 		}
 		
 		return st;
 	    
+	}
+	
+	private static void incrementTypeContexts(BaseSuffixTree st, List<Integer> typeContextEndIndices, int nrText) {
+		// if type context end indices are provided, they may never be empty at this step
+		if (typeContextEndIndices.isEmpty()) {
+			throw new IllegalStateException(
+				"No type context to set at text: " + nrText);
+		}
+		// If the type context end index matches the text number, one type context is completed.
+		// Entering the next context is marked by incrementing the current type context.
+		if (typeContextEndIndices.get(0) == nrText) {
+			st.incrementTypeContext();
+			typeContextEndIndices.remove(0);
+		}
 	}
 	
 	

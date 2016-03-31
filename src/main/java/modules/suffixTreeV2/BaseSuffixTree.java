@@ -1,6 +1,8 @@
 package modules.suffixTreeV2;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /*
  Description, source base and comments see 
@@ -20,12 +22,18 @@ public class BaseSuffixTree {
 	public static final int NO_TYPE_CONTEXT = -1;
 	private int currentTypeContext = NO_TYPE_CONTEXT;
 	
+	// If the suffix tree is used as a Generalised Suffix Tree, this can be
+	// used to safely note the beginnings of single texts in the whole input
+	private List<Integer> textBegins;
+	
 	int active_node, active_length, active_edge;
 	
 	public BaseSuffixTree(int length) {
 		nodes = new Node[2 * length + 2];
 		text = new char[length];
 		root = active_node = newNode(-1, -1, 0, NO_TYPE_CONTEXT);
+		
+		textBegins = new ArrayList<Integer>();
 
 		// reset position in case there was a tree created earlier
 		// TODO: change position to a non-static variable to allow 
@@ -276,6 +284,82 @@ public class BaseSuffixTree {
 			currentTypeContext += 1;
 		}
 		return currentTypeContext;
+	}
+	
+	/**
+	 * Returns the index of the text with number textNr. Fails if no begin for that text
+	 * has been noted.
+	 * 
+	 * @param textNr
+	 * 			The number associated with the text in question.
+	 * @return The index of the text in question.
+	 */
+	public int getTextBegin(int textNr) {
+		if (textNr < 0 || textNr >= textBegins.size()) {
+			throw new IllegalArgumentException("No text for number: " + textNr + ".");
+		}
+		return textBegins.get(textNr);
+	}
+	
+	/**
+	 * Returns the end index (inclusive) of the text in question in the total input. Fails if no text
+	 * with that number has been noted
+	 * 
+	 * @param textNr
+	 * 			The number of the text in question
+	 * @return The index of the last character of the text in question.
+	 */
+	public int getTextEnd(int textNr) {
+		if (textNr < 0 || textNr >= textBegins.size()) {
+			throw new IllegalArgumentException("No text for number: " + textNr + ".");
+		}
+		// the end of the last text is the current position
+		if (textNr == textBegins.size() - 1) {
+			return position;
+		}
+		// the end of each other text is the beginning of the next text - 1
+		return (textBegins.get(textNr + 1) - 1);
+	}
+	
+	/**
+	 * Returns the text noted for the textNr. Fails if no such text was noted.
+	 */
+	public String getInputText(int textNr) {
+		final int begin = getTextBegin(textNr);
+		final int end = getTextEnd(textNr) + 1;
+		return new String(Arrays.copyOfRange(text, begin, end));
+	}
+	
+	/**
+	 * Sets the beginning index for the text with number textNr to the index
+	 * textBegin. Ensures that all text begins are set sequentially and checks
+	 * that the begin index is preceded by a '$' in the actual input read so far.
+	 * 
+	 * @param textNr
+	 * 			The nr of the text to set.
+	 * @param textBegin
+	 * 			The index of the text's first character in the total input. 
+	 */
+	public void setTextBegin(int textNr, int textBegin) {
+		// check that all text numbers up until the current one were set
+		if (textBegins.size() != textNr) {
+			throw new IllegalArgumentException("Attempt to set a begin for a text (" + textNr + ") other than the next one. Next: " + textBegins.size());
+		}
+		// check that textBegin actually marks a text begin
+		if (textBegin == 0 || text[textBegin - 1] == '$') {
+			textBegins.add(textBegin);
+		} else {
+			throw new IllegalArgumentException("Did not find char '$' before supposed text begin: " + textBegin + " (of text: " + textNr + ").");
+		}
+	}
+	
+	/**
+	 * Returns the amount of textNr that have been registered.
+	 * 
+	 * @return an int
+	 */
+	public int textNrsAmount() {
+		return textBegins.size();
 	}
 
 } // class st	
