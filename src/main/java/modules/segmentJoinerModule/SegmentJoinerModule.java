@@ -11,6 +11,13 @@ import modules.OutputPort;
 import common.StringUnescaper;
 import common.parallelization.CallbackReceiver;
 
+/**
+ * Module that takes a segmented string as input and
+ * outputs every possible combination of it with two
+ * neighbouring segments being joined.
+ * @author Marcel Boeing
+ *
+ */
 public class SegmentJoinerModule extends ModuleImpl {
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
@@ -40,7 +47,7 @@ public class SegmentJoinerModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("Takes a segmented string as input and outputs every possible combination of it with two neighboring segments being joined.");
+		this.setDescription("Takes a segmented string as input and outputs every possible combination of it with two neighbouring segments being joined.");
 		
 		// Add module category
 		this.setCategory("Segmentation");
@@ -63,13 +70,6 @@ public class SegmentJoinerModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUT_ORIGINAL, "true");
 		
 		// Define I/O
-		/*
-		 * I/O is structured into separate ports (input~/output~).
-		 * Every port can support a range of pipe types (currently
-		 * byte or character pipes). Output ports can provide data
-		 * to multiple pipe instances at once, input ports can
-		 * in contrast only obtain data from one pipe instance.
-		 */
 		InputPort inputPort = new InputPort(ID_INPUT, "Plain text character input.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Plain text character output.", this);
@@ -83,14 +83,6 @@ public class SegmentJoinerModule extends ModuleImpl {
 
 	@Override
 	public boolean process() throws Exception {
-		
-		/*
-		 * This module doesn't do much useful processing.
-		 * It reads from two inputs, segments them via
-		 * the specified delimiters and entwines the
-		 * result.
-		 * Just used to exemplify a basic module. 
-		 */
 		
 		// Construct scanner instance for input segmentation (strings)
 		Scanner stringInputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
