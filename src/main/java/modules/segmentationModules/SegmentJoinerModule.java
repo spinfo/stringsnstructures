@@ -1,4 +1,4 @@
-package modules.segmentJoinerModule;
+package modules.segmentationModules;
 
 import java.util.Properties;
 import java.util.Scanner;
