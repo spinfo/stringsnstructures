@@ -27,7 +27,6 @@ import models.ExtensibleTreeNode;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
-import modules.treeBuilder.Knoten;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

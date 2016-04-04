@@ -42,7 +42,8 @@ import modules.neo4j.Neo4jOutputModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmenErmittlerModul;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
-import modules.segmentJoinerModule.SegmentJoinerModule;
+import modules.segmentationModules.SegmentJoinerModule;
+import modules.segmentationModules.SegmentMatrixModule;
 import modules.seqNewickExporter.SeqNewickExporterController;
 import modules.seqNewickExporter.SeqNewickExporterControllerV2;
 import modules.seqNewickExporter.SeqQueryController;
@@ -469,6 +470,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		segmentJoinerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentJoinerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		segmentJoinerModule.applyProperties();
 		
+		// Segment matrix
+		Properties segmentMatrixModuleProperties = new Properties();
+		SegmentMatrixModule segmentMatrixModule = new SegmentMatrixModule(moduleNetwork, segmentMatrixModuleProperties);
+		segmentMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		segmentMatrixModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -526,6 +533,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(vectorMedianCalculatorModule.getName(), vectorMedianCalculatorModule);
 		availableModules.put(gexfFilterModule.getName(), gexfFilterModule);
 		availableModules.put(segmentJoinerModule.getName(), segmentJoinerModule);
+		availableModules.put(segmentMatrixModule.getName(), segmentMatrixModule);
 	}
 	
 	/**
