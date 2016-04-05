@@ -1,8 +1,9 @@
 package modules.suffixTreeV2;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeMap;
-
 
 public class Node {
 
@@ -21,7 +22,14 @@ public class Node {
 	// value of this element is oo, i.e. maximal value; at the end, when '$' is reached, value is 
 	// replaced by actual position value
 	private ArrayList<PositionInfo> positionList;
+	
+	// the edges to the next nodes (represented by a node nr in the tree)
 	TreeMap<Character, Integer> next = new TreeMap<Character, Integer>();
+	
+	// A data field that may be used by clients to link a node to all it's leaf nodes.
+	// This field is never used in the construction of the suffix tree and can be ignored
+	// for the simple purpose of building and using a suffix tree in a normal way.
+	private Set<Node> leaves = new HashSet<Node>();
 
 	// cstr
 	public Node(int start, int end, int nr, int typeContextNr) {
@@ -121,9 +129,19 @@ public class Node {
 		return pos * 4;
 	}
 	
+	// return the beginnings of edges starting at this node
+	public Set<Character> getEdgeBegins() {
+		return this.next.keySet();
+	}
+	
 	// return the node index of the node reached by following the edge
 	// that begins with edgeBegin, return null if no such node exists
 	public Integer getNext(char edgeBegin) {
 		return this.next.get(edgeBegin);
+	}
+	
+	// return the leaves that were set for this node.	
+	public Set<Node> getLeaves() {
+		return this.leaves;
 	}
 }// Node
