@@ -11,8 +11,9 @@ import java.util.List;
 
 public class BaseSuffixTree {
 	
-	static final int oo = Integer.MAX_VALUE / 2;
-	static int position=-1;
+	// Expose .oo to the package read-only
+	protected static final int oo = Integer.MAX_VALUE / 2;
+	int position=-1;
 	Node[] nodes;
 	char[] text;
 	int root, currentNode, needSuffixLink, remainder;
@@ -28,21 +29,20 @@ public class BaseSuffixTree {
 	
 	int active_node, active_length, active_edge;
 	
+	// An end to keep track of all node's end positions while setting a single
+	// text when this is used as a generalised suffix tree.
+	private PositionInfo end;
+	
 	public BaseSuffixTree(int length) {
 		nodes = new Node[2 * length + 2];
 		text = new char[length];
 		root = active_node = newNode(-1, -1, 0, NO_TYPE_CONTEXT);
 		
 		textBegins = new ArrayList<Integer>();
-
-		// reset position in case there was a tree created earlier
-		// TODO: change position to a non-static variable to allow 
-		// 		 for multiple instances of this class
-		position = -1;
 	}
 	
 	int newNode(int start, int end, int nrText, int typeContextNr) {
-		nodes[++currentNode] = new Node(start, end, nrText, typeContextNr);
+		nodes[++currentNode] = new Node(start, end, nrText, typeContextNr, this);
 		return currentNode;
 	}
 
@@ -57,9 +57,9 @@ public class BaseSuffixTree {
 	}
 
 	boolean walkDown(int next) {
-		if (active_length >= nodes[next].edgeLength()) {
-			active_edge += nodes[next].edgeLength();
-			active_length -= nodes[next].edgeLength();
+		if (active_length >= nodes[next].edgeLength(this)) {
+			active_edge += nodes[next].edgeLength(this);
+			active_length -= nodes[next].edgeLength(this);
 			active_node = next;
 			return true;
 		}
@@ -81,12 +81,12 @@ public class BaseSuffixTree {
 				}
 				else {
 					next = nodes[next].next.get(this.text[pos]);
-					pos+=nodes[next].edgeLength();
+					pos+=nodes[next].edgeLength(this);
 				}
 			
 			}// while
 			if (nodes[next].isTerminal()){
-				nodes[next].addPos(pos-nodes[next].edgeLength(), this.oo, textNr, currentTypeContext);
+				nodes[next].addPos(pos-nodes[next].edgeLength(this), BaseSuffixTree.oo, textNr, currentTypeContext, this);
 			}
 			next=this.root;
 		}// for
@@ -360,6 +360,22 @@ public class BaseSuffixTree {
 	 */
 	public int textNrsAmount() {
 		return textBegins.size();
+	}
+	
+	/**
+	 * Initialise a new end value for new nodes. Used by the GST on beginning a new input text.
+	 * @return the PositionInfo created as the new end.
+	 */
+	protected PositionInfo newEnd() {
+		this.end = new PositionInfo(BaseSuffixTree.oo);
+		return this.end;
+	}
+	
+	/**
+	 * @return The PositionInfo used to set multiple node's ends when this is used as a GST.
+	 */
+	protected PositionInfo getEnd() {
+		return this.end;
 	}
 
 } // class st	

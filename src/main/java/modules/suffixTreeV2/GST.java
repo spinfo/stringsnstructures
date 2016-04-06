@@ -6,10 +6,6 @@ import java.util.List;
 
 
 public class GST {
-	
-	BufferedReader in;
-	
-	static PositionInfo OO;
 
 	// class should not be instantiated
 	private GST() {};
@@ -36,7 +32,7 @@ public class GST {
 	    in.close();
 		
 		SuffixTree st = new SuffixTree(inText.length());
-		GST.OO=new PositionInfo(st.oo);// end value for leaves; is changed if final '$' is reached
+		PositionInfo oo = st.newEnd();// end value for leaves; is changed if final '$' is reached
 									  // generate new st.OO for next text
 
 		// set the beginning of the first text to first letter of the input
@@ -54,9 +50,9 @@ public class GST {
 			// while loop as completely repeated texts are possible
 			while(inText.charAt(i) == '$') {
 				// set value for end in leaves
-				GST.OO.val=i+1;
+				oo.val=i+1;
 				// generate new element for next text
-				GST.OO = new PositionInfo(st.oo);
+				oo = st.newEnd();
 
 				nrText++;
 				// note the beginning of the whole next text in the tree

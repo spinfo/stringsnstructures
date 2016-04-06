@@ -32,9 +32,9 @@ public class Node {
 	private Set<Node> leaves = new HashSet<Node>();
 
 	// cstr
-	public Node(int start, int end, int nr, int typeContextNr) {
+	public Node(int start, int end, int nr, int typeContextNr, BaseSuffixTree tree) {
 		this.positionList=new ArrayList<PositionInfo>(4);
-		this.addPos(start, end, nr, typeContextNr);
+		this.addPos(start, end, nr, typeContextNr, tree);
 	}// Node
 	
 	public boolean isTerminal() {
@@ -44,7 +44,7 @@ public class Node {
 	// This should be the only place where new positionInfo objects are added to
 	// the positionInfo list. This ensures, that all four fields are actually filled
 	// and can later be retrieved by indexing to the n*4th position.
-	void addPos(int start,int end, int textNr, int typeContext){
+	void addPos(int start,int end, int textNr, int typeContext, BaseSuffixTree tree){
 		// make sure that the position added is never equal to the last position set
 		if (this.getPositionsAmount() > 0){
 			int lastPos = this.getPositionsAmount() - 1;
@@ -56,8 +56,8 @@ public class Node {
 		// start
 		this.positionList.add(new PositionInfo(start));
 		// end
-		if (end==SuffixTree.oo) {
-			this.positionList.add(GST.OO);
+		if (end==BaseSuffixTree.oo) {
+			this.positionList.add(tree.getEnd());
 		} else {
 			this.positionList.add(new PositionInfo(end));
 		}
@@ -119,8 +119,9 @@ public class Node {
 		return (int) (this.positionList.size() / 4);
 	}
 
-	public int edgeLength() {
-		return Math.min(this.getEnd(0),SuffixTree.position + 1) - this.getStart(0);
+	// return the edge length of the node in the tree
+	public int edgeLength(BaseSuffixTree tree) {
+		return Math.min(this.getEnd(0),tree.position + 1) - this.getStart(0);
 	}
 	
 	// get the actual index in positionList by multiplying with the
