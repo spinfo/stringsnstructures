@@ -27,6 +27,7 @@ public class SegmentJoinerModule extends ModuleImpl {
 	public static final String PROPERTYKEY_DELIMITER_OUTPUT_STRING = "string output delimiter";
 	public static final String PROPERTYKEY_DELIMITER_OUTPUT_GROUP = "group output delimiter";
 	public static final String PROPERTYKEY_OUTPUT_ORIGINAL = "output original string";
+	public static final String PROPERTYKEY_REVERSE_SEGMENTING = "reverse segmenting";
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "input";
@@ -39,6 +40,7 @@ public class SegmentJoinerModule extends ModuleImpl {
 	private String outputdelimiter_string;
 	private String outputdelimiter_group;
 	private boolean outputOriginal;
+	private boolean reverseSegmenting;
 
 	public SegmentJoinerModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -58,7 +60,8 @@ public class SegmentJoinerModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT_SEGMENT, "String to insert as segmentation delimiter between segments (does understand escaped sequences and unescapes them).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT_STRING, "String to insert as segmentation delimiter between strings (does understand escaped sequences and unescapes them).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT_GROUP, "String to insert as segmentation delimiter between groups (does understand escaped sequences and unescapes them).");
-		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUT_ORIGINAL, "Include the original (non-joined) string in the output (as first element) [true or false].");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUT_ORIGINAL, "Include the original (non-joined or fully joined [depending on segmentation reversal setting]) string in the output (as first element) [true or false].");
+		this.getPropertyDescriptions().put(PROPERTYKEY_REVERSE_SEGMENTING, "Reverse the segmentation: Join where segments are split and the other way around [true or false].");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Segment Joiner"); // Property key for module name is defined in parent class
@@ -68,6 +71,7 @@ public class SegmentJoinerModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT_STRING, ";");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT_GROUP, "\\n");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUT_ORIGINAL, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_REVERSE_SEGMENTING, "true");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "Plain text character input.", this);
@@ -116,8 +120,13 @@ public class SegmentJoinerModule extends ModuleImpl {
 					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(segments[j]);
 
 					// Conditionally omit delimiter
-					if (i!=j && (j+1)<segments.length)
-						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_segment);
+					if (this.reverseSegmenting){
+						if (i==j && (j+1)<segments.length)
+							this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_segment);
+					} else {
+						if (i!=j && (j+1)<segments.length)
+							this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_segment);
+					}
 				}
 				// Omit delimiter if this is the last segment
 				if ((i+1)<segments.length-1)
@@ -158,6 +167,9 @@ public class SegmentJoinerModule extends ModuleImpl {
 		String outputOriginal_string = this.getProperties().getProperty(PROPERTYKEY_OUTPUT_ORIGINAL, this.getPropertyDefaultValues().get(PROPERTYKEY_OUTPUT_ORIGINAL));
 		if (outputOriginal_string != null)
 			this.outputOriginal = Boolean.parseBoolean(outputOriginal_string);
+		String reverseSegmenting_string = this.getProperties().getProperty(PROPERTYKEY_REVERSE_SEGMENTING, this.getPropertyDefaultValues().get(PROPERTYKEY_REVERSE_SEGMENTING));
+		if (outputOriginal_string != null)
+			this.reverseSegmenting = Boolean.parseBoolean(reverseSegmenting_string);
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
