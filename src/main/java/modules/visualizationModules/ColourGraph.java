@@ -23,10 +23,10 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import models.ExtensibleTreeNode;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
-import modules.treeBuilder.Knoten;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -170,17 +170,17 @@ public class ColourGraph extends ModuleImpl {
 		Graphics2D graphik = bild.createGraphics();
 				
 		// Wurzelknoten einlesen
-		Knoten wurzelKnoten = gson.fromJson(this.getInputPorts().get(INPUTID).getInputReader(), Knoten.class);
+		ExtensibleTreeNode wurzelKnoten = gson.fromJson(this.getInputPorts().get(INPUTID).getInputReader(), ExtensibleTreeNode.class);
 		
 		// Skalierung ermitteln
-		this.horizontalePixelProKnoten = new Double(this.outputImageWidth)/new Double(wurzelKnoten.getZaehler());
+		this.horizontalePixelProKnoten = new Double(this.outputImageWidth)/new Double(wurzelKnoten.getNodeCounter());
 		
 		// Baummodell initialisieren
 		DefaultTreeModel baum = this.insertIntoTreeModel(wurzelKnoten, null, null);
 		
 		// Graphen ausgeben
 		DefaultMutableTreeNode baumWurzelKnoten = (DefaultMutableTreeNode) baum.getRoot();
-		int zeichenProZeile = wurzelKnoten.getZaehler();
+		int zeichenProZeile = wurzelKnoten.getNodeCounter();
 		int zeichenInAktuellerZeile = 0;
 		int zeile = 0;
 
@@ -196,7 +196,7 @@ public class ColourGraph extends ModuleImpl {
 			
 			// Ermittle aktuelles Element
 			DefaultMutableTreeNode baumKindKnoten = baumKindKnotenListe.nextElement();
-			Knoten kindKnoten = (Knoten) baumKindKnoten.getUserObject();
+			ExtensibleTreeNode kindKnoten = (ExtensibleTreeNode) baumKindKnoten.getUserObject();
 			
 			// Farbvariablen
 			int r;
@@ -258,11 +258,11 @@ public class ColourGraph extends ModuleImpl {
 			
 			// Ggf. Ungleichverteilung ermitteln
 			if (this.ungleichverteilungenMarkieren){
-				double zaehlerdurchschnittswert = new Double(kindKnoten.getZaehler()) / new Double(kindKnoten.getKinder().size());
+				double zaehlerdurchschnittswert = new Double(kindKnoten.getNodeCounter()) / new Double(kindKnoten.getChildNodes().size());
 				double gleichverteilungsFaktor = 1d; // Wertebereich 0<X<=1
-				Iterator<Knoten> enkelKnotenListe = kindKnoten.getKinder().values().iterator();
+				Iterator<ExtensibleTreeNode> enkelKnotenListe = kindKnoten.getChildNodes().values().iterator();
 				while(enkelKnotenListe.hasNext()){
-					gleichverteilungsFaktor = gleichverteilungsFaktor*(enkelKnotenListe.next().getZaehler()/zaehlerdurchschnittswert);
+					gleichverteilungsFaktor = gleichverteilungsFaktor*(enkelKnotenListe.next().getNodeCounter()/zaehlerdurchschnittswert);
 				}
 				// Farbwerte entsprechend der ermittelten Ungleichverteilung anpassen
 				
@@ -289,12 +289,12 @@ public class ColourGraph extends ModuleImpl {
 			}
 			
 			// Ausgabe
-			for (int i=0; i<kindKnoten.getZaehler(); i++)
+			for (int i=0; i<kindKnoten.getNodeCounter(); i++)
 				this.zeichnePixel(graphik, zeile, zeichenInAktuellerZeile+i, r, g, b, alpha);
 			
 			// Position und Farbe merken (etwas unelegant)
 			baumKindKnoten.setUserObject(new MetaKnoten(kindKnoten, zeichenInAktuellerZeile, r, g, b));
-			zeichenInAktuellerZeile += kindKnoten.getZaehler();
+			zeichenInAktuellerZeile += kindKnoten.getNodeCounter();
 			
 			// Ggf. Zeilenumbruch einfuegen
 			if (zeichenInAktuellerZeile >= zeichenProZeile){
@@ -397,7 +397,7 @@ public class ColourGraph extends ModuleImpl {
 		}
 	}
 
-	private DefaultTreeModel insertIntoTreeModel(Knoten knoten, DefaultMutableTreeNode elternBaumKnoten, DefaultTreeModel baum) throws IOException {
+	private DefaultTreeModel insertIntoTreeModel(ExtensibleTreeNode knoten, DefaultMutableTreeNode elternBaumKnoten, DefaultTreeModel baum) throws IOException {
 		
 		DefaultMutableTreeNode baumKnoten = new DefaultMutableTreeNode(knoten);
 		
@@ -408,11 +408,11 @@ public class ColourGraph extends ModuleImpl {
 		
 		// Kindknoten in TreeSet mit eigenem Comparator speichern (sortiert nach
 		// Zaehlvariable der Knoten)
-		TreeSet<Knoten> sortierteKindKnoten = new TreeSet<Knoten>(
+		TreeSet<ExtensibleTreeNode> sortierteKindKnoten = new TreeSet<ExtensibleTreeNode>(
 				this.knotenKomparator);
-		sortierteKindKnoten.addAll(knoten.getKinder().values());
+		sortierteKindKnoten.addAll(knoten.getChildNodes().values());
 		
-		Iterator<Knoten> kindKnoten = sortierteKindKnoten.iterator();
+		Iterator<ExtensibleTreeNode> kindKnoten = sortierteKindKnoten.iterator();
 		while (kindKnoten.hasNext()){
 			this.insertIntoTreeModel(kindKnoten.next(), baumKnoten, baum);
 		}

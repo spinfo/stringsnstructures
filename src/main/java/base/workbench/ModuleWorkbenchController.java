@@ -42,6 +42,8 @@ import modules.neo4j.Neo4jOutputModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmenErmittlerModul;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
+import modules.segmentationModules.SegmentJoinerModule;
+import modules.segmentationModules.SegmentMatrixModule;
 import modules.seqNewickExporter.SeqNewickExporterController;
 import modules.seqNewickExporter.SeqNewickExporterControllerV2;
 import modules.seqNewickExporter.SeqQueryController;
@@ -62,15 +64,18 @@ import modules.treeBuilder.TreeBuilderV2Module;
 import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
+import modules.treeSimilarityClustering.GexfFilterModule;
 import modules.treeSimilarityClustering.TreeSimilarityClusteringModule;
 import modules.vectorAnalysis.MinkowskiDistanceMatrixModule;
 import modules.vectorAnalysis.VectorAberrationCalculatorModule;
+import modules.vectorAnalysis.VectorMedianCalculatorModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
+
 import common.ListLoggingHandler;
 import common.parallelization.CallbackReceiver;
 
@@ -447,6 +452,30 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		minkowskiDistanceMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, minkowskiDistanceMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		minkowskiDistanceMatrixModule.applyProperties();
 		
+		// VectorMedianCalculatorModule
+		Properties vectorMedianCalculatorModuleProperties = new Properties();
+		VectorMedianCalculatorModule vectorMedianCalculatorModule = new VectorMedianCalculatorModule(moduleNetwork, vectorMedianCalculatorModuleProperties);
+		vectorMedianCalculatorModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, vectorMedianCalculatorModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		vectorMedianCalculatorModule.applyProperties();
+		
+		// GexfFilterModule
+		Properties gexfFilterModuleProperties = new Properties();
+		GexfFilterModule gexfFilterModule = new GexfFilterModule(moduleNetwork, gexfFilterModuleProperties);
+		gexfFilterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, gexfFilterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		gexfFilterModule.applyProperties();
+		
+		// Segment neighbor joiner
+		Properties segmentJoinerModuleProperties = new Properties();
+		SegmentJoinerModule segmentJoinerModule = new SegmentJoinerModule(moduleNetwork, segmentJoinerModuleProperties);
+		segmentJoinerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentJoinerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		segmentJoinerModule.applyProperties();
+		
+		// Segment matrix
+		Properties segmentMatrixModuleProperties = new Properties();
+		SegmentMatrixModule segmentMatrixModule = new SegmentMatrixModule(moduleNetwork, segmentMatrixModuleProperties);
+		segmentMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		segmentMatrixModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -501,6 +530,10 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(seqQueryController.getName(), seqQueryController);
 		availableModules.put(vectorAnalysisModule.getName(), vectorAnalysisModule);
 		availableModules.put(minkowskiDistanceMatrixModule.getName(), minkowskiDistanceMatrixModule);
+		availableModules.put(vectorMedianCalculatorModule.getName(), vectorMedianCalculatorModule);
+		availableModules.put(gexfFilterModule.getName(), gexfFilterModule);
+		availableModules.put(segmentJoinerModule.getName(), segmentJoinerModule);
+		availableModules.put(segmentMatrixModule.getName(), segmentMatrixModule);
 	}
 	
 	/**

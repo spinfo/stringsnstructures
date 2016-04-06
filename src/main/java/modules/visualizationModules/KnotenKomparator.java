@@ -2,20 +2,20 @@ package modules.visualizationModules;
 
 import java.util.Comparator;
 
-import modules.treeBuilder.Knoten;
+import models.ExtensibleTreeNode;
 
-public class KnotenKomparator implements Comparator<Knoten> {
+public class KnotenKomparator implements Comparator<ExtensibleTreeNode> {
 
 	public KnotenKomparator() {
 	}
 
 	@Override
-	public int compare(Knoten o1, Knoten o2) {
-		int zaehlerUnterschied = o1.getZaehler()*2-o2.getZaehler()*2;
+	public int compare(ExtensibleTreeNode o1, ExtensibleTreeNode o2) {
+		int zaehlerUnterschied = o1.getNodeCounter()*2-o2.getNodeCounter()*2;
 		if (zaehlerUnterschied == 0){
-			if (o1.getName().compareTo(o2.getName())>0)
+			if (o1.getNodeValue().compareTo(o2.getNodeValue())>0)
 				return 1;
-			else if (o1.getName().compareTo(o2.getName())<0)
+			else if (o1.getNodeValue().compareTo(o2.getNodeValue())<0)
 				return -1;
 		}
 		return zaehlerUnterschied;

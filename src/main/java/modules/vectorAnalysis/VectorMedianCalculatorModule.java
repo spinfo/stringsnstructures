@@ -1,53 +1,39 @@
 package modules.vectorAnalysis;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.TreeSet;
-
-import modules.CharPipe;
-import modules.InputPort;
-import modules.ModuleImpl;
-import modules.OutputPort;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import common.parallelization.CallbackReceiver;
+import modules.CharPipe;
+import modules.InputPort;
+import modules.ModuleImpl;
+import modules.OutputPort;
 
-public class VectorAberrationCalculatorModule extends ModuleImpl {
-
-	// Define property keys (every setting has to have a unique key to associate
-	// it with)
-	public static final String PROPERTYKEY_EXPONENT = "exponent";
+public class VectorMedianCalculatorModule extends ModuleImpl {
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "csv";
 	private static final String ID_OUTPUT = "output";
 
-	// Local variables
-	private double exponent = 0.0d;
-
-	public VectorAberrationCalculatorModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
+	public VectorMedianCalculatorModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 
 		// Call parent constructor
 		super(callbackReceiver, properties);
 
 		// Add module description
-		this.setDescription("Calculates aberration for elements within the input vectors, re-sorting them afterwards.");
+		this.setDescription("Calculates median of elements within the input vectors.");
 
 		// Add module category
 		this.setCategory("Vectorization");
 
-		// Add property descriptions (obligatory for every property!)
-		this.getPropertyDescriptions().put(PROPERTYKEY_EXPONENT, "Exponent for aberration amplification [double]; Aberration is taken times 2^E. Takes effect if value is above zero.");
-
 		// Add property defaults (_should_ be provided for every property)
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Vector Aberration Calculator");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_EXPONENT, "0.0");
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Vector Median Calculator");
 
 		// Define I/O
 		/*
@@ -59,7 +45,7 @@ public class VectorAberrationCalculatorModule extends ModuleImpl {
 		 */
 		InputPort inputPort = new InputPort(ID_INPUT, "Vector input; expects comma separated values.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Output; JSON-encoded Map of Sets (Map&lt;String,Set&lt;Double&gt;&gt;).", this);
+		OutputPort outputPort = new OutputPort(ID_OUTPUT, "Output; JSON-encoded Map (Map&lt;String,Double&gt;).", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 
 		// Add I/O ports to instance (don't forget...)
@@ -84,8 +70,8 @@ public class VectorAberrationCalculatorModule extends ModuleImpl {
 			throw new Exception("The CSV input is zero lines; aborting.");
 		}
 		
-		// Map to store the sorted aberration sets for each type
-		Map<String,Set<Double>> aberrationValuesMap = new HashMap<String,Set<Double>>();
+		// Map to store the median for each type
+		Map<String,Double> medianValuesMap = new HashMap<String,Double>();
 		
 		// Input read loop
 		while (inputScanner.hasNext()) {
@@ -103,45 +89,50 @@ public class VectorAberrationCalculatorModule extends ModuleImpl {
 			
 			// Determine type the current dataset belongs to (first field of row)
 			String type = data[0];
-			
-			// Keep track of sum
-			double sum = 0d;
 
 			// Process the remaining fields of the current row
 			TreeSet<Double> sortedValues = new TreeSet<Double>();
 			for (int i=1; i<data.length; i++) {
 				Double value = Double.parseDouble(data[i]);
-				sum += value.doubleValue();
 				sortedValues.add(value);
 			}
 			
-			// Calculate average (data-length-1 to exclude the label field from average calculation)
-			double average = sum/new Double(data.length-1).doubleValue();
+			// Variable to store median in
+			Double median;
 			
-			// Calculate aberration values
-			TreeSet<Double> sortedAberrationValues = new TreeSet<Double>();
-			Iterator<Double> valueIterator = sortedValues.iterator();
-			while (valueIterator.hasNext()) {
-				Double value = valueIterator.next();
-				Double aberration = value - average;
-				// Apply exponent if it is greater than one
-				if (this.exponent > 0d)
-					aberration = aberration * Math.pow(2d, this.exponent);
-				// Store aberration value in set
-				sortedAberrationValues.add(aberration);
+			// Check for special cases
+			if (sortedValues.size() == 0){
+				// Empty data row, cannot calculate median
+				median = Double.NaN;
 			}
 			
-			// Store calculated aberration value set in map
-			aberrationValuesMap.put(type, sortedAberrationValues);
+			else if (sortedValues.size() == 1){
+				// Only a single data value is present
+				median = sortedValues.first();
+			}
+			
+			// Check whether the number of values is odd or even
+			else if (sortedValues.size()%2==0){
+				Double[] sortedValuesArray = sortedValues.toArray(new Double[data.length-1]);
+				Double upperMedian = new Double(sortedValuesArray[(sortedValuesArray.length/2)]);
+				Double lowerMedian = new Double(sortedValuesArray[(sortedValuesArray.length/2)-1]);
+				median = new Double((lowerMedian+upperMedian)/2);
+			} else {
+				Double[] sortedValuesArray = sortedValues.toArray(new Double[data.length-1]);
+				median = new Double(sortedValuesArray[(sortedValues.size()-1)/2]);
+			}
+			
+			// Store calculated median value in map
+			medianValuesMap.put(type, median);
 
 		}
 		
 		// Close input scanner
 		inputScanner.close();
 
-		// Output distances
+		// Output median map
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(gson.toJson(aberrationValuesMap));
+		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(gson.toJson(medianValuesMap));
 		
 		// Close outputs (important!)
 		this.closeAllOutputs();
@@ -155,12 +146,6 @@ public class VectorAberrationCalculatorModule extends ModuleImpl {
 
 		// Set defaults for properties not yet set
 		super.setDefaultsIfMissing();
-
-		// Apply own properties
-		String exponentString = this.getProperties().getProperty(PROPERTYKEY_EXPONENT,
-				this.getPropertyDefaultValues().get(PROPERTYKEY_EXPONENT));
-		if (exponentString != null && !exponentString.isEmpty())
-			this.exponent = Double.parseDouble(exponentString);
 
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
