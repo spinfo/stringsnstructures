@@ -2,17 +2,17 @@ package modules.paradigmSegmenter;
 
 import java.util.List;
 
-import modules.treeBuilder.Knoten;
+import models.ExtensibleTreeNode;
 
-public class EntscheidungsAeffchen {
+public class DecisionMonkey {
 
 	public static boolean debug = false;
-	private SymbolBewerter symbolBewerter;
+	private SymbolRater symbolBewerter;
 	private SplitDecisionNode aktuellerEntscheidungsKnoten;
-	private Knoten suffixbaumWurzelknoten;
-	private Knoten aktuellerKnoten;
+	private ExtensibleTreeNode suffixbaumWurzelknoten;
+	private ExtensibleTreeNode aktuellerKnoten;
 
-	public EntscheidungsAeffchen(SymbolBewerter symbolBewerter, Knoten suffixbaumWurzelknoten) {
+	public DecisionMonkey(SymbolRater symbolBewerter, ExtensibleTreeNode suffixbaumWurzelknoten) {
 		super();
 		this.symbolBewerter = symbolBewerter;
 		this.suffixbaumWurzelknoten = suffixbaumWurzelknoten;
@@ -62,8 +62,8 @@ public class EntscheidungsAeffchen {
 				double bewertungTrenne = symbolBewerter.symbolBewerten(zeichenkette.get(index), suffixbaumWurzelknoten, Double.MAX_VALUE);
 				if (aktuellerKnoten == null)
 					throw new Exception("The segmenter seems to have encountered an unknown symbol and cannot continue -- please make sure the suffix trie contains all symbols used within the segmentation input.");
-				SplitDecisionNode entscheidungsknotenVerbinde = new SplitDecisionNode(bewertungVerbinde, aktuellerKnoten, aktuellerKnoten.getKinder().get(zeichenkette.get(index)), aktuellerEntscheidungsKnoten, zeichenkette.get(index));
-				SplitDecisionNode entscheidungsknotenTrenne = new SplitDecisionNode(bewertungTrenne, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getKinder().get(zeichenkette.get(index)), aktuellerEntscheidungsKnoten, zeichenkette.get(index));
+				SplitDecisionNode entscheidungsknotenVerbinde = new SplitDecisionNode(bewertungVerbinde, aktuellerKnoten, aktuellerKnoten.getChildNodes().get(zeichenkette.get(index)), aktuellerEntscheidungsKnoten, zeichenkette.get(index));
+				SplitDecisionNode entscheidungsknotenTrenne = new SplitDecisionNode(bewertungTrenne, suffixbaumWurzelknoten, suffixbaumWurzelknoten.getChildNodes().get(zeichenkette.get(index)), aktuellerEntscheidungsKnoten, zeichenkette.get(index));
 				aktuellerEntscheidungsKnoten.setJoin(entscheidungsknotenVerbinde);
 				aktuellerEntscheidungsKnoten.setSplit(entscheidungsknotenTrenne);
 				

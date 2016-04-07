@@ -1,13 +1,13 @@
 package modules.paradigmSegmenter;
 
-import modules.treeBuilder.Knoten;
+import models.ExtensibleTreeNode;
 
-public class SymbolBewerter {
+public class SymbolRater {
 	
 	private double mindestKostenProSymbolschritt;
 	private double bewertungsAbfallFaktor;
 
-	public SymbolBewerter(double mindestKostenProSymbolschritt,
+	public SymbolRater(double mindestKostenProSymbolschritt,
 			double bewertungsAbfallFaktor) {
 		super();
 		this.mindestKostenProSymbolschritt = mindestKostenProSymbolschritt;
@@ -50,21 +50,21 @@ public class SymbolBewerter {
 	 * @param letzteBewertung Prior rating
 	 * @return bewertung (kleiner bedeutet geringere Uebergangshuerde)
 	 */
-	public double symbolBewerten(String symbol, Knoten elternKnoten, double letzteBewertung){
+	public double symbolBewerten(String symbol, ExtensibleTreeNode elternKnoten, double letzteBewertung){
 		// Variable fuer das Gesamtergebnis, Standardwert ist die maximal moegliche Huerde
 		double bewertung = Double.MAX_VALUE;
 		
 		// Pruefen, ob der aktuelle Knoten des Suffixbaumes unter dem aktuellen Symbol der Zeichenkette einen Kindknoten fuehrt.
-		if (symbol != null && elternKnoten != null && elternKnoten.getKinder().containsKey(symbol)){
+		if (symbol != null && elternKnoten != null && elternKnoten.getChildNodes().containsKey(symbol)){
 			
 			// Knoten ermitteln
-			Knoten kindKnoten = elternKnoten.getKinder().get(symbol);
+			ExtensibleTreeNode kindKnoten = elternKnoten.getChildNodes().get(symbol);
 			
 			// Ermitteln, welchen Wert der aktuelle Knoten hat
-			int gesamtwert = elternKnoten.getZaehler();
+			int gesamtwert = elternKnoten.getNodeCounter();
 			
 			// Ermitteln, welchen Wert der Kindknoten hat
-			int teilwert = kindKnoten.getZaehler();
+			int teilwert = kindKnoten.getNodeCounter();
 			
 			// Anteil des Kindknotenzaehlers am Zaehler seines Elternknoten ermitteln
 			double anteil = new Double(teilwert)/new Double(gesamtwert); // 0 < anteil <= 1

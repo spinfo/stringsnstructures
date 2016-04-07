@@ -40,7 +40,7 @@ import modules.hal.HalAdvancedModule;
 import modules.keyWordInPhrase.KeyWordInPhraseModule;
 import modules.neo4j.Neo4jOutputModule;
 import modules.oanc.OANCXMLParser;
-import modules.paradigmSegmenter.ParadigmenErmittlerModul;
+import modules.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
 import modules.segmentationModules.SegmentJoinerModule;
 import modules.segmentationModules.SegmentMatrixModule;
@@ -205,9 +205,9 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		asciiGraphModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, asciiGraphModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		asciiGraphModule.applyProperties();
 
-		// Prepare ParadigmenErmittlerModul module
+		// Prepare ParadigmSegmenterModule module
 		Properties paradigmenErmittlerModulProperties = new Properties();
-		ParadigmenErmittlerModul paradigmenErmittlerModul = new ParadigmenErmittlerModul(moduleNetwork,
+		ParadigmSegmenterModule paradigmenErmittlerModul = new ParadigmSegmenterModule(moduleNetwork,
 				paradigmenErmittlerModulProperties);
 		paradigmenErmittlerModulProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, paradigmenErmittlerModul.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		paradigmenErmittlerModul.applyProperties();

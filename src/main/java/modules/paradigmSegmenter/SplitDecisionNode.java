@@ -2,7 +2,7 @@ package modules.paradigmSegmenter;
 
 import java.text.DecimalFormat;
 
-import modules.treeBuilder.Knoten;
+import models.ExtensibleTreeNode;
 
 public class SplitDecisionNode {
 	
@@ -12,8 +12,8 @@ public class SplitDecisionNode {
 	private double aktivierungsPotential;
 	private SplitDecisionNode split;
 	private SplitDecisionNode join;
-	private Knoten suffixTrieElternKnoten;
-	private Knoten suffixTrieKindKnoten;
+	private ExtensibleTreeNode suffixTrieElternKnoten;
+	private ExtensibleTreeNode suffixTrieKindKnoten;
 	private SplitDecisionNode elternKnoten;
 	private String notiz;
 	private String symbol;
@@ -27,7 +27,7 @@ public class SplitDecisionNode {
 		this.aktivierungsPotential = bewertung;
 	}
 	
-	public SplitDecisionNode(double bewertung, Knoten suffixTrieElternKnoten, Knoten suffixTrieKindKnoten,
+	public SplitDecisionNode(double bewertung, ExtensibleTreeNode suffixTrieElternKnoten, ExtensibleTreeNode suffixTrieKindKnoten,
 			SplitDecisionNode elternKnoten, String symbol) {
 		super();
 		this.bewertung = bewertung;
@@ -82,13 +82,13 @@ public class SplitDecisionNode {
 	/**
 	 * @return the suffixTrieElternKnoten
 	 */
-	public Knoten getSuffixTrieElternKnoten() {
+	public ExtensibleTreeNode getSuffixTrieElternKnoten() {
 		return suffixTrieElternKnoten;
 	}
 	/**
 	 * @return the suffixTrieKindKnoten
 	 */
-	public Knoten getSuffixTrieKindKnoten() {
+	public ExtensibleTreeNode getSuffixTrieKindKnoten() {
 		return suffixTrieKindKnoten;
 	}
 	/**
@@ -158,13 +158,13 @@ public class SplitDecisionNode {
 	/**
 	 * @param suffixTrieKnoten the suffixTrieElternKnoten to set
 	 */
-	public void setSuffixTrieElternKnoten(Knoten suffixTrieKnoten) {
+	public void setSuffixTrieElternKnoten(ExtensibleTreeNode suffixTrieKnoten) {
 		this.suffixTrieElternKnoten = suffixTrieKnoten;
 	}
 	/**
 	 * @param suffixTrieKindKnoten the suffixTrieKindKnoten to set
 	 */
-	public void setSuffixTrieKindKnoten(Knoten suffixTrieKindKnoten) {
+	public void setSuffixTrieKindKnoten(ExtensibleTreeNode suffixTrieKindKnoten) {
 		this.suffixTrieKindKnoten = suffixTrieKindKnoten;
 	}
 	
