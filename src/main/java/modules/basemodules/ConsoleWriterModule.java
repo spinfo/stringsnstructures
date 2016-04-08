@@ -71,7 +71,8 @@ public class ConsoleWriterModule extends ModuleImpl {
 					readBytes = inputPort.getInputStream().read(buffer);
 				}
 
-				// Log message
+				// Complete writing and log message
+				out.flush();
 				Logger.getLogger(this.getClass().getSimpleName()).log(
 						Level.INFO, "Streamed output onto console");
 
@@ -107,7 +108,8 @@ public class ConsoleWriterModule extends ModuleImpl {
 					readChars = inputPort.getInputReader().read(buffer);
 				}
 
-				// Log message
+				// Complete writing and log message
+				out.flush();
 				Logger.getLogger(this.getClass().getSimpleName()).log(
 						Level.INFO, "Wrote output to console");
 
