@@ -21,6 +21,7 @@ import modules.artificialSeqs.CreateArtificialSeqsContent;
 import modules.bagOfWords.BagsOfWordsDistancesModule;
 import modules.bagOfWords.BagsOfWordsModule;
 import modules.basemodules.BufferModule;
+import modules.basemodules.ComparisonModule;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleGsonDeserialization;
 import modules.basemodules.ExampleGsonSerialization;
@@ -476,6 +477,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		segmentMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		segmentMatrixModule.applyProperties();
 		
+		// Comparison module
+		Properties comparisonModuleProperties = new Properties();
+		ComparisonModule comparisonModule = new ComparisonModule(moduleNetwork, comparisonModuleProperties);
+		comparisonModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, comparisonModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		comparisonModule.applyProperties();
+
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -534,6 +541,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(gexfFilterModule.getName(), gexfFilterModule);
 		availableModules.put(segmentJoinerModule.getName(), segmentJoinerModule);
 		availableModules.put(segmentMatrixModule.getName(), segmentMatrixModule);
+		availableModules.put(comparisonModule.getName(), comparisonModule);
 	}
 	
 	/**
