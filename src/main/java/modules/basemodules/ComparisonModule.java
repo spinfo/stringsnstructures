@@ -15,7 +15,7 @@ import modules.OutputPort;
 
 public class ComparisonModule extends ModuleImpl {
 
-	private static final String MODULE_NAME = "Comarison Module";
+	private static final String MODULE_NAME = "Comparison Module";
 	private static final String MODULE_DESCRIPTION = "Module reads from two input ports and outputs "
 			+ "1) lines only in the first input, "
 			+ "2) lines only in the second input, "
