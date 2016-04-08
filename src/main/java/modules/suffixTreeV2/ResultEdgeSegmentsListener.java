@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Stack;
 
+import modules.OutputPort;
+
 public class ResultEdgeSegmentsListener implements ITreeWalkerListener {
 
 	// the separator is exposed read-only
@@ -11,13 +13,13 @@ public class ResultEdgeSegmentsListener implements ITreeWalkerListener {
 
 	private final BaseSuffixTree tree;
 
-	private final BufferedWriter writer;
+	private final OutputPort out;
 
 	private final Stack<String> edges;
 
-	public ResultEdgeSegmentsListener(BaseSuffixTree tree, BufferedWriter writer) {
+	public ResultEdgeSegmentsListener(BaseSuffixTree tree, OutputPort out) {
 		this.tree = tree;
-		this.writer = writer;
+		this.out = out;
 		this.edges = new Stack<String>();
 	}
 
@@ -73,9 +75,8 @@ public class ResultEdgeSegmentsListener implements ITreeWalkerListener {
 				// simply check for integer equality of the text's begin and the
 				// starting node's begin
 				if (path.equals(tree.getInputText(node.getTextNr(i)))) {
-					writer.write(String.join(SEPARATOR, edges));
-					writer.newLine();
-					writer.flush();
+					// actually write the output
+					out.outputToAllCharPipes(String.join(SEPARATOR, edges) + System.lineSeparator());
 					break;
 				}
 			}

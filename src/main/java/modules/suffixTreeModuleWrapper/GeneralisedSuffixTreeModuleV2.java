@@ -145,9 +145,7 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 			// output a list of edge segments
 			final OutputPort edgeSegmentsOut = this.getOutputPorts().get(OUTPUT_EDGE_SEGMENTS_ID);
 			if (edgeSegmentsOut.isConnected()) {
-				final CharPipe segOutPipe = (CharPipe) edgeSegmentsOut.getPipes().get(CharPipe.class).get(0);
-				final BufferedWriter writer = new BufferedWriter(segOutPipe.getOutput());
-				final ResultEdgeSegmentsListener listener = new ResultEdgeSegmentsListener(suffixTree, writer);
+				final ResultEdgeSegmentsListener listener = new ResultEdgeSegmentsListener(suffixTree, edgeSegmentsOut);
 				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
 				if (!listener.hasCompleted()) {
 					throw new IllegalStateException("Listener did not finish correctly. Result may be wrong.");
