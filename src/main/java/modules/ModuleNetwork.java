@@ -93,7 +93,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 */
 	public synchronized boolean removeStartedThread(Thread thread){
 		thread.interrupt();
-		return (this.startedThreads.remove(thread) != null);
+		return (this.startedThreads.values().remove(thread));
 	}
 	
 	/**
