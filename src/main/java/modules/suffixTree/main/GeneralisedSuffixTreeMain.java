@@ -173,6 +173,8 @@ public class GeneralisedSuffixTreeMain {
 	/**
 	 * Writes an XML-Representation of the suffix tree and returns it as
 	 * a String. 
+	 * @param suffixTree suffix tree
+	 * @return XML representation
 	 */
 	public static String persistSuffixTreeToXmlString(SuffixTreeAppl suffixTree) {
 		final StringWriter stringWriter = new StringWriter();

@@ -14,8 +14,8 @@ public class VectorCalculation {
 	
 	/**
 	 * Calculates the Minkowski-Distance of two n-dimensional vectors.
-	 * @See MERKL, Rainer 2015, Bioinformatik, p.159
-	 * @See https://en.wikipedia.org/wiki/Minkowski_distance
+	 * Also refer to MERKL, Rainer 2015, Bioinformatik, p.159
+	 * and the <a href="https://en.wikipedia.org/wiki/Minkowski_distance">Wikipedia page</a> about the Minkowski-Distance.
 	 * @param vectorA First vector
 	 * @param vectorB Second vector
 	 * @return Minkowski-Distance
@@ -27,8 +27,8 @@ public class VectorCalculation {
 	
 	/**
 	 * Calculates the Minkowski-Distance of two n-dimensional vectors.
-	 * @See MERKL, Rainer 2015, Bioinformatik, p.159
-	 * @See https://en.wikipedia.org/wiki/Minkowski_distance
+	 * Also refer to MERKL, Rainer 2015, Bioinformatik, p.159
+	 * and the <a href="https://en.wikipedia.org/wiki/Minkowski_distance">Wikipedia page</a> about the Minkowski-Distance.
 	 * @param vectorA First vector
 	 * @param vectorB Second vector
 	 * @return Minkowski-Distance

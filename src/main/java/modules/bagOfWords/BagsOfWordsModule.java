@@ -25,8 +25,8 @@ import modules.OutputPort;
  * A simple List of newline separated sentences. It then simply splits the words
  * on whitespace.
  * 
- * The output in either case is a JSON-serialized TreeMap<Integer,TreeMap
- * <String,Integer>> mapping sentence numbers to maps of "words" with a count in
+ * The output in either case is a JSON-serialized TreeMap&lt;Integer,TreeMap
+ * &lt;String,Integer&gt;&gt; mapping sentence numbers to maps of "words" with a count in
  * the sentence.
  * 
  * @author David Neugebauer

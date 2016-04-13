@@ -13,6 +13,8 @@ public interface ITreeWalkerListener {
 	 * @param level
 	 *            the level of the node below the node that the TreeWalker
 	 *            started to walk on
+	 * @throws IOException
+	 *             if the implementation throws one.
 	 */
 	void entryaction(int nodeNr, int level) throws IOException;
 
@@ -25,7 +27,7 @@ public interface ITreeWalkerListener {
 	 * @param level
 	 *            the level of the node below the node that the TreeWalker
 	 *            started to walk on
-	 * @throws Exception
+	 * @throws IOException
 	 *             if the implementation throws one.
 	 */
 	void exitaction(int nodeNr, int level) throws IOException;

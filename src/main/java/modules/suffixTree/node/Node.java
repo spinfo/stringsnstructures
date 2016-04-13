@@ -42,9 +42,7 @@ public abstract class Node {
 	 * Get information about the start of the suffix that was read producing
 	 * this (leaf) node
 	 * 
-	 * @param startPositionOfSuffix
-	 *            depending on the suffix tree used this can be a simple integer
-	 *            or a List of TextStartPosInfo objects
+	 * @return start pos info
 	 */
 	public abstract Object getStartPositionInformation();
 

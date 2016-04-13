@@ -323,6 +323,8 @@ public class BaseSuffixTree {
 	
 	/**
 	 * Returns the text noted for the textNr. Fails if no such text was noted.
+	 * @param textNr Nr of text
+	 * @return text
 	 */
 	public String getInputText(int textNr) {
 		final int begin = getTextBegin(textNr);

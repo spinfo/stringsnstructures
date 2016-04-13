@@ -72,9 +72,9 @@ public class ParentRelationTreeNodeImpl implements ParentRelationTreeNode {
 	}
 	
 	/**
-	 * Fancy output containing all child nodes.
-	 * @param prefix
-	 * @return
+	 * Fancy output containing all descending nodes.
+	 * @param prefix Prefix to insert
+	 * @return String representing the node and all its descendants
 	 */
 	public String toString(String prefix){
 		StringBuffer sb = new StringBuffer();

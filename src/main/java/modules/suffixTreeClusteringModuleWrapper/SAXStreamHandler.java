@@ -38,14 +38,9 @@ public class SAXStreamHandler extends DefaultHandler {
 	private enum Tags {UNITS, NODES, NODE, NUMBER, LABEL, FREQUENCY, TYPE, PATTERNINFO, TYPENR, PATTERN, STARTPOS, UNDEFINED};
 	
 	/**
-	 * Read content from XML File into own data structure {@link SuffixTreeInfo}
-	 * .
-	 * 
-	 * @param xmlFile
-	 *            - XML file to read, should contain information about
-	 *            SuffixTree Nodes.
-	 * @param typeStrings
-	 *            - mapping from type IDs to type Strings
+	 * Read content from XML File into own data structure {@link SuffixTreeInfo}.
+	 * @param inStream XML file to read, should contain information about SuffixTree Nodes.
+	 * @param typeStrings mapping from type IDs to type Strings
 	 * @return {@link SuffixTreeInfo} object
 	 */
 	public SuffixTreeInfo read(InputStream inStream,

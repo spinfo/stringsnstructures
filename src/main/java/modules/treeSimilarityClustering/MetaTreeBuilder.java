@@ -88,7 +88,7 @@ public class MetaTreeBuilder extends CallbackReceiverImpl {
 
 	/**
 	 * Gibt den Ergebnisbaum des juengsten Aufrufs von baueBaum() zurueck.
-	 * @return
+	 * @return result list
 	 */
 	public List<MetaNode> getErgebnisListe() {
 		return ergebnisListe;
@@ -229,7 +229,7 @@ public class MetaTreeBuilder extends CallbackReceiverImpl {
 	 * Bildet eine MetaNodestruktur mit ExtensibleTreeNode ab (verwirft also die Tokendimension).
 	 * Der Uebereinstimmungsquotient des MetaNodes wird dabei in Promille im Zaehler
 	 * des ExtensibleTreeNodes angegeben.
-	 * @param mk
+	 * @param mk meta node
 	 * @return Wurzel des neuen Baumes
 	 */
 	public ExtensibleTreeNode konvertiereMetaNodeZuExtensibleTreeNode(MetaNode mk){

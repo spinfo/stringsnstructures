@@ -27,6 +27,7 @@ public class ModuleDesktopManager extends DefaultDesktopManager {
 	 * Rearranges the internal frames connected to the specified one, very
 	 * crudely guessing decent placement.
 	 * @param frame Frame whose output nodes shall be rearranged
+	 * @param moduleFrameMap map of module&#8594;frame bindings
 	 */
 	public void rearrangeInternalFrame(ModuleInternalFrame frame, Map<Module,ModuleInternalFrame> moduleFrameMap){
 		

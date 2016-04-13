@@ -117,6 +117,7 @@ public class ResultToJsonListener extends AbstractNodeStackListener implements I
 	/**
 	 * Finalizes writing of the SuffixTreeRepresentation, closes all ports
 	 * connected and/or used internally.
+	 * @throws IOException on error
 	 */
 	public void finishWriting() throws IOException {
 		// finalize the node array and object begun in writeBegin()
@@ -132,9 +133,12 @@ public class ResultToJsonListener extends AbstractNodeStackListener implements I
 		this.outputPort.close();
 	}
 
-	// Writes the beginning of the tree and notes that it has already been
-	// written, ensuring that this operation is only called once in the
-	// life cycle of this object
+	/**
+	 * Writes the beginning of the tree and notes that it has already been
+	 * written, ensuring that this operation is only called once in the
+	 * life cycle of this object
+	 * @throws IOException on error
+	 */
 	private void writeBegin() throws IOException {
 		if (wroteBegin) {
 			return;
@@ -150,8 +154,10 @@ public class ResultToJsonListener extends AbstractNodeStackListener implements I
 		wroteBegin = true;
 	}
 
-	// used internally to output changes in the writer's stream to the
-	// outputPort
+	/**
+	 * used internally to output changes in the writer's stream to the outputPort
+	 * @throws IOException
+	 */
 	private void flushOutput() throws IOException {
 		writer.flush();
 		final String jsonOut = outputStream.toString(ENCODING);

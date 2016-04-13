@@ -1,9 +1,9 @@
 package common;
 
 /**
- * Taken from http://stackoverflow.com/questions/3537706/howto-unescape-a-java-string-literal-in-java
- * @author Tom Christiansen <tchrist@perl.com>
- * @see http://stackoverflow.com/questions/3537706/howto-unescape-a-java-string-literal-in-java
+ * Taken from <a href=http://stackoverflow.com/questions/3537706/howto-unescape-a-java-string-literal-in-java>here</a>
+ * @author Tom Christiansen <a href=mailto:tchrist@perl.com>tchrist@perl.com</a>
+ * @see <a href="http://stackoverflow.com/questions/3537706/howto-unescape-a-java-string-literal-in-java">Stackoverflow page</a>
  *
  */
 public class StringUnescaper {

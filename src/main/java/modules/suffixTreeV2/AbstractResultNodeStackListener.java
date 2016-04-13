@@ -14,7 +14,7 @@ public abstract class AbstractResultNodeStackListener implements ITreeWalkerList
 	/**
 	 * An initialiser for subclasses to setup all necessary variables.
 	 * 
-	 * @param suffixTree
+	 * @param tree
 	 *            the suffixTree to traverse
 	 */
 	public AbstractResultNodeStackListener(BaseSuffixTree tree) {

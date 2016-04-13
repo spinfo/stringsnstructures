@@ -57,7 +57,7 @@ public class NodeComparator {
 	/**
 	 * Vergleicht alle uebergebenen Baeume miteinander und gibt eine Matrix aus Uebereinstimmungsquotienten zurueck.
 	 * @param ExtensibleTreeNodeListe Liste der WurzelExtensibleTreeNode der miteinander zu vergleichenden Baeume.
-	 * @param reduziereVergleicheAufNotwendige Vergleiche werden auf Notwendige beschraenkt: Eigenvergleiche (A<->A) und redundante Vergleiche (A<->B B<->A) werden ignoriert.
+	 * @param reduziereVergleicheAufNotwendige Vergleiche werden auf Notwendige beschraenkt: Eigenvergleiche (A&#8596;A) und redundante Vergleiche (A&#8596;B B&#8596;A) werden ignoriert.
 	 * @param vergleichAufVergleichswortzweigBeschraenken Nur der Zweig, der mit dem Vergleichswort (das im WurzelExtensibleTreeNode eines jeden Graphen festgehalten ist) beginnt, wird verglichen.
 	 * @param zeigeNurTrefferExtensibleTreeNode Im Graphenplot werden nur uebereinstimmende ExtensibleTreeNode angezeigt.
 	 * @param layoutTyp Typ des anzuzeigenden Layouts, 1: RadialTreeLayout, 2:BalloonLayout
@@ -125,8 +125,8 @@ public class NodeComparator {
 	 * Uebereinstimmungen sind im Ergebnisbaum via isMatch() markiert; Zaehler
 	 * der ExtensibleTreeNode wurden im Ergebnisbaum aufaddiert.
 	 * 
-	 * @param ExtensibleTreeNode1
-	 * @param ExtensibleTreeNode2
+	 * @param ExtensibleTreeNode1 node one
+	 * @param ExtensibleTreeNode2 node two
 	 * @return WurzelExtensibleTreeNode des neuen Baumes
 	 */
 	public ExtensibleTreeNode verschmelzeBaeume(ExtensibleTreeNode ExtensibleTreeNode1, ExtensibleTreeNode ExtensibleTreeNode2) {
@@ -256,7 +256,7 @@ public class NodeComparator {
 	 * @see #ermittleExtensibleTreeNodeTrefferwert(ExtensibleTreeNode ExtensibleTreeNode, int ebene, int maxebene, double ebenenexponent)
 	 * @param ExtensibleTreeNode Der ExtensibleTreeNode des Baumes, ab dem ausgewertet werden soll.
 	 * @param maxebene Tiefste Ebene der Baumhierarchie, die noch ausgewertet werden soll.
-	 * @param ebenenexponent Exponent der Ebenennummer, welche Faktor fuer die Wertung von ExtensibleTreeNode ist.
+	 * @param ebenenexponentpositiv Exponent der Ebenennummer, welche Faktor fuer die Wertung von ExtensibleTreeNode ist.
 	 * @return double-Array mit Trefferwert auf Index 0, Gesamtwert auf Index 1.
 	 */
 	public Double[] ermittleExtensibleTreeNodeTrefferwert(ExtensibleTreeNode ExtensibleTreeNode, int maxebene,
@@ -317,7 +317,7 @@ public class NodeComparator {
 	
 	/**
 	 * Gibt einen Baum zurueck, der nur aus den TrefferExtensibleTreeNode des Eingabebaumes besteht (ab der ersten Kindebene).
-	 * @param k
+	 * @param k node
 	 * @return WurzelExtensibleTreeNode des Trefferbaumes
 	 */
 	public ExtensibleTreeNode trefferBaum(ExtensibleTreeNode k) {
