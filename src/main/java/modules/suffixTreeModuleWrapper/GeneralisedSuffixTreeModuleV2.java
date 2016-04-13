@@ -1,13 +1,11 @@
 package modules.suffixTreeModuleWrapper;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
@@ -17,6 +15,8 @@ import modules.suffixTreeV2.ResultEdgeSegmentsListener;
 import modules.suffixTreeV2.ResultLabelListListener;
 import modules.suffixTreeV2.SuffixTree;
 import modules.suffixTreeV2.TreeWalker;
+
+import common.parallelization.CallbackReceiver;
 
 /**
  * Module Reads from KWIP modules output into a suffix tree. Constructs a

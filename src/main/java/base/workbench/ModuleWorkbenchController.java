@@ -39,7 +39,6 @@ import modules.basemodules.SmbFileReaderModule;
 import modules.basemodules.SmbFileWriterModule;
 import modules.hal.HalAdvancedModule;
 import modules.keyWordInPhrase.KeyWordInPhraseModule;
-import modules.neo4j.Neo4jOutputModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
@@ -76,7 +75,6 @@ import modules.visualizationModules.ColourGraph;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
-
 import common.ListLoggingHandler;
 import common.parallelization.CallbackReceiver;
 
@@ -177,13 +175,6 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				atomicRangeSuffixTrieBuilderProperties);
 		atomicRangeSuffixTrieBuilderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, atomicRangeSuffixTrieBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		atomicRangeSuffixTrieBuilder.applyProperties();
-
-		// Prepare Neo4jOutputModule module
-		Properties neo4jOutputModuleProperties = new Properties();
-		Neo4jOutputModule neo4jOutputModule = new Neo4jOutputModule(moduleNetwork,
-				neo4jOutputModuleProperties);
-		neo4jOutputModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, neo4jOutputModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		neo4jOutputModule.applyProperties();
 
 		// Prepare SuffixNetBuilderModule module
 		Properties suffixNetBuilderModuleProperties = new Properties();
@@ -497,7 +488,6 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(oancParser.getName(),oancParser);
 		availableModules.put(treeBuilder.getName(),treeBuilder);
 		availableModules.put(atomicRangeSuffixTrieBuilder.getName(),atomicRangeSuffixTrieBuilder);
-		availableModules.put(neo4jOutputModule.getName(),neo4jOutputModule);
 		availableModules.put(suffixNetBuilderModule.getName(),suffixNetBuilderModule);
 		availableModules.put(colourGraphModule.getName(),colourGraphModule);
 		availableModules.put(asciiGraphModule.getName(),asciiGraphModule);

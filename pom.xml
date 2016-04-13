@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.uni-koeln.spinfo</groupId>
 	<artifactId>strings</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1</version>
 	<properties>
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   	</properties>
@@ -202,16 +202,6 @@
 			<version>4.12</version>
 		</dependency>
 		<!-- Neo4j-API -->
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j</artifactId>
-			<version>2.3.0-M02</version>
-		</dependency>
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j-lucene-index</artifactId>
-			<version>2.3.0-M02</version>
-		</dependency>
 		<!-- Jersey -->
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
@@ -230,4 +220,11 @@
 			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
+	<url>http://www.spinfo.phil-fak.uni-koeln.de/sas.html</url>
+	<name>Strings &amp; Structures: Codes of Sense and Function in Genomics and Linguistics</name>
+	<organization>
+		<name>Universität zu Köln</name>
+		<url>http://www.uni-koeln.de</url>
+	</organization>
+	<description>An extensible software workbench tool that comes with a collection of modules used in context of the Strings &amp; Structures project.</description>
 </project>

@@ -1,6 +1,5 @@
 package modules.suffixTreeV2;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Stack;
 
