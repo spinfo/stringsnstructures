@@ -34,7 +34,7 @@ public class DecisionMonkey {
 		aktuellerKnoten = aktuellerEntscheidungsKnoten.getSuffixTrieKindKnoten();
 		double letzteBewertung = Double.MAX_VALUE;
 		
-		// Schleife ueber alle Zeichen (das erste ist bereits im Entsche4idungsbaumwurzelknoten hinterlegt)
+		// Schleife ueber alle Zeichen (das erste ist bereits im Entscheidungsbaumwurzelknoten hinterlegt)
 		for (int index=1; index<zeichenkette.size();){
 			// Pruefen, ob der aktuelle Entscheidungsknoten bereits Kindelemente hat
 			if (aktuellerEntscheidungsKnoten.getSplit() != null && aktuellerEntscheidungsKnoten.getJoin() != null){

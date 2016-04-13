@@ -27,6 +27,7 @@ public class SegmentMatrixModule extends ModuleImpl {
 	public static final String PROPERTYKEY_DELIMITER_INPUT_SEGMENT = "segment input delimiter regex";
 	public static final String PROPERTYKEY_DELIMITER_INPUT_STRING = "string input delimiter regex";
 	public static final String PROPERTYKEY_DELIMITER_OUTPUT_CSVDELIMITER = "CSV output delimiter";
+	public static final String PROPERTYKEY_OMIT_ZERO_VALUES = "omit zero values";
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "input";
@@ -36,6 +37,7 @@ public class SegmentMatrixModule extends ModuleImpl {
 	private String inputdelimiter_segment;
 	private String inputdelimiter_string;
 	private String outputdelimiter_csv;
+	private boolean omitZeroValues;
 
 	public SegmentMatrixModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -53,12 +55,14 @@ public class SegmentMatrixModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_SEGMENT, "Regular expression to use as segmentation delimiter for the segments of the string.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_STRING, "Regular expression to use as segmentation delimiter for the strings.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT_CSVDELIMITER, "String to use as segmentation delimiter between CSV elements.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OMIT_ZERO_VALUES, "Omit any value that is zero on output [true|false].");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Segment Matrix"); // Property key for module name is defined in parent class
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT_SEGMENT, "\\|");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT_STRING, "\\n");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT_CSVDELIMITER, ";");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OMIT_ZERO_VALUES, "true");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "Segment list.", this);
@@ -140,7 +144,7 @@ public class SegmentMatrixModule extends ModuleImpl {
 				String key2 = keys2.next();
 				if (coOccurrenceMatrix.get(key).contains(key2))
 					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("1");
-				else
+				else if (!this.omitZeroValues)
 					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("0");
 				if (keys2.hasNext())
 					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_csv);
@@ -166,7 +170,9 @@ public class SegmentMatrixModule extends ModuleImpl {
 		this.inputdelimiter_segment = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_INPUT_SEGMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT_SEGMENT));
 		this.inputdelimiter_string = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_INPUT_STRING, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT_STRING));
 		this.outputdelimiter_csv = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT_CSVDELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT_CSVDELIMITER));
-		
+		String omitZeroValuesString = this.getProperties().getProperty(PROPERTYKEY_OMIT_ZERO_VALUES, this.getPropertyDefaultValues().get(PROPERTYKEY_OMIT_ZERO_VALUES));
+		if (omitZeroValuesString != null)
+			this.omitZeroValues = Boolean.parseBoolean(omitZeroValuesString);
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
 	}

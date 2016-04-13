@@ -72,8 +72,13 @@ public class SymbolRater {
 			// Bewertung fuer diesen Kindknoten errechnen
 			bewertung = (1d/anteil)-1d+this.mindestKostenProSymbolschritt;
 			
+			// Anstieg in der Anzahl der Kindknoten miteinbeziehen
+			double elternKnotenChildrenAmount = elternKnoten.getChildNodes().size();
+			double childNodeChildrenAmount = kindKnoten.getChildNodes().size();
+			bewertung = bewertung * (childNodeChildrenAmount/elternKnotenChildrenAmount);
+			
 			// Abfall in der Bewertung miteinbeziehen (deutet auf paradigmatische Grenze hin)
-			if (letzteBewertung<bewertung)
+			if (this.bewertungsAbfallFaktor>0 && letzteBewertung<bewertung)
 				bewertung = bewertung * (bewertung/letzteBewertung) * this.bewertungsAbfallFaktor;
 			
 		}
