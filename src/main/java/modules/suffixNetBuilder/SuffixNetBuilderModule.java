@@ -24,10 +24,6 @@ public class SuffixNetBuilderModule extends ModuleImpl {
 	
 	public static final String BERUEHRUNGSZAEHLER_SCHLUESSEL = "zaehler";
 	// Property keys
-	public static final String PROPERTYKEY_NEO4JURI = "URI of Neo4J DB";
-	public static final String PROPERTYKEY_NEO4JUSR = "Username for Neo4J access";
-	public static final String PROPERTYKEY_NEO4JPWD = "Password for Neo4J access";
-	public static final String PROPERTYKEY_USENEO4J = "Output to Neo4J";
 	public static final String PROPERTYKEY_INDIVIDUALBRANCHES = "Create individual branches";
 	public static final String PROPERTYKEY_INDIVIDUALROOTNODES = "Create individual rootnodes";
 	

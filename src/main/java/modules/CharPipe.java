@@ -14,6 +14,7 @@ public class CharPipe implements Pipe {
 	}
 	
 	/**
+	 * Get input writer
 	 * @return the input
 	 */
 	public PipedReader getInput() {
@@ -21,16 +22,31 @@ public class CharPipe implements Pipe {
 	}
 
 	/**
+	 * Get output writer
 	 * @return the output
 	 */
 	public PipedWriter getOutput() {
 		return output;
 	}
-
+	
+	/**
+	 * Writes to the output pipe.
+	 * @see java.io.Writer#write(String) Writer.write
+	 * @param data String to write
+	 * @throws IOException thrown on I/O error
+	 */
 	public void write(String data) throws IOException {
 		this.output.write(data);
 	}
 	
+	/**
+	 * Writes to the output pipe.
+	 * @see PipedWriter#write(char[], int, int) PipedReader.write
+	 * @param data char-array with data to write
+	 * @param offset write offset
+	 * @param length length of data to write
+	 * @throws IOException thrown on I/O error
+	 */
 	public void write(char[] data, int offset, int length) throws IOException {
 		this.output.write(data, offset, length);
 	}
@@ -40,6 +56,15 @@ public class CharPipe implements Pipe {
 		this.output.close();
 	}
 	
+	/**
+	 * Reads from the input pipe.
+	 * @see PipedReader#read(char[], int, int) PipedReader.read
+	 * @param buffer buffer to store read input in
+	 * @param offset read offset
+	 * @param length amount of chars to read
+	 * @return amount of chars read
+	 * @throws IOException thrown on I/O error
+	 */
 	public int read(char[] buffer, int offset, int length) throws IOException {
 		return this.input.read(buffer, offset, length);
 	}
