@@ -56,7 +56,7 @@ public class TreeBuilderV3Module extends ModuleImpl {
 		super(callbackReceiver, properties);
 
 		// Add module description
-		this.setDescription("<p>This module can be used to construct different types of suffix trees from formatted or non-formatted text input. It uses a custom algorithm and runs in approximate linear time (but uses only single thread processing).</p>"
+		this.setDescription("<p>This module can be used to construct different types of suffix trees from formatted or non-formatted text input. It uses a custom algorithm and runs in approximate linear time (actually it did turn out that the processing time grows exponentially under certain circumstances, so no guarantee) and uses single thread processing.</p>"
 				+ "<p> The type of tree to build is determined by various parameters. With those, you can build suffix trees that are"
 				+ "<ul>"
 				+ "<li><i>generalised</i> or <i>non-generalised</i>,</li>"
