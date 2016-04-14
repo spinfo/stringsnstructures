@@ -32,7 +32,7 @@ public class GST {
 	    in.close();
 		
 		SuffixTree st = new SuffixTree(inText.length());
-		PositionInfo oo = st.newEnd();// end value for leaves; is changed if final '$' is reached
+		NodePositionEnd oo = st.newEnd();// end value for leaves; is changed if final '$' is reached
 									  // generate new st.OO for next text
 
 		// set the beginning of the first text to first letter of the input

@@ -76,16 +76,19 @@ public class AbstractResultNodeStackListenerTest {
 			final Set<Node> expectedLeaves = findLeaves(node);
 			assertTrue(expectedLeaves.equals(node.getLeaves()));
 
-			// don't forget to increment the amount of nodes processed
+			// increment the amount of nodes processed for external checking
 			nodesProcessed += 1;
 		}
 
+		// Setup the recursive call to find all leaves of a node.
 		private Set<Node> findLeaves(Node node) {
 			Set<Node> result = new HashSet<Node>();
 			findLeaves(node, result, node);
 			return result;
 		}
 
+		// Recursively travel to the leaves of the current node and put all
+		// leaves into the provided set.
 		private void findLeaves(Node current, Set<Node> leaves, Node initial) {
 			for (char c : current.getEdgeBegins()) {
 				findLeaves(tree.getNode(current.getNext(c)), leaves, initial);

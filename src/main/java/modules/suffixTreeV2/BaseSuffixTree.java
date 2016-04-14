@@ -31,7 +31,7 @@ public class BaseSuffixTree {
 	
 	// An end to keep track of all node's end positions while setting a single
 	// text when this is used as a generalised suffix tree.
-	private PositionInfo end;
+	private NodePositionEnd end;
 	
 	public BaseSuffixTree(int length) {
 		nodes = new Node[2 * length + 2];
@@ -366,17 +366,17 @@ public class BaseSuffixTree {
 	
 	/**
 	 * Initialise a new end value for new nodes. Used by the GST on beginning a new input text.
-	 * @return the PositionInfo created as the new end.
+	 * @return the NodePositionEnd created as the new end.
 	 */
-	protected PositionInfo newEnd() {
-		this.end = new PositionInfo(BaseSuffixTree.oo);
+	protected NodePositionEnd newEnd() {
+		this.end = new NodePositionEnd(BaseSuffixTree.oo);
 		return this.end;
 	}
 	
 	/**
-	 * @return The PositionInfo used to set multiple node's ends when this is used as a GST.
+	 * @return The NodePositionEnd used to set multiple node's ends when this is used as a GST.
 	 */
-	protected PositionInfo getEnd() {
+	protected NodePositionEnd getEnd() {
 		return this.end;
 	}
 

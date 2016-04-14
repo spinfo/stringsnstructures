@@ -74,7 +74,15 @@ public abstract class AbstractResultNodeStackListener implements ITreeWalkerList
 		return nodes;
 	}
 
-	// the child class uses this to process the node on top of the stack
-	public abstract void process(Node node, int leve);
+	/**
+	 * The child class implements this method to do it's actual work after the
+	 * node's have been enriched by the abstract listener.
+	 * 
+	 * @param node
+	 *            The node currently processed.
+	 * @param level
+	 *            The level within the tree.
+	 */
+	public abstract void process(Node node, int level);
 
 }

@@ -1,7 +1,9 @@
 package modules.suffixTreeV2;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -14,26 +16,22 @@ public class Node {
 	 */
 
 	int link;
-	// positionList is an ArrayList of PositionInfo which contains four elements for
-	// nonterminal nodes (first:start, second:end, third:textNr, fourth: typeContext) 
-	// and n * four elements (quadruple) for terminal nodes, 
-	// i.e. n = number of texts ending in the terminal;
-	// Special case for end of leaves: end value element is equal for all leaves for a given text;
-	// value of this element is oo, i.e. maximal value; at the end, when '$' is reached, value is 
-	// replaced by actual position value
-	private ArrayList<PositionInfo> positionList;
+
+	// List that contains either the position of this node in one single text (inner node) or all
+	// positions of this node (terminal node)
+	private List<NodePosition> positions;
 	
 	// the edges to the next nodes (represented by a node nr in the tree)
 	TreeMap<Character, Integer> next = new TreeMap<Character, Integer>();
 	
 	// A data field that may be used by clients to link a node to all it's leaf nodes.
-	// This field is never used in the construction of the suffix tree and can be ignored
-	// for the simple purpose of building and using a suffix tree in a normal way.
+	// This field is never used in the construction of the suffix tree and can
+	// be ignored for the simple purpose of building and using a suffix tree in a normal way.
 	private Set<Node> leaves = new HashSet<Node>();
 
 	// cstr
 	public Node(int start, int end, int nr, int typeContextNr, BaseSuffixTree tree) {
-		this.positionList=new ArrayList<PositionInfo>(4);
+		this.positions=new ArrayList<NodePosition>(1);
 		this.addPos(start, end, nr, typeContextNr, tree);
 	}// Node
 	
@@ -41,9 +39,8 @@ public class Node {
 		return ((this.next==null) || (this.next.size()==0));
 	}
 	
-	// This should be the only place where new positionInfo objects are added to
-	// the positionInfo list. This ensures, that all four fields are actually filled
-	// and can later be retrieved by indexing to the n*4th position.
+	// How positions are kept track of is hidden from the client. This methods adds new
+	// NodePosition elements and decides what End the current position should be set to
 	void addPos(int start,int end, int textNr, int typeContext, BaseSuffixTree tree){
 		// make sure that the position added is never equal to the last position set
 		if (this.getPositionsAmount() > 0){
@@ -53,53 +50,49 @@ public class Node {
 				throw new IllegalStateException("addPos equal entry start: " + start + " end: " + end + " textNr: " + textNr);
 			}
 		}
-		// start
-		this.positionList.add(new PositionInfo(start));
-		// end
+		// decied which end value is to be used
+		final NodePositionEnd endPosition;
 		if (end==BaseSuffixTree.oo) {
-			this.positionList.add(tree.getEnd());
+			endPosition = tree.getEnd();
 		} else {
-			this.positionList.add(new PositionInfo(end));
+			endPosition = new NodePositionEnd(end);
 		}
-		// textNr
-		this.positionList.add(new PositionInfo(textNr));
-		// typeContextNr
-		this.positionList.add(new PositionInfo(typeContext));
+		// actually add the position
+		this.positions.add(new NodePosition(start, endPosition, textNr, typeContext));
 	}
 	
 	// getter methods for start, end and textNr
-	// quadruple ordering of elements is hidden from client
 	public int getStart(int pos) {
-		return this.positionList.get(getPositionListIndex(pos)).val;
+		return this.positions.get(pos).getStart();
 	}
 	
 	public int getEnd(int pos) {
-		return this.positionList.get(getPositionListIndex(pos)+1).val;
+		return this.positions.get(pos).getEnd();
 	}
 	
 	public int getTextNr(int pos) {
-		return this.positionList.get(getPositionListIndex(pos)+2).val;
+		return this.positions.get(pos).getTextNr();
 	}
 	
 	public int getTypeContext(int pos) {
-		return this.positionList.get(getPositionListIndex(pos)+3).val;
+		return this.positions.get(pos).getTypeContextNr();
 	}
 	
 	// setter methods for start, end and textNr
 	void setStart(int pos, int val){
-		this.positionList.get(getPositionListIndex(pos)).val=val;
+		this.positions.get(pos).setStart(val);
 	}
 	
 	void setEnd(int pos, int val){
-		this.positionList.get(getPositionListIndex(pos)+1).val=val;
+		this.positions.get(pos).setEnd(new NodePositionEnd(val));
 	}
 	
 	void setTextNr(int pos, int val) {
-		this.positionList.get(getPositionListIndex(pos)+2).val=val;
+		this.positions.get(pos).setTextNr(val);
 	}
 	
 	void setTypeContextNr(int pos, int val) {
-		this.positionList.get(getPositionListIndex(pos)+3).val=val;
+		this.positions.get(pos).setTypeContextNr(val);
 	}
 	
 	// if a node is split and if it represents more than one text, all start positions in
@@ -110,24 +103,14 @@ public class Node {
 		}
 	}
 
-	// Returns the actual number of positions noted for this node
-	// regardless of their triple ordering
+	// Returns the number of positions noted for this node
 	public int getPositionsAmount() {
-		if (this.positionList.size() % 4 != 0) {
-			throw new IllegalStateException("Wrong number of elements for position list. Must always contain a multiple of 4 elements.");
-		}
-		return (int) (this.positionList.size() / 4);
+		return this.positions.size();
 	}
 
 	// return the edge length of the node in the tree
 	public int edgeLength(BaseSuffixTree tree) {
 		return Math.min(this.getEnd(0),tree.position + 1) - this.getStart(0);
-	}
-	
-	// get the actual index in positionList by multiplying with the
-	// number of elements, that are noted for each position
-	private int getPositionListIndex(final int pos) {
-		return pos * 4;
 	}
 	
 	// return the beginnings of edges starting at this node
@@ -139,6 +122,15 @@ public class Node {
 	// that begins with edgeBegin, return null if no such node exists
 	public Integer getNext(char edgeBegin) {
 		return this.next.get(edgeBegin);
+	}
+	
+	/**
+	 * Publicly the list of positions of a node is exposed read-only.
+	 * 
+	 * @return An unmodifiable view on the positions of this node.
+	 */
+	public List<NodePosition> getPositions() {
+		return Collections.unmodifiableList(this.positions);
 	}
 	
 	// return the leaves that were set for this node.	
