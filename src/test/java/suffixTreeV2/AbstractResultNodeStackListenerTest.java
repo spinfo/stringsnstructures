@@ -14,6 +14,7 @@ import modules.suffixTreeV2.AbstractResultNodeStackListener;
 import modules.suffixTreeV2.BaseSuffixTree;
 import modules.suffixTreeV2.GST;
 import modules.suffixTreeV2.Node;
+import modules.suffixTreeV2.NodePosition;
 import modules.suffixTreeV2.TreeWalker;
 
 public class AbstractResultNodeStackListenerTest {
@@ -81,6 +82,25 @@ public class AbstractResultNodeStackListenerTest {
 			// the set aggregated by the node stack listener
 			final Set<Node> expectedLeaves = findLeaves(node);
 			assertTrue(expectedLeaves.equals(node.getLeaves()));
+
+			// Check that the path length can be used to correctly identify the
+			// path leading to the current node. For every node position
+			// reconstruct the path from input text, node position and path
+			// length, than traverse the tree and compare the node encountered
+			// to the current node.
+			if (nodeNr != tree.getRoot()) {
+				String pathToCurrent = null;
+				Node atEndOfPath = null;
+				for (NodePosition position : node.getPositions()) {
+					pathToCurrent = tree.getText().substring(position.getEnd() - node.getPathLength(),
+							position.getEnd());
+					atEndOfPath = GstTestHelper.checkPathExists(tree, pathToCurrent);
+					assertTrue(node.equals(atEndOfPath));
+				}
+			} else {
+				// the root node should simply have a path length of zero
+				assertEquals(0, node.getPathLength());
+			}
 
 			// increment the amount of nodes processed for external checking
 			nodesProcessed += 1;
