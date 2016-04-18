@@ -28,6 +28,11 @@ public class Node {
 	// This field is never used in the construction of the suffix tree and can
 	// be ignored for the simple purpose of building and using a suffix tree in a normal way.
 	private Set<Node> leaves = new HashSet<Node>();
+	
+	// A data field that may be used to set the length of the path up to this node.
+	// This field is never used in the construction of the suffix tree and can
+	// be ignored for the simple purpose of building and using a suffix tree in a normal way.
+	private int pathLength = -1;
 
 	// cstr
 	public Node(int start, int end, int nr, int typeContextNr, BaseSuffixTree tree) {
@@ -133,8 +138,24 @@ public class Node {
 		return Collections.unmodifiableList(this.positions);
 	}
 	
-	// return the leaves that were set for this node.	
+	/**
+	 * @return The leaves set for this node or an empty set if none were set.
+	 */
 	public Set<Node> getLeaves() {
 		return this.leaves;
+	}
+	
+	/**
+	 * Set the path length up to this node to the specified value.
+	 */
+	public void setPathLength(int length) {
+		this.pathLength = length;
+	}
+
+	/**
+	 * @return The pathLength set for this node or -1 if none was set.
+	 */
+	public int getPathLength() {
+		return pathLength;
 	}
 }// Node

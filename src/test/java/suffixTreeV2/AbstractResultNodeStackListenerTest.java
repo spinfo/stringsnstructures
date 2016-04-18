@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import org.junit.Test;
 
@@ -33,13 +33,19 @@ public class AbstractResultNodeStackListenerTest {
 			this.tree = tree;
 		}
 
-		public void process(final Node node, int level) {
-			final Stack<Node> nodes = super.getNodes();
+		public void process(int nodeNr, List<Node> path, int pathLength, int level) {
+			final Node node = tree.getNode(nodeNr);
 
 			// test that the level reported by the listener matches the amount
 			// of nodes on the stack (assumes that listening started on the
 			// root)
-			assertEquals(nodes.size(), level);
+			assertEquals(path.size(), level);
+
+			// test that the path length matches the actual sum of all edges
+			// length
+			String edges = path.stream().map(n -> tree.edgeString(n)).reduce("", String::concat);
+			edges += tree.edgeString(node);
+			assertEquals(edges.length(), pathLength);
 
 			// check that each node is a child of the previous node on the stack
 			// up until the current node
@@ -47,9 +53,9 @@ public class AbstractResultNodeStackListenerTest {
 			Node expectedNext = null;
 			Node next = null;
 			char edgeBegin = '\0';
-			for (int i = 0; i < nodes.size() - 1; i++) {
-				current = nodes.get(i);
-				expectedNext = nodes.get(i + 1);
+			for (int i = 0; i < path.size() - 1; i++) {
+				current = path.get(i);
+				expectedNext = path.get(i + 1);
 				assertNotNull(current);
 				assertNotNull(expectedNext);
 
@@ -62,9 +68,9 @@ public class AbstractResultNodeStackListenerTest {
 
 			// the last node on the stack should be the parent of the node being
 			// processed
-			if (nodes.size() > 0) {
+			if (path.size() > 0) {
 				edgeBegin = tree.edgeString(node).charAt(0);
-				assertEquals(tree.getNode(nodes.peek().getNext(edgeBegin)), node);
+				assertEquals(tree.getNode(path.get(path.size() - 1).getNext(edgeBegin)), node);
 			}
 			// if no node is left on the stack, root is the node being processed
 			else {

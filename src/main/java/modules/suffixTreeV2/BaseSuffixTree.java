@@ -187,6 +187,10 @@ public class BaseSuffixTree {
 	
 	// get the edge string of a node
 	public String edgeString(Node node) {
+		if (node == getNode(getRoot())) {
+			return "";
+		}
+
 		int end=node.getEnd(0);
 		if (end==oo) {
 			for (end=node.getStart(0);end<=oo;end++) {
@@ -274,14 +278,28 @@ public class BaseSuffixTree {
 		return new String(text);
 	}
 	
-	// Increment or initialise the current type context number.
-	// This value will be used when node's positions are assigned to
-	// mark the type context.
+	/**
+	 * Type contexts should not be set directly by the client but only incremented
+	 * 
+	 * @return The type context number.
+	 */
 	public int incrementTypeContext() {
 		if(currentTypeContext == NO_TYPE_CONTEXT) {
 			currentTypeContext = 0;
 		} else {
 			currentTypeContext += 1;
+		}
+		return currentTypeContext;
+	}
+	
+	/**
+	 * Return the amount of type contexts read.
+	 * 
+	 * @return Always an integer.
+	 */
+	public int getTypeContextsAmount() {
+		if (currentTypeContext == NO_TYPE_CONTEXT) {
+			return 0;
 		}
 		return currentTypeContext;
 	}
