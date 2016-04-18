@@ -1,14 +1,17 @@
 package modules.suffixTreeModuleWrapper;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
 import common.XmlPrintWriter;
 import common.parallelization.CallbackReceiver;
+import models.GstLabelData;
 import modules.BytePipe;
 import modules.CharPipe;
 import modules.InputPort;
@@ -17,6 +20,7 @@ import modules.OutputPort;
 import modules.suffixTreeV2.GST;
 import modules.suffixTreeV2.ResultEdgeSegmentsListener;
 import modules.suffixTreeV2.ResultLabelListListener;
+import modules.suffixTreeV2.ResultToGstLabelDataListener;
 import modules.suffixTreeV2.ResultToXmlListener;
 import modules.suffixTreeV2.SuffixTree;
 import modules.suffixTreeV2.TreeWalker;
@@ -35,9 +39,6 @@ import modules.suffixTreeV2.TreeWalker;
  */
 public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 
-	// private static final Logger LOGGER =
-	// Logger.getLogger(GeneralisedSuffixTreeMain.class.getName());
-
 	// Variables for the module
 	private static final String MODULE_NAME = "GeneralisedSuffixTreeModule";
 	private static final String MODULE_DESCRIPTION = "Module Rreads from KWIP modules output into a suffix tree. Constructs a "
@@ -55,16 +56,10 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 	private static final String OUTPUT_XML_DESC = "[bytestream] An xml representation of the tree build, suitbale for clustering.";
 	private static final String OUTPUT_LIST_ID = "label list";
 	private static final String OUTPUT_LIST_DESC = "[text/plain] A list of labels separated by newline";
-	// private static final String OUTPUT_LABEL_DATA_ID = "label data";
-	// private static final String OUTPUT_LABEL_DATA_DESC = "[text/csv] Prints a
-	// csv table with label information.";
+	private static final String OUTPUT_LABEL_DATA_ID = "label data";
+	private static final String OUTPUT_LABEL_DATA_DESC = "[text/csv] Prints a csv table with label information.";
 	private static final String OUTPUT_DOT_FILE_ID = "dot file";
 	private static final String OUTPUT_DOT_FILE_DESC = "Prints a graphical representation of the tree as a graphviz .dot file.";
-	// private static final String OUTPUT_SUCCESSORS_MATRIX_ID = "successor
-	// label matrix";
-	// private static final String OUTPUT_SUCCESSORS_MATRIX_DESC = "[text/csv] A
-	// matrix with labels on the y-axis, successor strings on the x-axis and
-	// counts in the field.";
 	private static final String OUTPUT_EDGE_SEGMENTS_ID = "edge segments";
 	private static final String OUTPUT_EDGE_SEGMENTS_DESC = "For each input text the output is that path in the tree split into it's edges.";
 
@@ -90,9 +85,6 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 		this.setCategory("Tree-building");
 
 		// Setup I/O, reads from char input produced by KWIP.
-		// json output is to a CharPipe as expected, but
-		// xml Output is to a BytePipe for compatibility reasons to the
-		// clustering module
 		InputPort inputTextPort = new InputPort(INPUT_TEXT_ID, INPUT_TEXT_DESC, this);
 		inputTextPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputTextPort);
@@ -173,6 +165,14 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 				xmlOut.outputToAllBytePipes(sw.toString().getBytes());
 			}
 
+			// output the label data csv table
+			final OutputPort labelDataOut = this.getOutputPorts().get(OUTPUT_LABEL_DATA_ID);
+			if (labelDataOut.isConnected()) {
+				final ResultToGstLabelDataListener listener = new ResultToGstLabelDataListener(suffixTree);
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+				writeGstLabelData(listener.getLabelsToGstData().values(), labelDataOut);
+			}
+
 		} catch (Exception e) {
 			result = false;
 			throw e;
@@ -191,6 +191,8 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 		// outputJsonPort.addSupportedPipe(CharPipe.class);
 		// super.addOutputPort(outputJsonPort);
 
+		// xml Output goes to a BytePipe for compatibility to the clustering
+		// module
 		OutputPort outputXmlPort = new OutputPort(OUTPUT_XML_ID, OUTPUT_XML_DESC, this);
 		outputXmlPort.addSupportedPipe(BytePipe.class);
 		super.addOutputPort(outputXmlPort);
@@ -199,24 +201,44 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 		outputListPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputListPort);
 
-		// OutputPort outputLabelDataPort = new OutputPort(OUTPUT_LABEL_DATA_ID,
-		// OUTPUT_LABEL_DATA_DESC, this);
-		// outputLabelDataPort.addSupportedPipe(CharPipe.class);
-		// super.addOutputPort(outputLabelDataPort);
+		OutputPort outputLabelDataPort = new OutputPort(OUTPUT_LABEL_DATA_ID, OUTPUT_LABEL_DATA_DESC, this);
+		outputLabelDataPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputLabelDataPort);
 
 		OutputPort outputDotFilePort = new OutputPort(OUTPUT_DOT_FILE_ID, OUTPUT_DOT_FILE_DESC, this);
 		outputDotFilePort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputDotFilePort);
 
-		// OutputPort outputSuccessorsMatrixPort = new
-		// OutputPort(OUTPUT_SUCCESSORS_MATRIX_ID,
-		// OUTPUT_SUCCESSORS_MATRIX_DESC, this);
-		// outputSuccessorsMatrixPort.addSupportedPipe(CharPipe.class);
-		// super.addOutputPort(outputSuccessorsMatrixPort);
-
 		OutputPort outputEdgeSegmentsPort = new OutputPort(OUTPUT_EDGE_SEGMENTS_ID, OUTPUT_EDGE_SEGMENTS_DESC, this);
 		outputEdgeSegmentsPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputEdgeSegmentsPort);
+	}
+
+	/**
+	 * This just writes all entries in the provided set of GstLabelData objects
+	 * to the specified output port's char pipes.
+	 * 
+	 * @param labelsToData
+	 *            The data objects to write.
+	 * @param outputPort
+	 *            The output port to write to.
+	 * @throws IOException
+	 *             If something goes wrong with IO.
+	 */
+	private void writeGstLabelData(final Collection<GstLabelData> dataset, OutputPort outputPort) throws IOException {
+		final StringBuilder sb = new StringBuilder();
+		// output the header
+		sb.append(GstLabelData.getCsvHeader());
+		sb.append(System.lineSeparator());
+		// output the labels line by line
+		for (GstLabelData data : dataset) {
+			data.toCsv(sb);
+			sb.append(System.lineSeparator());
+
+			// output the line and reset string builder
+			outputPort.outputToAllCharPipes(sb.toString());
+			sb.setLength(0);
+		}
 	}
 
 }
