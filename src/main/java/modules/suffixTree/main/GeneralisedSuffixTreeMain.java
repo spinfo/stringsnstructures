@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import modules.suffixTree.applications.ResultToXmlListener;
 import modules.suffixTree.applications.SuffixTreeAppl;
 import modules.suffixTree.applications.TreeWalker;
-import modules.suffixTree.applications.XmlPrintWriter;
+import common.XmlPrintWriter;
 import modules.suffixTree.node.End;
 import modules.suffixTree.node.ExtActivePoint;
 import modules.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;

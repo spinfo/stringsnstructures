@@ -1,4 +1,4 @@
-package modules.suffixTree.applications;
+package common;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -6,9 +6,9 @@ import java.io.StringWriter;
 
 public class XmlPrintWriter extends PrintWriter {
 
-	private String openTag = "<";
-	private String closeTag = "</";
-	private String endTag = ">";
+	private static final String openTag = "<";
+	private static final String closeTag = "</";
+	private static final String endTag = ">";
 
 	public XmlPrintWriter(FileWriter fw) {
 		super(new PrintWriter(fw));

@@ -2,6 +2,7 @@ package modules.suffixTree.applications;
 
 import java.util.List;
 
+import common.XmlPrintWriter;
 import modules.suffixTree.SuffixTree;
 import modules.suffixTree.node.GeneralisedSuffixTreeNode;
 import modules.suffixTree.node.TextStartPosInfo;
