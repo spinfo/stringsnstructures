@@ -93,7 +93,10 @@ public class ResultToXmlListener extends AbstractResultNodeStackListener {
 		out.printInt(position.getTextNr());
 		out.printTag("pattern", false, 0, true);
 		
-		// write the index of the start of the path lead to this leaf's position
+		// write the index of the start of the path leading to this leaf's position
+		// i.e. go back from the position's end as much letters as the path is long
+		// to output the path to the leaf you could write:
+		// out.println(tree.getText().substring(position.getEnd()-leaf.getPathLength(), position.getEnd()));
 		out.printTag("startpos", true, 4, false);
 		out.printInt(position.getEnd() - leaf.getPathLength());
 		out.printTag("startpos", false, 0, true);
@@ -106,6 +109,7 @@ public class ResultToXmlListener extends AbstractResultNodeStackListener {
 	 */
 	private void writeHeader() {
 		out.printTag("output", true, 0, true);
+
 		out.printTag("units", true, 1, false);
 		out.printInt(tree.getTypeContextsAmount());
 		out.printTag("units", false, 0, true);
@@ -113,7 +117,7 @@ public class ResultToXmlListener extends AbstractResultNodeStackListener {
 		out.printTag("nodes", true, 1, false);
 		out.printInt(tree.getNodeAmount());
 		out.printTag("nodes", false, 0, true);
-		
+
 		// set the flag such that this header is not written again
 		wroteHeader = true;
 	}

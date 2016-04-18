@@ -33,13 +33,7 @@ public class GstTest {
 
 		// test two different strings repeating a single letter
 		tree = buildAndCheckTree("aa$bb$");
-		expectedPaths = new String[][] { 
-			{ "$" },
-			{ "a", "$" },
-			{ "a", "a$" },
-			{ "b", "$" },
-			{ "b", "b$" }
-		};
+		expectedPaths = new String[][] { { "$" }, { "a", "$" }, { "a", "a$" }, { "b", "$" }, { "b", "b$" } };
 		checkPaths(tree, expectedPaths, 8);
 
 		// repeating the strings should result in the same paths
@@ -48,184 +42,102 @@ public class GstTest {
 
 		// test the caterpillar
 		tree = buildAndCheckTree("aaaaaaaa$");
-		expectedPaths = new String[][] { 
-			{ "$" },
-			{ "a", "$" },
-			{ "a", "a", "$" },
-			{ "a", "a", "a", "$" },
-			{ "a", "a", "a", "a", "$" },
-			{ "a", "a", "a", "a", "a", "$" },
-			{ "a", "a", "a", "a", "a", "a", "$" },
-			{ "a", "a", "a", "a", "a", "a", "a", "$" },
-			{ "a", "a", "a", "a", "a", "a", "a", "a$" }
-		};
+		expectedPaths = new String[][] { { "$" }, { "a", "$" }, { "a", "a", "$" }, { "a", "a", "a", "$" },
+				{ "a", "a", "a", "a", "$" }, { "a", "a", "a", "a", "a", "$" }, { "a", "a", "a", "a", "a", "a", "$" },
+				{ "a", "a", "a", "a", "a", "a", "a", "$" }, { "a", "a", "a", "a", "a", "a", "a", "a$" } };
 		checkPaths(tree, expectedPaths, 17);
-		
+
 		// test the example from http://stackoverflow.com/a/9513423/1879728
 		tree = buildAndCheckTree("abcabxabcd$");
-		expectedPaths = new String[][] {
-			{ "$" },
-			{ "ab", "xabcd$" },
-			{ "ab", "c", "d$" },
-			{ "ab", "c", "abxabcd$" },
-			{ "b", "xabcd$" },
-			{ "b", "c", "d$" },
-			{ "b", "c", "abxabcd$" },
-			{ "c", "abxabcd$" },
-			{ "c", "d$" },
-			{ "d$" },
-			{ "xabcd$" }
-		};
+		expectedPaths = new String[][] { { "$" }, { "ab", "xabcd$" }, { "ab", "c", "d$" }, { "ab", "c", "abxabcd$" },
+				{ "b", "xabcd$" }, { "b", "c", "d$" }, { "b", "c", "abxabcd$" }, { "c", "abxabcd$" }, { "c", "d$" },
+				{ "d$" }, { "xabcd$" } };
 		checkPaths(tree, expectedPaths, 17);
-		
+
 		// test multiple repetitions with some additions
 		tree = buildAndCheckTree("aab$bba$aabccd$aabbba$bbaaab$");
-		expectedPaths = new String[][] {
-			{ "$" },
-			{ "a", "$" },
-			{ "a", "a", "ab$" },
-			{ "a", "a", "b", "$" },
-			{ "a", "a", "b", "bba$" },
-			{ "a", "a", "b", "ccd$" },
-			{ "a", "b", "$" },
-			{ "a", "b", "bba$" },
-			{ "a", "b", "ccd$" },
-			{ "b", "$" },
-			{ "b", "a", "$"},
-			{ "b", "a", "aab$" },
-			{ "b", "b", "a", "$" },
-			{ "b", "b", "a", "aab$" },
-			{ "b", "b", "ba$" },
-			{ "b", "ccd$" },
-			{ "c", "cd$" },
-			{ "c", "d$" },
-			{ "d$" }
-		};
+		expectedPaths = new String[][] { { "$" }, { "a", "$" }, { "a", "a", "ab$" }, { "a", "a", "b", "$" },
+				{ "a", "a", "b", "bba$" }, { "a", "a", "b", "ccd$" }, { "a", "b", "$" }, { "a", "b", "bba$" },
+				{ "a", "b", "ccd$" }, { "b", "$" }, { "b", "a", "$" }, { "b", "a", "aab$" }, { "b", "b", "a", "$" },
+				{ "b", "b", "a", "aab$" }, { "b", "b", "ba$" }, { "b", "ccd$" }, { "c", "cd$" }, { "c", "d$" },
+				{ "d$" } };
 		checkPaths(tree, expectedPaths, 29);
-		
+
 		// reverting the order of words should not change the paths
 		tree = buildAndCheckTree("bbaaab$aabbba$aabccd$bba$aab$");
 		checkPaths(tree, expectedPaths, 29);
-		
+
 		// shuffling the words should not change the paths either
 		tree = buildAndCheckTree("aab$aabbba$bbaaab$bba$aabccd$");
 		checkPaths(tree, expectedPaths, 29);
 
 		// another simple test
 		tree = buildAndCheckTree("petra$peter$");
-		expectedPaths = new String[][] {
-			{ "$" },
-			{ "pet", "ra$" },
-			{ "pet", "er$" },
-			{ "e", "r$" },
-			{ "e", "t", "er$" },
-			{ "e", "t", "ra$" },
-			{ "t", "er$" },
-			{ "t", "ra$" },
-			{ "r", "$" },
-			{ "r", "a$" },
-			{ "a$" }
-		};
+		expectedPaths = new String[][] { { "$" }, { "pet", "ra$" }, { "pet", "er$" }, { "e", "r$" },
+				{ "e", "t", "er$" }, { "e", "t", "ra$" }, { "t", "er$" }, { "t", "ra$" }, { "r", "$" }, { "r", "a$" },
+				{ "a$" } };
 		checkPaths(tree, expectedPaths, 17);
 
 		// test all combinations of length 3 for an alphabet of 4
 		input = "aaa$aab$aac$aad$aba$abb$abc$abd$aca$acb$acc$acd$ada$adb$adc$add$baa$bab$bac$bad$bba$bbb$bbc$bbd$bca$bcb$bcc$bcd$bda$bdb$bdc$bdd$caa$cab$cac$cad$cba$cbb$cbc$cbd$cca$ccb$ccc$ccd$cda$cdb$cdc$cdd$daa$dab$dac$dad$dba$dbb$dbc$dbd$dca$dcb$dcc$dcd$dda$ddb$ddc$ddd$";
 		tree = buildAndCheckTree(input);
-		expectedPaths = new String[][] {
-			{"$"},
-			// permutations of length 1 & 2
-			{"a", "$"}, {"b", "$"}, {"c", "$"}, {"d", "$"},
-			{"a", "a", "$"}, {"a", "b", "$"}, {"a", "c", "$"}, {"a", "d", "$"}, {"b", "a", "$"}, {"b", "b", "$"}, {"b", "c", "$"}, {"b", "d", "$"}, {"c", "a", "$"}, {"c", "b", "$"}, {"c", "c", "$"}, {"c", "d", "$"}, {"d", "a", "$"}, {"d", "b", "$"}, {"d", "c", "$"}, {"d", "d", "$"},
-			// permutations of length 3
-            {"a", "a", "a$"}, {"a", "a", "b$"}, {"a", "a", "c$"}, {"a", "a", "d$"}, {"a", "b", "a$"}, {"a", "b", "b$"}, {"a", "b", "c$"}, {"a", "b", "d$"}, {"a", "c", "a$"}, {"a", "c", "b$"}, {"a", "c", "c$"}, {"a", "c", "d$"}, {"a", "d", "a$"}, {"a", "d", "b$"}, {"a", "d", "c$"}, {"a", "d", "d$"},
-            {"b", "a", "a$"}, {"b", "a", "b$"}, {"b", "a", "c$"}, {"b", "a", "d$"}, {"b", "b", "a$"}, {"b", "b", "b$"}, {"b", "b", "c$"}, {"b", "b", "d$"}, {"b", "c", "a$"}, {"b", "c", "b$"}, {"b", "c", "c$"}, {"b", "c", "d$"}, {"b", "d", "a$"}, {"b", "d", "b$"}, {"b", "d", "c$"}, {"b", "d", "d$"},
-            {"c", "a", "a$"}, {"c", "a", "b$"}, {"c", "a", "c$"}, {"c", "a", "d$"}, {"c", "b", "a$"}, {"c", "b", "b$"}, {"c", "b", "c$"}, {"c", "b", "d$"}, {"c", "c", "a$"}, {"c", "c", "b$"}, {"c", "c", "c$"}, {"c", "c", "d$"}, {"c", "d", "a$"}, {"c", "d", "b$"}, {"c", "d", "c$"}, {"c", "d", "d$"},
-            {"d", "a", "a$"}, {"d", "a", "b$"}, {"d", "a", "c$"}, {"d", "a", "d$"}, {"d", "b", "a$"}, {"d", "b", "b$"}, {"d", "b", "c$"}, {"d", "b", "d$"}, {"d", "c", "a$"}, {"d", "c", "b$"}, {"d", "c", "c$"}, {"d", "c", "d$"}, {"d", "d", "a$"}, {"d", "d", "b$"}, {"d", "d", "c$"}, {"d", "d", "d$"}
-		};
-		checkPaths(tree, expectedPaths, 106); // one root, 5 on 1st level (a,b,c,d,$), (4*5) on 2nd level, (4*4*5) on 3rd
+		expectedPaths = new String[][] { { "$" },
+				// permutations of length 1 & 2
+				{ "a", "$" }, { "b", "$" }, { "c", "$" }, { "d", "$" }, { "a", "a", "$" }, { "a", "b", "$" },
+				{ "a", "c", "$" }, { "a", "d", "$" }, { "b", "a", "$" }, { "b", "b", "$" }, { "b", "c", "$" },
+				{ "b", "d", "$" }, { "c", "a", "$" }, { "c", "b", "$" }, { "c", "c", "$" }, { "c", "d", "$" },
+				{ "d", "a", "$" }, { "d", "b", "$" }, { "d", "c", "$" }, { "d", "d", "$" },
+				// permutations of length 3
+				{ "a", "a", "a$" }, { "a", "a", "b$" }, { "a", "a", "c$" }, { "a", "a", "d$" }, { "a", "b", "a$" },
+				{ "a", "b", "b$" }, { "a", "b", "c$" }, { "a", "b", "d$" }, { "a", "c", "a$" }, { "a", "c", "b$" },
+				{ "a", "c", "c$" }, { "a", "c", "d$" }, { "a", "d", "a$" }, { "a", "d", "b$" }, { "a", "d", "c$" },
+				{ "a", "d", "d$" }, { "b", "a", "a$" }, { "b", "a", "b$" }, { "b", "a", "c$" }, { "b", "a", "d$" },
+				{ "b", "b", "a$" }, { "b", "b", "b$" }, { "b", "b", "c$" }, { "b", "b", "d$" }, { "b", "c", "a$" },
+				{ "b", "c", "b$" }, { "b", "c", "c$" }, { "b", "c", "d$" }, { "b", "d", "a$" }, { "b", "d", "b$" },
+				{ "b", "d", "c$" }, { "b", "d", "d$" }, { "c", "a", "a$" }, { "c", "a", "b$" }, { "c", "a", "c$" },
+				{ "c", "a", "d$" }, { "c", "b", "a$" }, { "c", "b", "b$" }, { "c", "b", "c$" }, { "c", "b", "d$" },
+				{ "c", "c", "a$" }, { "c", "c", "b$" }, { "c", "c", "c$" }, { "c", "c", "d$" }, { "c", "d", "a$" },
+				{ "c", "d", "b$" }, { "c", "d", "c$" }, { "c", "d", "d$" }, { "d", "a", "a$" }, { "d", "a", "b$" },
+				{ "d", "a", "c$" }, { "d", "a", "d$" }, { "d", "b", "a$" }, { "d", "b", "b$" }, { "d", "b", "c$" },
+				{ "d", "b", "d$" }, { "d", "c", "a$" }, { "d", "c", "b$" }, { "d", "c", "c$" }, { "d", "c", "d$" },
+				{ "d", "d", "a$" }, { "d", "d", "b$" }, { "d", "d", "c$" }, { "d", "d", "d$" } };
+		checkPaths(tree, expectedPaths, 106); // one root, 5 on 1st level
+												// (a,b,c,d,$), (4*5) on 2nd
+												// level, (4*4*5) on 3rd
 
 		// test words not sharing any letter (tree of depth 1)
 		tree = buildAndCheckTree("ABCDEF$abcdef$ghijkl$mnopqr$STUVWX$");
-		expectedPaths = new String[][] {
-			{ "$" },
-			{ "ABCDEF$" }, { "BCDEF$" }, { "CDEF$" }, { "DEF$" }, { "EF$" }, { "F$" },  
-			{ "abcdef$" }, { "bcdef$" }, { "cdef$" }, { "def$" }, { "ef$" }, { "f$" }, 
-			{ "ghijkl$" }, { "hijkl$" }, { "ijkl$" }, { "jkl$" }, { "kl$" }, { "l$" }, 
-			{ "mnopqr$" }, { "nopqr$" }, { "opqr$" }, { "pqr$" }, { "qr$" }, { "r$" }, 
-			{ "STUVWX$" }, { "TUVWX$" }, { "UVWX$" }, { "VWX$" }, { "WX$" }, { "X$" }, 
-		};
-		checkPaths(tree, expectedPaths, 32); // 6 words of length 5 plus one root and one single '$'
-		
+		expectedPaths = new String[][] { { "$" }, { "ABCDEF$" }, { "BCDEF$" }, { "CDEF$" }, { "DEF$" }, { "EF$" },
+				{ "F$" }, { "abcdef$" }, { "bcdef$" }, { "cdef$" }, { "def$" }, { "ef$" }, { "f$" }, { "ghijkl$" },
+				{ "hijkl$" }, { "ijkl$" }, { "jkl$" }, { "kl$" }, { "l$" }, { "mnopqr$" }, { "nopqr$" }, { "opqr$" },
+				{ "pqr$" }, { "qr$" }, { "r$" }, { "STUVWX$" }, { "TUVWX$" }, { "UVWX$" }, { "VWX$" }, { "WX$" },
+				{ "X$" }, };
+		checkPaths(tree, expectedPaths, 32); // 6 words of length 5 plus one
+												// root and one single '$'
+
 		// a sequence with repeats and a unique starting letter
 		// from: http://docs.seqan.de/seqan/1.2/streeSentinel.png
 		tree = buildAndCheckTree("mississippi$");
-		expectedPaths = new String[][] {
-			{ "$" },
-			{ "mississippi$" },
-			{ "i", "$" },
-			{ "i", "ppi$" },
-			{ "i", "ssi", "ppi$" },
-			{ "i", "ssi", "ssippi$" },
-			{ "p", "i$" },
-			{ "p", "pi$" },
-			{ "s", "i", "ppi$" },
-			{ "s", "i", "ssippi$"},
-			{ "s", "si", "ppi$" },
-			{ "s", "si", "ssippi$" }
-		};
+		expectedPaths = new String[][] { { "$" }, { "mississippi$" }, { "i", "$" }, { "i", "ppi$" },
+				{ "i", "ssi", "ppi$" }, { "i", "ssi", "ssippi$" }, { "p", "i$" }, { "p", "pi$" }, { "s", "i", "ppi$" },
+				{ "s", "i", "ssippi$" }, { "s", "si", "ppi$" }, { "s", "si", "ssippi$" } };
 		checkPaths(tree, expectedPaths, 19);
 
 		// seven words with some overlaps of a few letters length
 		tree = buildAndCheckTree("romane$romanus$romulus$rubens$ruber$rubicon$rubicundus$");
-		expectedPaths = new String[][] {
-			{ "$" },
-			{ "r", "$" },
-			{ "r", "om", "an", "e$" },
-			{ "r", "om", "an", "us$" },
-			{ "r", "om", "ulus$" },
-			{ "r", "ub", "e", "r$" },
-			{ "r", "ub", "e", "ns$" },
-			{ "r", "ub", "ic", "on$" },
-			{ "r", "ub", "ic", "undus$" },
-			{ "o", "m", "an", "e$" },
-			{ "o", "m", "an", "us$" },
-			{ "o", "m", "ulus$" },
-			{ "o", "n$" },
-			{ "m", "an", "e$" },
-			{ "m", "an", "us$" },
-			{ "m", "ulus$" },
-			{ "an", "e$" },
-			{ "an", "us$" },
-			{ "n", "$" },
-			{ "n", "e$" },
-			{ "n", "dus$" },
-			{ "n", "us$" },
-			{ "n", "s$" },
-			{ "e", "$" },
-			{ "e", "ns$" },
-			{ "e", "r$" },
-			{ "u", "b", "e", "ns$" },
-			{ "u", "b", "e", "r$" },
-			{ "u", "b", "ic", "on$" },
-			{ "u", "b", "ic", "undus$" },
-			{ "u", "s$" },
-			{ "u", "lus$" },
-			{ "u", "ndus$" },
-			{ "s$" },
-			{ "lus$" },
-			{ "b", "e", "ns$" },
-			{ "b", "e", "r$" },
-			{ "b", "ic", "on$" },
-			{ "b", "ic", "undus$" },
-			{ "ic", "on$" },
-			{ "ic", "undus$" },
-			{ "c", "on$" },
-			{ "c", "undus$" },
-			{ "dus$" }
-		};
+		expectedPaths = new String[][] { { "$" }, { "r", "$" }, { "r", "om", "an", "e$" }, { "r", "om", "an", "us$" },
+				{ "r", "om", "ulus$" }, { "r", "ub", "e", "r$" }, { "r", "ub", "e", "ns$" }, { "r", "ub", "ic", "on$" },
+				{ "r", "ub", "ic", "undus$" }, { "o", "m", "an", "e$" }, { "o", "m", "an", "us$" },
+				{ "o", "m", "ulus$" }, { "o", "n$" }, { "m", "an", "e$" }, { "m", "an", "us$" }, { "m", "ulus$" },
+				{ "an", "e$" }, { "an", "us$" }, { "n", "$" }, { "n", "e$" }, { "n", "dus$" }, { "n", "us$" },
+				{ "n", "s$" }, { "e", "$" }, { "e", "ns$" }, { "e", "r$" }, { "u", "b", "e", "ns$" },
+				{ "u", "b", "e", "r$" }, { "u", "b", "ic", "on$" }, { "u", "b", "ic", "undus$" }, { "u", "s$" },
+				{ "u", "lus$" }, { "u", "ndus$" }, { "s$" }, { "lus$" }, { "b", "e", "ns$" }, { "b", "e", "r$" },
+				{ "b", "ic", "on$" }, { "b", "ic", "undus$" }, { "ic", "on$" }, { "ic", "undus$" }, { "c", "on$" },
+				{ "c", "undus$" }, { "dus$" } };
 		checkPaths(tree, expectedPaths, 68);
 	}
-	
+
 	@Test
 	public void testBigTree() {
 		final InputStream stream = getClass().getClassLoader().getResourceAsStream("line1K");
@@ -241,7 +153,7 @@ public class GstTest {
 			fail("Failed to read the test file.");
 		}
 	}
-	
+
 	@Test
 	public void testTypeContexts() {
 		SuffixTree tree = null;
@@ -249,7 +161,8 @@ public class GstTest {
 		List<Integer> expectedTypeContexts = null;
 		String input = null;
 
-		// The input string is a KWIP output for "aa cc$bb cc$bb dd$". This has types 'aa', 'bb', 'cc' and 'dd'
+		// The input string is a KWIP output for "aa cc$bb cc$bb dd$". This has
+		// types 'aa', 'bb', 'cc' and 'dd'
 		// type contexts accordingly are:
 		// type 0: 'aa' => in text 1
 		// type 1: 'bb' => in text 2,3
@@ -257,28 +170,47 @@ public class GstTest {
 		// type 3: 'dd' => in text 3
 		// The input then is the concatenation of texts 1 + 2,3 + 1,2 + 3:
 		input = "aa cc$bb cc$bb dd$aa cc$bb cc$bb dd$";
-		// the type context end indices then give ranges for that set of sentences
+		// the type context end indices then give ranges for that set of
+		// sentences
 		// 'aa' => context ends with sentence 1
 		// 'bb' => context ends with sentence 3
 		// 'cc' => context ends with sentence 5
 		// 'dd' => context ends with sentence 6
-		contextEndIndices = Arrays.asList(1, 2, 5, 6);
+		contextEndIndices = Arrays.asList(1, 3, 5, 6);
 		tree = buildAndCheckTree(input, contextEndIndices);
-	
-		// the suffix ' cc' then should exist once in the contexts of 'aa' (type 0) and 'bb' (type 1)
+
+		// the amount of type contexts reported by the tree after building
+		// should be correct
+		assertEquals(4, tree.getTypeContextsAmount());
+
+		// the suffix ' cc' then should exist once in the contexts of 'aa' (type
+		// 0) and 'bb' (type 1)
 		// and twice within it's own context (type 2)
 		expectedTypeContexts = Arrays.asList(0, 1, 2, 2);
 		checkTypeContexts(tree, " cc$", expectedTypeContexts);
-		
-		// the same should be true for 'cc$' without leading blank
+
+		// the same should be true for 'cc$' without leading blank as well as
+		// just "c"
 		checkTypeContexts(tree, "cc$", expectedTypeContexts);
+		checkTypeContexts(tree, "c$", expectedTypeContexts);
+
+		// the suffix 'dd' exists once in the context of 'bb' (type 1) and once
+		// in it's own context (type 3).
+		expectedTypeContexts = Arrays.asList(1, 3);
+		checkTypeContexts(tree, " dd$", expectedTypeContexts);
+		checkTypeContexts(tree, "dd$", expectedTypeContexts);
+
+		// "a cc" should report one position for 'aa' (type 0) and one for 'cc'
+		// (type 2)
+		checkTypeContexts(tree, "a cc$", Arrays.asList(0, 2));
 	}
-	
+
 	private SuffixTree buildAndCheckTree(final String input) {
 		return buildAndCheckTree(input, null);
 	}
 
-	// builds a generalised suffix tree of the input string and performs some basic checks
+	// builds a generalised suffix tree of the input string and performs some
+	// basic checks
 	private SuffixTree buildAndCheckTree(final String input, final List<Integer> typeContextNrs) {
 		SuffixTree result = null;
 		try {
@@ -287,13 +219,14 @@ public class GstTest {
 			e.printStackTrace();
 			fail("Building the tree failed with error: " + e.getMessage());
 		}
-		
+
 		generalTreeCheck(result, input);
-		
+
 		return result;
 	}
-	
-	// Performs some basic checks, that a tree built with GST is internally consistent.
+
+	// Performs some basic checks, that a tree built with GST is internally
+	// consistent.
 	private void generalTreeCheck(BaseSuffixTree tree, String expectedInput) {
 		final String input = tree.getText();
 
@@ -301,33 +234,39 @@ public class GstTest {
 		assertTrue("Input and reported input should match", expectedInput.equals(input));
 
 		// check nodes
-		for (int i = tree.getRoot(); i < tree.getNodeAmount(); i++) {;
+		for (int i = tree.getRoot(); i < tree.getNodeAmount(); i++) {
+			;
 			checkNodeConsistency(tree, tree.getNode(i));
 		}
-		
+
 		// check text numbers and noted texts
 		int expectedNextBegin = 0;
 		int actualBegin = -1;
 		String text = null;
 		for (int i = 0; i < tree.textNrsAmount(); i++) {
 			actualBegin = tree.getTextBegin(i);
-			assertTrue("Beginning of text " + i + " should continue at end of the last text, (is " + actualBegin + ", should be: " + expectedNextBegin + ")", actualBegin == expectedNextBegin);
+			assertTrue("Beginning of text " + i + " should continue at end of the last text, (is " + actualBegin
+					+ ", should be: " + expectedNextBegin + ")", actualBegin == expectedNextBegin);
 			expectedNextBegin = tree.getTextEnd(i) + 1;
 			text = tree.getInputText(i);
-			assertTrue("Every text should end on terminator symbol '$'.", text.charAt(text.length()-1) == '$');
+			assertTrue("Every text should end on terminator symbol '$'.", text.charAt(text.length() - 1) == '$');
 			assertTrue(text.equals(expectedInput.substring(actualBegin, expectedNextBegin)));
 		}
-		// check that the next text would begin at the input end, i.e. that inputTexts exhaust the input
+		// check that the next text would begin at the input end, i.e. that
+		// inputTexts exhaust the input
 		assertEquals(expectedNextBegin, input.length());
-		
+
 		// check that the amount of texts matches those of the separators
 		assertEquals(StringUtils.countMatches(input, "$"), tree.textNrsAmount());
 	}
 
-	// Checks that the paths (each path is a String[] of edge strings) exist in the given tree and
-	// checks, that the number of expected nodes matches the count reported by the tree as well as the
+	// Checks that the paths (each path is a String[] of edge strings) exist in
+	// the given tree and
+	// checks, that the number of expected nodes matches the count reported by
+	// the tree as well as the
 	// actual number of nodes encountered while traversing the path.
-	// Together this should mean, that only those paths paths provided exist in the given tree.
+	// Together this should mean, that only those paths paths provided exist in
+	// the given tree.
 	private void checkPaths(final BaseSuffixTree tree, final String[][] paths, int expectedNodeCount) {
 		assertNotNull("Tree should exist.", tree);
 
@@ -339,15 +278,15 @@ public class GstTest {
 			nodesEncountered.addAll(checkPath(tree, edges));
 		}
 
-		assertEquals("Expected and reported count of nodes differ.",
-				expectedNodeCount, tree.getNodeAmount());
-		assertEquals("Reported node count and number of nodes encountered differ.",
-				tree.getNodeAmount(), nodesEncountered.size());
+		assertEquals("Expected and reported count of nodes differ.", expectedNodeCount, tree.getNodeAmount());
+		assertEquals("Reported node count and number of nodes encountered differ.", tree.getNodeAmount(),
+				nodesEncountered.size());
 	}
 
 	// Checks that all edge strings of the path appear in the order specified.
 	// Also checks that the last node encountered is a terminal node.
-	// Eventually returns all different nodes encountered while following the path.
+	// Eventually returns all different nodes encountered while following the
+	// path.
 	private Set<Node> checkPath(final BaseSuffixTree tree, final String[] edges) {
 		final Set<Node> nodesEncountered = new HashSet<Node>();
 		Node node = tree.getNode(tree.getRoot());
@@ -378,8 +317,9 @@ public class GstTest {
 		assertTrue("Last node should be a terminal node: " + actualEdge + ".", node.isTerminal());
 		return nodesEncountered;
 	}
-	
-	// Checks that the suffix tree has a path corresponding to the search term ending in
+
+	// Checks that the suffix tree has a path corresponding to the search term
+	// ending in
 	// a terminal node. Returns that node or fails if it isn't present.
 	private final Node checkPathExists(final BaseSuffixTree tree, final String path) {
 		final String message = "Expected path: " + path + ": ";
@@ -391,13 +331,13 @@ public class GstTest {
 		char actual = '\0';
 
 		for (char expected : path.toCharArray()) {
-			if(edge.length == edgeIdx) {
+			if (edge.length == edgeIdx) {
 				nextNode = node.getNext(expected);
 				assertNotNull(message + "Should find a next node for char: " + expected, nextNode);
 
 				node = tree.getNode(nextNode);
 				assertNotNull(message + "Should get a node for node number: " + nextNode, node);
-				
+
 				edge = tree.edgeString(nextNode).toCharArray();
 				assertTrue(message + "Edge string should not be empty, node " + nextNode, (edge.length > 0));
 				edgeIdx = 0;
@@ -411,54 +351,59 @@ public class GstTest {
 		assertEquals("No characters should be left at the end of the last edge.", edge.length, edgeIdx);
 		return node;
 	}
-	
+
 	private void checkNodeConsistency(final BaseSuffixTree tree, final Node node) {
-		// root node does not have positions or an edge string, so it needs no checking
-		if (node == tree.getNode(tree.getRoot())) return;
+		// root node does not have positions or an edge string, so it needs no
+		// checking
+		if (node == tree.getNode(tree.getRoot()))
+			return;
 
 		final String text = tree.getText();
 		final String expected = tree.edgeString(node);
 		String actual = null;
 
-		for(int i = 0; i < node.getPositionsAmount(); i++) {
+		for (int i = 0; i < node.getPositionsAmount(); i++) {
 			// check that each position would show the same edge string
 			actual = text.substring(node.getStart(i), node.getEnd(i));
 			assertTrue(expected.equals(actual));
-			
+
 			// check that the node's edge string is a substring of the text
 			// reported for the positions textNr
 			assertTrue(tree.getInputText(node.getTextNr(i)).contains(actual));
 
-			// check that the current position does not equal another of the same node.
-			for(int j = 0; j < node.getPositionsAmount(); j++) {
-				if (i == j) continue;
-				assertFalse("Positions should not be the same.",
-						node.getStart(i) == node.getStart(j) &&
-						node.getEnd(i) == node.getEnd(j) &&
-						node.getTextNr(i) == node.getTextNr(j));
+			// check that the current position does not equal another of the
+			// same node.
+			for (int j = 0; j < node.getPositionsAmount(); j++) {
+				if (i == j)
+					continue;
+				assertFalse("Positions should not be the same.", node.getStart(i) == node.getStart(j)
+						&& node.getEnd(i) == node.getEnd(j) && node.getTextNr(i) == node.getTextNr(j));
 			}
 		}
-		
+
 		if (node.isTerminal()) {
-			assertTrue("Terminal node's text should end on '$'.", actual.charAt(actual.length()-1) == '$');
+			assertTrue("Terminal node's text should end on '$'.", actual.charAt(actual.length() - 1) == '$');
 		}
 	}
-	
-	// Checks that the path given by a String ends in a leaf node and ensures that the leaf has exactly the
+
+	// Checks that the path given by a String ends in a leaf node and ensures
+	// that the leaf has exactly the
 	// type context numbers, that are expected
-	private void checkTypeContexts(final BaseSuffixTree tree, final String path, final List<Integer> expectedTypeContexts) {
+	private void checkTypeContexts(final BaseSuffixTree tree, final String path,
+			final List<Integer> expectedTypeContexts) {
 		// retrieve the leaf node for the path to be checked
 		final Node leaf = checkPathExists(tree, path);
 		final List<Integer> actualContextNrs = new ArrayList<Integer>();
-		
+
 		// collect type context numbers given in the leaf
-		for(int i = 0; i < leaf.getPositionsAmount(); i++) {
+		for (int i = 0; i < leaf.getPositionsAmount(); i++) {
 			actualContextNrs.add(leaf.getTypeContext(i));
 		}
 		// sort both lists and check for equality
 		Collections.sort(actualContextNrs);
 		Collections.sort(expectedTypeContexts);
-		assertTrue("The expected type contexts should match the actual ones.", actualContextNrs.equals(expectedTypeContexts));
+		assertTrue("The expected type contexts should match the actual ones, but they are: " + actualContextNrs,
+				actualContextNrs.equals(expectedTypeContexts));
 	}
 
 }
