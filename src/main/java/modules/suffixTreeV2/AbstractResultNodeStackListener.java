@@ -121,6 +121,6 @@ public abstract class AbstractResultNodeStackListener implements ITreeWalkerList
 	 *            The node's level within the tree.
 	 * 
 	 */
-	public abstract void process(int nodeNr, List<Node> path, int pathLength, int level);
+	public abstract void process(int nodeNr, List<Node> path, int pathLength, int level) throws IOException;
 
 }

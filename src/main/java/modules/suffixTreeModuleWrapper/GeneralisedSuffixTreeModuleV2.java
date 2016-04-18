@@ -21,6 +21,7 @@ import modules.suffixTreeV2.GST;
 import modules.suffixTreeV2.ResultEdgeSegmentsListener;
 import modules.suffixTreeV2.ResultLabelListListener;
 import modules.suffixTreeV2.ResultToGstLabelDataListener;
+import modules.suffixTreeV2.ResultToJsonListener;
 import modules.suffixTreeV2.ResultToXmlListener;
 import modules.suffixTreeV2.SuffixTree;
 import modules.suffixTreeV2.TreeWalker;
@@ -49,9 +50,8 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 	private static final String INPUT_TEXT_DESC = "[text/plain] Takes a plaintext representation of the KWIP result.";
 	private static final String INPUT_TYPE_CONTEXT_ID = "type context nrs";
 	private static final String INPUT_TYPE_CONTEXT_NRS_DESC = "[text/plain] Takes a list of numbers of available type contexts from the KWIP result";
-	// private static final String OUTPUT_JSON_ID = "json";
-	// private static final String OUTPUT_JSON_DESC = "[text/json] A json
-	// representation of the tree build, suitable for clustering.";
+	private static final String OUTPUT_JSON_ID = "json";
+	private static final String OUTPUT_JSON_DESC = "[text/json] A json representation of the tree build, suitable for clustering.";
 	private static final String OUTPUT_XML_ID = "xml";
 	private static final String OUTPUT_XML_DESC = "[bytestream] An xml representation of the tree build, suitbale for clustering.";
 	private static final String OUTPUT_LIST_ID = "label list";
@@ -143,6 +143,7 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 				final CharPipe dotOutPipe = (CharPipe) dotOut.getPipes().get(CharPipe.class).get(0);
 				final PrintWriter writer = new PrintWriter(dotOutPipe.getOutput());
 				suffixTree.printTree(writer);
+				dotOut.close();
 			}
 
 			// output a list of edge segments
@@ -153,6 +154,7 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 				if (!listener.hasCompleted()) {
 					throw new IllegalStateException("Listener did not finish correctly. Result may be wrong.");
 				}
+				edgeSegmentsOut.close();
 			}
 
 			// output an XML-Representation of the tree
@@ -163,6 +165,15 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
 				listener.finishWriting();
 				xmlOut.outputToAllBytePipes(sw.toString().getBytes());
+				xmlOut.close();
+			}
+
+			final OutputPort jsonOut = this.getOutputPorts().get(OUTPUT_JSON_ID);
+			if (jsonOut.isConnected()) {
+				final ResultToJsonListener listener = new ResultToJsonListener(suffixTree, jsonOut);
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+				listener.finishWriting();
+				jsonOut.close();
 			}
 
 			// output the label data csv table
@@ -171,6 +182,7 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 				final ResultToGstLabelDataListener listener = new ResultToGstLabelDataListener(suffixTree);
 				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
 				writeGstLabelData(listener.getLabelsToGstData().values(), labelDataOut);
+				labelDataOut.close();
 			}
 
 		} catch (Exception e) {
@@ -186,10 +198,9 @@ public class GeneralisedSuffixTreeModuleV2 extends modules.ModuleImpl {
 	// this is normally done in the constructor, but was moved here to
 	// remove clutter from it
 	private void setupOutputPorts() {
-		// OutputPort outputJsonPort = new OutputPort(OUTPUT_JSON_ID,
-		// OUTPUT_JSON_DESC, this);
-		// outputJsonPort.addSupportedPipe(CharPipe.class);
-		// super.addOutputPort(outputJsonPort);
+		OutputPort outputJsonPort = new OutputPort(OUTPUT_JSON_ID, OUTPUT_JSON_DESC, this);
+		outputJsonPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputJsonPort);
 
 		// xml Output goes to a BytePipe for compatibility to the clustering
 		// module
