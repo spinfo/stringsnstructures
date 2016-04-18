@@ -9,7 +9,7 @@ public class ResultToXmlListener extends AbstractResultNodeStackListener {
 	private final XmlPrintWriter out;
 
 	private final BaseSuffixTree tree;
-	
+
 	private boolean wroteHeader = false;
 
 	public ResultToXmlListener(BaseSuffixTree tree, XmlPrintWriter writer) {
@@ -42,68 +42,81 @@ public class ResultToXmlListener extends AbstractResultNodeStackListener {
 
 		final Node node = tree.getNode(nodeNr);
 		final String label = tree.edgeString(node);
-		
+
 		// open <node>
 		out.printTag("node", true, 1, true);
-		
+
 		// write the node number
 		out.printTag("number", true, 2, false);
 		out.printInt(nodeNr);
 		out.printTag("number", false, 0, true);
-		
+
 		// write the label
 		out.printTag("label", true, 2, false);
 		out.print(label);
 		out.printTag("label", false, 0, true);
-		
+
 		// open <type>
 		out.printTag("type", true, 2, true);
-		
+
+		// frequency is determined by positions of leaves
+		int frequency = 0;
+
 		// write <patternInfo>-Tags: Information about the whole input pattern
-		// that the current label appeared in, as given by the node's leaves positions
-		for(Node leaf : node.getLeaves()) {
-			for(NodePosition position : leaf.getPositions()) {
+		// that the current label appeared in, as given by the node's leaves
+		// positions
+		for (Node leaf : node.getLeaves()) {
+			for (NodePosition position : leaf.getPositions()) {
 				writePatternInfo(leaf, position);
+				frequency += 1;
 			}
 		}
 
-		// if the node is itself a leaf node, further patternInfos are written for it's
+		// if the node is itself a leaf node, further patternInfos are written
+		// for it's
 		// positions
 		if (node.isTerminal()) {
-			for(NodePosition position: node.getPositions()) {
+			for (NodePosition position : node.getPositions()) {
 				writePatternInfo(node, position);
+				frequency += 1;
 			}
 		}
-		
-		// closing: </type></node>
+
+		// closing: </type>
 		out.printTag("type", false, 2, true);
+
+		// writing: <frequency/>
+		out.printTag("frequency", true, 2, false);
+		out.print(frequency);
+		out.printTag("frequency", false, 0, true);
+
+		// closing: </node>
 		out.printTag("node", false, 1, true);
 	}
-	
+
 	private void writePatternInfo(Node leaf, NodePosition position) {
 		out.printTag("patternInfo", true, 3, true);
-		
+
 		// write the id of the type context
 		out.printTag("typeNr", true, 4, false);
 		out.printInt(position.getTypeContextNr());
 		out.printTag("typeNr", false, 0, true);
-		
+
 		// write the id of the input text
 		out.printTag("pattern", true, 4, false);
 		out.printInt(position.getTextNr());
 		out.printTag("pattern", false, 0, true);
-		
-		// write the index of the start of the path leading to this leaf's position
-		// i.e. go back from the position's end as much letters as the path is long
-		// to output the path to the leaf you could write:
-		// out.println(tree.getText().substring(position.getEnd()-leaf.getPathLength(), position.getEnd()));
+
+		// write the index of the start of the path leading to this leaf's
+		// position i.e. go back from the position's end as much letters as the
+		// path is long
 		out.printTag("startpos", true, 4, false);
 		out.printInt(position.getEnd() - leaf.getPathLength());
 		out.printTag("startpos", false, 0, true);
-		
+
 		out.printTag("patternInfo", false, 3, true);
 	}
-	
+
 	/**
 	 * write the XML-Header
 	 */
@@ -121,14 +134,13 @@ public class ResultToXmlListener extends AbstractResultNodeStackListener {
 		// set the flag such that this header is not written again
 		wroteHeader = true;
 	}
-	
+
 	/**
-	 * Closes all tags as well as the provided writer. 
+	 * Closes all tags as well as the provided writer.
 	 */
 	public void finishWriting() {
 		out.printTag("output", false, 0, true);
 		out.close();
 	}
-	
 
 }
