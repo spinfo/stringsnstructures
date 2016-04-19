@@ -1,4 +1,4 @@
-package modules.suffixTreeV2;
+package modules.suffixTree;
 
 import java.util.List;
 

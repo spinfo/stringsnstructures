@@ -1,4 +1,4 @@
-package suffixTreeV2;
+package suffixTree;
 
 import static org.junit.Assert.*;
 
@@ -10,12 +10,12 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import modules.suffixTreeV2.AbstractResultNodeStackListener;
-import modules.suffixTreeV2.BaseSuffixTree;
-import modules.suffixTreeV2.GST;
-import modules.suffixTreeV2.Node;
-import modules.suffixTreeV2.NodePosition;
-import modules.suffixTreeV2.TreeWalker;
+import modules.suffixTree.AbstractResultNodeStackListener;
+import modules.suffixTree.BaseSuffixTree;
+import modules.suffixTree.GST;
+import modules.suffixTree.Node;
+import modules.suffixTree.NodePosition;
+import modules.suffixTree.TreeWalker;
 
 public class AbstractResultNodeStackListenerTest {
 

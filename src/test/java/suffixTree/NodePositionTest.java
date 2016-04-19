@@ -1,4 +1,4 @@
-package suffixTreeV2;
+package suffixTree;
 
 import static org.junit.Assert.*;
 
@@ -8,8 +8,8 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
-import modules.suffixTreeV2.NodePosition;
-import modules.suffixTreeV2.NodePositionEnd;
+import modules.suffixTree.NodePosition;
+import modules.suffixTree.NodePositionEnd;
 
 public class NodePositionTest {
 

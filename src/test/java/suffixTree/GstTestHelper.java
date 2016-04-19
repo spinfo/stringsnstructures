@@ -1,4 +1,4 @@
-package suffixTreeV2;
+package suffixTree;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -16,10 +16,10 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import modules.suffixTreeV2.BaseSuffixTree;
-import modules.suffixTreeV2.GST;
-import modules.suffixTreeV2.Node;
-import modules.suffixTreeV2.SuffixTree;
+import modules.suffixTree.BaseSuffixTree;
+import modules.suffixTree.GST;
+import modules.suffixTree.Node;
+import modules.suffixTree.SuffixTree;
 
 /**
  * Helper class that provides static test methods related to the creation and

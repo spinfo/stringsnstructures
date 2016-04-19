@@ -1,4 +1,4 @@
-package suffixTreeV2;
+package suffixTree;
 
 import static org.junit.Assert.*;
 
@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import modules.suffixTreeV2.SuffixTree;
+import modules.suffixTree.SuffixTree;
 
 public class GstTest {
 

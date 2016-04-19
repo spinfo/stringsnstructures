@@ -1,8 +1,8 @@
-package modules.suffixTreeV2;
+package modules.suffixTree;
 
 import java.io.IOException;
 
-import modules.suffixTreeV2.BaseSuffixTree;;
+import modules.suffixTree.BaseSuffixTree;;
 
 public class TreeWalker {
 

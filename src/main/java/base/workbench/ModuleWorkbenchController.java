@@ -53,7 +53,7 @@ import modules.seqTreeProperties.SeqTreePropController;
 import modules.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringModuleWrapper;
 import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringWrapperV2;
-import modules.suffixTreeModuleWrapper.GeneralisedSuffixTreeModuleV2;
+import modules.suffixTreeModuleWrapper.GeneralisedSuffixTreeModule;
 import modules.suffixTreeModuleWrapper.LabelDataMergeModule;
 import modules.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
@@ -311,7 +311,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		
 		// Prepare GeneralisedSuffixTree module
 		Properties generalisedSuffixTreeProperties = new Properties();
-		GeneralisedSuffixTreeModuleV2 generalisedSuffixTreeModule = new GeneralisedSuffixTreeModuleV2(moduleNetwork,
+		GeneralisedSuffixTreeModule generalisedSuffixTreeModule = new GeneralisedSuffixTreeModule(moduleNetwork,
 				generalisedSuffixTreeProperties);
 		generalisedSuffixTreeProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, generalisedSuffixTreeModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		generalisedSuffixTreeModule.applyProperties();
