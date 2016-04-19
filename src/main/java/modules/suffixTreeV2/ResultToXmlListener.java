@@ -23,7 +23,7 @@ public class ResultToXmlListener extends AbstractResultNodeStackListener {
 	/**
 	 * Outputs an xml representation of the node.
 	 * 
-	 * @param currentNode
+	 * @param nodeNr
 	 *            The number of the node currently processed.
 	 * @param path
 	 *            All nodes in the path leading to but not including the current

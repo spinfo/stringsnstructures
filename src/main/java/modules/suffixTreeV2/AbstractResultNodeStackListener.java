@@ -109,7 +109,7 @@ public abstract class AbstractResultNodeStackListener implements ITreeWalkerList
 	 * The child class implements this method to do it's actual work after the
 	 * node's have been enriched by the abstract listener.
 	 * 
-	 * @param currentNode
+	 * @param nodeNr
 	 *            The number of the node currently processed.
 	 * @param path
 	 *            All nodes in the path leading to but not including the current

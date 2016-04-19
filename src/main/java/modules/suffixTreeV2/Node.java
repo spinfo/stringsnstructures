@@ -147,6 +147,7 @@ public class Node {
 	
 	/**
 	 * Set the path length up to this node to the specified value.
+	 * @param length path length
 	 */
 	public void setPathLength(int length) {
 		this.pathLength = length;
