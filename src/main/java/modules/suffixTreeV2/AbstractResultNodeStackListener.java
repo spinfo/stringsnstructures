@@ -119,6 +119,9 @@ public abstract class AbstractResultNodeStackListener implements ITreeWalkerList
 	 *            current node.
 	 * @param level
 	 *            The node's level within the tree.
+	 * @throws IOException
+	 *             The implementing class may throw an IOException (if it uses
+	 *             IO)
 	 * 
 	 */
 	public abstract void process(int nodeNr, List<Node> path, int pathLength, int level) throws IOException;
