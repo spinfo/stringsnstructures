@@ -1,32 +1,30 @@
 package modules.suffixTreeModuleWrapper;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
+import common.XmlPrintWriter;
+import common.parallelization.CallbackReceiver;
+import models.GstLabelData;
 import modules.BytePipe;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.suffixTree.applications.ResultToJsonListener;
-import modules.suffixTree.applications.ResultToLabelListListener;
-import modules.suffixTree.applications.ResultToLabelSuccessorMatrixListener;
-import modules.suffixTree.applications.ResutlToGstLabelDataListener;
-import modules.suffixTree.applications.SuffixTreeAppl;
-import modules.suffixTree.applications.TreeWalker;
-import modules.suffixTree.main.GeneralisedSuffixTreeMain;
-import modules.suffixTree.node.End;
-import modules.suffixTree.node.ExtActivePoint;
-import modules.suffixTree.node.nodeFactory.GeneralisedSuffixTreeNodeFactory;
-import common.parallelization.CallbackReceiver;
-import models.GstLabelData;
-import models.NamedFieldMatrix;
+import modules.suffixTree.GST;
+import modules.suffixTree.ResultEdgeSegmentsListener;
+import modules.suffixTree.ResultLabelListListener;
+import modules.suffixTree.ResultToGstLabelDataListener;
+import modules.suffixTree.ResultToJsonListener;
+import modules.suffixTree.ResultToXmlListener;
+import modules.suffixTree.SuffixTree;
+import modules.suffixTree.TreeWalker;
 
 /**
  * Module Reads from KWIP modules output into a suffix tree. Constructs a
@@ -36,13 +34,11 @@ import models.NamedFieldMatrix;
  * same.
  * 
  * Alternative outputs are available: Either a plain list of labels or one with
- * added information for the label's occurences (e.g. child count).
+ * added information for the label's occurrences (e.g. child count).
  * 
  * @author David Neugebauer
  */
 public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
-
-	private static final Logger LOGGER = Logger.getLogger(GeneralisedSuffixTreeMain.class.getName());
 
 	// Variables for the module
 	private static final String MODULE_NAME = "GeneralisedSuffixTreeModule";
@@ -52,8 +48,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	// Variables describing I/O
 	private static final String INPUT_TEXT_ID = "plain";
 	private static final String INPUT_TEXT_DESC = "[text/plain] Takes a plaintext representation of the KWIP result.";
-	private static final String INPUT_UNITS_ID = "units";
-	private static final String INPUT_UNITS_DESC = "[text/plain] Takes a unit list (numbers of available types) from the KWIP result";
+	private static final String INPUT_TYPE_CONTEXT_ID = "type context nrs";
+	private static final String INPUT_TYPE_CONTEXT_NRS_DESC = "[text/plain] Takes a list of numbers of available type contexts from the KWIP result";
 	private static final String OUTPUT_JSON_ID = "json";
 	private static final String OUTPUT_JSON_DESC = "[text/json] A json representation of the tree build, suitable for clustering.";
 	private static final String OUTPUT_XML_ID = "xml";
@@ -63,16 +59,9 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_LABEL_DATA_ID = "label data";
 	private static final String OUTPUT_LABEL_DATA_DESC = "[text/csv] Prints a csv table with label information.";
 	private static final String OUTPUT_DOT_FILE_ID = "dot file";
-	private static final String OUTPUT_DOT_FILE_DESC = "Prints a graphical representation of the tree as a .dot file.";
-	private static final String OUTPUT_SUCCESSORS_MATRIX_ID = "successor label matrix";
-	private static final String OUTPUT_SUCCESSORS_MATRIX_DESC = "[text/csv] A matrix with labels on the y-axis, successor strings on the x-axis and counts in the field.";
-
-	// Container to hold units if provided
-	private ArrayList<Integer> unitList = null;
-
-	// Variables for input processing
-	private static final Pattern NEWLINE_PATTERN = Pattern.compile("\r\n|\n|\r");
-	private static final char TERMINATOR = '$';
+	private static final String OUTPUT_DOT_FILE_DESC = "Prints a graphical representation of the tree as a graphviz .dot file.";
+	private static final String OUTPUT_EDGE_SEGMENTS_ID = "edge segments";
+	private static final String OUTPUT_EDGE_SEGMENTS_DESC = "For each input text the output is that path in the tree split into it's edges.";
 
 	/**
 	 * Constructor
@@ -96,201 +85,105 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		this.setCategory("Tree-building");
 
 		// Setup I/O, reads from char input produced by KWIP.
-		// json output is to a CharPipe as expected, but
-		// xml Output is to a BytePipe for compatibility reasons to the
-		// clustering module
 		InputPort inputTextPort = new InputPort(INPUT_TEXT_ID, INPUT_TEXT_DESC, this);
 		inputTextPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputTextPort);
 
-		InputPort inputUnitsPort = new InputPort(INPUT_UNITS_ID, INPUT_UNITS_DESC, this);
+		InputPort inputUnitsPort = new InputPort(INPUT_TYPE_CONTEXT_ID, INPUT_TYPE_CONTEXT_NRS_DESC, this);
 		inputUnitsPort.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputUnitsPort);
 
 		this.setupOutputPorts();
 	}
 
+	/**
+	 * This builds a generalised suffix tree and constructs output for all
+	 * connected output ports
+	 */
 	@Override
 	public boolean process() throws Exception {
+
 		boolean result = true;
 
-		// Ports for output the production of which will alter the tree.
-		// NOTE: Only one of these outputs can be chosen.
-		// We check this early before the tree is produced as that may take some
-		// time.
-		final OutputPort jsonOut = this.getOutputPorts().get(OUTPUT_JSON_ID);
-		final OutputPort xmlOut = this.getOutputPorts().get(OUTPUT_XML_ID);
-		final OutputPort labelDataOut = this.getOutputPorts().get(OUTPUT_LABEL_DATA_ID);
-
-		int treeModifyingOutputs = 0;
-		if (jsonOut.isConnected()) treeModifyingOutputs += 1;
-		if (xmlOut.isConnected()) treeModifyingOutputs += 1;
-		if (labelDataOut.isConnected())	treeModifyingOutputs += 1;
-		if (treeModifyingOutputs > 1) throw new Exception("Only one of these Outputs can be chosen: xml, json, label-data.");
-
 		try {
-			// take the current time
-			long startTime = System.nanoTime();
 
-			// read the whole text once, necessary to know the text's length
-			final String text = readStringFromInputPort(this.getInputPorts().get(INPUT_TEXT_ID));
+			// read in the list of type context end numbers if the port is
+			// connected, else leave it null
+			List<Integer> contextNrs = null;
+			final InputPort contextNrsIn = this.getInputPorts().get(INPUT_TYPE_CONTEXT_ID);
+			if (contextNrsIn.isConnected()) {
+				contextNrs = new ArrayList<Integer>();
+				final BufferedReader contextNrsReader = new BufferedReader(contextNrsIn.getInputReader());
+				String line = null;
 
-			// The suffix tree used to read the input is a generalized
-			// suffix tree for a text of the length of the input string
-			final SuffixTreeAppl suffixTreeAppl = new SuffixTreeAppl(text.length(),
-					new GeneralisedSuffixTreeNodeFactory());
-
-			// set some variables to regulate flow in SuffixTree classes
-			suffixTreeAppl.unit = 0;
-			suffixTreeAppl.oo = new End(Integer.MAX_VALUE / 2);
-
-			// if a unit list is provided read it and set the suffix tree
-			// variables accordingly
-			if (this.getInputPorts().get(INPUT_UNITS_ID).isConnected()) {
-				this.unitList = readUnitListFromInput(this.getInputPorts().get(INPUT_UNITS_ID));
-				if (this.unitList.size() == 0) {
-					throw new Exception("Unit list provided but empty.");
+				while ((line = contextNrsReader.readLine()) != null) {
+					contextNrs.add(Integer.parseInt(line));
 				}
-				suffixTreeAppl.unitCount = this.unitList.size();
-			} else {
-				LOGGER.warning("GST: No port for unit list connected. Output might be unsuitable for clustering.");
 			}
 
-			// start and end indices regulate which portion of the input we are
-			// reading at any given moment
-			int start = 0;
-			int end = text.indexOf(TERMINATOR, start);
+			// actually build the tree
+			final BufferedReader textReader = new BufferedReader(
+					this.getInputPorts().get(INPUT_TEXT_ID).getInputReader());
+			final SuffixTree suffixTree = GST.buildGST(textReader, contextNrs);
 
-			if (end != -1) {
-				// traverse the first portion of the input string
-				// TODO comment explaining why extActivePoint has to be null
-				// here
-				suffixTreeAppl.phases(text, start, end + 1, null);
-				start = end + 1;
+			// output a simple list of labels
+			final OutputPort labelsOut = this.getOutputPorts().get(OUTPUT_LIST_ID);
+			if (labelsOut.isConnected()) {
+				final ResultLabelListListener listener = new ResultLabelListListener(suffixTree);
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
 
-				// traverse the remaining portions of the input string
-				ExtActivePoint extActivePoint;
-				String nextText;
-
-				// set end for first text, end indicates termination symbol $
-				suffixTreeAppl.oo.setEnd(end);
-
-				start = end + 1;
-				end = text.indexOf(TERMINATOR, start);
-				while (end != -1) {
-					// each cycle represents a text read
-					suffixTreeAppl.textNr++;
-
-					// If a unit list from KWIP is available, make sure that the
-					// currently read text is counted for the unit, that it was
-					// mapped to by KWIP
-					if (unitList != null && (unitList.get(suffixTreeAppl.unit) == suffixTreeAppl.textNr)) {
-						suffixTreeAppl.unit++;
-					}
-
-					// TODO comment explaining what setting the active point
-					// does
-					nextText = text.substring(start, end + 1);
-					extActivePoint = suffixTreeAppl.longestPath(nextText, 0, 1, start, true);
-					
-					if (extActivePoint == null) {
-						LOGGER.warning(" GeneralisedSuffixTreeMain activePoint null");
-						break;
-					}
-
-					// TODO comment explaining the use of .oo and extActivePoint
-					// why has this to happen here instead of inside phases() ?
-					suffixTreeAppl.oo = new End(Integer.MAX_VALUE / 2);
-					suffixTreeAppl.phases(text, start + extActivePoint.phase, end + 1, extActivePoint);
-
-					// set end for text read, end indicates termination symbol $
-					suffixTreeAppl.oo.setEnd(end);
-
-					// reset text window for the next cycle
-					start = end + 1;
-					end = text.indexOf(TERMINATOR, start);
+				for (String label : listener.getLabels()) {
+					labelsOut.outputToAllCharPipes(label + System.lineSeparator());
 				}
-			} else {
-				LOGGER.warning("Did not find terminator char: " + TERMINATOR);
 			}
 
-			// stop time taken for building the tree
-			long treeFinished = System.nanoTime();
-
-			// writes output of a list of labels, one label on each line
-			final OutputPort listOut = this.getOutputPorts().get(OUTPUT_LIST_ID);
-			if (listOut.isConnected()) {
-				final ResultToLabelListListener listener = new ResultToLabelListListener(suffixTreeAppl);
-				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
-				final Set<String> labels = listener.getLabels();
-				for (String label : labels) {
-					listOut.outputToAllCharPipes(label + "\n");
-				}
-			} else {
-				LOGGER.info("No port for plain text label list connected, output skipped.");
-			}
-			// writes output of a graphical dot file
+			// output a graphical representation as a graphviz .dot file
 			final OutputPort dotOut = this.getOutputPorts().get(OUTPUT_DOT_FILE_ID);
 			if (dotOut.isConnected()) {
-				// get a PipedWriter from the OutputPipe to write to
 				final CharPipe dotOutPipe = (CharPipe) dotOut.getPipes().get(CharPipe.class).get(0);
 				final PrintWriter writer = new PrintWriter(dotOutPipe.getOutput());
-				// the heading for the tree graphics is the beginning of the
-				// text
-				final int headingEnd = text.length() > 100 ? 100 : text.length() - 1;
-				String heading = text.substring(0, headingEnd);
-				if (heading.length() == 100)
-					heading += "...";
-				// output is done by the tree class
-				suffixTreeAppl.printTree(heading, -1, -1, -1, writer);
+				suffixTree.printTree(writer);
 				dotOut.close();
-			} else {
-				LOGGER.info("No port for .dot-file connected, output skipped.");
-			}
-			// writes output of the labels to successors matrix
-			final OutputPort successorsOut = this.getOutputPorts().get(OUTPUT_SUCCESSORS_MATRIX_ID);
-			if(successorsOut.isConnected()) {
-				final ResultToLabelSuccessorMatrixListener listener = new ResultToLabelSuccessorMatrixListener(suffixTreeAppl);
-				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
-				
-				NamedFieldMatrix matrix = listener.getMatrix();
-				successorsOut.outputToAllCharPipes(matrix.csvHeader());
-				for (int i = 0; i < matrix.getRowAmount(); i++) {
-					successorsOut.outputToAllCharPipes(matrix.csvLine(i));
-				}
-				
-				successorsOut.close();
-			} else {
-				LOGGER.info("No port for label successors matrix connected, output skipped");
-			}
-			
-			// NOTE: potentially destructive outputs that alter the tree (json,
-			// xml, label-data) are made last
-			// construct the JSON output
-			if (jsonOut.isConnected()) {
-				writeJsonOutput(suffixTreeAppl, jsonOut);
-			}
-			// construct the XML output
-			if (xmlOut.isConnected()) {
-				final String output = GeneralisedSuffixTreeMain.persistSuffixTreeToXmlString(suffixTreeAppl);
-				xmlOut.outputToAllBytePipes(output.getBytes());
-			} else {
-				LOGGER.info("No port for xml connected, not producing xml output.");
-			}
-			// construct the label-data output
-			if (labelDataOut.isConnected()) {
-				final ResutlToGstLabelDataListener listener = new ResutlToGstLabelDataListener(suffixTreeAppl);
-				TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
-				this.writeGstLabelData(listener.getLabelsToGstData(), labelDataOut);
-			} else {
-				LOGGER.info("No port for label data connected, output skipped.");
 			}
 
-			// log time taken for building the tree and generating output
-			long timeTaken = treeFinished - startTime;
-			LOGGER.info("Building the tree took: " + timeTaken + "ns (~ " + (timeTaken / 1000000000) + "s)");
-			timeTaken = System.nanoTime() - treeFinished;
-			LOGGER.info("Writing output took: " + timeTaken + "ns (~ " + (timeTaken / 1000000000) + "s)");
+			// output a list of edge segments
+			final OutputPort edgeSegmentsOut = this.getOutputPorts().get(OUTPUT_EDGE_SEGMENTS_ID);
+			if (edgeSegmentsOut.isConnected()) {
+				final ResultEdgeSegmentsListener listener = new ResultEdgeSegmentsListener(suffixTree, edgeSegmentsOut);
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+				if (!listener.hasCompleted()) {
+					throw new IllegalStateException("Listener did not finish correctly. Result may be wrong.");
+				}
+				edgeSegmentsOut.close();
+			}
+
+			// output an XML-Representation of the tree
+			final OutputPort xmlOut = this.getOutputPorts().get(OUTPUT_XML_ID);
+			if (xmlOut.isConnected()) {
+				final StringWriter sw = new StringWriter();
+				final ResultToXmlListener listener = new ResultToXmlListener(suffixTree, new XmlPrintWriter(sw));
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+				listener.finishWriting();
+				xmlOut.outputToAllBytePipes(sw.toString().getBytes());
+				xmlOut.close();
+			}
+
+			final OutputPort jsonOut = this.getOutputPorts().get(OUTPUT_JSON_ID);
+			if (jsonOut.isConnected()) {
+				final ResultToJsonListener listener = new ResultToJsonListener(suffixTree, jsonOut);
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+				listener.finishWriting();
+				jsonOut.close();
+			}
+
+			// output the label data csv table
+			final OutputPort labelDataOut = this.getOutputPorts().get(OUTPUT_LABEL_DATA_ID);
+			if (labelDataOut.isConnected()) {
+				final ResultToGstLabelDataListener listener = new ResultToGstLabelDataListener(suffixTree);
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+				writeGstLabelData(listener.getLabelsToGstData().values(), labelDataOut);
+				labelDataOut.close();
+			}
 
 		} catch (Exception e) {
 			result = false;
@@ -302,74 +195,6 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		return result;
 	}
 
-	/**
-	 * Reads a list of units provided by the KWIP module. Expects to read a
-	 * newline separated list of Integers from the provided InputPort
-	 * 
-	 * @param unitsPort
-	 *            the InputPort to read the newline separated list of units
-	 *            from. (Produced by the KWIP module)
-	 * @return An array of Integers that are the unit numbers read. An empty
-	 *         array if none were read.
-	 * @throws NumberFormatException
-	 *             If a line in the input could not be parsed as an Integer
-	 */
-	private ArrayList<Integer> readUnitListFromInput(InputPort unitsPort) throws Exception {
-		ArrayList<Integer> unitsList = new ArrayList<Integer>();
-
-		final String[] inputStrings = NEWLINE_PATTERN.split(readStringFromInputPort(unitsPort));
-		for (String str : inputStrings) {
-			unitsList.add(Integer.parseInt(str));
-		}
-
-		return unitsList;
-	}
-
-	/**
-	 * Genereates JSON output for the suffixTree and continually writes it to
-	 * all char pipes connected to the json OutputPort
-	 * 
-	 * @param suffixTreeAppl
-	 *            the suffixTree to write
-	 * @param outputPort
-	 *            the OutputPort to write to
-	 * @throws IOException
-	 */
-	private void writeJsonOutput(SuffixTreeAppl suffixTreeAppl, OutputPort outputPort) throws Exception {
-		// Initialize and use a new TreeWalkerListener, that directly writes to
-		// the connected outputPort
-		final ResultToJsonListener listener = new ResultToJsonListener(suffixTreeAppl, outputPort);
-		TreeWalker.walk(suffixTreeAppl.getRoot(), suffixTreeAppl, listener);
-
-		// close the listener
-		listener.finishWriting();
-	}
-
-	private void writeGstLabelData(final Map<String, GstLabelData> labelsToData, OutputPort outputPort)
-			throws IOException {
-		final StringBuilder sb = new StringBuilder();
-		GstLabelData data = null;
-		// output the header
-		sb.append(GstLabelData.getCsvHeader());
-		sb.append("\n");
-		// output the labels line by line
-		for (final String label : labelsToData.keySet()) {
-			data = labelsToData.get(label);
-			data.toCsv(sb);
-			sb.append("\n");
-
-			// output the line and reset string builder
-			outputPort.outputToAllCharPipes(sb.toString());
-			sb.setLength(0);
-		}
-	}
-
-	@Override
-	public void applyProperties() throws Exception {
-		super.setDefaultsIfMissing();
-		super.applyProperties();
-	}
-
 	// this is normally done in the constructor, but was moved here to
 	// remove clutter from it
 	private void setupOutputPorts() {
@@ -377,6 +202,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		outputJsonPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputJsonPort);
 
+		// xml Output goes to a BytePipe for compatibility to the clustering
+		// module
 		OutputPort outputXmlPort = new OutputPort(OUTPUT_XML_ID, OUTPUT_XML_DESC, this);
 		outputXmlPort.addSupportedPipe(BytePipe.class);
 		super.addOutputPort(outputXmlPort);
@@ -392,10 +219,37 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		OutputPort outputDotFilePort = new OutputPort(OUTPUT_DOT_FILE_ID, OUTPUT_DOT_FILE_DESC, this);
 		outputDotFilePort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputDotFilePort);
-		
-		OutputPort outputSuccessorsMatrixPort = new OutputPort(OUTPUT_SUCCESSORS_MATRIX_ID, OUTPUT_SUCCESSORS_MATRIX_DESC, this);
-		outputSuccessorsMatrixPort.addSupportedPipe(CharPipe.class);
-		super.addOutputPort(outputSuccessorsMatrixPort);
-	}
-}
 
+		OutputPort outputEdgeSegmentsPort = new OutputPort(OUTPUT_EDGE_SEGMENTS_ID, OUTPUT_EDGE_SEGMENTS_DESC, this);
+		outputEdgeSegmentsPort.addSupportedPipe(CharPipe.class);
+		super.addOutputPort(outputEdgeSegmentsPort);
+	}
+
+	/**
+	 * This just writes all entries in the provided set of GstLabelData objects
+	 * to the specified output port's char pipes.
+	 * 
+	 * @param labelsToData
+	 *            The data objects to write.
+	 * @param outputPort
+	 *            The output port to write to.
+	 * @throws IOException
+	 *             If something goes wrong with IO.
+	 */
+	private void writeGstLabelData(final Collection<GstLabelData> dataset, OutputPort outputPort) throws IOException {
+		final StringBuilder sb = new StringBuilder();
+		// output the header
+		sb.append(GstLabelData.getCsvHeader());
+		sb.append(System.lineSeparator());
+		// output the labels line by line
+		for (GstLabelData data : dataset) {
+			data.toCsv(sb);
+			sb.append(System.lineSeparator());
+
+			// output the line and reset string builder
+			outputPort.outputToAllCharPipes(sb.toString());
+			sb.setLength(0);
+		}
+	}
+
+}

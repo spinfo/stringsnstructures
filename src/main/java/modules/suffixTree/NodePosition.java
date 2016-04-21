@@ -1,4 +1,4 @@
-package modules.suffixTreeV2;
+package modules.suffixTree;
 
 /**
  * A simple POJO for the positions of nodes in a suffix tree.

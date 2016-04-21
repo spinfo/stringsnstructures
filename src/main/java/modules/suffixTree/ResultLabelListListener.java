@@ -1,9 +1,9 @@
-package modules.suffixTreeV2;
+package modules.suffixTree;
 
 import java.util.Set;
 import java.util.TreeSet;
 
-import modules.suffixTreeV2.BaseSuffixTree;
+import modules.suffixTree.BaseSuffixTree;
 
 public class ResultLabelListListener implements ITreeWalkerListener {
 	

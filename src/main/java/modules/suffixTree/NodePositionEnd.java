@@ -1,4 +1,4 @@
-package modules.suffixTreeV2;
+package modules.suffixTree;
 
 /**
  * The end position of a node in the suffix tree is wrapped in an object such that
