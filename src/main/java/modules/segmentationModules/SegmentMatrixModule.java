@@ -28,6 +28,7 @@ public class SegmentMatrixModule extends ModuleImpl {
 	public static final String PROPERTYKEY_DELIMITER_INPUT_STRING = "string input delimiter regex";
 	public static final String PROPERTYKEY_DELIMITER_OUTPUT_CSVDELIMITER = "CSV output delimiter";
 	public static final String PROPERTYKEY_OMIT_ZERO_VALUES = "omit zero values";
+	public static final String PROPERTYKEY_OMIT_EMPTY_ROWS_AND_COLUMNS = "omit empty rows and cols";
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "input";
@@ -38,6 +39,7 @@ public class SegmentMatrixModule extends ModuleImpl {
 	private String inputdelimiter_string;
 	private String outputdelimiter_csv;
 	private boolean omitZeroValues;
+	private boolean omitEmptyRowsAndColumns;
 
 	public SegmentMatrixModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -56,6 +58,7 @@ public class SegmentMatrixModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_STRING, "Regular expression to use as segmentation delimiter for the strings.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT_CSVDELIMITER, "String to use as segmentation delimiter between CSV elements.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_OMIT_ZERO_VALUES, "Omit any value that is zero on output [true|false].");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OMIT_EMPTY_ROWS_AND_COLUMNS, "Omit any row or column that has only zero values on output [true|false].");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Segment Matrix"); // Property key for module name is defined in parent class
@@ -63,6 +66,7 @@ public class SegmentMatrixModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT_STRING, "\\n");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT_CSVDELIMITER, ";");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OMIT_ZERO_VALUES, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OMIT_EMPTY_ROWS_AND_COLUMNS, "true");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "Segment list.", this);
@@ -78,6 +82,10 @@ public class SegmentMatrixModule extends ModuleImpl {
 
 	@Override
 	public boolean process() throws Exception {
+		
+		/*
+		 * Read input and construct matrix
+		 */
 		
 		// Construct scanner instance for input segmentation (strings)
 		Scanner stringInputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
@@ -118,14 +126,38 @@ public class SegmentMatrixModule extends ModuleImpl {
 		//Close input scanner.
 		stringInputScanner.close();
 		
+		/*
+		 * Eliminate empty rows and columns
+		 */
+		
+		Set<String> rowsNotEmpty = new TreeSet<String>();
+		Set<String> colsNotEmpty = new TreeSet<String>();
+		if (this.omitEmptyRowsAndColumns){
+			Iterator<String> keys = coOccurrenceMatrix.keySet().iterator();
+			while (keys.hasNext()){
+				String key = keys.next();
+				Set<String> line = coOccurrenceMatrix.get(key);
+				if (line.isEmpty())
+					continue;
+				else {
+					colsNotEmpty.addAll(line);
+					rowsNotEmpty.add(key);
+				}
+			}
+		}
+		
+		/*
+		 * Output to CSV
+		 */
+		
 		// Output matrix in CSV -- header line
 		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_csv);
 		Iterator<String> keys = coOccurrenceMatrix.keySet().iterator();
 		while (keys.hasNext()){
 			String key = keys.next();
-			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(key);
-			if (keys.hasNext())
-				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_csv);
+			if (this.omitEmptyRowsAndColumns && !colsNotEmpty.contains(key))
+				continue;
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(key+this.outputdelimiter_csv);
 		}
 		
 		// Newline
@@ -135,6 +167,8 @@ public class SegmentMatrixModule extends ModuleImpl {
 		keys = coOccurrenceMatrix.keySet().iterator();
 		while (keys.hasNext()) {
 			String key = keys.next();
+			if (this.omitEmptyRowsAndColumns && !rowsNotEmpty.contains(key))
+				continue;
 			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(key);
 			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_csv);
 			
@@ -142,12 +176,14 @@ public class SegmentMatrixModule extends ModuleImpl {
 			Iterator<String> keys2 = coOccurrenceMatrix.keySet().iterator();
 			while (keys2.hasNext()){
 				String key2 = keys2.next();
-				if (coOccurrenceMatrix.get(key).contains(key2))
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("1");
-				else if (!this.omitZeroValues)
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("0");
-				if (keys2.hasNext())
+				if (! (this.omitEmptyRowsAndColumns && !colsNotEmpty.contains(key2)) ){
+					if (coOccurrenceMatrix.get(key).contains(key2))
+						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("1");
+					else if (!this.omitZeroValues)
+						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("0");
 					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_csv);
+				}
+				
 			}
 			// Newline
 			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
@@ -173,6 +209,9 @@ public class SegmentMatrixModule extends ModuleImpl {
 		String omitZeroValuesString = this.getProperties().getProperty(PROPERTYKEY_OMIT_ZERO_VALUES, this.getPropertyDefaultValues().get(PROPERTYKEY_OMIT_ZERO_VALUES));
 		if (omitZeroValuesString != null)
 			this.omitZeroValues = Boolean.parseBoolean(omitZeroValuesString);
+		String omitEmptyRowsAndColsString = this.getProperties().getProperty(PROPERTYKEY_OMIT_EMPTY_ROWS_AND_COLUMNS, this.getPropertyDefaultValues().get(PROPERTYKEY_OMIT_EMPTY_ROWS_AND_COLUMNS));
+		if (omitEmptyRowsAndColsString != null)
+			this.omitEmptyRowsAndColumns = Boolean.parseBoolean(omitEmptyRowsAndColsString);
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
 	}
