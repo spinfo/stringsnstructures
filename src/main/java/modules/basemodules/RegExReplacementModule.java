@@ -16,6 +16,7 @@ public class RegExReplacementModule extends ModuleImpl {
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_REGEX = "regex";
 	public static final String PROPERTYKEY_REPLACEMENT = "replacement";
+	public static final String PROPERTYKEY_UNESCAPE = "unescape";
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private final String INPUTID = "input";
@@ -24,6 +25,7 @@ public class RegExReplacementModule extends ModuleImpl {
 	// Local variables
 	private String regex;
 	private String replacement;
+	private boolean unescape;
 
 	public RegExReplacementModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -40,11 +42,13 @@ public class RegExReplacementModule extends ModuleImpl {
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_REGEX, "Regular expression to search for");
 		this.getPropertyDescriptions().put(PROPERTYKEY_REPLACEMENT, "Replacement for found strings");
+		this.getPropertyDescriptions().put(PROPERTYKEY_UNESCAPE, "Perform unescape operation on the replacement string before using it [true|false]");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "RegEx Replacement Module"); // Property key for module name is defined in parent class
 		this.getPropertyDefaultValues().put(PROPERTYKEY_REGEX, "[aeiu]");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_REPLACEMENT, "o");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_UNESCAPE, "true");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(INPUTID, "Plain text character input.", this);
@@ -105,7 +109,14 @@ public class RegExReplacementModule extends ModuleImpl {
 		
 		// Apply own properties
 		this.regex = this.getProperties().getProperty(PROPERTYKEY_REGEX, this.getPropertyDefaultValues().get(PROPERTYKEY_REGEX));
-		this.replacement = StringEscapeUtils.unescapeJava(this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_REPLACEMENT)));
+		
+		this.unescape = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_UNESCAPE, this.getPropertyDefaultValues().get(PROPERTYKEY_UNESCAPE)));
+		String replacementString = this.getProperties().getProperty(PROPERTYKEY_REPLACEMENT, this.getPropertyDefaultValues().get(PROPERTYKEY_REPLACEMENT));
+		
+		if (this.unescape)
+			this.replacement = StringEscapeUtils.unescapeJava(replacementString);
+		else
+			this.replacement = replacementString;
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
