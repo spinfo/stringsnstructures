@@ -77,7 +77,7 @@ public class BagsOfWordsModule extends ModuleImpl {
 		super.addInputPort(inputSimplePort);
 		
 		InputPort inputSimpleText = new InputPort(INPUT_TEXT_ID, INPUT_TEXT_DESC, this);
-		inputSimplePort.addSupportedPipe(CharPipe.class);
+		inputSimpleText.addSupportedPipe(CharPipe.class);
 		super.addInputPort(inputSimpleText);
 		
 		OutputPort outputPort = new OutputPort(OUTPUT_BOW_ID, OUTPUT_BOW_DESC, this);
