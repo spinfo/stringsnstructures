@@ -21,6 +21,7 @@ import modules.artificialSeqs.CreateArtificialSeqsContent;
 import modules.bagOfWords.BagsOfWordsDistancesModule;
 import modules.bagOfWords.BagsOfWordsModule;
 import modules.basemodules.BufferModule;
+import modules.basemodules.CaseChangerModule;
 import modules.basemodules.ComparisonModule;
 import modules.basemodules.ConsoleWriterModule;
 import modules.basemodules.ExampleGsonDeserialization;
@@ -75,6 +76,7 @@ import modules.visualizationModules.ColourGraph;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
+
 import common.ListLoggingHandler;
 import common.parallelization.CallbackReceiver;
 
@@ -473,6 +475,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		ComparisonModule comparisonModule = new ComparisonModule(moduleNetwork, comparisonModuleProperties);
 		comparisonModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, comparisonModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		comparisonModule.applyProperties();
+		
+		// Comparison module
+		Properties caseChangerModuleProperties = new Properties();
+		CaseChangerModule caseChangerModule = new CaseChangerModule(moduleNetwork, caseChangerModuleProperties);
+		caseChangerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, caseChangerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		caseChangerModule.applyProperties();
 
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -532,6 +540,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(segmentJoinerModule.getName(), segmentJoinerModule);
 		availableModules.put(segmentMatrixModule.getName(), segmentMatrixModule);
 		availableModules.put(comparisonModule.getName(), comparisonModule);
+		availableModules.put(caseChangerModule.getName(), caseChangerModule);
 	}
 	
 	/**
