@@ -40,6 +40,7 @@ import modules.basemodules.SmbFileReaderModule;
 import modules.basemodules.SmbFileWriterModule;
 import modules.hal.HalAdvancedModule;
 import modules.keyWordInPhrase.KeyWordInPhraseModule;
+import modules.keyWordInPhrase.KwipBowMatrixModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
@@ -76,7 +77,6 @@ import modules.visualizationModules.ColourGraph;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
-
 import common.ListLoggingHandler;
 import common.parallelization.CallbackReceiver;
 
@@ -481,6 +481,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		CaseChangerModule caseChangerModule = new CaseChangerModule(moduleNetwork, caseChangerModuleProperties);
 		caseChangerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, caseChangerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		caseChangerModule.applyProperties();
+		
+		// KwipBowMatrixModule
+		Properties kwipBowMatrixModuleProperties = new Properties();
+		KwipBowMatrixModule kwipBowMatrixModule = new KwipBowMatrixModule(moduleNetwork, kwipBowMatrixModuleProperties);
+		kwipBowMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, kwipBowMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		kwipBowMatrixModule.applyProperties();
 
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -541,6 +547,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(segmentMatrixModule.getName(), segmentMatrixModule);
 		availableModules.put(comparisonModule.getName(), comparisonModule);
 		availableModules.put(caseChangerModule.getName(), caseChangerModule);
+		availableModules.put(kwipBowMatrixModule.getName(), kwipBowMatrixModule);
 	}
 	
 	/**
