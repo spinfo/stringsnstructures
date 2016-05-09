@@ -43,7 +43,7 @@ public class BagsOfWordsModule extends ModuleImpl {
 	private final static String INPUT_TEXT_ID = "Simple labels";
 	private final static String INPUT_TEXT_DESC = "[text/plain] A newline separated List of labels.";
 	private final static String OUTPUT_BOW_ID = "BoW";
-	private final static String OUTPUT_BOW_DESC = "[text/json] Bags of Words (class: TreeMap<Integer,TreeMap<String,Integer>>)";
+	private final static String OUTPUT_BOW_DESC = "[text/json] Bags of Words (class: TreeMap&lt;Integer,TreeMap&lt;String,Integer&gt;&gt;)";
 
 	// Types for serializing and deserializing
 	private final static Type INPUT_TYPE = new TypeToken<SuffixTreeRepresentation>() {
