@@ -46,6 +46,7 @@ import modules.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
 import modules.segmentationModules.SegmentJoinerModule;
 import modules.segmentationModules.SegmentMatrixModule;
+import modules.segmentationModules.SegmentationCheckModule;
 import modules.seqNewickExporter.SeqNewickExporterController;
 import modules.seqNewickExporter.SeqNewickExporterControllerV2;
 import modules.seqNewickExporter.SeqQueryController;
@@ -487,6 +488,11 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		KwipBowMatrixModule kwipBowMatrixModule = new KwipBowMatrixModule(moduleNetwork, kwipBowMatrixModuleProperties);
 		kwipBowMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, kwipBowMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		kwipBowMatrixModule.applyProperties();
+		
+		Properties segmentationCheckModuleProperties = new Properties();
+		SegmentationCheckModule segmentationCheckModule = new SegmentationCheckModule(moduleNetwork, segmentationCheckModuleProperties);
+		segmentationCheckModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentationCheckModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		segmentationCheckModule.applyProperties();
 
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -548,6 +554,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(comparisonModule.getName(), comparisonModule);
 		availableModules.put(caseChangerModule.getName(), caseChangerModule);
 		availableModules.put(kwipBowMatrixModule.getName(), kwipBowMatrixModule);
+		availableModules.put(segmentationCheckModule.getName(), segmentationCheckModule);
 	}
 	
 	/**
