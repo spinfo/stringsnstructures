@@ -164,7 +164,7 @@ public class KwipBowMatrixModule extends ModuleImpl {
 			Iterator<String> types2 = typeSet.iterator();
 			while(types2.hasNext()){
 				String type2 = types2.next();
-				if (!type.equals(type2)){
+				if (!type.equals(type2) || !this.omitZeroValues){
 					if (matrix.get(type).containsKey(type2)){
 						Integer value = matrix.get(type).get(type2).intValue();
 						this.getOutputPorts().get(ID_OUTPUT_MATRIX).outputToAllCharPipes(value.toString());
@@ -173,7 +173,8 @@ public class KwipBowMatrixModule extends ModuleImpl {
 				}
 				this.getOutputPorts().get(ID_OUTPUT_MATRIX).outputToAllCharPipes(";");
 			}
-			this.getOutputPorts().get(ID_OUTPUT_MATRIX).outputToAllCharPipes("\n");
+			if (types.hasNext())
+				this.getOutputPorts().get(ID_OUTPUT_MATRIX).outputToAllCharPipes("\n");
 		}
 		
 		// Close outputs (important!)

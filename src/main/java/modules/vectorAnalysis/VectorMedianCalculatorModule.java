@@ -79,7 +79,7 @@ public class VectorMedianCalculatorModule extends ModuleImpl {
 			String dataLine = inputScanner.next();
 			
 			// Explode data line
-			String[] data = dataLine.split(",");
+			String[] data = dataLine.split("[,;]");
 			
 			// Check whether the row has at least one true data field
 			if (data.length<2){
