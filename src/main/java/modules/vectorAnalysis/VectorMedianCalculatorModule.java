@@ -1,14 +1,17 @@
 package modules.vectorAnalysis;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.TreeSet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import common.DoubleComparator;
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.InputPort;
@@ -59,7 +62,7 @@ public class VectorMedianCalculatorModule extends ModuleImpl {
 
 		// Construct scanner instances for input segmentation
 		Scanner inputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
-		inputScanner.useDelimiter("\\n");
+		inputScanner.useDelimiter("\\R+");
 		
 		// Skip csv head (we will sort the data lines individually anyway, so no sense in keeping track of the edge labels)
 		if (inputScanner.hasNext()){
@@ -72,6 +75,9 @@ public class VectorMedianCalculatorModule extends ModuleImpl {
 		
 		// Map to store the median for each type
 		Map<String,Double> medianValuesMap = new HashMap<String,Double>();
+		
+		// Construct comparator for later use
+		Comparator<Double> comparator = new DoubleComparator();
 		
 		// Input read loop
 		while (inputScanner.hasNext()) {
@@ -91,11 +97,12 @@ public class VectorMedianCalculatorModule extends ModuleImpl {
 			String type = data[0];
 
 			// Process the remaining fields of the current row
-			TreeSet<Double> sortedValues = new TreeSet<Double>();
+			List<Double> sortedValues = new ArrayList<Double>();
 			for (int i=1; i<data.length; i++) {
 				Double value = Double.parseDouble(data[i]);
 				sortedValues.add(value);
 			}
+			sortedValues.sort(comparator);
 			
 			// Variable to store median in
 			Double median;
@@ -108,7 +115,7 @@ public class VectorMedianCalculatorModule extends ModuleImpl {
 			
 			else if (sortedValues.size() == 1){
 				// Only a single data value is present
-				median = sortedValues.first();
+				median = sortedValues.get(0);
 			}
 			
 			// Check whether the number of values is odd or even

@@ -12,7 +12,7 @@ import common.TextInfo;
 
 public class KwipXmlReaderTest {
 
-	@Test
+/*	@Test
 	public void test() {
 		List<Type> types = new KwipXmlReader(TextInfo.getKwipXMLPath()).read();
 		for (Type type : types) {
@@ -24,5 +24,5 @@ public class KwipXmlReaderTest {
 				System.out.println(token);
 			}
 		}
-	}
+	}*/
 }

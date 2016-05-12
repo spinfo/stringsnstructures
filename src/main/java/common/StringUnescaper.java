@@ -5,6 +5,7 @@ package common;
  * @author Tom Christiansen <a href=mailto:tchrist@perl.com>tchrist@perl.com</a>
  * @see <a href="http://stackoverflow.com/questions/3537706/howto-unescape-a-java-string-literal-in-java">Stackoverflow page</a>
  *
+ * Small adjustments by M. Boeing <mboeing3@uni-koeln.de>
  */
 public class StringUnescaper {
 	/*
@@ -76,6 +77,12 @@ public class StringUnescaper {
 	     * this one need be no bigger, as unescaping shrinks the string
 	     * here, where in the other one, it grows it.
 	     */
+		
+		if (oldstr == null)
+			return null;
+		if (oldstr.isEmpty())
+			return oldstr;
+		
 
 	    StringBuffer newstr = new StringBuffer(oldstr.length());
 
