@@ -21,7 +21,7 @@ public class VectorAberrationCalculatorModule extends ModuleImpl {
 	public static final String PROPERTYKEY_EXPONENT = "exponent";
 	public static final String PROPERTYKEY_SORT = "sort output";
 	public static final String PROPERTYKEY_IN_CSV_DELIMITER_REGEX = "input CSV delimiter regex";
-	public static final String PROPERTYKEY_OUT_CSV_DELIMITER = "input CSV delimiter";
+	public static final String PROPERTYKEY_OUT_CSV_DELIMITER = "output CSV delimiter";
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "csv";
