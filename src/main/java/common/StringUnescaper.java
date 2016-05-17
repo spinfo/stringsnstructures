@@ -5,7 +5,7 @@ package common;
  * @author Tom Christiansen <a href=mailto:tchrist@perl.com>tchrist@perl.com</a>
  * @see <a href="http://stackoverflow.com/questions/3537706/howto-unescape-a-java-string-literal-in-java">Stackoverflow page</a>
  *
- * Small adjustments by M. Boeing <mboeing3@uni-koeln.de>
+ * Small adjustments by M. Boeing <a href=mailto:mboeing3@uni-koeln.de>mboeing3@uni-koeln.de</a>
  */
 public class StringUnescaper {
 	/*
