@@ -48,6 +48,7 @@ import modules.hal.HalAdvancedModule;
 import modules.keyWordInPhrase.KeyWordInPhraseModule;
 import modules.keyWordInPhrase.KwipBowMatrixModule;
 import modules.matrix.MatrixColumnSumModule;
+import modules.matrixTransformation.MatrixBitwiseOperationModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
@@ -490,6 +491,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		kwipBowMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, kwipBowMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		kwipBowMatrixModule.applyProperties();
 		
+		// Segmentation Check Module
 		Properties segmentationCheckModuleProperties = new Properties();
 		SegmentationCheckModule segmentationCheckModule = new SegmentationCheckModule(moduleNetwork, segmentationCheckModuleProperties);
 		segmentationCheckModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentationCheckModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
@@ -499,6 +501,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		MatrixColumnSumModule matrixColumnSumModule = new MatrixColumnSumModule(moduleNetwork, matrixColumnSumModuleProperties);
 		matrixColumnSumModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixColumnSumModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		matrixColumnSumModule.applyProperties();
+
+		// Matrix Bitwise Transformation Module
+		Properties matrixBitwiseModuleProperties = new Properties();
+		MatrixBitwiseOperationModule matrixBitwiseModule = new MatrixBitwiseOperationModule(moduleNetwork, matrixBitwiseModuleProperties);
+		matrixBitwiseModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixBitwiseModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		matrixBitwiseModule.applyProperties();
 
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -562,6 +570,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(kwipBowMatrixModule.getName(), kwipBowMatrixModule);
 		availableModules.put(segmentationCheckModule.getName(), segmentationCheckModule);
 		availableModules.put(matrixColumnSumModule.getName(), matrixColumnSumModule);
+		availableModules.put(matrixBitwiseModule.getName(), matrixBitwiseModule);
 	}
 	
 	/**
