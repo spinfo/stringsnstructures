@@ -38,7 +38,7 @@ public class NamedFieldMatrix {
 	private final Map<Integer, String> colsToColNames;
 	private final Map<String, Integer> colNamesToCols;
 
-	private char DELIMITER = ',';
+	private String delimiter = ",";
 
 	public NamedFieldMatrix() {
 		this.values = new double[rowMax][];
@@ -54,9 +54,12 @@ public class NamedFieldMatrix {
 	 * Adds value to the current value of the field designated by rowName and
 	 * columnName. Returns the new value.
 	 * 
-	 * @param rowName Name of row
-	 * @param columnName Name of column
-	 * @param value Value
+	 * @param rowName
+	 *            Name of row
+	 * @param columnName
+	 *            Name of column
+	 * @param value
+	 *            Value
 	 * @return new value
 	 */
 	public double addValue(String rowName, String columnName, double value) {
@@ -73,9 +76,12 @@ public class NamedFieldMatrix {
 	 * Set the value of the field designated by rowName and columnName. Add a
 	 * new field if none exists for that combination.
 	 * 
-	 * @param rowName The name of the field's row
-	 * @param columnName The name of the field's column
-	 * @param value The value to set
+	 * @param rowName
+	 *            The name of the field's row
+	 * @param columnName
+	 *            The name of the field's column
+	 * @param value
+	 *            The value to set
 	 * @return The previous value of the field
 	 */
 	public double setValue(String rowName, String columnName, double value) {
@@ -91,9 +97,12 @@ public class NamedFieldMatrix {
 	/**
 	 * Return the value of the field designated by rowName and column name.
 	 * 
-	 * @param rowName The rowName of the field
-	 * @param columnName The column name of the field
-	 * @return The value of the field designated by rowName and columnName or null if the field does not exist
+	 * @param rowName
+	 *            The rowName of the field
+	 * @param columnName
+	 *            The column name of the field
+	 * @return The value of the field designated by rowName and columnName or
+	 *         null if the field does not exist
 	 */
 	public Double getValue(String rowName, String columnName) {
 		Integer row = rowNamesToRows.get(rowName);
@@ -107,11 +116,30 @@ public class NamedFieldMatrix {
 	}
 
 	/**
+	 * Get a value by it's row and column index.
+	 * 
+	 * @param row
+	 *            The row index.
+	 * @param col
+	 *            The column index.
+	 * @return The value specified by the indices or null if none exists.
+	 */
+	public Double getValue(int row, int col) {
+		if (row >= rowAmount || col >= colAmount) {
+			return null;
+		} else {
+			return values[row][col];
+		}
+	}
+
+	/**
 	 * Get a copy of a row by it's name.
 	 * 
-	 * @param rowName The name of the row.
+	 * @param rowName
+	 *            The name of the row.
 	 * @return A copy of the row fit in size to the amount of columns set.
-	 * @throws IllegalArgumentException If there is no row with that name.
+	 * @throws IllegalArgumentException
+	 *             If there is no row with that name.
 	 */
 	public double[] getRow(String rowName) throws IllegalArgumentException {
 		Integer row = rowNamesToRows.get(rowName);
@@ -125,9 +153,11 @@ public class NamedFieldMatrix {
 	/**
 	 * Get a copy of a row by it's index.
 	 * 
-	 * @param row The index of the row.
+	 * @param row
+	 *            The index of the row.
 	 * @return A copy of the row fit in size to the amount of columns set.
-	 * @throws IllegalArgumentException if there is no row with that index.
+	 * @throws IllegalArgumentException
+	 *             if there is no row with that index.
 	 */
 	public double[] getRow(int row) throws IllegalArgumentException {
 		if (row >= rowAmount) {
@@ -139,9 +169,11 @@ public class NamedFieldMatrix {
 	/**
 	 * Gets a column by it's name.
 	 * 
-	 * @param columnName The name of the column.
+	 * @param columnName
+	 *            The name of the column.
 	 * @return a new array with all values in the specified column.
-	 * @throws IllegalArgumentException if no column with the specified name exists.
+	 * @throws IllegalArgumentException
+	 *             if no column with the specified name exists.
 	 */
 	public double[] getColumn(String columnName) throws IllegalArgumentException {
 		// get col number and fail if none exists
@@ -155,9 +187,11 @@ public class NamedFieldMatrix {
 	/**
 	 * Gets a column by it's index.
 	 * 
-	 * @param col The index of the column.
+	 * @param col
+	 *            The index of the column.
 	 * @return a new array with all values in the specified column.
-	 * @throws IllegalArgumentException if the column is not set
+	 * @throws IllegalArgumentException
+	 *             if the column is not set
 	 */
 	public double[] getColumn(int col) throws IllegalArgumentException {
 		if (col >= colAmount) {
@@ -173,6 +207,7 @@ public class NamedFieldMatrix {
 
 	/**
 	 * Gets the number of rows currently set.
+	 * 
 	 * @return number of rows
 	 */
 	public int getRowAmount() {
@@ -181,10 +216,75 @@ public class NamedFieldMatrix {
 
 	/**
 	 * Gets the number of columns currently set.
+	 * 
 	 * @return number of columns
 	 */
 	public int getColumnsAmount() {
 		return colAmount;
+	}
+
+	/**
+	 * Get the output delimiter currently set.
+	 */
+	public String getDelimiter() {
+		return delimiter;
+	}
+
+	/**
+	 * Set the output delimiter.
+	 * 
+	 * @param delimiter
+	 *            The delimiter to set.
+	 */
+	public void setDelimiter(String delimiter) {
+		this.delimiter = delimiter;
+	}
+
+	/**
+	 * Return the number of the row for the provided name if present.
+	 * 
+	 * @param rowName
+	 *            the name of the row
+	 * @return the row number or null if the rowName is not part of the table.
+	 */
+	public int getRowNo(String rowName) {
+		return rowNamesToRows.get(rowName);
+	}
+
+	/**
+	 * Return the number of the column for the provided name if present.
+	 * 
+	 * @param columnName
+	 *            the name of the column
+	 * @return the column number or null if the columnName is not part of the
+	 *         table.
+	 */
+	public int getColumnNo(String columnName) {
+		return colNamesToCols.get(columnName);
+	}
+
+	/**
+	 * Return the name of the column if present.
+	 * 
+	 * @param colNo
+	 *            The index of the column.
+	 * @return The name of the column or null if the columnNo is not part of the
+	 *         table.
+	 */
+	public String getColumnName(int colNo) {
+		return colsToColNames.get(colNo);
+	}
+
+	/**
+	 * Return the name of the row if present.
+	 * 
+	 * @param rowNo
+	 *            The index of the row.
+	 * @return The name of the row or null if the rowNo is not part of the
+	 *         table.
+	 */
+	public String getRowName(int rowNo) {
+		return rowsToRowNames.get(rowNo);
 	}
 
 	/**
@@ -195,10 +295,10 @@ public class NamedFieldMatrix {
 	public String csvHeader() {
 		StringBuilder sb = new StringBuilder();
 		// the first header field is empty
-		sb.append(DELIMITER);
+		sb.append(delimiter);
 		for (int col = 0; col < colAmount; col++) {
 			sb.append(colsToColNames.get(col));
-			sb.append(DELIMITER);
+			sb.append(delimiter);
 		}
 		sb.setLength(sb.length() - 1);
 		sb.append('\n');
@@ -208,9 +308,11 @@ public class NamedFieldMatrix {
 	/**
 	 * Returns the row as a csv representation.
 	 * 
-	 * @param row The row to format as csv.
+	 * @param row
+	 *            The row to format as csv.
 	 * @return A csv representation of the row
-	 * @throws IllegalArgumentException If row doesn't mach a row in the table.
+	 * @throws IllegalArgumentException
+	 *             If row doesn't mach a row in the table.
 	 */
 	public String csvLine(int row) throws IllegalArgumentException {
 		if (row >= rowAmount) {
@@ -219,14 +321,14 @@ public class NamedFieldMatrix {
 		StringBuilder sb = new StringBuilder();
 		// write the row header
 		sb.append(rowsToRowNames.get(row));
-		sb.append(DELIMITER);
+		sb.append(delimiter);
 		// write values
 		for (int col = 0; col < colAmount; col++) {
 			// Write only non-zero values
 			if (values[row][col] != 0) {
 				sb.append(values[row][col]);
 			}
-			sb.append(DELIMITER);
+			sb.append(delimiter);
 		}
 		sb.setLength(sb.length() - 1);
 		sb.append('\n');
@@ -237,7 +339,9 @@ public class NamedFieldMatrix {
 	 * get the current row if it exists or add a new one: i.e. note it's name in
 	 * the mappings and make sure that it is backed by an appropriately sized
 	 * array in values[newRowNo]
-	 * @param rowName Name of row
+	 * 
+	 * @param rowName
+	 *            Name of row
 	 * @return row index
 	 */
 	private int getOrAddRow(String rowName) {
@@ -259,7 +363,9 @@ public class NamedFieldMatrix {
 	/**
 	 * Just add the column and make sure that it is accessible via the column
 	 * name, resize columns if necessary
-	 * @param columnName Name of column
+	 * 
+	 * @param columnName
+	 *            Name of column
 	 * @return column index
 	 */
 	private int getOrAddColumn(String columnName) {
@@ -288,7 +394,6 @@ public class NamedFieldMatrix {
 		}
 		rowMax *= 2;
 		values = Arrays.copyOf(values, rowMax);
-		LOGGER.info("REISZE Y: " + rowMax);
 	}
 
 	/**
@@ -306,55 +411,63 @@ public class NamedFieldMatrix {
 				values[i] = Arrays.copyOf(row, colMax);
 			}
 		}
-		LOGGER.info("REISZE X: " + colMax);
 	}
-	
+
 	/**
-	 * Reads CSV data from specified string and returns a NamedFieldMatrix object instance.
-	 * @param csvString String containing CSV formatted data
+	 * Reads CSV data from specified string and returns a NamedFieldMatrix
+	 * object instance.
+	 * 
+	 * @param csvString
+	 *            String containing CSV formatted data
 	 * @return NamedFieldMatrix instance
-	 * @throws Exception Thrown if the CSV input cannot be parsed
+	 * @throws Exception
+	 *             Thrown if the CSV input cannot be parsed
 	 */
 	public static NamedFieldMatrix parseCSV(String csvString) throws Exception {
 		return NamedFieldMatrix.parseCSV(new StringReader(csvString));
 	}
-	
+
 	/**
-	 * Reads CSV data from specified reader and returns a NamedFieldMatrix object instance.
-	 * @param csvReader Reader instance providing CSV formatted data
+	 * Reads CSV data from specified reader and returns a NamedFieldMatrix
+	 * object instance.
+	 * 
+	 * @param csvReader
+	 *            Reader instance providing CSV formatted data
 	 * @return NamedFieldMatrix instance
-	 * @throws Exception Thrown if the CSV input cannot be parsed
+	 * @throws Exception
+	 *             Thrown if the CSV input cannot be parsed
 	 */
 	public static NamedFieldMatrix parseCSV(Reader csvReader) throws Exception {
-		
+
 		// Instantiate matrix
 		NamedFieldMatrix matrix = new NamedFieldMatrix();
-		
+
 		// Use scanner for input
 		Scanner input = new Scanner(csvReader);
 		input.useDelimiter("\\n");
-		
+
 		// Read csv head row
 		String[] colNames = null;
-		if (input.hasNext()){
+		if (input.hasNext()) {
 			colNames = input.next().split(",");
 		} else {
 			input.close();
 			throw new IOException("Cannot parse CSV data -- no head row found.");
 		}
-		
+
 		// Read data rows
-		while (input.hasNext()){
+		while (input.hasNext()) {
 			String[] data = input.next().split(",");
-			// Store data into matrix (assuming the first column contains the dataset names)
-			for (int i=1; i<data.length && i<colNames.length; i++){
+			// Store data into matrix (assuming the first column contains the
+			// dataset names)
+			for (int i = 1; i < data.length && i < colNames.length; i++) {
 				Double value = 0d; // Default value for empty string input
 				if (data[i] != null && !data[i].isEmpty())
 					value = Double.parseDouble(data[i]);
 				matrix.addValue(data[0], colNames[i], value);
 			}
 		}
-		
+
 		input.close();
 		return matrix;
 	}
