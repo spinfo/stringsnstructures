@@ -11,6 +11,12 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+
+import common.ListLoggingHandler;
+import common.parallelization.CallbackReceiver;
 import modules.Module;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
@@ -41,6 +47,7 @@ import modules.basemodules.SmbFileWriterModule;
 import modules.hal.HalAdvancedModule;
 import modules.keyWordInPhrase.KeyWordInPhraseModule;
 import modules.keyWordInPhrase.KwipBowMatrixModule;
+import modules.matrix.MatrixColumnSumModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
@@ -74,12 +81,6 @@ import modules.vectorAnalysis.VectorAberrationCalculatorModule;
 import modules.vectorAnalysis.VectorMedianCalculatorModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import common.ListLoggingHandler;
-import common.parallelization.CallbackReceiver;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -493,6 +494,11 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		SegmentationCheckModule segmentationCheckModule = new SegmentationCheckModule(moduleNetwork, segmentationCheckModuleProperties);
 		segmentationCheckModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentationCheckModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		segmentationCheckModule.applyProperties();
+		
+		Properties matrixColumnSumModuleProperties = new Properties();
+		MatrixColumnSumModule matrixColumnSumModule = new MatrixColumnSumModule(moduleNetwork, matrixColumnSumModuleProperties);
+		matrixColumnSumModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixColumnSumModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		matrixColumnSumModule.applyProperties();
 
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -555,6 +561,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(caseChangerModule.getName(), caseChangerModule);
 		availableModules.put(kwipBowMatrixModule.getName(), kwipBowMatrixModule);
 		availableModules.put(segmentationCheckModule.getName(), segmentationCheckModule);
+		availableModules.put(matrixColumnSumModule.getName(), matrixColumnSumModule);
 	}
 	
 	/**
