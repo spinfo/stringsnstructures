@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 
 /**
  * A dynamically resizing two-dimensional Array whose fields can be adressed by
@@ -16,8 +15,6 @@ import java.util.logging.Logger;
  * Supports output to a csv-Table and can be read from a csv-Table.
  */
 public class NamedFieldMatrix {
-
-	private static final Logger LOGGER = Logger.getLogger(NamedFieldMatrix.class.getName());
 
 	// the actual values in a 2-dimensional list
 	private double[][] values;
