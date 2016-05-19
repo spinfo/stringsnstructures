@@ -132,7 +132,7 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 		this.corpusSer = (SuffixTreeInfoSer) oiStream.readObject();
 		oiStream.close();
 		
-		// Prepare proper SuffixTreeInfor object "corpus" with all vectors.
+		// Prepare proper SuffixTreeInfo object "corpus" with all vectors.
 		this.corpus = new SuffixTreeInfo();
 		this.corpus.setNumberOfNodes(this.corpusSer.getNumberOfNodes());
 		this.corpus.setNumberOfTypes(this.corpusSer.getNumberOfTypes());

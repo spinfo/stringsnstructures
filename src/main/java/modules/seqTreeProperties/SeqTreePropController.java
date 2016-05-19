@@ -65,13 +65,13 @@ public class SeqTreePropController extends ModuleImpl {
 	// total number of leaves of the tree
 	private int totalNumOfLeaves;
 	
-	// total number of innernodes for all sub trees
+	// total number of inner nodes for all sub trees
 	private HashMap<String, Integer> subTreeInnerNodes;
 	
 	//longestPath = height of the tree
 	private int longestPath;
 	
-	//varaibles for calculating the cophenetic index
+	//variables for calculating the cophenetic index
 	private HashMap<String,SeqCopheneticIndex> copheneticIndex;
 	private ArrayList<Integer> copheneticIndexBinomList;
 	private double avCopheneticIndex;
@@ -127,7 +127,7 @@ public class SeqTreePropController extends ModuleImpl {
 		// Define I/O
 		InputPort inputPort = new InputPort(INPUTID, "[Json] tree input from the </br>treeBuilder2OutputV2 module", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(OUTPUTID, "[plain text] sequency properties output</br>in table like form", this);
+		OutputPort outputPort = new OutputPort(OUTPUTID, "[plain text] sequence properties output</br>in table like form", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputTreePort = new OutputPort(FREQOUTID, "[tsv] tree frequencies</br>as tsv table", this);
 		outputTreePort.addSupportedPipe(CharPipe.class);
