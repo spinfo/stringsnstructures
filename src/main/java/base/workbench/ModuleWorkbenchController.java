@@ -82,6 +82,7 @@ import modules.vectorAnalysis.VectorAberrationCalculatorModule;
 import modules.vectorAnalysis.VectorMedianCalculatorModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
+import modules.dot2tree.Dot2TreeController;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -507,6 +508,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		MatrixBitwiseOperationModule matrixBitwiseModule = new MatrixBitwiseOperationModule(moduleNetwork, matrixBitwiseModuleProperties);
 		matrixBitwiseModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixBitwiseModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		matrixBitwiseModule.applyProperties();
+		
+		// Dot to Tree conversion module.
+		Properties dot2TreeControllerProperties = new Properties();
+		Dot2TreeController dot2TreeController = new Dot2TreeController(moduleNetwork, dot2TreeControllerProperties);
+		dot2TreeControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, dot2TreeController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		dot2TreeController.applyProperties();
 
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -571,6 +578,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(segmentationCheckModule.getName(), segmentationCheckModule);
 		availableModules.put(matrixColumnSumModule.getName(), matrixColumnSumModule);
 		availableModules.put(matrixBitwiseModule.getName(), matrixBitwiseModule);
+		availableModules.put(dot2TreeController.getName(), dot2TreeController);
 	}
 	
 	/**

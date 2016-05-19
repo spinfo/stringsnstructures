@@ -104,20 +104,20 @@ public class Dot2TreeController extends ModuleImpl {
 		this.setCategory("Format conversion");
 				
 		// Property defaults.
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Dot to (generalized) suffix tree converter.");
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Dot2GST converter");
 		
 		// Initialize I/O pipelines.
 		InputPort inputDotPort = new InputPort(INPUTDOTID, "[dot format] Dot output from the</br>GST builder module.", this);
 		inputDotPort.addSupportedPipe(CharPipe.class);
 		
 		InputPort inputXmlPort = new InputPort(INPUTXMLID, "[xml format] Xml output from the</br>GST builder module.", this);
-		inputDotPort.addSupportedPipe(CharPipe.class);
+		inputXmlPort.addSupportedPipe(BytePipe.class);
 		
 		OutputPort outputPort = new OutputPort (OUTPUTID, "[byte/binary or JSON]</br>Data structure representing"
 				+ " a (generalized) suffix tree", this);
-		
 		outputPort.addSupportedPipe(BytePipe.class);
 		outputPort.addSupportedPipe(CharPipe.class);
+		
 		super.addInputPort(inputDotPort);
 		super.addInputPort(inputXmlPort);
 		super.addOutputPort(outputPort);
