@@ -42,6 +42,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	private final static String OUTPUT_LIST_DESC = "[text/plain] A list of row/column mappings with the amount of bits set after the operation was applied, sorted by that count.";
 
 	// An enum, and property to specify the operation to apply
+	// Note: For these operation the order of operation is unimportant, adding
+	// an asymmetrical operation would require some changes in the processing
 	private static enum Operation {
 		AND, OR, XOR
 	};
@@ -55,6 +57,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	// Properties for the input and output separator
 	private static final String PROPERTYKEY_INPUT_SEPARATOR = "Input separator";
 	private static final String PROPERTYKEY_OUTPUT_SEPARATOR = "Output separator";
+
+	// Properties for controlling which rows/columns are compared
+	private static final String PROPERTYKEY_OPERATE_REFLEXIVE = "Reflexive";
 
 	public MatrixBitwiseOperationModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
@@ -86,10 +91,13 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				"Which input separator to use for the input csv table.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUT_SEPARATOR,
 				"Which Output separator to use for the csv table output.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OPERATE_REFLEXIVE,
+				"Whether the operation should be applied to a row/col with itself.");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OPERATION, "AND");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_USE_ROWS, "true");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_INPUT_SEPARATOR, ";");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUT_SEPARATOR, ";");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OPERATE_REFLEXIVE, "false");
 
 		this.setDefaultsIfMissing();
 	}
@@ -98,17 +106,16 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		boolean result = true;
 
 		// a reader to read input line by line
-		BufferedReader inputReader = null;
+		BufferedReader inputReader = new BufferedReader(getInputPorts().get(INPUT_ID).getInputReader());
 
 		try {
 			// determine all necessary flags from properties
 			final boolean useRows = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_USE_ROWS));
+			final boolean reflexive = Boolean
+					.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_OPERATE_REFLEXIVE));
 			final Operation operation = Operation.valueOf((this.getProperties().getProperty(PROPERTYKEY_OPERATION)));
 			final String inputSeparator = this.getProperties().getProperty(PROPERTYKEY_INPUT_SEPARATOR);
 			final String outputSeparator = this.getProperties().getProperty(PROPERTYKEY_OUTPUT_SEPARATOR);
-
-			// initialise input reader within try/catch
-			inputReader = new BufferedReader(getInputPorts().get(INPUT_ID).getInputReader());
 
 			// read the input
 			final Map<String, BitSet> bitsets;
@@ -119,22 +126,29 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			}
 			inputReader.close();
 
-			// output will be in the form of another matrix containing the
-			// result of applying the operation to each pair of BitSets
+			// build a matrix containing the result of applying the operation to
+			// each pair of BitSets
 			NamedFieldMatrix outMatrix = new NamedFieldMatrix();
 			BitSet operand1 = null;
 			BitSet operand2 = null;
 			BitSet product = null;
+			Double value = null;
 			for (String name1 : bitsets.keySet()) {
 				operand1 = bitsets.get(name1);
 				for (String name2 : bitsets.keySet()) {
-					// skip if this combination was already calculated in a
-					// previous iteration
-					if (outMatrix.getValue(name2, name1) != null) {
+					// If this combination was already calculated in a
+					// previous iteration, just copy the value
+					// this works as long as all possible operations are
+					// symmetrical
+					value = outMatrix.getValue(name2, name1);
+					if (value != null) {
+						outMatrix.setValue(name1, name2, value);
 						continue;
 					}
-					// never compare a BitSet to itself
-					if (name1.equals(name2)) {
+					// don't compare a BitSet to itself unless instructed
+					if (!reflexive && name1.equals(name2)) {
+						// set to zero to get a symmetrical matrix
+						outMatrix.setValue(name1, name2, 0.0);
 						continue;
 					}
 
@@ -149,7 +163,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			if (matrixOut.isConnected()) {
 				writeMatrixOutput(outMatrix, matrixOut, outputSeparator);
 			}
-			
+
 			OutputPort listOut = this.getOutputPorts().get(OUTPUT_LIST_ID);
 			if (listOut.isConnected()) {
 				writeListOutput(outMatrix, listOut);
@@ -292,7 +306,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			out.outputToAllCharPipes(matrix.csvLine(i));
 		}
 	}
-	
+
 	private static void writeListOutput(NamedFieldMatrix matrix, OutputPort out) throws IOException {
 		TreeMap<Integer, List<String>> items = new TreeMap<Integer, List<String>>(Collections.reverseOrder());
 		StringBuilder sb = new StringBuilder();
@@ -303,7 +317,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		for (int i = 0; i < matrix.getRowAmount(); i++) {
 			rowName = matrix.getRowName(i);
 
-			for(int j = 0; j < matrix.getColumnsAmount(); j++) {
+			for (int j = 0; j < matrix.getColumnsAmount(); j++) {
 				value = matrix.getValue(i, j);
 
 				if (value != null && value > 0) {
@@ -319,9 +333,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				}
 			}
 		}
-		
+
 		for (int count : items.keySet()) {
-			for(String nameCombination : items.get(count)) {
+			for (String nameCombination : items.get(count)) {
 				out.outputToAllCharPipes(nameCombination + ": " + count);
 				out.outputToAllCharPipes("\n");
 			}
