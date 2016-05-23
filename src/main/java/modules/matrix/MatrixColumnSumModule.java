@@ -66,14 +66,6 @@ public class MatrixColumnSumModule extends ModuleImpl {
 	@Override
 	public boolean process() throws Exception {
 		
-		/*
-		 * This module doesn't do much useful processing.
-		 * It reads from two inputs, segments them via
-		 * the specified delimiters and entwines the
-		 * result.
-		 * Just used to exemplify a basic module. 
-		 */
-		
 		// Construct scanner instances for input segmentation
 		Scanner lineScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
 		lineScanner.useDelimiter("\\R+");
