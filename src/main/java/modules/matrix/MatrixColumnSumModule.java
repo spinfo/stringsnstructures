@@ -17,7 +17,7 @@ public class MatrixColumnSumModule extends ModuleImpl {
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_DELIMITER_INPUT_REGEX = "input delimiter regex";
 	public static final String PROPERTYKEY_DELIMITER_OUTPUT = "output delimiter";
-	public static final String PROPERTYKEY_OMITHEADERLINE = "omit header line";
+	public static final String PROPERTYKEY_INPUTHASHEADERLINE = "input has header line";
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "csv input";
@@ -26,7 +26,7 @@ public class MatrixColumnSumModule extends ModuleImpl {
 	// Local variables
 	private String inputdelimiter;
 	private String outputdelimiter;
-	private boolean omitHeaderLine;
+	private boolean inputHasHeaderLine;
 
 	public MatrixColumnSumModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -43,13 +43,13 @@ public class MatrixColumnSumModule extends ModuleImpl {
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_REGEX, "Regular expression to use as segmentation delimiter for CSV input.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT, "String to insert as segmentation delimiter into the output name-sum-pairs.");
-		this.getPropertyDescriptions().put(PROPERTYKEY_OMITHEADERLINE, "Omit first line (header line) [true/false].");
+		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTHASHEADERLINE, "First line of input is header line [true/false].");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Matrix Column Sum"); // Property key for module name is defined in parent class
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT_REGEX, "[\\,;]");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT, ";");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_OMITHEADERLINE, "false");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTHASHEADERLINE, "false");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "CSV input.", this);
@@ -84,7 +84,7 @@ public class MatrixColumnSumModule extends ModuleImpl {
 		// Array for result values
 		double[] sums = null;
 		
-		if (!this.omitHeaderLine)
+		if (this.inputHasHeaderLine)
 			// Read header line
 			if (lineScanner.hasNext()){
 				headerNames = lineScanner.next().split(this.inputdelimiter);
@@ -128,7 +128,14 @@ public class MatrixColumnSumModule extends ModuleImpl {
 			// Add data values
 			for (int i=1; i<fieldList.size(); i++){
 				if (fieldList.get(i) != null && !fieldList.get(i).isEmpty())
-					sums[i-1] = sums[i-1]+Double.parseDouble(fieldList.get(i));
+					try {
+						sums[i-1] = sums[i-1]+Double.parseDouble(fieldList.get(i));
+					} catch (NumberFormatException e) {
+						String error = "This value does not seem to be a number.";
+						if (!this.inputHasHeaderLine)
+							error = error.concat(" If this matrix comes with a header line, please set '"+PROPERTYKEY_INPUTHASHEADERLINE+"' to 'true' in the module options.");
+						throw new Exception(error,e);
+					}
 			}
 		}
 
@@ -156,9 +163,9 @@ public class MatrixColumnSumModule extends ModuleImpl {
 		this.inputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_INPUT_REGEX, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT_REGEX));
 		this.outputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT));
 		
-		String value = this.getProperties().getProperty(PROPERTYKEY_OMITHEADERLINE, this.getPropertyDefaultValues().get(PROPERTYKEY_OMITHEADERLINE));
+		String value = this.getProperties().getProperty(PROPERTYKEY_INPUTHASHEADERLINE, this.getPropertyDefaultValues().get(PROPERTYKEY_INPUTHASHEADERLINE));
 		if (value != null && !value.isEmpty())
-			this.omitHeaderLine = Boolean.parseBoolean(value);
+			this.inputHasHeaderLine = Boolean.parseBoolean(value);
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
