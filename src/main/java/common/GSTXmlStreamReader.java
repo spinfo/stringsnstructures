@@ -59,6 +59,7 @@ public class GSTXmlStreamReader extends DefaultHandler {
 	// Constructor:
 	public GSTXmlStreamReader (InputStream xmlInputStream) {
 		GSTXmlStreamReader.gstXmlInStream = xmlInputStream;
+		this.gstXMLNodes = new TreeMap<Integer, GSTXmlNode>();
 	}
 	
 	// End Constructor.
@@ -108,6 +109,8 @@ public class GSTXmlStreamReader extends DefaultHandler {
 	@Override
 	public void endElement(String uri, 
 			String localName, String qName) throws SAXException {
+		this.xmlState = XmlTags.UNDEFINED;
+		
 		if (qName.equals("patternInfo")) {
 			this.gstXMLNodes.get(this.number).setNodeTypes(this.typeNr, this.pattern, this.startPos);
 		}
@@ -119,29 +122,37 @@ public class GSTXmlStreamReader extends DefaultHandler {
 	@Override
 	public void characters(char ch[], 
 			int start, int length) throws SAXException {
+		String currString = new String (ch, start, length);
 		switch (this.xmlState) {
-		case NUMBER:
-			this.number = Integer.parseInt(new String(ch, start, length));
-			this.gstXMLNodes.put(this.number, new GSTXmlNode(this.number));
-			break;
-		case LABEL:
-			this.label = new String(ch, start, length);
-			this.gstXMLNodes.get(this.number).setNodeLabel(this.label);
-			break;
-		case TYPENR:
-			this.typeNr = Integer.parseInt(new String(ch, start, length));
-			break;
-		case PATTERN:
-			this.pattern = Integer.parseInt(new String(ch, start, length));
-			break;
-		case STARTPOS:
-			this.startPos = Integer.parseInt(new String(ch, start, length));
-			break;	
-		case FREQUENCY:
-			this.frequency = Integer.parseInt(new String(ch, start, length));
-			this.gstXMLNodes.get(this.number).setNodeFrequency(this.frequency);
-		default:
-			break;
+			case NUMBER:
+				
+				this.number = Integer.parseInt(currString);
+				this.gstXMLNodes.put(this.number, new GSTXmlNode(this.number));
+				break;
+				
+			case LABEL:
+				this.label = currString;
+				this.gstXMLNodes.get(this.number).setNodeLabel(this.label);
+				break;
+				
+			case TYPENR:
+				this.typeNr = Integer.parseInt(currString);
+				break;
+				
+			case PATTERN:
+				this.pattern = Integer.parseInt(currString);
+				break;
+				
+			case STARTPOS:
+				this.startPos = Integer.parseInt(currString);
+				break;
+				
+			case FREQUENCY:
+				this.frequency = Integer.parseInt(currString);
+				this.gstXMLNodes.get(this.number).setNodeFrequency(this.frequency);
+				
+			default:
+				break;
 		}
 	}
 	// End Methods.

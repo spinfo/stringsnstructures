@@ -198,20 +198,20 @@ public class Dot2TreeController extends ModuleImpl {
 		Pattern rootPat = Pattern.compile("\\A\t(node)(1) \\[");
 		
 		// Leaf node pattern.
-		Pattern leafPat = Pattern.compile("\\A\t(node\\d+) \\[label=\"(\\d+)([ \\d+ \\d+ \\d+]+)\",.+\\]");
+		Pattern leafPat = Pattern.compile("\\A\t(node\\d+) \\[label=\"(\\d+)(( \\d+ \\d+ \\d+)+)\",.+\\]");
 		// Leaf start pattern.
-		Pattern leafStartPat = Pattern.compile("\\A\tnode\\d+ \\[");
+		Pattern leafStartPat = Pattern.compile("\\A\tnode\\d+ \\[label=\"\\d+");
 		// Leaf end pattern.
 		Pattern leafEndPat = Pattern.compile("\\A \\d+ \\d+ \\d+\",.+\\]");
 		
 		// Inner node pattern.
-		Pattern innerPat = Pattern.compile("\\A\t(node\\d+) \\[label=\"(\\d+)\",.*\\]");
-		
+		Pattern innerPat = Pattern.compile("\\A\t(node\\d+) \\[label=\"(\\d+)\",.*\\]"); //TODO: Something is wrong here.
+				
 		// Edge pattern.
 		Pattern edgePat = Pattern.compile("\\A\t(node)(\\d+) -> (node)(\\d+)\\[label=\"(\\w+)\"");
 		
 		// Suffix link pattern.
-		Pattern suffLinkPat = Pattern.compile("\\A\t(node)(\\d+) -> (node)(\\d+)\\ [");
+		Pattern suffLinkPat = Pattern.compile("\\A\t(node)(\\d+) -> (node)(\\d+)\\ \\[");
 		
 		// Node fields:
 		int nodeNumber = 1;
@@ -229,7 +229,7 @@ public class Dot2TreeController extends ModuleImpl {
 		String currLine = null;
 		
 		// Local variable holding leaf node information for parsing.
-		String leafInfo = null;
+		String leafInfo = "";
 		
 		try {
 			while( (currLine=bufReader.readLine()) != null )
@@ -247,15 +247,15 @@ public class Dot2TreeController extends ModuleImpl {
 				if (rootQuery.find()) {
 					nodeNumber = Integer.parseInt(rootQuery.group(2));
 					this.DotStat = DotTags.ROOT;
-				} if (leafStartQ.find()) {
+				} else if (leafStartQ.find()) {
 					this.DotStat = DotTags.LEAFSTART;
-				} if (leafEndQ.find()) {
+				} else if (leafEndQ.find()) {
 					this.DotStat = DotTags.LEAFEND;
-				} if (innerQ.find()) {
+				} else if (innerQ.find()) {
 					this.DotStat = DotTags.INTERNAL;
-				} if (edgeQ.find()) {
+				} else if (edgeQ.find()) {
 					this.DotStat = DotTags.EDGE;
-				} if (suffLinkQ.find()) {
+				} else if (suffLinkQ.find()) {
 					this.DotStat = DotTags.SUFFIXLINK;
 				}
 				
@@ -277,37 +277,45 @@ public class Dot2TreeController extends ModuleImpl {
 					
 					// Define an appropriate matcher to get the different groups from the leaf node string.
 					Matcher leafQ = leafPat.matcher(leafInfo);
+				
+					leafQ.find();
 					nodeNumber = Integer.parseInt(leafQ.group(2));
 					nodeFreq = this.gstXmlNodes.get(nodeNumber).getNodeFrequency();
+					
 					
 					// Create new dot2TreeLeafNode object and save it in the TreeMap dot2TreeNodesMap.
 					this.dot2TreeNodesMap.put(nodeNumber, new Dot2TreeLeafNode(nodeNumber, nodeFreq, leafQ.group(1)));
 					
 					// Save information about text number, starting point of occurrence and end point in the ArrayList
 					// "nodeLeafInfo" temporarily.
-					for (String i : leafQ.group(3).split(" ")) 
-						nodeLeafInfo.add(Integer.parseInt(i));
+					String [] tokenArray = leafQ.group(3).split(" ");
 					
-					// Delete the first (empty) element of the ArrayList. Due the chosen pattern the string starts with " ".
-					// Hence, the first element after splitting for each " " will be an empty string. This first element must be removed.
-					nodeLeafInfo.remove(0);
-					
+					/* Start with index i = 1 to skip the first (empty) element of the array "tokenArray". 
+					 * Due the chosen pattern the string starts with " ".
+					 * Hence, the first element after splitting for each " " will be an empty string. 
+					 * This first element must be skipped.
+					 */
+					for (int i = 1; i < tokenArray.length; i++) 
+						nodeLeafInfo.add(Integer.parseInt(tokenArray[i]));
+										
 					// Fill the fields for the new Dot2TreeLeafNode object with information gathered from the "nodeLeafInfo" ArrayList.
-					for (int i = 0; i <= (nodeLeafInfo.size()/3); i ++)
+					for (int i = 0; i < (nodeLeafInfo.size()/3); i ++)
 						((Dot2TreeLeafNode) this.dot2TreeNodesMap.get(nodeNumber)).setLeafInfo(
 								nodeLeafInfo.get(i*3), nodeLeafInfo.get(i*3+1), nodeLeafInfo.get(i*3+2));
 					
 					// Reset leafInfo.
-					leafInfo = null;
+					leafInfo = "";
 					
 					// Reset nodeLeafInfo.
 					nodeLeafInfo.clear();
+					this.DotStat = DotTags.UNDEFINED;
 					break;
 					
 				case INTERNAL:
 					nodeNumber = Integer.parseInt(innerQ.group(2));
 					nodeFreq = this.gstXmlNodes.get(nodeNumber).getNodeFrequency();
 					this.dot2TreeNodesMap.put(nodeNumber, new Dot2TreeInnerNode(nodeNumber, nodeFreq, innerQ.group(1)));
+					this.DotStat = DotTags.UNDEFINED;
 					break;
 				
 				case EDGE:
@@ -316,6 +324,7 @@ public class Dot2TreeController extends ModuleImpl {
 					String edgeLabel = edgeQ.group(5);
 					((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node2Number)).setEdgeLabel(edgeLabel);
 					((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).addNode(node2Number,this.dot2TreeNodesMap.get(node2Number));
+					this.DotStat = DotTags.UNDEFINED;
 					break;
 				
 				case SUFFIXLINK:
@@ -323,6 +332,7 @@ public class Dot2TreeController extends ModuleImpl {
 					node2Number = Integer.parseInt(suffLinkQ.group(4));
 					((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).setSuffixLinks(node2Number);
 					((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node2Number)).setSuffixLinks(node1Number);
+					this.DotStat = DotTags.UNDEFINED;
 					break;
 					
 				default: 
