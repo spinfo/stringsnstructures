@@ -72,11 +72,6 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 	
 	// Getters:
 	
-	// Return a specific child node.
-	public HashMap<Integer, Dot2TreeNodes> getNodeHash () {
-		return this.dot2TreeNode;
-	}
-	
 	// Return all child nodes.
 	public HashMap<Integer, Dot2TreeNodes> getAllChildNodes () {
 		return this.dot2TreeNode;
