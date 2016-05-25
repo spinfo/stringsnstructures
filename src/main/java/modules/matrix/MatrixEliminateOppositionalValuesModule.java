@@ -1,11 +1,15 @@
 package modules.matrix;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
@@ -27,6 +31,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 	// Local variables
 	private String inputdelimiter;
 	private String outputdelimiter;
+	private String emptyFieldValue = "";
 
 	public MatrixEliminateOppositionalValuesModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -66,33 +71,32 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 
 	@Override
 	public boolean process() throws Exception {
-		
-		
+
 		// Read matrix sums first
-		
+
 		// Set for sum tupels: Highest sum value will be the first element
 		Set<TypeSumTupel> sumTupelSet = new TreeSet<TypeSumTupel>();
 		// Construct scanner instances for sum input segmentation
 		Scanner lineScanner = new Scanner(this.getInputPorts().get(ID_INPUT_SUMS).getInputReader());
 		lineScanner.useDelimiter("\\R+");
 		// Loop over sum input
-		while(lineScanner.hasNext()){
+		while (lineScanner.hasNext()) {
 			String[] line = lineScanner.next().split(this.inputdelimiter);
-			if (line.length != 2){
+			if (line.length != 2) {
 				lineScanner.close();
-				throw new Exception("Length of line not as expected: "+line.length);
+				throw new Exception("Length of line not as expected: " + line.length);
 			}
 			sumTupelSet.add(new TypeSumTupel(line[0], Double.parseDouble(line[1])));
 		}
 		lineScanner.close();
-		
+
 		// Construct scanner instance for matrix input segmentation
 		lineScanner = new Scanner(this.getInputPorts().get(ID_INPUT_MATRIX).getInputReader());
 		lineScanner.useDelimiter("\\R+");
-		
+
 		// Array for header names
 		String[] headerNames = null;
-		
+
 		// Read header line
 		if (lineScanner.hasNext()) {
 			headerNames = lineScanner.next().split(this.inputdelimiter);
@@ -102,32 +106,120 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 			throw new Exception("No input.");
 		}
 		
+		// Output header line
+		for (int i=0; i<headerNames.length; i++)
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(headerNames[i]+this.outputdelimiter);
+		
+		// Output line break
+		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
+		
+
 		// Data lines input read loop
-		while (lineScanner.hasNext()){
-			
+		while (lineScanner.hasNext()) {
+
 			// Check for interrupt signal
 			if (Thread.interrupted()) {
 				lineScanner.close();
 				this.closeAllOutputs();
 				throw new InterruptedException("Thread has been interrupted.");
 			}
-			
+
 			// Determine next line
 			String line = lineScanner.next();
+			
+			// List for data field values
+			List<String> dataFields = new ArrayList<String>();
+			
+			// Scanner to read the data line fields (String.split() is not
+			// advisable here because it omits empty fields)
 			Scanner fieldScanner = new Scanner(new StringReader(line));
 			fieldScanner.useDelimiter(this.inputdelimiter);
-			while(fieldScanner.hasNext()){
-				
-				// TODO Compare to sum tupel list and eliminate opposing values
+
+			// First field is label
+			String label;
+			try {
+				label = fieldScanner.next();
+			} catch (Exception e) {
+				fieldScanner.close();
+				Logger.getLogger("").log(Level.WARNING,
+						"Module '" + this.getName() + "' encountered an empty line.");
+				continue;
+			}
+			
+			// Add fields to field list
+			while (fieldScanner.hasNext()) {
+				// Read next field
+				String field = fieldScanner.next();
+				dataFields.add(field);
 			}
 			fieldScanner.close();
+
+			// Loop over sum tupel list and eliminate opposing values
+			Iterator<TypeSumTupel> sumTupels = sumTupelSet.iterator();
+			while (sumTupels.hasNext()) {
+				TypeSumTupel sumTupel = sumTupels.next();
+
+				// List for element indices to remove
+				Set<Integer> indicesToRemove = new TreeSet<Integer>();
+				
+				// Variable to mark if the current line has a positive value in the column that matches the current tupel's name.
+				boolean lineIsRelevantToTupelName = false;
+
+				// Loop over data fields
+				for (int i=0; i<dataFields.size(); i++) {
+
+					// Read next field
+					String field = dataFields.get(i);
+					
+					// Skip empty field
+					if (field == null || field.isEmpty())
+						continue;
+					
+					// Parse value
+					Double value = Double.parseDouble(field);
+					
+					// Skip zero values
+					if (value == 0)
+						continue;
+					
+					// Check whether data field matches the current tupel's name.
+					if (headerNames[i+1].equals(sumTupel.getType()))
+						lineIsRelevantToTupelName = true;
+					
+					// Check if rowlabel+columnlabel stands in opposition with the current tupel's name
+					else if ((headerNames[i+1]+label).endsWith(sumTupel.getType()))
+						indicesToRemove.add(i);
+
+				}
+				fieldScanner.close();
+				
+				// Remove opposing data fields
+				if (lineIsRelevantToTupelName)
+					for (int i = 0; i < dataFields.size(); i++) {
+						if (indicesToRemove.contains(i))
+							dataFields.set(i, this.emptyFieldValue);
+					}
+				
+			}
+			
+			// Output row label
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(label+this.outputdelimiter);
+			
+			// Output data fields
+			for (int i=0; i<dataFields.size(); i++){
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(dataFields.get(i)+this.outputdelimiter);
+			}
+			
+			// Output line break
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
+
 		}
 
 		lineScanner.close();
-		
+
 		// Close outputs (important!)
 		this.closeAllOutputs();
-		
+
 		// Done
 		return true;
 	}
