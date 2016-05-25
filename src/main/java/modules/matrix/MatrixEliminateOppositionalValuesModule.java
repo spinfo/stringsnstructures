@@ -2,13 +2,13 @@ package modules.matrix;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.TreeSet;
 
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
@@ -22,6 +22,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 	// it with)
 	public static final String PROPERTYKEY_DELIMITER_INPUT_REGEX = "input delimiter regex";
 	public static final String PROPERTYKEY_DELIMITER_OUTPUT = "output delimiter";
+	public static final String PROPERTYKEY_ZEROVALUE = "zero value";
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT_MATRIX = "matrix";
@@ -31,7 +32,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 	// Local variables
 	private String inputdelimiter;
 	private String outputdelimiter;
-	private String emptyFieldValue = "";
+	private String emptyFieldValue;
 
 	public MatrixEliminateOppositionalValuesModule(CallbackReceiver callbackReceiver, Properties properties)
 			throws Exception {
@@ -51,20 +52,14 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 				"Regular expression to use as segmentation delimiter for CSV input.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT,
 				"String to insert as segmentation delimiter into the output.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_ZEROVALUE,
+				"String to insert as zero value into the output, replacing an eliminated row/column-value.");
 
 		// Add property defaults (_should_ be provided for every property)
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Eliminate Opposing Matrix Values"); // Property
-																												// key
-																												// for
-																												// module
-																												// name
-																												// is
-																												// defined
-																												// in
-																												// parent
-																												// class
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Eliminate Opposing Matrix Values");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT_REGEX, "[\\,;]");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT, ";");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_ZEROVALUE, "");
 
 		// Define I/O
 		InputPort inputPortMatrix = new InputPort(ID_INPUT_MATRIX, "CSV matrix input.", this);
@@ -86,8 +81,8 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 
 		// Read matrix sums first
 
-		// Set for sum tupels: Highest sum value will be the first element
-		Set<TypeSumTupel> sumTupelSet = new TreeSet<TypeSumTupel>();
+		// List for sum tupels
+		List<ColumnSumTupel> columnSumTupelList = new ArrayList<ColumnSumTupel>();
 		// Construct scanner instances for sum input segmentation
 		Scanner lineScanner = new Scanner(this.getInputPorts().get(ID_INPUT_SUMS).getInputReader());
 		lineScanner.useDelimiter("\\R+");
@@ -98,9 +93,16 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 				lineScanner.close();
 				throw new Exception("Length of line not as expected: " + line.length);
 			}
-			sumTupelSet.add(new TypeSumTupel(line[0], Double.parseDouble(line[1])));
+			columnSumTupelList.add(new ColumnSumTupel(line[0], Double.parseDouble(line[1])));
 		}
 		lineScanner.close();
+		
+		// Sort sum list; Highest sum value will be the first element
+		columnSumTupelList.sort(new Comparator<ColumnSumTupel>(){
+			@Override
+			public int compare(ColumnSumTupel o1, ColumnSumTupel o2) {
+				return o1.compareTo(o2);
+			}});
 
 		// Construct scanner instance for matrix input segmentation
 		lineScanner = new Scanner(this.getInputPorts().get(ID_INPUT_MATRIX).getInputReader());
@@ -163,26 +165,25 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 		lineScanner.close();
 
 		// Loop over sum tupel list
-		Iterator<TypeSumTupel> sumTupels = sumTupelSet.iterator();
+		Iterator<ColumnSumTupel> sumTupels = columnSumTupelList.iterator();
 		while (sumTupels.hasNext()) {
-			TypeSumTupel sumTupel = sumTupels.next();
+			ColumnSumTupel sumTupel = sumTupels.next();
 
 			// Determine column index in input matrix
 			int index = -1;
 			for (int i = 1; i < headerNames.length; i++) {
-				if (sumTupel.getType().equals(headerNames[i])) {
+				if (sumTupel.getColumnName().equals(headerNames[i])) {
 					index = i;
 					break;
 				}
 			}
 			if (index < 0) {
 				throw new Exception(
-						"I cannot find the column for '" + sumTupel.getType() + "' in the matrix header line.");
+						"I cannot find the column for '" + sumTupel.getColumnName() + "' in the matrix header line.");
 			}
 
 			// List of Strings to match against opposition
 			Set<String> matchStrings = new HashSet<String>();
-			boolean[] linesToSkip = new boolean[dataLines.size()];
 
 			// Loop over data lines
 			for (int i = 0; i < dataLines.size(); i++) {
@@ -195,10 +196,8 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 				String value = dataFields.get(index);
 				if (value != null && !value.isEmpty() && Double.parseDouble(value) > 0) {
 					String label = dataFields.get(0);
-					matchStrings.add(label + sumTupel.getType());
-					linesToSkip[i] = true;
-				} else
-					linesToSkip[i] = false;
+					matchStrings.add(label + sumTupel.getColumnName());
+				}
 
 			}
 
@@ -206,10 +205,6 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 			// the current column, we can again loop over the data lines, this
 			// time deleting all opposing strings
 			for (int i = 0; i < dataLines.size(); i++) {
-
-				// Skip lines that had a positive value for the current column
-				if (linesToSkip[i])
-					continue;
 
 				// Retrieve data fields
 				List<String> dataFields = dataLines.get(i);
@@ -225,7 +220,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 					if (value != null && !value.isEmpty() && Double.parseDouble(value) > 0) {
 
 						// If we get a match, we set the field value to zero
-						if (matchStrings.contains(label + headerNames[j])) {
+						if (j!=index && matchStrings.contains(label + headerNames[j])) {
 							dataFields.set(j, this.emptyFieldValue);
 						}
 					}
@@ -270,6 +265,8 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 				this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT_REGEX));
 		this.outputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT,
 				this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT));
+		this.emptyFieldValue = this.getProperties().getProperty(PROPERTYKEY_ZEROVALUE,
+						this.getPropertyDefaultValues().get(PROPERTYKEY_ZEROVALUE));
 
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();

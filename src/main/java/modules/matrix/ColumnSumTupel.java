@@ -1,22 +1,22 @@
 package modules.matrix;
 
-public class TypeSumTupel implements Comparable<TypeSumTupel> {
+public class ColumnSumTupel implements Comparable<ColumnSumTupel> {
 
-	private String type;
+	private String columnName;
 	private Double sum;
 	
-	public TypeSumTupel(String type, Double sum) {
+	public ColumnSumTupel(String columnName, Double sum) {
 		super();
-		this.type = type;
+		this.columnName = columnName;
 		this.sum = sum;
 	}
 
-	public String getType() {
-		return type;
+	public String getColumnName() {
+		return columnName;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setColumnName(String columnName) {
+		this.columnName = columnName;
 	}
 
 	public Double getSum() {
@@ -28,7 +28,7 @@ public class TypeSumTupel implements Comparable<TypeSumTupel> {
 	}
 
 	@Override
-	public int compareTo(TypeSumTupel o) {
+	public int compareTo(ColumnSumTupel o) {
 		int result;
 		Double dist = o.getSum()-this.sum;
 		if (dist < 1 && dist > 0)
