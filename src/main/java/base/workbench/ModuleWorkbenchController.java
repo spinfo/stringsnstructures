@@ -50,6 +50,7 @@ import modules.keyWordInPhrase.KeyWordInPhraseModule;
 import modules.keyWordInPhrase.KwipBowMatrixModule;
 import modules.matrix.MatrixColumnSumModule;
 import modules.matrix.MatrixEliminateOppositionalValuesModule;
+import modules.matrix.MatrixRowColPairExtractorModule;
 import modules.matrixTransformation.MatrixBitwiseOperationModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmSegmenterModule;
@@ -521,6 +522,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		MatrixEliminateOppositionalValuesModule matrixEliminateOppositionalValuesModule = new MatrixEliminateOppositionalValuesModule(moduleNetwork, matrixEliminateOppositionalValuesModuleProperties);
 		matrixEliminateOppositionalValuesModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixEliminateOppositionalValuesModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		matrixEliminateOppositionalValuesModule.applyProperties();
+		
+		// MatrixRowColPairExtractorModule
+		Properties matrixRowColPairExtractorModuleProperties = new Properties();
+		MatrixRowColPairExtractorModule matrixRowColPairExtractorModule = new MatrixRowColPairExtractorModule(moduleNetwork, matrixRowColPairExtractorModuleProperties);
+		matrixRowColPairExtractorModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixRowColPairExtractorModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		matrixRowColPairExtractorModule.applyProperties();
 
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -587,6 +594,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(matrixBitwiseModule.getName(), matrixBitwiseModule);
 		availableModules.put(dot2TreeController.getName(), dot2TreeController);
 		availableModules.put(matrixEliminateOppositionalValuesModule.getName(), matrixEliminateOppositionalValuesModule);
+		availableModules.put(matrixRowColPairExtractorModule.getName(), matrixRowColPairExtractorModule);
 	}
 	
 	/**
