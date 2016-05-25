@@ -44,10 +44,13 @@ import modules.basemodules.RegExReplacementModule;
 import modules.basemodules.ReverserModule;
 import modules.basemodules.SmbFileReaderModule;
 import modules.basemodules.SmbFileWriterModule;
+import modules.dot2tree.Dot2TreeController;
 import modules.hal.HalAdvancedModule;
 import modules.keyWordInPhrase.KeyWordInPhraseModule;
 import modules.keyWordInPhrase.KwipBowMatrixModule;
 import modules.matrix.MatrixColumnSumModule;
+import modules.matrix.MatrixEliminateOppositionalValuesModule;
+import modules.matrix.MatrixRowColPairExtractorModule;
 import modules.matrixTransformation.MatrixBitwiseOperationModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmSegmenterModule;
@@ -82,7 +85,6 @@ import modules.vectorAnalysis.VectorAberrationCalculatorModule;
 import modules.vectorAnalysis.VectorMedianCalculatorModule;
 import modules.visualizationModules.ASCIIGraph;
 import modules.visualizationModules.ColourGraph;
-import modules.dot2tree.Dot2TreeController;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -514,6 +516,18 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		Dot2TreeController dot2TreeController = new Dot2TreeController(moduleNetwork, dot2TreeControllerProperties);
 		dot2TreeControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, dot2TreeController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		dot2TreeController.applyProperties();
+		
+		// MatrixEliminateOppositionalValuesModule
+		Properties matrixEliminateOppositionalValuesModuleProperties = new Properties();
+		MatrixEliminateOppositionalValuesModule matrixEliminateOppositionalValuesModule = new MatrixEliminateOppositionalValuesModule(moduleNetwork, matrixEliminateOppositionalValuesModuleProperties);
+		matrixEliminateOppositionalValuesModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixEliminateOppositionalValuesModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		matrixEliminateOppositionalValuesModule.applyProperties();
+		
+		// MatrixRowColPairExtractorModule
+		Properties matrixRowColPairExtractorModuleProperties = new Properties();
+		MatrixRowColPairExtractorModule matrixRowColPairExtractorModule = new MatrixRowColPairExtractorModule(moduleNetwork, matrixRowColPairExtractorModuleProperties);
+		matrixRowColPairExtractorModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixRowColPairExtractorModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		matrixRowColPairExtractorModule.applyProperties();
 
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -579,6 +593,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(matrixColumnSumModule.getName(), matrixColumnSumModule);
 		availableModules.put(matrixBitwiseModule.getName(), matrixBitwiseModule);
 		availableModules.put(dot2TreeController.getName(), dot2TreeController);
+		availableModules.put(matrixEliminateOppositionalValuesModule.getName(), matrixEliminateOppositionalValuesModule);
+		availableModules.put(matrixRowColPairExtractorModule.getName(), matrixRowColPairExtractorModule);
 	}
 	
 	/**
