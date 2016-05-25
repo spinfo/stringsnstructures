@@ -28,6 +28,9 @@ import common.parallelization.CallbackReceiver;
 
 // Workbench GSTXmlNode import.
 import common.GSTXmlStreamReader;
+import models.Dot2TreeInnerNode;
+import models.Dot2TreeLeafNode;
+import models.Dot2TreeNodes;
 import models.GSTXmlNode;
 
 /**

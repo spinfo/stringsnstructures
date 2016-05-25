@@ -1,4 +1,4 @@
-package modules.dot2tree;
+package models;
 
 import java.util.HashMap;
 import java.util.ArrayList;
