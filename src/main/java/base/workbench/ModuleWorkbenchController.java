@@ -78,6 +78,7 @@ import modules.treeBuilder.TreeBuilderV2Module;
 import modules.treeBuilder.TreeBuilderV3Module;
 import modules.treeBuilder2Output.TreeBuilder2OutputController;
 import modules.treeBuilder2Output.TreeBuilder2OutputControllerV2;
+import modules.treeIndexes.TreeIndexController;
 import modules.treeSimilarityClustering.GexfFilterModule;
 import modules.treeSimilarityClustering.TreeSimilarityClusteringModule;
 import modules.vectorAnalysis.MinkowskiDistanceMatrixModule;
@@ -517,6 +518,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		dot2TreeControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, dot2TreeController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		dot2TreeController.applyProperties();
 		
+		
+		// GST analysis tool "Tree Index Properties". TreeIndexController
+		Properties treeIndexControllerProperties = new Properties();
+		TreeIndexController treeIndexController = new TreeIndexController(moduleNetwork, treeIndexControllerProperties);
+		treeIndexControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeIndexController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		treeIndexController.applyProperties();
+		
 		// MatrixEliminateOppositionalValuesModule
 		Properties matrixEliminateOppositionalValuesModuleProperties = new Properties();
 		MatrixEliminateOppositionalValuesModule matrixEliminateOppositionalValuesModule = new MatrixEliminateOppositionalValuesModule(moduleNetwork, matrixEliminateOppositionalValuesModuleProperties);
@@ -595,6 +603,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(dot2TreeController.getName(), dot2TreeController);
 		availableModules.put(matrixEliminateOppositionalValuesModule.getName(), matrixEliminateOppositionalValuesModule);
 		availableModules.put(matrixRowColPairExtractorModule.getName(), matrixRowColPairExtractorModule);
+		availableModules.put(treeIndexController.getName(), treeIndexController);
 	}
 	
 	/**

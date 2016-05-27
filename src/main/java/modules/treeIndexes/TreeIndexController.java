@@ -108,18 +108,21 @@ public class TreeIndexController extends ModuleImpl {
 			Properties properties) throws Exception {
 		super(callbackReceiver, properties);
 
-		// Add property descriptions
+		// Add property descriptions.
 		this.getPropertyDescriptions().put(PROPERTYKEY_FREQOUT, "\"true\": show tree frequencies</br>" + 
 				"\"false\": do not show tree frequencies");
 		
-		// Add property defaults
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Sequence Tree Properties");
+		// Add module category.
+		this.setCategory("TreeStructure");
+				
+		// Add property defaults.
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Tree Index Properties");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_FREQOUT, "false");
 		
-		// set up newickOutput
+		// set up newickOutput.
 		this.seqPropertiesOutput = new String();
 		
-		// Define I/O
+		// Define I/O.
 		InputPort inputPort = new InputPort(INPUTID, "[Json] tree input from the </br>Dot2GST converter module", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort(OUTPUTID, "[plain text] sequence properties output</br>in table like form", this);
@@ -271,6 +274,7 @@ public class TreeIndexController extends ModuleImpl {
 				// Update the total number of leaves for root node.
 				this.indexProperties.get(this.rootNode.getNodeNumber()).incrementLeaves();
 				
+				// Continue with next node.
 				continue;
 			
 			// Inner node on first level reached.
