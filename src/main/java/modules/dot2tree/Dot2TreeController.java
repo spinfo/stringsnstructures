@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Properties;
 
+//Google Gson imports.
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import java.util.Properties;
 
 // Java I/O imports.
 import java.io.BufferedReader;
@@ -26,12 +26,14 @@ import modules.OutputPort;
 import modules.Pipe;
 import common.parallelization.CallbackReceiver;
 
-// Workbench GSTXmlNode import.
+// Workbench GSTXmlNode imports.
 import common.GSTXmlStreamReader;
+import models.GSTXmlNode;
+
+// Workbench Dot2TreeNodes imports.
 import models.Dot2TreeInnerNode;
 import models.Dot2TreeLeafNode;
 import models.Dot2TreeNodes;
-import models.GSTXmlNode;
 
 /**
  * This module reads plain text dot format from I/O pipe.
