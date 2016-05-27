@@ -139,8 +139,7 @@ public class TreeIndexController extends ModuleImpl {
 	//setters:
 		
 	public void setGson(PipedReader reader) {
-		gson = new Gson();
-		rootNode = gson.fromJson(reader, Dot2TreeInnerNode.class);
+		this.rootNode = gson.fromJson(reader, Dot2TreeInnerNode.class);
 	}
 			
 	//end setters
@@ -257,7 +256,7 @@ public class TreeIndexController extends ModuleImpl {
 		indexProperties = new HashMap<Integer, IndexProperties>();
 		indexProperties.put(this.rootNode.getNodeNumber(), new IndexProperties(this.rootNode.getNodeNumber(), this.rootNode.getEdgeLabel(), this.rootNode.getNodeDepth(), 0));
 		
-		for (Map.Entry<Integer, Dot2TreeNodes> entry : ((Dot2TreeInnerNode)rootNode).getAllChildNodes().entrySet()) {
+		for (Map.Entry<Integer, Dot2TreeInnerNode> entry : ((Dot2TreeInnerNode)rootNode).getAllChildNodes().entrySet()) {
 						
 			// First level of the tree reached. Update the node depth for this particular node.
 			entry.getValue().setNodeDepth(1);
@@ -299,7 +298,7 @@ public class TreeIndexController extends ModuleImpl {
 					indexProperties.put(entry.getValue().getNodeNumber(), new IndexProperties(entry.getValue().getNodeNumber(), 
 							entry.getValue().getEdgeLabel(), entry.getValue().getNodeDepth(), entry.getValue().getNodeFreq()));
 					
-					for (Map.Entry<Integer, Dot2TreeNodes> subEntry : ((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().entrySet() ) {
+					for (Map.Entry<Integer, Dot2TreeInnerNode> subEntry : ((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().entrySet() ) {
 						
 						// Start deep iteration.
 						returnedLeaves += deepGSTIteration(subEntry.getValue(), 2);
@@ -343,7 +342,7 @@ public class TreeIndexController extends ModuleImpl {
 			return 1; 
 		
 		} else if (currNode.getClass().equals(Dot2TreeInnerNode.class)) {
-			for (Map.Entry<Integer, Dot2TreeNodes> deepEntry : ((Dot2TreeInnerNode)currNode).getAllChildNodes().entrySet()) {
+			for (Map.Entry<Integer, Dot2TreeInnerNode> deepEntry : ((Dot2TreeInnerNode)currNode).getAllChildNodes().entrySet()) {
 				
 				if(((Dot2TreeInnerNode)deepEntry.getValue()).getAllChildNodes().size() == 0) {
 					
@@ -378,7 +377,7 @@ public class TreeIndexController extends ModuleImpl {
 					this.indexProperties.put(currNode.getNodeNumber(), new IndexProperties(currNode.getNodeNumber(),
 							currNode.getEdgeLabel(), currNode.getNodeDepth(), currNode.getNodeFreq()));
 					
-					for (Map.Entry<Integer, Dot2TreeNodes> subDeepEntry : ((Dot2TreeInnerNode)deepEntry.getValue()).getAllChildNodes().entrySet()) {
+					for (Map.Entry<Integer, Dot2TreeInnerNode> subDeepEntry : ((Dot2TreeInnerNode)deepEntry.getValue()).getAllChildNodes().entrySet()) {
 						
 						// Concatenate the edge label of "deepEntry" to the "subDeepEntry" inner node.
 						this.indexProperties.get(subDeepEntry.getValue().getNodeNumber()).catEdgeLabel(deepEntry.getValue().getEdgeLabel());

@@ -1,6 +1,5 @@
 package models;
 
-
 /**
  * Helper class which stores information for each individual (leaf/inner) node.
  * Including linkage to other inner/leaf nodes and suffix link information.
@@ -36,7 +35,9 @@ public class Dot2TreeNodes {
 	
 	// Constructors:
 	public Dot2TreeNodes(int number) {
-		this.nodeNumber = number;		
+		
+		this.nodeNumber = number;
+				
 	}
 	
 
@@ -46,7 +47,7 @@ public class Dot2TreeNodes {
 		this.nodeFreq = frequency;
 		this.nodeLabel = label;
 		this.nodeEdgeLabel = "";
-		
+				
 	}
 	
 	public Dot2TreeNodes(int number, int frequency, String label, String edgeLabel) {
@@ -55,7 +56,7 @@ public class Dot2TreeNodes {
 		this.nodeFreq = frequency;
 		this.nodeLabel = label;
 		this.nodeEdgeLabel = edgeLabel;
-		
+				
 	}
 	
 	// End constructors

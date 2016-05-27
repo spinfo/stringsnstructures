@@ -21,8 +21,11 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 	// In this case all suffix links are saved in form of the node numbers of the linked nodes to the current. 
 	private ArrayList <Integer> nodeSuffixLinks;
 		
-	// HashMap holding the references to all inner/leaf nodes beneath
-	private HashMap<Integer, Dot2TreeNodes> dot2TreeNode;
+	// HashMap holding the references to all inner nodes beneath.
+	private HashMap<Integer, Dot2TreeInnerNode> dot2TreeInnerNode;
+	
+	// HashMap holding the references to all leaves.
+	private HashMap<Integer, Dot2TreeLeafNode> dot2TreeLeaves;
 		
 	// End variables.
 	
@@ -32,7 +35,7 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 	public Dot2TreeInnerNode (int number) {
 		
 		super(number);
-		this.dot2TreeNode = new HashMap<Integer, Dot2TreeNodes>();
+		this.dot2TreeInnerNode = new HashMap<Integer, Dot2TreeInnerNode>();
 		this.nodeSuffixLinks = new ArrayList <Integer>();
 		
 	}
@@ -40,7 +43,7 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 	public Dot2TreeInnerNode (int number, int frequency, String label) {
 		
 		super(number, frequency, label);
-		this.dot2TreeNode = new HashMap<Integer, Dot2TreeNodes>();
+		this.dot2TreeInnerNode = new HashMap<Integer, Dot2TreeInnerNode>();
 		this.nodeSuffixLinks = new ArrayList <Integer>();
 		
 	}
@@ -48,7 +51,7 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 	public Dot2TreeInnerNode (int number, int frequency, String label, String edgeLabel) {
 		
 		super(number, frequency, label, edgeLabel);
-		this.dot2TreeNode = new HashMap<Integer, Dot2TreeNodes>();
+		this.dot2TreeInnerNode = new HashMap<Integer, Dot2TreeInnerNode>();
 		this.nodeSuffixLinks = new ArrayList<Integer>();
 		
 	}
@@ -64,8 +67,12 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 		this.nodeSuffixLinks.add(suffixLink);
 	}
 	
-	public void addNode (Integer nodeNumber, Dot2TreeNodes node) {
-		this.dot2TreeNode.put(nodeNumber, node);
+	public void addInnerNode (Integer nodeNumber, Dot2TreeInnerNode node) {
+		this.dot2TreeInnerNode.put(nodeNumber, node);
+	}
+	
+	public void addLeaf (int nodeNumber, Dot2TreeLeafNode node) {
+		this.dot2TreeLeaves.put(nodeNumber, node);
 	}
 	
 	// End setters.
@@ -73,8 +80,8 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 	// Getters:
 	
 	// Return all child nodes.
-	public HashMap<Integer, Dot2TreeNodes> getAllChildNodes () {
-		return this.dot2TreeNode;
+	public HashMap<Integer, Dot2TreeInnerNode> getAllChildNodes () {
+		return this.dot2TreeInnerNode;
 	}
 	
 	// Return the whole map of suffix links.

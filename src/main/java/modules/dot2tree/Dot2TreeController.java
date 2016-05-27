@@ -284,6 +284,8 @@ public class Dot2TreeController extends ModuleImpl {
 				case ROOT:
 					nodeFreq = this.gstXmlNodes.get(nodeNumber).getNodeFrequency();
 					this.rootNode = new Dot2TreeInnerNode(nodeNumber, nodeFreq, "node1", "");
+					
+					// Set tree depth for the root node.
 					this.rootNode.setNodeDepth(0);
 					this.dot2TreeNodesMap.put(nodeNumber, rootNode);
 					break;
@@ -344,7 +346,10 @@ public class Dot2TreeController extends ModuleImpl {
 					node2Number = Integer.parseInt(edgeQ.group(4));
 					String edgeLabel = edgeQ.group(5);
 					this.dot2TreeNodesMap.get(node2Number).setEdgeLabel(edgeLabel);
-					((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).addNode(node2Number,this.dot2TreeNodesMap.get(node2Number));
+					if (this.dot2TreeNodesMap.get(node2Number).getClass().equals(Dot2TreeInnerNode.class))
+						((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).addInnerNode(node2Number,((Dot2TreeInnerNode)this.dot2TreeNodesMap.get(node2Number)));
+					else if (this.dot2TreeNodesMap.get(node2Number).getClass().equals(Dot2TreeLeafNode.class))
+						((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).addLeaf(node2Number,((Dot2TreeLeafNode)this.dot2TreeNodesMap.get(node2Number)));
 					this.DotStat = DotTags.UNDEFINED;
 					break;
 				
