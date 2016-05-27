@@ -140,7 +140,7 @@ public class TreeIndexController extends ModuleImpl {
 		
 	public void setGson(PipedReader reader) {
 		gson = new Gson();
-		rootNode = gson.fromJson(reader, TreeIndexNodes.class);
+		rootNode = gson.fromJson(reader, Dot2TreeInnerNode.class);
 	}
 			
 	//end setters
@@ -194,9 +194,6 @@ public class TreeIndexController extends ModuleImpl {
 		// Create rootNode tree and initialize "indexProperties". 
 		this.iterateGST();
 		
-		//create indexes
-		//iterateIndexRootNode();
-		
 		// Create the Sackin and the cophenetic indexes.
 		this.createIndexHashMaps();
 		
@@ -224,13 +221,13 @@ public class TreeIndexController extends ModuleImpl {
 		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\tcophenetic index\tnumber of leaves\t"
 				+ "number of inner nodes\tmax Sackin index\tmax cophenetic index\n";
 		for (IndexProperties i : this.seqPropertiesSorted) {
-			if (i.getEdgeLabel() == "^") {
-				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getTreeDepth() 
+			if (i.getNodeNumber() == 1) {
+				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getTreeDepth() 
 				+ "\t" + this.sackinIndexVal + "\t" + this.copheneticIndexVal + "\t" + this.totalNumOfLeaves + "\n";
 			} else {
-				seqPropertiesOutput = seqPropertiesOutput + i.getNodeName() + "\t" + i.getTreeDepth() 
-				+ "\t" + this.subSackinTrees.get(i.getNodeName()) + "\t" + this.subCophTrees.get(i.getNodeName()) 
-				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getNodeName()) + "\t"
+				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getTreeDepth() 
+				+ "\t" + this.subSackinTrees.get(i.getNodeNumber()) + "\t" + this.subCophTrees.get(i.getNodeNumber()) 
+				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getNodeNumber()) + "\t"
 				+ ((Math.pow((double)i.getLeafNum(),2)+((double)i.getLeafNum()-2))/2) + "\t"
 				+ ((i.getLeafNum()-2)*(i.getLeafNum()-1)*i.getLeafNum()/6)
 				+ "\n";
@@ -252,6 +249,9 @@ public class TreeIndexController extends ModuleImpl {
 
 		// Set the node depth (level of the tree) for the root node.
 		this.rootNode.setNodeDepth(0);
+		
+		// Set edge label "^" to indicate the root.
+		this.rootNode.setEdgeLabel("^");
 		
 		//define the properties of the root node
 		indexProperties = new HashMap<Integer, IndexProperties>();
@@ -429,7 +429,7 @@ public class TreeIndexController extends ModuleImpl {
 		this.seqPropertiesSorted = new ArrayList<IndexProperties>();
 				
 		// Remember the length of the last path.
-		int lastLength = this.indexProperties.get("^").getTreeDepth();
+		int lastLength = this.indexProperties.get(1).getTreeDepth();
 		
 		// Instantiate variables to remember information about path length and indexes.
 		this.averagePathLength = new ArrayList<Integer>();
@@ -538,14 +538,14 @@ public class TreeIndexController extends ModuleImpl {
 				 */ 
 				if (i.getEdgeLabel().length() > lastStr.length() && !(i.getEdgeLabel().equals(lastStr)) 
 						&& i.getEdgeLabel().substring(0, lastStr.length()).equals(lastStr)) {
-					lastCophVal += this.copheneticIndex.get(i.getNodeName()).getBinomialCoeff();
+					lastCophVal += this.copheneticIndex.get(i.getNodeNumber()).getBinomialCoeff();
 					termNode = false;
 				}
 				
 				// Increase Sackin index only if the lastStr is a substring of the current sequence OR if it is equal.
 				if (i.getEdgeLabel().length() >= lastStr.length() && (i.getEdgeLabel().equals(lastStr) 
 						|| i.getEdgeLabel().substring(0, lastStr.length()).equals(lastStr))) {
-					lastSackinVal += this.sackinIndex.get(i.getNodeName()).getNodeNumber();
+					lastSackinVal += this.sackinIndex.get(i.getNodeNumber()).getNodeNumber();
 					currTreeInnerNodes ++;
 				}
 			}

@@ -71,7 +71,7 @@ public class IndexProperties {
 		return this.treeDepth;
 	}
 	
-	public int getNodeName () {
+	public int getNodeNumber () {
 		return this.nodeNumber;
 	}
 	//end getters
