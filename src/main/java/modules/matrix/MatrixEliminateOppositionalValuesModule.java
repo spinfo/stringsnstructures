@@ -10,6 +10,7 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 
+import base.workbench.ModuleWorkbenchController;
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.InputPort;
@@ -49,7 +50,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_REGEX,
-				"Regular expression to use as segmentation delimiter for CSV input.");
+				"Regular expression to use as segmentation delimiter for CSV fields.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT,
 				"String to insert as segmentation delimiter into the output.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_ZEROVALUE,
@@ -85,7 +86,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 		List<ColumnSumTupel> columnSumTupelList = new ArrayList<ColumnSumTupel>();
 		// Construct scanner instances for sum input segmentation
 		Scanner lineScanner = new Scanner(this.getInputPorts().get(ID_INPUT_SUMS).getInputReader());
-		lineScanner.useDelimiter("\\R+");
+		lineScanner.useDelimiter(ModuleWorkbenchController.LINEBREAKREGEX);
 		// Loop over sum input
 		while (lineScanner.hasNext()) {
 			String[] line = lineScanner.next().split(this.inputdelimiter);
@@ -106,7 +107,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 
 		// Construct scanner instance for matrix input segmentation
 		lineScanner = new Scanner(this.getInputPorts().get(ID_INPUT_MATRIX).getInputReader());
-		lineScanner.useDelimiter("\\R+");
+		lineScanner.useDelimiter(ModuleWorkbenchController.LINEBREAKREGEX);
 
 		// Array for header names
 		String[] headerNames = null;
@@ -125,7 +126,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(headerNames[i] + this.outputdelimiter);
 
 		// Output line break
-		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
+		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(ModuleWorkbenchController.LINEBREAK);
 
 		// Unfortunately we will have to store the data lines upfront because it
 		// is necessary to loop over them multiple times.
@@ -243,7 +244,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 			}
 
 			// Output line break
-			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(ModuleWorkbenchController.LINEBREAK);
 
 		}
 

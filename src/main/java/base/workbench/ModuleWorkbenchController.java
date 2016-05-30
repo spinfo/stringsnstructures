@@ -89,6 +89,8 @@ import modules.visualizationModules.ColourGraph;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
+	public static final String LINEBREAKREGEX = "\\R+";
+	public static final String LINEBREAK = "\n";
 	protected Map<String,Module> availableModules = new TreeMap<String,Module>(); // Key: module name
 	private ModuleNetwork moduleNetwork;
 	private ListLoggingHandler listLoggingHandler;
