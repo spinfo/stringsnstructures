@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 // Google Gson imports.
 import com.google.gson.Gson;
@@ -280,44 +278,88 @@ public class TreeIndexController extends ModuleImpl {
 			// First level of the tree reached. Update the node depth for this particular node.
 			entry.getValue().setNodeDepth(1);
 			
-			// Leaf on first level reached.
-							
-			// Save the number of returned leaves.
-			int returnedLeaves = 0;
-						
-			// (Very) rare case of a "singleton" inner node (should not exist at all). Even so, continue with iteration.
-			// Is such a case really worth the consideration or kick it out completely? Anyhow give a warning to the logger.
-			
-			if ( ((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().size() == 1) {
+			if ( ((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().size() == 0) {
 				
-				// Print a warning about noticing an internal node with only one child.
-				Logger.getLogger("").log(Level.WARNING, "Noticed an internal node with only one child in node. Edge label: " 
-						+ entry.getValue().getEdgeLabel() + " node number: " + entry.getValue().getNodeNumber());
+				// Save the number of returned leaves.
+				int returnedLeaves = 0;
+				
+				// First level of the tree reached. Update the node depth for this particular node.
+				entry.getValue().setNodeDepth(1);
 				
 				// Iterate over the one leaf beneath, if there is any.
-				if (!entry.getValue().getAllLeaves().isEmpty()) {
-					// First level of the tree reached. Update the node depth for this particular node.
-					entry.getValue().setNodeDepth(1);
+				for (Map.Entry<Integer, Dot2TreeLeafNode> entryLeaves : ((Dot2TreeInnerNode) entry.getValue()).getAllLeaves().entrySet()) {
+					
+					// Set tree depth for the leaves of "entry".
+					entryLeaves.getValue().setNodeDepth(2);
 					
 					// Update the total number of leaves.
 					this.totalNumOfLeaves ++;
 					
 					// Update the total number of leaves for root node.
 					this.indexProperties.get(this.rootNode.getNodeNumber()).incrementLeaves();
-				}
 					
-				// Start deep iteration for inner node, if there is any inner node beneath.
-				if (!entry.getValue().getAllChildNodes().isEmpty())
-					returnedLeaves = deepGSTIteration(entry.getValue(), 1);
-							
+					// Increment the number of leaves for the current node.
+					returnedLeaves ++;
+				}
+				
+				// Add deepEntry to indexProperties.
+				this.indexProperties.put(entry.getValue().getNodeNumber(), new IndexProperties(entry.getValue().getNodeNumber(),
+						entry.getValue().getEdgeLabel(), 1, 0));
+				
 				// Concatenate the edge label of the root to the "entry" inner node.
 				this.indexProperties.get(entry.getValue().getNodeNumber()).catEdgeLabel(this.rootNode.getEdgeLabel());
+									
+				// Increase number of leaves for the inner node "entry".
+				this.indexProperties.get(entry.getValue().getNodeNumber()).increaseLeaves(returnedLeaves);
+											
+			}
+										
+			if ( ((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().size() == 1) {
+				
+				// Save the number of returned leaves.
+				int returnedLeaves = 0;
+				
+				// First level of the tree reached. Update the node depth for this particular node.
+				entry.getValue().setNodeDepth(1);
+				
+				// Iterate over the one leaf beneath, if there is any.
+				for (Map.Entry<Integer, Dot2TreeLeafNode> entryLeaves : ((Dot2TreeInnerNode) entry.getValue()).getAllLeaves().entrySet()) {
+					
+					// Set tree depth for the leaves of "entry".
+					entryLeaves.getValue().setNodeDepth(2);
+					
+					// Update the total number of leaves.
+					this.totalNumOfLeaves ++;
+					
+					// Update the total number of leaves for root node.
+					this.indexProperties.get(this.rootNode.getNodeNumber()).incrementLeaves();
+					
+					// Increment the number of leaves for the current node.
+					returnedLeaves ++;
+				}
+				
+				// Add deepEntry to indexProperties.
+				this.indexProperties.put(entry.getValue().getNodeNumber(), new IndexProperties(entry.getValue().getNodeNumber(),
+						entry.getValue().getEdgeLabel(), 1, 0));
+				
+				// Concatenate the edge label of the root to the "entry" inner node.
+				this.indexProperties.get(entry.getValue().getNodeNumber()).catEdgeLabel(this.rootNode.getEdgeLabel());
+				
+				// Start deep iteration for inner node, if there is any inner node beneath.
+				if (!entry.getValue().getAllChildNodes().isEmpty())
+					returnedLeaves += deepGSTIteration(entry.getValue(), 1);
+											
+				// Increase number of leaves for the inner node "entry".
+				this.indexProperties.get(entry.getValue().getNodeNumber()).increaseLeaves(returnedLeaves);
 											
 			} else if (((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().size() > 1) {
-								
+				
+				// Save the number of returned leaves.
+				int returnedLeaves = 0;
+				
 				// Create properties for the current inner node.
 				indexProperties.put(entry.getValue().getNodeNumber(), new IndexProperties(entry.getValue().getNodeNumber(), 
-						entry.getValue().getEdgeLabel(), entry.getValue().getNodeDepth(), entry.getValue().getNodeFreq()));
+						entry.getValue().getEdgeLabel(), entry.getValue().getNodeDepth(), 0));
 				
 				// Iterate over all leaves beneath the inner node of "entry".
 				for (Map.Entry<Integer, Dot2TreeLeafNode> entryLeaves : ((Dot2TreeInnerNode)entry.getValue()).getAllLeaves().entrySet()) {
@@ -331,25 +373,30 @@ public class TreeIndexController extends ModuleImpl {
 					// Update the total number of leaves for root node.
 					this.indexProperties.get(this.rootNode.getNodeNumber()).incrementLeaves();
 					
+					// Increment the number of leaves for the current node.
+					returnedLeaves ++;
+					
 				}
+				
+				// Concatenate the edge label of the root to the "entry" inner node.
+				this.indexProperties.get(entry.getValue().getNodeNumber()).catEdgeLabel(this.rootNode.getEdgeLabel());
 				
 				
 				// Iterate over all inner nodes beneath the inner node of "entry".
 				for (Map.Entry<Integer, Dot2TreeInnerNode> subEntry : ((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().entrySet()) {
 					
 					// Start deep iteration.
-					returnedLeaves = deepGSTIteration(subEntry.getValue(), 2);
+					returnedLeaves += deepGSTIteration(subEntry.getValue(), 2);
 									
 					// Concatenate the edge label of "subEntry" to the "entry" inner node.
-					this.indexProperties.get(subEntry.getValue().getNodeNumber()).catEdgeLabel(entry.getValue().getEdgeLabel());
-					
-					// Increase number of leaves for "deepEntry".
-					this.indexProperties.get(subEntry.getValue().getNodeNumber()).increaseLeaves(returnedLeaves);
-					
+					this.indexProperties.get(subEntry.getValue().getNodeNumber())
+						.catEdgeLabel(this.indexProperties.get(entry.getValue().getNodeNumber()).getEdgeLabel());
+										
 				}
 				
-				// Concatenate the edge label of the root to the "entry" inner node.
-				this.indexProperties.get(entry.getValue().getNodeNumber()).catEdgeLabel(this.rootNode.getEdgeLabel());
+				
+				// Increase number of leaves for "entry".
+				this.indexProperties.get(entry.getValue().getNodeNumber()).increaseLeaves(returnedLeaves);
 				
 			} 
 		}
@@ -365,9 +412,13 @@ public class TreeIndexController extends ModuleImpl {
 		
 		int returnedLeaves = 0;
 		
-		// Add the current node properties to the HashMap "indexProperties".
-		this.indexProperties.put(currNode.getNodeNumber(), new IndexProperties(currNode.getNodeNumber(),
-				currNode.getEdgeLabel(), nodeDepth, currNode.getNodeFreq()));
+		IndexProperties testObj = this.indexProperties.get(currNode.getNodeNumber());
+		
+		if (testObj == null) {
+			// Add the current node properties to the HashMap "indexProperties".
+			this.indexProperties.put(currNode.getNodeNumber(), new IndexProperties(currNode.getNodeNumber(),
+					currNode.getEdgeLabel(), nodeDepth, 0));
+		}
 						
 		// Iterate over all leaves beneath the currNode.
 		for (Map.Entry<Integer, Dot2TreeLeafNode> deepEntry : ((Dot2TreeInnerNode)currNode).getAllLeaves().entrySet()) {
@@ -381,48 +432,93 @@ public class TreeIndexController extends ModuleImpl {
 			// Update the total number of leaves for root node.
 			this.indexProperties.get(this.rootNode.getNodeNumber()).incrementLeaves();
 						
-			// Return 1 leaf.
-			return 1; 
+			// Increment returnedLeaves upon encountering another leaf.
+			returnedLeaves ++; 
 			
 		}
 		
 		// Iterate over all inner nodes beneath the root node.
 		for (Map.Entry<Integer, Dot2TreeInnerNode> deepEntry : ((Dot2TreeInnerNode)currNode).getAllChildNodes().entrySet()) {
 			
-			if(((Dot2TreeInnerNode)deepEntry.getValue()).getAllChildNodes().size() == 1) {
+			// Add deepEntry to indexProperties.
+			this.indexProperties.put(deepEntry.getValue().getNodeNumber(), new IndexProperties(deepEntry.getValue().getNodeNumber(),
+					deepEntry.getValue().getEdgeLabel(), currDepth, 0));
+			
+			if(((Dot2TreeInnerNode)deepEntry.getValue()).getAllChildNodes().size() == 0) {
 				
-				// (Very) rare case of a "singleton" inner node (should not exist at all). Even so, continue with iteration.
-				// Is such a case really worth the consideration or kick it out completely. Anyhow, give a warning to the logger.
-				
-				// Print a warning about noticing an internal node with only one child.
-				Logger.getLogger("").log(Level.WARNING, "Noticed an internal node with only one child in node. Edge label: " 
-						+ deepEntry.getValue().getEdgeLabel() + " node number: " + deepEntry.getValue().getNodeNumber());
+				// Remember the amount of encountered leaves. 
+				int deepLeaves = 0;
 				
 				// Concatenate the edge label of the current node to "deepEntry".
-				this.indexProperties.get(deepEntry.getValue().getNodeNumber()).catEdgeLabel(currNode.getEdgeLabel());
+				this.indexProperties.get(deepEntry.getValue().getNodeNumber())
+					.catEdgeLabel(this.indexProperties.get(currNode.getNodeNumber()).getEdgeLabel());
 				
-				// Continue with the grand child leaf, if it exists.
-				if (!deepEntry.getValue().getAllLeaves().isEmpty()) {
+				// Continue with the grand child leaves, if they exist.
+				for (Map.Entry<Integer, Dot2TreeLeafNode> deepEntryLeaves : ((Dot2TreeInnerNode)deepEntry.getValue()).getAllLeaves().entrySet()) {
+					
+					// Set the tree depth of the leaves.
+					deepEntryLeaves.getValue().setNodeDepth(currDepth + 1); 
+					
 					// Update the total number of leaves.
 					this.totalNumOfLeaves ++;
 					
 					// Update the total number of leaves for root node.
 					this.indexProperties.get(this.rootNode.getNodeNumber()).incrementLeaves();
+					
+					// Increment the number of encountered leaves.
+					deepLeaves ++;
 				
 				}
+				
+				// Increase number of encountered leaves for deepEntry.
+				this.indexProperties.get(deepEntry.getValue().getNodeNumber()).increaseLeaves(deepLeaves);
+				
+				// Increase the number of all leaves to return.
+				returnedLeaves += deepLeaves;
+								
+			}
+				
+			if(((Dot2TreeInnerNode)deepEntry.getValue()).getAllChildNodes().size() == 1) {
+				
+				// Remember the amount of encountered leaves. 
+				int deepLeaves = 0;
+				
+				// Concatenate the edge label of the current node to "deepEntry".
+				this.indexProperties.get(deepEntry.getValue().getNodeNumber())
+					.catEdgeLabel(this.indexProperties.get(currNode.getNodeNumber()).getEdgeLabel());
+				
+				// Continue with the grand child leaves, if they exist.
+				for (Map.Entry<Integer, Dot2TreeLeafNode> deepEntryLeaves : ((Dot2TreeInnerNode)deepEntry.getValue()).getAllLeaves().entrySet()) {
 					
+					// Set the tree depth of the leaves.
+					deepEntryLeaves.getValue().setNodeDepth(currDepth + 1); 
+					
+					// Update the total number of leaves.
+					this.totalNumOfLeaves ++;
+					
+					// Update the total number of leaves for root node.
+					this.indexProperties.get(this.rootNode.getNodeNumber()).incrementLeaves();
+					
+					// Increment the number of encountered leaves.
+					deepLeaves ++;
+				
+				}
+								
 				// Continue with the grand child inner node, if it exists.
 				if (!deepEntry.getValue().getAllLeaves().isEmpty())
-					returnedLeaves = deepGSTIteration(deepEntry.getValue(), currDepth); 
+					deepLeaves = deepGSTIteration(deepEntry.getValue(), currDepth); 
 				
-				// Increase number of leaves for this inner node.
-				this.indexProperties.get(currNode.getNodeNumber()).increaseLeaves(returnedLeaves);
-					
+				// Increase the number of all leaves to return.
+				returnedLeaves += deepLeaves;
+								
 			} else if (((Dot2TreeInnerNode)deepEntry.getValue()).getAllChildNodes().size() > 1) {		
 				
-				// Add the "deepEntry" properties to the HashMap "indexProperties".
-				this.indexProperties.put(deepEntry.getValue().getNodeNumber(), new IndexProperties(deepEntry.getValue().getNodeNumber(),
-						deepEntry.getValue().getEdgeLabel(), currDepth, deepEntry.getValue().getNodeFreq()));
+				// Concatenate the edge label of the current node to "deepEntry".
+				this.indexProperties.get(deepEntry.getValue().getNodeNumber())
+					.catEdgeLabel(this.indexProperties.get(currNode.getNodeNumber()).getEdgeLabel());
+				
+				// Remember the amount of encountered leaves. 
+				int deepLeaves = 0;
 				
 				// Iterate over all leaves beneath "deepEntry".
 				for (Map.Entry<Integer, Dot2TreeLeafNode> subDeepEntryLeaves : ((Dot2TreeInnerNode)deepEntry.getValue()).getAllLeaves().entrySet()) {
@@ -436,30 +532,46 @@ public class TreeIndexController extends ModuleImpl {
 					// Update the total number of leaves for root node.
 					this.indexProperties.get(this.rootNode.getNodeNumber()).incrementLeaves();
 					
+					// Increment the number of encountered leaves.
+					deepLeaves ++;
+					
 				}
 				
 				// Iterate over all inner nodes beneath "deepEntry".
 				for (Map.Entry<Integer, Dot2TreeInnerNode> subDeepEntry : ((Dot2TreeInnerNode)deepEntry.getValue()).getAllChildNodes().entrySet()) {
 					
+					// Add the current node properties to the HashMap "indexProperties".
+					this.indexProperties.put(subDeepEntry.getValue().getNodeNumber(), new IndexProperties(subDeepEntry.getValue().getNodeNumber(),
+							subDeepEntry.getValue().getEdgeLabel(), currDepth + 1, 0));
+					
 					// Concatenate the edge label of "deepEntry" to the "subDeepEntry" inner node.
 					this.indexProperties.get(subDeepEntry.getValue().getNodeNumber()).catEdgeLabel(deepEntry.getValue().getEdgeLabel());
 					
 					// Continue with the next great grand child.
-					returnedLeaves = deepGSTIteration(subDeepEntry.getValue(), currDepth + 1); 
+					int subDeepLeaves = deepGSTIteration(subDeepEntry.getValue(), currDepth + 1); 
 					
 					// Increase number of leaves for "deepEntry".
-					this.indexProperties.get(deepEntry.getValue().getNodeNumber()).increaseLeaves(returnedLeaves);
+					this.indexProperties.get(deepEntry.getValue().getNodeNumber()).increaseLeaves(subDeepLeaves);
+					
+					// Increase the number of all leaves to return.
+					deepLeaves += subDeepLeaves;
 					
 				}
 				
-				// Increase number of leaves for this inner node.
-				this.indexProperties.get(currNode.getNodeNumber()).increaseLeaves(
-						this.indexProperties.get(deepEntry.getValue().getNodeNumber()).getLeafNum());
+				// Increase the number of leaves for "deepEntry" inner node.
+				this.indexProperties.get(deepEntry.getValue().getNodeNumber()).increaseLeaves(deepLeaves);
+				
+				
+				// Increase the amount of leaves to return.
+				returnedLeaves += deepLeaves;
 			}
 		}
-			
+		
+		// Increase the number of leaves for current inner node.
+		this.indexProperties.get(currNode.getNodeNumber()).increaseLeaves(returnedLeaves);
+		
 		// Return the number of leaves for the current subtree.
-		return this.indexProperties.get(currNode.getNodeNumber()).getLeafNum();
+		return returnedLeaves;
 	}
 	
 	// Create the Sackin and the cophenetic indexes.
