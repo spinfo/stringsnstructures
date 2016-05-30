@@ -5,6 +5,7 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+import base.workbench.ModuleWorkbenchController;
 import common.StringUnescaper;
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
@@ -79,7 +80,7 @@ public class MatrixRowColPairExtractorModule extends ModuleImpl {
 
 		// Construct scanner instances for input segmentation
 		Scanner lineScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
-		lineScanner.useDelimiter("\\R+");
+		lineScanner.useDelimiter(ModuleWorkbenchController.LINEBREAKREGEX);
 
 		// Array for header names
 		String[] headerNames = null;
