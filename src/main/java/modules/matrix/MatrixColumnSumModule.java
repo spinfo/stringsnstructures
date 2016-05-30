@@ -71,7 +71,7 @@ public class MatrixColumnSumModule extends ModuleImpl {
 		lineScanner.useDelimiter("\\R+");
 		
 		// Array for header names
-		String[] headerNames = null;
+		List<String> headerNames = new ArrayList<String>();
 		
 		// Array for result values
 		double[] sums = null;
@@ -79,8 +79,13 @@ public class MatrixColumnSumModule extends ModuleImpl {
 		if (this.inputHasHeaderLine)
 			// Read header line
 			if (lineScanner.hasNext()){
-				headerNames = lineScanner.next().split(this.inputdelimiter);
-				sums = new double[headerNames.length-1];
+				String headerLine = lineScanner.next();
+				Scanner headerFieldScanner = new Scanner(new StringReader(headerLine));
+				headerFieldScanner.useDelimiter(this.inputdelimiter);
+				while (headerFieldScanner.hasNext())
+					headerNames.add(headerFieldScanner.next());
+				headerFieldScanner.close();
+				sums = new double[headerNames.size()-1];
 			} else {
 				lineScanner.close();
 				this.closeAllOutputs();
@@ -100,6 +105,8 @@ public class MatrixColumnSumModule extends ModuleImpl {
 			// Determine next line
 			String line = lineScanner.next();
 			List<String> fieldList = new ArrayList<String>();
+			if (line.matches(this.inputdelimiter+".*")) // Check whether the line starts with an empty field (the Scanner would omit that)
+				fieldList.add("");
 			Scanner fieldScanner = new Scanner(new StringReader(line));
 			fieldScanner.useDelimiter(this.inputdelimiter);
 			while(fieldScanner.hasNext()){
@@ -135,7 +142,7 @@ public class MatrixColumnSumModule extends ModuleImpl {
 		
 		// Output values
 		for (int i=0; i<sums.length; i++){
-			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(headerNames[i+1]+this.outputdelimiter+sums[i]+this.outputdelimiter+"\n");
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(headerNames.get(i+1)+this.outputdelimiter+sums[i]+this.outputdelimiter+"\n");
 		}
 		
 		// Close outputs (important!)
