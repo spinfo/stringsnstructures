@@ -36,6 +36,7 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 		
 		super(number);
 		this.dot2TreeInnerNode = new HashMap<Integer, Dot2TreeInnerNode>();
+		this.dot2TreeLeaves = new HashMap<Integer, Dot2TreeLeafNode> ();
 		this.nodeSuffixLinks = new ArrayList <Integer>();
 		
 	}
@@ -44,6 +45,7 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 		
 		super(number, frequency, label);
 		this.dot2TreeInnerNode = new HashMap<Integer, Dot2TreeInnerNode>();
+		this.dot2TreeLeaves = new HashMap<Integer, Dot2TreeLeafNode> ();
 		this.nodeSuffixLinks = new ArrayList <Integer>();
 		
 	}
@@ -52,6 +54,7 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 		
 		super(number, frequency, label, edgeLabel);
 		this.dot2TreeInnerNode = new HashMap<Integer, Dot2TreeInnerNode>();
+		this.dot2TreeLeaves = new HashMap<Integer, Dot2TreeLeafNode> ();
 		this.nodeSuffixLinks = new ArrayList<Integer>();
 		
 	}
@@ -89,6 +92,9 @@ public class Dot2TreeInnerNode extends Dot2TreeNodes {
 		return this.nodeSuffixLinks;
 	}
 	
+	public HashMap <Integer,Dot2TreeLeafNode> getAllLeaves() {
+		return this.dot2TreeLeaves;
+	}
 	// End methods.
 
 }
