@@ -85,7 +85,7 @@ public class MatrixColumnSumModule extends ModuleImpl {
 				while (headerFieldScanner.hasNext())
 					headerNames.add(headerFieldScanner.next());
 				headerFieldScanner.close();
-				sums = new double[headerNames.size()-1];
+				sums = new double[headerNames.size()];
 			} else {
 				lineScanner.close();
 				this.closeAllOutputs();
@@ -142,7 +142,7 @@ public class MatrixColumnSumModule extends ModuleImpl {
 		
 		// Output values
 		for (int i=0; i<sums.length; i++){
-			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(headerNames.get(i+1)+this.outputdelimiter+sums[i]+this.outputdelimiter+"\n");
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(headerNames.get(i)+this.outputdelimiter+sums[i]+this.outputdelimiter+"\n");
 		}
 		
 		// Close outputs (important!)
