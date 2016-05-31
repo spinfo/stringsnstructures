@@ -217,17 +217,18 @@ public class TreeIndexController extends ModuleImpl {
 		seqPropertiesOutput = seqPropertiesOutput + "Cophenetic index:\t" + this.copheneticIndexVal + "\n";
 		this.seqPropertiesOutput = this.seqPropertiesOutput + "max cophenetic index:\t" + ((this.totalNumOfLeaves-2)*(this.totalNumOfLeaves-1)*(this.totalNumOfLeaves)/6) + "\n";
 		
-		//prepare the extracted parameters for subtrees
-		seqPropertiesOutput = seqPropertiesOutput + "Sequence\tpath length\tSackin index\tcophenetic index\tnumber of leaves\t"
+		// Prepare the extracted parameters for subtrees.+
+		
+		seqPropertiesOutput = seqPropertiesOutput + "node number\tSequence\tpath length\tSackin index\tcophenetic index\tnumber of leaves\t"
 				+ "number of inner nodes\tmax Sackin index\tmax cophenetic index\n";
 		for (IndexProperties i : this.seqPropertiesSorted) {
 			if (i.getNodeNumber() == 1) {
-				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getTreeDepth() 
+				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getEdgeLabel() + "\t" + i.getTreeDepth() 
 				+ "\t" + this.sackinIndexVal + "\t" + this.copheneticIndexVal + "\t" + this.totalNumOfLeaves + "\n";
 			} else {
-				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getTreeDepth() 
-				+ "\t" + this.subSackinTrees.get(i.getNodeNumber()) + "\t" + this.subCophTrees.get(i.getNodeNumber()) 
-				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getNodeNumber()) + "\t"
+				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getEdgeLabel() + "\t" + i.getTreeDepth() 
+				+ "\t" + this.subSackinTrees.get(i.getEdgeLabel()) + "\t" + this.subCophTrees.get(i.getEdgeLabel()) 
+				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getEdgeLabel()) + "\t"
 				+ ((Math.pow((double)i.getLeafNum(),2)+((double)i.getLeafNum()-2))/2) + "\t"
 				+ ((i.getLeafNum()-2)*(i.getLeafNum()-1)*i.getLeafNum()/6)
 				+ "\n";
@@ -316,28 +317,9 @@ public class TreeIndexController extends ModuleImpl {
 										
 			if ( ((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().size() == 1) {
 				
-				// Save the number of returned leaves.
-				int returnedLeaves = 0;
-				
 				// First level of the tree reached. Update the node depth for this particular node.
 				entry.getValue().setNodeDepth(1);
-				
-				// Iterate over the one leaf beneath, if there is any.
-				for (Map.Entry<Integer, Dot2TreeLeafNode> entryLeaves : ((Dot2TreeInnerNode) entry.getValue()).getAllLeaves().entrySet()) {
-					
-					// Set tree depth for the leaves of "entry".
-					entryLeaves.getValue().setNodeDepth(2);
-					
-					// Update the total number of leaves.
-					this.totalNumOfLeaves ++;
-					
-					// Update the total number of leaves for root node.
-					this.indexProperties.get(this.rootNode.getNodeNumber()).incrementLeaves();
-					
-					// Increment the number of leaves for the current node.
-					returnedLeaves ++;
-				}
-				
+								
 				// Add deepEntry to indexProperties.
 				this.indexProperties.put(entry.getValue().getNodeNumber(), new IndexProperties(entry.getValue().getNodeNumber(),
 						entry.getValue().getEdgeLabel(), 1, 0));
@@ -345,13 +327,10 @@ public class TreeIndexController extends ModuleImpl {
 				// Concatenate the edge label of the root to the "entry" inner node.
 				this.indexProperties.get(entry.getValue().getNodeNumber()).catEdgeLabel(this.rootNode.getEdgeLabel());
 				
-				// Start deep iteration for inner node, if there is any inner node beneath.
+				// Start deep iteration for inner node, if there is any inner node beneath. Discard the return value.
 				if (!entry.getValue().getAllChildNodes().isEmpty())
-					returnedLeaves += deepGSTIteration(entry.getValue(), 1);
-											
-				// Increase number of leaves for the inner node "entry".
-				this.indexProperties.get(entry.getValue().getNodeNumber()).increaseLeaves(returnedLeaves);
-											
+					deepGSTIteration(entry.getValue(), 1);
+									
 			} else if (((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().size() > 1) {
 				
 				// Save the number of returned leaves.
@@ -376,7 +355,7 @@ public class TreeIndexController extends ModuleImpl {
 					// Increment the number of leaves for the current node.
 					returnedLeaves ++;
 					
-				}
+				} 
 				
 				// Concatenate the edge label of the root to the "entry" inner node.
 				this.indexProperties.get(entry.getValue().getNodeNumber()).catEdgeLabel(this.rootNode.getEdgeLabel());
@@ -385,13 +364,17 @@ public class TreeIndexController extends ModuleImpl {
 				// Iterate over all inner nodes beneath the inner node of "entry".
 				for (Map.Entry<Integer, Dot2TreeInnerNode> subEntry : ((Dot2TreeInnerNode)entry.getValue()).getAllChildNodes().entrySet()) {
 					
-					// Start deep iteration.
-					returnedLeaves += deepGSTIteration(subEntry.getValue(), 2);
-									
+					// Create new subEntry object in indexProperties.
+					this.indexProperties.put(subEntry.getValue().getNodeNumber(), new IndexProperties(subEntry.getValue().getNodeNumber(),
+							subEntry.getValue().getEdgeLabel(), 2, 0));
+					
 					// Concatenate the edge label of "subEntry" to the "entry" inner node.
 					this.indexProperties.get(subEntry.getValue().getNodeNumber())
 						.catEdgeLabel(this.indexProperties.get(entry.getValue().getNodeNumber()).getEdgeLabel());
-										
+					
+					// Start deep iteration.
+					returnedLeaves += deepGSTIteration(subEntry.getValue(), 2);
+															
 				}
 				
 				
