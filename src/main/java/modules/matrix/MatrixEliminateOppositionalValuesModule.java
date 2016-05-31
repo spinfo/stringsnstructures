@@ -206,6 +206,13 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 			// the current column, we can again loop over the data lines, this
 			// time deleting all opposing strings
 			for (int i = 0; i < dataLines.size(); i++) {
+				
+				// Check for interrupt signal
+				if (Thread.interrupted()) {
+					lineScanner.close();
+					this.closeAllOutputs();
+					throw new InterruptedException("Thread has been interrupted.");
+				}
 
 				// Retrieve data fields
 				List<String> dataFields = dataLines.get(i);
