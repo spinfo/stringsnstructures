@@ -105,7 +105,7 @@ public class SegmentMatrixModule extends ModuleImpl {
 			}
 
 			// Split next string into segments
-			String[] segments = stringInputScanner.next().split(this.inputdelimiter_segment);
+			String[] segments = stringInputScanner.next().split(this.inputdelimiter_segment, -1);
 			
 			// Loop over segments
 			for (int i=0; i<segments.length; i++){
