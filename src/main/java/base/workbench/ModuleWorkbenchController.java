@@ -40,6 +40,7 @@ import modules.basemodules.FileFinderModule;
 import modules.basemodules.FileReaderModule;
 import modules.basemodules.FileWriterModule;
 import modules.basemodules.FilterModule;
+import modules.basemodules.RegExLineFilterModule;
 import modules.basemodules.RegExReplacementModule;
 import modules.basemodules.ReverserModule;
 import modules.basemodules.SmbFileReaderModule;
@@ -277,6 +278,13 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				regExReplacementModuleProperties);
 		regExReplacementModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, regExReplacementModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		regExReplacementModule.applyProperties();
+
+		// Prepare regex line filter module
+		Properties regExLineFilterModuleProperties = new Properties();
+		RegExLineFilterModule regExLineFilterModule = new RegExLineFilterModule(moduleNetwork,
+				regExLineFilterModuleProperties);
+		regExLineFilterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, regExLineFilterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		regExLineFilterModule.applyProperties();
 		
 		// Prepare Bag Of Words module
 		Properties bagOfWordsProperties = new Properties();
@@ -566,6 +574,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(seqNewickExporterControllerV2.getName(),seqNewickExporterControllerV2);
 		availableModules.put(halAdvancedModule.getName(),halAdvancedModule);
 		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
+		availableModules.put(regExLineFilterModule.getName(), regExLineFilterModule);
 		availableModules.put(bagOfWordsModule.getName(), bagOfWordsModule);
 		availableModules.put(filterModule.getName(), filterModule);
 		availableModules.put(kwipModule.getName(), kwipModule);
