@@ -3,6 +3,7 @@ package modules.basemodules;
 import java.io.BufferedReader;
 import java.util.Properties;
 
+import base.workbench.ModuleWorkbenchController;
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.InputPort;
@@ -22,7 +23,6 @@ public class RegExLineFilterModule extends ModuleImpl {
 
 	// Variables for the workflow
 	private String regex = null;
-	private static final String OUT_SEPARATOR = "\n";
 
 	public RegExLineFilterModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
@@ -75,9 +75,9 @@ public class RegExLineFilterModule extends ModuleImpl {
 				lineMatches = line.matches(regex);
 
 				if (lineMatches && matchesOut.isConnected()) {
-					matchesOut.outputToAllCharPipes(line + OUT_SEPARATOR);
+					matchesOut.outputToAllCharPipes(line + ModuleWorkbenchController.LINEBREAK);
 				} else if (!lineMatches && nonMatchesOut.isConnected()) {
-					nonMatchesOut.outputToAllCharPipes(line + OUT_SEPARATOR);
+					nonMatchesOut.outputToAllCharPipes(line + ModuleWorkbenchController.LINEBREAK);
 				}
 			}
 
