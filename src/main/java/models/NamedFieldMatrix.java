@@ -222,6 +222,8 @@ public class NamedFieldMatrix {
 
 	/**
 	 * Get the output delimiter currently set.
+	 * 
+	 * @return The output delimiter currently set.
 	 */
 	public String getDelimiter() {
 		return delimiter;
