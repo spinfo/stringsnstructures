@@ -528,7 +528,8 @@ public class TreeIndexController extends ModuleImpl {
 							subDeepEntry.getValue().getEdgeLabel(), currDepth + 1, 0));
 					
 					// Concatenate the edge label of "deepEntry" to the "subDeepEntry" inner node.
-					this.indexProperties.get(subDeepEntry.getValue().getNodeNumber()).catEdgeLabel(deepEntry.getValue().getEdgeLabel());
+					this.indexProperties.get(subDeepEntry.getValue().getNodeNumber())
+						.catEdgeLabel(this.indexProperties.get(deepEntry.getValue().getNodeNumber()).getEdgeLabel());
 					
 					// Continue with the next great grand child.
 					int subDeepLeaves = deepGSTIteration(subDeepEntry.getValue(), currDepth + 1); 
