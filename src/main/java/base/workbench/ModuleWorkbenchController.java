@@ -40,6 +40,7 @@ import modules.basemodules.FileFinderModule;
 import modules.basemodules.FileReaderModule;
 import modules.basemodules.FileWriterModule;
 import modules.basemodules.FilterModule;
+import modules.basemodules.JoinModule;
 import modules.basemodules.RegExLineFilterModule;
 import modules.basemodules.RegExReplacementModule;
 import modules.basemodules.ReverserModule;
@@ -547,6 +548,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		matrixRowColPairExtractorModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixRowColPairExtractorModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		matrixRowColPairExtractorModule.applyProperties();
 
+		// Join Module
+		Properties joinModuleProperties = new Properties();
+		JoinModule joinModule = new JoinModule(moduleNetwork, joinModuleProperties);
+		joinModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, joinModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		joinModule.applyProperties();
+
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -615,6 +622,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(matrixEliminateOppositionalValuesModule.getName(), matrixEliminateOppositionalValuesModule);
 		availableModules.put(matrixRowColPairExtractorModule.getName(), matrixRowColPairExtractorModule);
 		availableModules.put(treeIndexController.getName(), treeIndexController);
+		availableModules.put(joinModule.getName(), joinModule);
 	}
 	
 	/**
