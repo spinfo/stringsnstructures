@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.Properties;
 
 //Google Gson imports.
@@ -151,6 +154,7 @@ public class Dot2TreeController extends ModuleImpl {
 		// Initialize inputString.
 		this.inputString = "";
 		
+		/*
 		// Variables used for input data.
 		int bufferSize = 1024;
 		char [] bufferInput = new char [bufferSize];
@@ -175,6 +179,7 @@ public class Dot2TreeController extends ModuleImpl {
 			charCode = this.getInputPorts().get(INPUTDOTID).getInputReader().read(bufferInput, 0, bufferSize);
 			
 		}
+		*/
 		
 		// Read form input stream and parse GST XML format.
 		
@@ -241,135 +246,212 @@ public class Dot2TreeController extends ModuleImpl {
 		// Node vs node comparison.
 		int node1Number;
 		int node2Number;
-		
-		// Loop through the inputString via a BufferedReader line by line.
-		BufferedReader bufReader = new BufferedReader(new StringReader(this.inputString));
-		
+			
 		// Local variable holding the current line.
 		String currLine = null;
 		
 		// Local variable holding leaf node information for parsing.
 		String leafInfo = "";
 		
+		// Save the truncated end of a string which does not end on a newline sign.
+		String nextLine = "";
+		
 		try {
-			while( (currLine=bufReader.readLine()) != null )
+			
+			// Variables used for input data.
+			int bufferSize = 1024;
+			char [] bufferInput = new char [bufferSize];
+			
+			// Read first characters
+			int charCode = this.getInputPorts().get(INPUTDOTID).getInputReader().read(bufferInput, 0, bufferSize);
+			
+			while( charCode != -1 )
 			{
-				
-				// Define matcher.
-				Matcher rootQuery = rootPat.matcher(currLine);
-				Matcher leafStartQ = leafStartPat.matcher(currLine);
-				Matcher leafEndQ = leafEndPat.matcher(currLine);
-				Matcher innerQ = innerPat.matcher(currLine);
-				Matcher edgeQ = edgePat.matcher(currLine);
-				Matcher suffLinkQ = suffLinkPat.matcher(currLine);
-				
-				// Search for regular expressions and set search status.
-				if (rootQuery.find()) {
-					nodeNumber = Integer.parseInt(rootQuery.group(2));
-					this.DotStat = DotTags.ROOT;
-				} else if (leafStartQ.find()) {
-					this.DotStat = DotTags.LEAFSTART;
-				} else if (leafEndQ.find()) {
-					this.DotStat = DotTags.LEAFEND;
-				} else if (innerQ.find()) {
-					this.DotStat = DotTags.INTERNAL;
-				} else if (edgeQ.find()) {
-					this.DotStat = DotTags.EDGE;
-				} else if (suffLinkQ.find()) {
-					this.DotStat = DotTags.SUFFIXLINK;
+				// Check for interrupt signal.
+				if (Thread.interrupted()) {
+					this.closeAllOutputs();
+					throw new InterruptedException("Thread has been interrupted.");
 				}
 				
-				// Execute actions appropriate for the current search status.
-				switch (this.DotStat) {
-				case ROOT:
-					nodeFreq = this.gstXmlNodes.get(nodeNumber).getNodeFrequency();
-					this.rootNode = new Dot2TreeInnerNode(nodeNumber, nodeFreq, "node1", "");
-					
-					// Set tree depth for the root node.
-					this.rootNode.setNodeDepth(0);
-					this.dot2TreeNodesMap.put(nodeNumber, rootNode);
-					break;
-					
-				case LEAFSTART:
-					leafInfo += currLine;
-					break;
-					
-				case LEAFEND:
-					// Add the end of the leaf to leafInfo.
-					leafInfo += currLine;
-					
-					// Define an appropriate matcher to get the different groups from the leaf node string.
-					Matcher leafQ = leafPat.matcher(leafInfo);
+				// Convert char array to string buffer.
+				StringBuffer inputBuffer = new StringBuffer(new String (bufferInput).substring(0, charCode));
 				
-					leafQ.find();
-					nodeNumber = Integer.parseInt(leafQ.group(2));
-					nodeFreq = this.gstXmlNodes.get(nodeNumber).getNodeFrequency();
+				// Check whether there was a previous empty nextLine or not.
+				if (nextLine.isEmpty()) {
+					this.inputString = inputBuffer.toString();
+				} else {
+					this.inputString = nextLine;
+					this.inputString += inputBuffer.toString();
+				}
+				
+				
+				BufferedReader bufReader;
+				
+				// Save the currently read lines.
+				String[] currentLines = null;
+				
+				// Decide whether to pursue the lines line by line, or truncate the last line in case it does not end on
+				// a newline character. TODO: What happens if somebody uses windows with \r\n???
+				if (this.inputString.substring(this.inputString.length() - 1).equals("\n")) {
+					
+					// No truncated line needed.
+					nextLine = "";
+					
+					// Loop through the inputString via a BufferedReader line by line.
+					bufReader = new BufferedReader(new StringReader(this.inputString));
+					
+				} else {
+					
+					currentLines = this.inputString.split("\n");
+					
+					// Save the last truncated line to nextLine.
+					nextLine = currentLines[currentLines.length-1];
+					
+					// Remove last truncated line.
+					currentLines = ArrayUtils.remove(currentLines, currentLines.length-1);
+					
+					String newLines = "";
+					for (String i : currentLines) {
+						newLines += i + "\n";
+					}
+					// Loop through the truncated lines line by line.
+					bufReader = new BufferedReader(new StringReader(newLines));
 					
 					
-					// Create new dot2TreeLeafNode object and save it in the TreeMap dot2TreeNodesMap.
-					this.dot2TreeNodesMap.put(nodeNumber, new Dot2TreeLeafNode(nodeNumber, nodeFreq, leafQ.group(1)));
-					
-					// Save information about text number, starting point of occurrence and end point in the ArrayList
-					// "nodeLeafInfo" temporarily.
-					String [] tokenArray = leafQ.group(3).split(" ");
-					
-					/* Start with index i = 1 to skip the first (empty) element of the array "tokenArray". 
-					 * Due the chosen pattern the string starts with " ".
-					 * Hence, the first element after splitting for each " " will be an empty string. 
-					 * This first element must be skipped.
-					 */
-					for (int i = 1; i < tokenArray.length; i++) 
-						nodeLeafInfo.add(Integer.parseInt(tokenArray[i]));
+				}
+				
+				try {
+						
+					// Loop through the current input string line by line.
+					while ( (currLine = bufReader.readLine()) != null) {
 										
-					// Fill the fields for the new Dot2TreeLeafNode object with information gathered from the "nodeLeafInfo" ArrayList.
-					for (int i = 0; i < (nodeLeafInfo.size()/3); i ++)
-						((Dot2TreeLeafNode) this.dot2TreeNodesMap.get(nodeNumber)).setLeafInfo(
-								nodeLeafInfo.get(i*3), nodeLeafInfo.get(i*3+1), nodeLeafInfo.get(i*3+2));
-					
-					// Reset leafInfo.
-					leafInfo = "";
-					
-					// Reset nodeLeafInfo.
-					nodeLeafInfo.clear();
-					this.DotStat = DotTags.UNDEFINED;
-					break;
-					
-				case INTERNAL:
-					nodeNumber = Integer.parseInt(innerQ.group(2));
-					nodeFreq = this.gstXmlNodes.get(nodeNumber).getNodeFrequency();
-					this.dot2TreeNodesMap.put(nodeNumber, new Dot2TreeInnerNode(nodeNumber, nodeFreq, innerQ.group(1)));
-					this.DotStat = DotTags.UNDEFINED;
-					break;
+						// Define matcher.
+						Matcher rootQuery = rootPat.matcher(currLine);
+						Matcher leafStartQ = leafStartPat.matcher(currLine);
+						Matcher leafEndQ = leafEndPat.matcher(currLine);
+						Matcher innerQ = innerPat.matcher(currLine);
+						Matcher edgeQ = edgePat.matcher(currLine);
+						Matcher suffLinkQ = suffLinkPat.matcher(currLine);
+						
+						// Search for regular expressions and set search status.
+						if (rootQuery.find()) {
+							nodeNumber = Integer.parseInt(rootQuery.group(2));
+							this.DotStat = DotTags.ROOT;
+						} else if (leafStartQ.find()) {
+							this.DotStat = DotTags.LEAFSTART;
+						} else if (leafEndQ.find()) {
+							this.DotStat = DotTags.LEAFEND;
+						} else if (innerQ.find()) {
+							this.DotStat = DotTags.INTERNAL;
+						} else if (edgeQ.find()) {
+							this.DotStat = DotTags.EDGE;
+						} else if (suffLinkQ.find()) {
+							this.DotStat = DotTags.SUFFIXLINK;
+						}
+						
+						// Execute actions appropriate for the current search status.
+						switch (this.DotStat) {
+						case ROOT:
+							nodeFreq = this.gstXmlNodes.get(nodeNumber).getNodeFrequency();
+							this.rootNode = new Dot2TreeInnerNode(nodeNumber, nodeFreq, "node1", "");
+							
+							// Set tree depth for the root node.
+							this.rootNode.setNodeDepth(0);
+							this.dot2TreeNodesMap.put(nodeNumber, rootNode);
+							this.DotStat = DotTags.UNDEFINED;
+							break;
+							
+						case LEAFSTART:
+							leafInfo += currLine;
+							break;
+							
+						case LEAFEND:
+							// Add the end of the leaf to leafInfo.
+							leafInfo += currLine;
+							
+							// Define an appropriate matcher to get the different groups from the leaf node string.
+							Matcher leafQ = leafPat.matcher(leafInfo);
+						
+							leafQ.find();
+							nodeNumber = Integer.parseInt(leafQ.group(2));
+							nodeFreq = this.gstXmlNodes.get(nodeNumber).getNodeFrequency();
+							
+							
+							// Create new dot2TreeLeafNode object and save it in the TreeMap dot2TreeNodesMap.
+							this.dot2TreeNodesMap.put(nodeNumber, new Dot2TreeLeafNode(nodeNumber, nodeFreq, leafQ.group(1)));
+							
+							// Save information about text number, starting point of occurrence and end point in the ArrayList
+							// "nodeLeafInfo" temporarily.
+							String [] tokenArray = leafQ.group(3).split(" ");
+							
+							/* Start with index i = 1 to skip the first (empty) element of the array "tokenArray". 
+							 * Due the chosen pattern the string starts with " ".
+							 * Hence, the first element after splitting for each " " will be an empty string. 
+							 * This first element must be skipped.
+							 */
+							for (int i = 1; i < tokenArray.length; i++) 
+								nodeLeafInfo.add(Integer.parseInt(tokenArray[i]));
+												
+							// Fill the fields for the new Dot2TreeLeafNode object with information gathered from the "nodeLeafInfo" ArrayList.
+							for (int i = 0; i < (nodeLeafInfo.size()/3); i ++)
+								((Dot2TreeLeafNode) this.dot2TreeNodesMap.get(nodeNumber)).setLeafInfo(
+										nodeLeafInfo.get(i*3), nodeLeafInfo.get(i*3+1), nodeLeafInfo.get(i*3+2));
+							
+							// Reset leafInfo.
+							leafInfo = "";
+							
+							// Reset nodeLeafInfo.
+							nodeLeafInfo.clear();
+							this.DotStat = DotTags.UNDEFINED;
+							break;
+							
+						case INTERNAL:
+							nodeNumber = Integer.parseInt(innerQ.group(2));
+							nodeFreq = this.gstXmlNodes.get(nodeNumber).getNodeFrequency();
+							this.dot2TreeNodesMap.put(nodeNumber, new Dot2TreeInnerNode(nodeNumber, nodeFreq, innerQ.group(1)));
+							this.DotStat = DotTags.UNDEFINED;
+							break;
+						
+						case EDGE:
+							node1Number = Integer.parseInt(edgeQ.group(2));
+							node2Number = Integer.parseInt(edgeQ.group(4));
+							String edgeLabel = edgeQ.group(5);
+							this.dot2TreeNodesMap.get(node2Number).setEdgeLabel(edgeLabel);
+							if (this.dot2TreeNodesMap.get(node2Number).getClass().equals(Dot2TreeInnerNode.class))
+								((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).addInnerNode(node2Number,((Dot2TreeInnerNode)this.dot2TreeNodesMap.get(node2Number)));
+							else if (this.dot2TreeNodesMap.get(node2Number).getClass().equals(Dot2TreeLeafNode.class))
+								((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).addLeaf(node2Number,((Dot2TreeLeafNode)this.dot2TreeNodesMap.get(node2Number)));
+							this.DotStat = DotTags.UNDEFINED;
+							break;
+						
+						case SUFFIXLINK:
+							node1Number = Integer.parseInt(suffLinkQ.group(2));
+							node2Number = Integer.parseInt(suffLinkQ.group(4));
+							((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).setSuffixLinks(node2Number);
+							
+							/** Suffix links point upwards (lower node numbers) never in the opposite direction,
+							 *  so the following command was commented.
+							 */
+							
+							//((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node2Number)).setSuffixLinks(node1Number);
+							
+							this.DotStat = DotTags.UNDEFINED;
+							break;
+							
+						default: 
+							break;
+						}
+					}
 				
-				case EDGE:
-					node1Number = Integer.parseInt(edgeQ.group(2));
-					node2Number = Integer.parseInt(edgeQ.group(4));
-					String edgeLabel = edgeQ.group(5);
-					this.dot2TreeNodesMap.get(node2Number).setEdgeLabel(edgeLabel);
-					if (this.dot2TreeNodesMap.get(node2Number).getClass().equals(Dot2TreeInnerNode.class))
-						((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).addInnerNode(node2Number,((Dot2TreeInnerNode)this.dot2TreeNodesMap.get(node2Number)));
-					else if (this.dot2TreeNodesMap.get(node2Number).getClass().equals(Dot2TreeLeafNode.class))
-						((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).addLeaf(node2Number,((Dot2TreeLeafNode)this.dot2TreeNodesMap.get(node2Number)));
-					this.DotStat = DotTags.UNDEFINED;
-					break;
+				// Read next charsplitWords.
+				charCode = this.getInputPorts().get(INPUTDOTID).getInputReader().read(bufferInput, 0, bufferSize);
 				
-				case SUFFIXLINK:
-					node1Number = Integer.parseInt(suffLinkQ.group(2));
-					node2Number = Integer.parseInt(suffLinkQ.group(4));
-					((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node1Number)).setSuffixLinks(node2Number);
-					
-					/** Suffix links point upwards (lower node numbers) never in the opposite direction,
-					 *  so the following command was commented.
-					 */
-					
-					//((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(node2Number)).setSuffixLinks(node1Number);
-					
-					this.DotStat = DotTags.UNDEFINED;
-					break;
-					
-				default: 
-					break;
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
+				
+				// Delete the current lines in the inputString.
+				this.inputString = "";
 	
 			}
 		} catch (Exception e) {
