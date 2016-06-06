@@ -291,7 +291,7 @@ public class Dot2TreeController extends ModuleImpl {
 				String[] currentLines = null;
 				
 				// Decide whether to pursue the lines line by line, or truncate the last line in case it does not end on
-				// a newline character. TODO: What happens if somebody uses windows with \r\n???
+				// a newline character.
 				if (this.inputString.substring(this.inputString.length() - 1).equals("\n")) {
 					
 					// No truncated line needed.
