@@ -146,11 +146,7 @@ public class TreeIndexController extends ModuleImpl {
 	//end setters
 	
 	//getters:
-			
-	public String getSeqProperties() {
-		return seqPropertiesOutput;
-	}
-	
+		
 	//end getters
 	
 	@Override
@@ -161,16 +157,13 @@ public class TreeIndexController extends ModuleImpl {
 					
 		//iterate over the tree and get parameters
 		this.displayAllTreeProperties();
-		
-		//write the tree properties into the output
-		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.getSeqProperties());
-		
-		if (this.freqOut) {
+				
+		if (this.freqOut && this.getOutputPorts().get(FREQOUTID).isConnected()) {
 			//write the tree frequencies into the output
 			this.getOutputPorts().get(FREQOUTID).outputToAllCharPipes(this.freqOutString);
 		}
 								
-		// Close outputs (important!)
+		// Close outputs (important!).
 		this.closeAllOutputs();
 		
 		// Done
@@ -189,7 +182,7 @@ public class TreeIndexController extends ModuleImpl {
 	}
 		
 	//display all tree properties
-	private void displayAllTreeProperties () {
+	private void displayAllTreeProperties () throws Exception {
 		
 		// Create rootNode tree and initialize "indexProperties". 
 		this.iterateGST();
@@ -221,6 +214,13 @@ public class TreeIndexController extends ModuleImpl {
 		
 		seqPropertiesOutput = seqPropertiesOutput + "node number\tSequence\tpath length\tSackin index\tcophenetic index\tnumber of leaves\t"
 				+ "number of inner nodes\tmax Sackin index\tmax cophenetic index\n";
+		
+		// Write the current output.
+		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.seqPropertiesOutput);
+		
+		// Flush the String variable this.seqPropertiesOutput to avoid problems with strings larger than MAXINT.
+		this.seqPropertiesOutput = "";
+		
 		for (IndexProperties i : this.seqPropertiesSorted) {
 			if (i.getNodeNumber() == 1) {
 				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getEdgeLabel() + "\t" + i.getTreeDepth() 
@@ -233,14 +233,32 @@ public class TreeIndexController extends ModuleImpl {
 				+ ((i.getLeafNum()-2)*(i.getLeafNum()-1)*i.getLeafNum()/6)
 				+ "\n";
 			}
+			// Continually write the output.
+			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.seqPropertiesOutput);
+			
+			// Flush this.seqPropertiesOutput.
+			this.seqPropertiesOutput = "";
 		}
 		
-		if (this.freqOut) {
+		if ( this.freqOut && this.getOutputPorts().get(FREQOUTID).isConnected() ) {
 			// Put the results for the frequency analysis into the output.
 			this.freqOutString = this.freqOutString + "number of terminal branches" + "\tfrequency\n";
 			this.freqOutString = this.freqOutString + "1\t" + this.totalNumOfLeaves + "\n";
+			
+			// Write the tree frequencies into the output.
+			this.getOutputPorts().get(FREQOUTID).outputToAllCharPipes(this.freqOutString);
+			
+			// Flush this.freqOutString.
+			this.freqOutString = "";
+			
 			for (int i : this.freqSpectrum.keySet()) {
 				this.freqOutString = this.freqOutString + "\t" + i + "\t" + freqSpectrum.get(i)  + "\n";
+				
+				// Continually write the output.
+				this.getOutputPorts().get(FREQOUTID).outputToAllCharPipes(this.freqOutString);
+				
+				// Flush this.freqOutString.
+				this.freqOutString = "";
 			}
 		}
 	}
