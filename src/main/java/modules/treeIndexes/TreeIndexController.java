@@ -146,13 +146,60 @@ public class TreeIndexController extends ModuleImpl {
 	//end setters
 	
 	//getters:
-			
-	public String getSeqProperties() {
-		return seqPropertiesOutput;
-	}
-	
+		
 	//end getters
 	
+	// Methods for normalization of the Sackin index values.
+	
+	/**
+	 * The method calcSackinNorm() effectively normalizes the retrieved Sackin indexes.
+	 * @param n            number of leaves.
+	 * @param sackin       calculated non-normalized Sackin index.
+	 * @return sackinNorm  double value between 0 and 1
+	 */
+	private double calcSackinNorm(int n, double sackin) {
+		double sackinNorm = (sackin - this.calcSackinMin(n)) 
+				/ (this.calcSackinMax(n) - this.calcSackinMin(n));
+		return sackinNorm;
+	}
+	
+	/**
+	 * 
+	 * @param n                number of leaves
+	 * @return maxSackinIndex  for n
+	 */
+	private double calcSackinMax (int n) {
+		return ((Math.pow(n, 2) + n - 2)/2);
+	}
+	
+	/**
+	 * 
+	 * @param n                number of leaves
+	 * @return minSackinIndex  for n
+	 */
+	private double calcSackinMin (int n) {
+		double sackinMin = Math.floor(this.log4(n) * Math.pow(4, this.log4(n)))
+				+ Math.floor((this.log4(n) + 1) * ( n - Math.pow(4, this.log4(n))))
+				+ Math.ceil(1/3 * (n - Math.pow(4, this.log4(n))));
+		return sackinMin;
+	}
+	
+	/**
+	 * This method calculates the logarithm to the base 4.
+	 * @param n           integer
+	 * @return logarithm  to the base 4
+	 */
+	private double log4(int n) {
+		return (Math.log(n) / Math.log(4));
+	}
+	
+	
+	/**
+	 * 
+	 * @return true
+	 * @throws Exception
+	 * @see modules.ModuleImpl#process
+	 */
 	@Override
 	public boolean process() throws Exception {
 		
@@ -161,16 +208,13 @@ public class TreeIndexController extends ModuleImpl {
 					
 		//iterate over the tree and get parameters
 		this.displayAllTreeProperties();
-		
-		//write the tree properties into the output
-		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.getSeqProperties());
-		
-		if (this.freqOut) {
+				
+		if (this.freqOut && this.getOutputPorts().get(FREQOUTID).isConnected()) {
 			//write the tree frequencies into the output
 			this.getOutputPorts().get(FREQOUTID).outputToAllCharPipes(this.freqOutString);
 		}
 								
-		// Close outputs (important!)
+		// Close outputs (important!).
 		this.closeAllOutputs();
 		
 		// Done
@@ -189,7 +233,7 @@ public class TreeIndexController extends ModuleImpl {
 	}
 		
 	//display all tree properties
-	private void displayAllTreeProperties () {
+	private void displayAllTreeProperties () throws Exception {
 		
 		// Create rootNode tree and initialize "indexProperties". 
 		this.iterateGST();
@@ -212,35 +256,60 @@ public class TreeIndexController extends ModuleImpl {
 		seqPropertiesOutput = seqPropertiesOutput + "Average cophenetic index of paths:\t" + this.avCopheneticIndex + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Total number of leaves:\t" + this.totalNumOfLeaves + "\n";
 		seqPropertiesOutput = seqPropertiesOutput + "Sackin index:\t" + this.sackinIndexVal + "\n";
-		this.seqPropertiesOutput = this.seqPropertiesOutput + "max Sackin index:\t" + ((Math.pow((double)this.totalNumOfLeaves,2)-(double)this.totalNumOfLeaves - 2)/2) + "\n";
+		this.seqPropertiesOutput = this.seqPropertiesOutput + "max Sackin index:\t" + this.calcSackinMax(this.totalNumOfLeaves) + "\n";
+		this.seqPropertiesOutput = this.seqPropertiesOutput + "normalized Sackin index:\t" + this.calcSackinNorm(this.totalNumOfLeaves, this.sackinIndexVal) + "\n";
 		
 		seqPropertiesOutput = seqPropertiesOutput + "Cophenetic index:\t" + this.copheneticIndexVal + "\n";
 		this.seqPropertiesOutput = this.seqPropertiesOutput + "max cophenetic index:\t" + ((this.totalNumOfLeaves-2)*(this.totalNumOfLeaves-1)*(this.totalNumOfLeaves)/6) + "\n";
 		
 		// Prepare the extracted parameters for subtrees.+
 		
-		seqPropertiesOutput = seqPropertiesOutput + "node number\tSequence\tpath length\tSackin index\tcophenetic index\tnumber of leaves\t"
-				+ "number of inner nodes\tmax Sackin index\tmax cophenetic index\n";
+		seqPropertiesOutput = seqPropertiesOutput + "nodeNumber\tedgeLabel\tpathLength\tnormSackin\tsackinIndex\tcopheneticIndex\tnumberOfLeaves\t"
+				+ "numberOfInnerNodes\tmaxSackinIndex\tmaxCopheneticIndex\n";
+		
+		// Write the current output.
+		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.seqPropertiesOutput);
+		
+		// Flush the String variable this.seqPropertiesOutput to avoid problems with strings larger than MAXINT.
+		this.seqPropertiesOutput = "";
+		
 		for (IndexProperties i : this.seqPropertiesSorted) {
 			if (i.getNodeNumber() == 1) {
 				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getEdgeLabel() + "\t" + i.getTreeDepth() 
-				+ "\t" + this.sackinIndexVal + "\t" + this.copheneticIndexVal + "\t" + this.totalNumOfLeaves + "\n";
+				+ "\t" + this.calcSackinNorm(this.totalNumOfLeaves, this.sackinIndexVal)+ "\t" + this.sackinIndexVal + "\t" + this.copheneticIndexVal + "\t" + this.totalNumOfLeaves + "\n";
 			} else {
 				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getEdgeLabel() + "\t" + i.getTreeDepth() 
-				+ "\t" + this.subSackinTrees.get(i.getEdgeLabel()) + "\t" + this.subCophTrees.get(i.getEdgeLabel()) 
+				+ "\t" + this.calcSackinNorm(i.getLeafNum(), this.subSackinTrees.get(i.getEdgeLabel()))+ "\t" + this.subSackinTrees.get(i.getEdgeLabel()) + "\t" + this.subCophTrees.get(i.getEdgeLabel()) 
 				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getEdgeLabel()) + "\t"
 				+ ((Math.pow((double)i.getLeafNum(),2)+((double)i.getLeafNum()-2))/2) + "\t"
 				+ ((i.getLeafNum()-2)*(i.getLeafNum()-1)*i.getLeafNum()/6)
 				+ "\n";
 			}
+			// Continually write the output.
+			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(this.seqPropertiesOutput);
+			
+			// Flush this.seqPropertiesOutput.
+			this.seqPropertiesOutput = "";
 		}
 		
-		if (this.freqOut) {
+		if ( this.freqOut && this.getOutputPorts().get(FREQOUTID).isConnected() ) {
 			// Put the results for the frequency analysis into the output.
 			this.freqOutString = this.freqOutString + "number of terminal branches" + "\tfrequency\n";
-			this.freqOutString = this.freqOutString + "1\t" + this.totalNumOfLeaves + "\n";
+						
+			// Write the tree frequencies into the output.
+			this.getOutputPorts().get(FREQOUTID).outputToAllCharPipes(this.freqOutString);
+			
+			// Flush this.freqOutString.
+			this.freqOutString = "";
+			
 			for (int i : this.freqSpectrum.keySet()) {
-				this.freqOutString = this.freqOutString + "\t" + i + "\t" + freqSpectrum.get(i)  + "\n";
+				this.freqOutString = this.freqOutString + i + "\t" + freqSpectrum.get(i)  + "\n";
+				
+				// Continually write the output.
+				this.getOutputPorts().get(FREQOUTID).outputToAllCharPipes(this.freqOutString);
+				
+				// Flush this.freqOutString.
+				this.freqOutString = "";
 			}
 		}
 	}
