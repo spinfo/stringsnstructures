@@ -149,6 +149,11 @@ public class TreeIndexController extends ModuleImpl {
 		
 	//end getters
 	
+	/**
+	 * The method 
+	 * @see modules.ModuleImpl#process()
+	 */
+	
 	@Override
 	public boolean process() throws Exception {
 		
@@ -252,7 +257,7 @@ public class TreeIndexController extends ModuleImpl {
 			this.freqOutString = "";
 			
 			for (int i : this.freqSpectrum.keySet()) {
-				this.freqOutString = this.freqOutString + "\t" + i + "\t" + freqSpectrum.get(i)  + "\n";
+				this.freqOutString = this.freqOutString + i + "\t" + freqSpectrum.get(i)  + "\n";
 				
 				// Continually write the output.
 				this.getOutputPorts().get(FREQOUTID).outputToAllCharPipes(this.freqOutString);
