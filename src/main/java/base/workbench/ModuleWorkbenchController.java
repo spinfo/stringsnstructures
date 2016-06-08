@@ -50,6 +50,7 @@ import modules.dot2tree.Dot2TreeController;
 import modules.hal.HalAdvancedModule;
 import modules.keyWordInPhrase.KeyWordInPhraseModule;
 import modules.keyWordInPhrase.KwipBowMatrixModule;
+import modules.matrix.BowTypeMatrixModule;
 import modules.matrix.MatrixColumnSumModule;
 import modules.matrix.MatrixEliminateOppositionalValuesModule;
 import modules.matrix.MatrixRowColPairExtractorModule;
@@ -554,6 +555,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		joinModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, joinModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		joinModule.applyProperties();
 
+		// BowTypeMatrixModule
+		Properties bowTypeMatrixModuleProperties = new Properties();
+		BowTypeMatrixModule bowTypeMatrixModule = new BowTypeMatrixModule(moduleNetwork, bowTypeMatrixModuleProperties);
+		bowTypeMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bowTypeMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		bowTypeMatrixModule.applyProperties();
+
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -623,6 +630,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(matrixRowColPairExtractorModule.getName(), matrixRowColPairExtractorModule);
 		availableModules.put(treeIndexController.getName(), treeIndexController);
 		availableModules.put(joinModule.getName(), joinModule);
+		availableModules.put(bowTypeMatrixModule.getName(), bowTypeMatrixModule);
 	}
 	
 	/**
