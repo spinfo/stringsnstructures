@@ -20,6 +20,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_DELIMITER_OUTPUT = "output delimiter";
 	public static final String PROPERTYKEY_ZEROVALUE = "empty value";
+	public static final String PROPERTYKEY_OUTPUTFORMAT = "output format";
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "BoW";
@@ -28,6 +29,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 	// Local variables
 	private String outputdelimiter;
 	private String emptyFieldValue;
+	private String outputformat;
 
 	public BowTypeMatrixModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -43,12 +45,14 @@ public class BowTypeMatrixModule extends ModuleImpl {
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT, "String to insert as segmentation delimiter into the output name-sum-pairs.");
-		this.getPropertyDescriptions().put(PROPERTYKEY_ZEROVALUE, "String to insert as empty value into the output.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_ZEROVALUE, "String to insert as empty value into the output (only applicable to CSV output).");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTFORMAT, "Desired output format [csv|json].");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "BoW Type Matrix"); // Property key for module name is defined in parent class
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT, ";");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ZEROVALUE, "0");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTFORMAT, "csv");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "JSON BoW data input.", this);
@@ -107,30 +111,36 @@ public class BowTypeMatrixModule extends ModuleImpl {
 			}
 		}
 		
-		// Output CSV header
-		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
-		Iterator<String> types = matrix.keySet().iterator();
-		while(types.hasNext()){
-			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(types.next()+this.outputdelimiter);
-		}
-		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
-		
-		// Output matrix
-		types = matrix.keySet().iterator();
-		while(types.hasNext()){
-			String type = types.next();
-			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type+this.outputdelimiter);
-			Iterator<String> types2 = matrix.keySet().iterator();
-			while(types2.hasNext()){
-				String type2 = types2.next();
-				if (matrix.get(type).containsKey(type2))
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(matrix.get(type).get(type2).toString());
-				else
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.emptyFieldValue);
-				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
+		if (this.outputformat.equals("csv")){
+			// Output CSV header
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
+			Iterator<String> types = matrix.keySet().iterator();
+			while(types.hasNext()){
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(types.next()+this.outputdelimiter);
 			}
 			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
-		}
+			
+			// Output matrix
+			types = matrix.keySet().iterator();
+			while(types.hasNext()){
+				String type = types.next();
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type+this.outputdelimiter);
+				Iterator<String> types2 = matrix.keySet().iterator();
+				while(types2.hasNext()){
+					String type2 = types2.next();
+					if (matrix.get(type).containsKey(type2))
+						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(matrix.get(type).get(type2).toString());
+					else
+						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.emptyFieldValue);
+					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
+				}
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
+			}
+		} else if (this.outputformat.equals("json")){
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(gson.toJson(matrix));
+		} else
+			throw new Exception("Specified output format is unknown.");
+		
 		
 		// Close outputs (important!)
 		this.closeAllOutputs();
@@ -147,8 +157,8 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		
 		// Apply own properties
 		this.outputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT));
-		this.emptyFieldValue = this.getProperties().getProperty(PROPERTYKEY_ZEROVALUE,
-				this.getPropertyDefaultValues().get(PROPERTYKEY_ZEROVALUE));
+		this.emptyFieldValue = this.getProperties().getProperty(PROPERTYKEY_ZEROVALUE, this.getPropertyDefaultValues().get(PROPERTYKEY_ZEROVALUE));
+		this.outputformat = this.getProperties().getProperty(PROPERTYKEY_OUTPUTFORMAT, this.getPropertyDefaultValues().get(PROPERTYKEY_OUTPUTFORMAT));
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
