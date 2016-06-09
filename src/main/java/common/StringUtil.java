@@ -54,5 +54,14 @@ public class StringUtil {
 			return true;
 		return str.trim().isEmpty();
 	}
+	
+	/**
+	 * Shifts the characters of the specified string one to the right.
+	 * @param str input string
+	 * @return shifted string
+	 */
+	public static String shift(String str) {
+	    return str.charAt(str.length()-1)+str.substring(0, str.length()-1);
+	}
 
 }
