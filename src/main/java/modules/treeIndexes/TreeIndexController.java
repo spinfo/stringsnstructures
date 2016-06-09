@@ -208,7 +208,7 @@ public class TreeIndexController extends ModuleImpl {
 		BigInteger term3 = BigInteger.valueOf(n);
 
 		BigInteger result = term3.multiply(term2.multiply(term1));
-		result.divide(BigInteger.valueOf(6));
+		result = result.divide(BigInteger.valueOf(6));
 		return result;
 	}
 	
