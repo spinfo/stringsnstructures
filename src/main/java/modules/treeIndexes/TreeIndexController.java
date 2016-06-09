@@ -202,7 +202,13 @@ public class TreeIndexController extends ModuleImpl {
 	 * @return  result  BigInteger showing the value of a max. cophenetic index.
 	 */
 	private BigInteger calcMaxCophenetic (int n) {
-		BigInteger result = BigInteger.valueOf(((n-2)*(n-1)*n)/6);
+		
+		BigInteger term1 = BigInteger.valueOf(n-2);
+		BigInteger term2 = BigInteger.valueOf(n-1);
+		BigInteger term3 = BigInteger.valueOf(n);
+
+		BigInteger result = term3.multiply(term2.multiply(term1));
+		result = result.divide(BigInteger.valueOf(6));
 		return result;
 	}
 	
