@@ -97,7 +97,7 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 			String line = lineScanner.next();
 			String[] headerFields = line.split(this.inputdelimiter);
 			
-			for (int i=0; i<headerFields.length; i++){
+			for (int i=1; i<headerFields.length; i++){
 				aberrationValuesMap.put(headerFields[i], new ArrayList<Double>());
 			}
 			
@@ -117,14 +117,14 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 			}
 			
 			lineScanner.close();
-		} else {
-			
-		
+		} else if (this.inputFormat.equals("json")){
 		
 		// Read input
 		aberrationValuesMap = gson.fromJson(
 				this.getInputPorts().get(ID_INPUT).getInputReader(), new HashMap<String, List<Double>>().getClass());
 		
+		} else {
+			throw new Exception("Unrecognised input format '"+this.inputFormat+"'.");
 		}
 
 		/*
