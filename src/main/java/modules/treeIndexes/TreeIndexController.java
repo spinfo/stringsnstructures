@@ -3,6 +3,9 @@ package modules.treeIndexes;
 // Java I/O imports.
 import java.io.PipedReader;
 
+// Java math imports.
+import java.math.BigInteger;
+
 // Java utilities imports.
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -193,6 +196,21 @@ public class TreeIndexController extends ModuleImpl {
 		return (Math.log(n) / Math.log(4));
 	}
 	
+	/**
+	 * Calculation of the maximum cophenetic index for maximally imbalanced trees.
+	 * @param   n       integer indicating number of leaves.
+	 * @return  result  BigInteger showing the value of a max. cophenetic index.
+	 */
+	private BigInteger calcMaxCophenetic (int n) {
+		
+		BigInteger term1 = BigInteger.valueOf(n-2);
+		BigInteger term2 = BigInteger.valueOf(n-1);
+		BigInteger term3 = BigInteger.valueOf(n);
+
+		BigInteger result = term3.multiply(term2.multiply(term1));
+		result = result.divide(BigInteger.valueOf(6));
+		return result;
+	}
 	
 	/**
 	 * 
@@ -260,7 +278,7 @@ public class TreeIndexController extends ModuleImpl {
 		this.seqPropertiesOutput = this.seqPropertiesOutput + "normalized Sackin index:\t" + this.calcSackinNorm(this.totalNumOfLeaves, this.sackinIndexVal) + "\n";
 		
 		seqPropertiesOutput = seqPropertiesOutput + "Cophenetic index:\t" + this.copheneticIndexVal + "\n";
-		this.seqPropertiesOutput = this.seqPropertiesOutput + "max cophenetic index:\t" + ((this.totalNumOfLeaves-2)*(this.totalNumOfLeaves-1)*(this.totalNumOfLeaves)/6) + "\n";
+		this.seqPropertiesOutput = this.seqPropertiesOutput + "max cophenetic index:\t" + this.calcMaxCophenetic(this.totalNumOfLeaves) + "\n";
 		
 		// Prepare the extracted parameters for subtrees.+
 		
@@ -279,10 +297,11 @@ public class TreeIndexController extends ModuleImpl {
 				+ "\t" + this.calcSackinNorm(this.totalNumOfLeaves, this.sackinIndexVal)+ "\t" + this.sackinIndexVal + "\t" + this.copheneticIndexVal + "\t" + this.totalNumOfLeaves + "\n";
 			} else {
 				seqPropertiesOutput = seqPropertiesOutput + i.getNodeNumber() + "\t" + i.getEdgeLabel() + "\t" + i.getTreeDepth() 
-				+ "\t" + this.calcSackinNorm(i.getLeafNum(), this.subSackinTrees.get(i.getEdgeLabel()))+ "\t" + this.subSackinTrees.get(i.getEdgeLabel()) + "\t" + this.subCophTrees.get(i.getEdgeLabel()) 
+				+ "\t" + this.calcSackinNorm(i.getLeafNum(), this.subSackinTrees.get(i.getEdgeLabel())) 
+				+ "\t" + this.subSackinTrees.get(i.getEdgeLabel()) + "\t" + this.subCophTrees.get(i.getEdgeLabel()) 
 				+ "\t" + i.getLeafNum() + "\t" + this.subTreeInnerNodes.get(i.getEdgeLabel()) + "\t"
 				+ ((Math.pow((double)i.getLeafNum(),2)+((double)i.getLeafNum()-2))/2) + "\t"
-				+ ((i.getLeafNum()-2)*(i.getLeafNum()-1)*i.getLeafNum()/6)
+				+ this.calcMaxCophenetic(i.getLeafNum())
 				+ "\n";
 			}
 			// Continually write the output.

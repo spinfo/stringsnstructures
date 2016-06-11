@@ -22,19 +22,6 @@ public class VectorCalculation {
 	 * @throws Exception Thrown if vectors are null or of different length
 	 */
 	public static double calculateMinkowskiDistance(List<Double> vectorA, List<Double> vectorB) throws Exception{
-		return calculateMinkowskiDistance(new HashSet<Double>(vectorA), new HashSet<Double>(vectorB));
-	}
-	
-	/**
-	 * Calculates the Minkowski-Distance of two n-dimensional vectors.
-	 * Also refer to MERKL, Rainer 2015, Bioinformatik, p.159
-	 * and the <a href="https://en.wikipedia.org/wiki/Minkowski_distance">Wikipedia page</a> about the Minkowski-Distance.
-	 * @param vectorA First vector
-	 * @param vectorB Second vector
-	 * @return Minkowski-Distance
-	 * @throws Exception Thrown if vectors are null or of different length
-	 */
-	public static double calculateMinkowskiDistance(Set<Double> vectorA, Set<Double> vectorB) throws Exception{
 		
 		// Check input
 		if (vectorA==null || vectorB==null || vectorA.size()!=vectorB.size()){

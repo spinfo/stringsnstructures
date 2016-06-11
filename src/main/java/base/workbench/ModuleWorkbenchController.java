@@ -73,6 +73,7 @@ import modules.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringWrapperV2;
 import modules.suffixTreeModuleWrapper.GeneralisedSuffixTreeModule;
 import modules.suffixTreeModuleWrapper.LabelDataMergeModule;
 import modules.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
+import modules.transform.BurrowsWheelerTransformationModule;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.treeBuilder.ExtensibleTreeNode2GEXFModule;
 import modules.treeBuilder.TreeBalanceIndexModule;
@@ -561,6 +562,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		bowTypeMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bowTypeMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		bowTypeMatrixModule.applyProperties();
 
+		// BurrowsWheelerTransformationModule
+		Properties burrowsWheelerTransformationModuleProperties = new Properties();
+		BurrowsWheelerTransformationModule burrowsWheelerTransformationModule = new BurrowsWheelerTransformationModule(moduleNetwork, burrowsWheelerTransformationModuleProperties);
+		burrowsWheelerTransformationModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, burrowsWheelerTransformationModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		burrowsWheelerTransformationModule.applyProperties();
+
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -631,6 +638,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(treeIndexController.getName(), treeIndexController);
 		availableModules.put(joinModule.getName(), joinModule);
 		availableModules.put(bowTypeMatrixModule.getName(), bowTypeMatrixModule);
+		availableModules.put(burrowsWheelerTransformationModule.getName(), burrowsWheelerTransformationModule);
 	}
 	
 	/**
