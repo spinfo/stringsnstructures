@@ -1,4 +1,4 @@
-package modules.matrixTransformation;
+package modules.matrix;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -68,7 +68,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		this.setName("Matrix Bitwise Operation Module");
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, this.getName());
 		this.setDescription(MODULE_DESC);
-		// this.setCategory("");
+		this.setCategory("Matrix");
 
 		// setup i/o
 		InputPort input = new InputPort(INPUT_ID, INPUT_DESC, this);
