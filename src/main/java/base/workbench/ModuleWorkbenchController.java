@@ -55,6 +55,7 @@ import modules.matrix.MatrixBitwiseOperationModule;
 import modules.matrix.MatrixColumnSumModule;
 import modules.matrix.MatrixEliminateOppositionalValuesModule;
 import modules.matrix.MatrixRowColPairExtractorModule;
+import modules.matrix.MclModule;
 import modules.oanc.OANCXMLParser;
 import modules.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
@@ -568,6 +569,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		burrowsWheelerTransformationModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, burrowsWheelerTransformationModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		burrowsWheelerTransformationModule.applyProperties();
 
+		// Markov Clustering Module
+		Properties mclProperties = new Properties();
+		MclModule mclModule = new MclModule(moduleNetwork, mclProperties);
+		mclProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, mclModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		mclModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -639,6 +646,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(joinModule.getName(), joinModule);
 		availableModules.put(bowTypeMatrixModule.getName(), bowTypeMatrixModule);
 		availableModules.put(burrowsWheelerTransformationModule.getName(), burrowsWheelerTransformationModule);
+		availableModules.put(mclModule.getName(), mclModule);
 	}
 	
 	/**

@@ -227,6 +227,11 @@
 			<artifactId>gexf4j</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+		    <groupId>gov.nist.math</groupId>
+		    <artifactId>jama</artifactId>
+		    <version>1.0.3</version>
+		</dependency>
 	</dependencies>
 	<url>http://www.spinfo.phil-fak.uni-koeln.de/sas.html</url>
 	<name>Strings &amp; Structures: Codes of Sense and Function in Genomics and Linguistics</name>
