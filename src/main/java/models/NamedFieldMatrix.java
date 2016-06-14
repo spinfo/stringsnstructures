@@ -130,6 +130,18 @@ public class NamedFieldMatrix {
 	}
 
 	/**
+	 * Exposes the internal array of the matrix' values.
+	 * 
+	 * NOTE: Once exposed the user of this method has to take care, that row and
+	 * column names match the actual values and matrix dimensions.
+	 * 
+	 * @return
+	 */
+	public double[][] getValues() {
+		return values;
+	}
+
+	/**
 	 * Get a copy of a row by it's name.
 	 * 
 	 * @param rowName
@@ -386,12 +398,13 @@ public class NamedFieldMatrix {
 	 * Increase the amount of allocated rows
 	 */
 	private void yResize() {
-		if (rowMax < 100000) {
+		if (rowMax < 100) {
+			rowMax = 100;
+		} else if (rowMax < 100000) {
 			rowMax *= 2;
 		} else {
 			rowMax += 50000;
 		}
-		rowMax *= 2;
 		values = Arrays.copyOf(values, rowMax);
 	}
 
@@ -399,7 +412,9 @@ public class NamedFieldMatrix {
 	 * Increase the amount of allocated columns
 	 */
 	private void xResize() {
-		if (colMax < 100000) {
+		if (colMax < 100) {
+			colMax = 100;
+		} else if (colMax < 100000) {
 			colMax *= 2;
 		} else {
 			colMax += 50000;
@@ -413,17 +428,44 @@ public class NamedFieldMatrix {
 	}
 
 	/**
+	 * Contract the matrices underlying double[][] x and y dimensions, such that
+	 * it uses exactly an amount of space equal to the rows and columns entered
+	 * so far.
+	 */
+	public void contract() {
+		// contract the array containing the rows
+		if (rowAmount != values.length) {
+			values = Arrays.copyOf(values, rowAmount);
+			rowMax = rowAmount;
+		}
+
+		// contract each row to the amount of columns
+		for (int i = 0; i < rowAmount; i++) {
+			if (values[i] == null) {
+				values[i] = new double[colAmount];
+			} else {
+				if (colAmount != values[i].length) {
+					values[i] = Arrays.copyOf(values[i], colAmount);
+				}
+			}
+			colMax = colAmount;
+		}
+	}
+
+	/**
 	 * Reads CSV data from specified string and returns a NamedFieldMatrix
 	 * object instance.
 	 * 
 	 * @param csvString
 	 *            String containing CSV formatted data
+	 * @param delimiter
+	 *            The input delimiter to split cells on.
 	 * @return NamedFieldMatrix instance
 	 * @throws Exception
 	 *             Thrown if the CSV input cannot be parsed
 	 */
-	public static NamedFieldMatrix parseCSV(String csvString) throws Exception {
-		return NamedFieldMatrix.parseCSV(new StringReader(csvString));
+	public static NamedFieldMatrix parseCSV(String csvString, String delimiter) throws Exception {
+		return NamedFieldMatrix.parseCSV(new StringReader(csvString), delimiter);
 	}
 
 	/**
@@ -432,23 +474,25 @@ public class NamedFieldMatrix {
 	 * 
 	 * @param csvReader
 	 *            Reader instance providing CSV formatted data
+	 * @param delimiter
+	 *            The input delimiter to split cells on.
 	 * @return NamedFieldMatrix instance
 	 * @throws Exception
 	 *             Thrown if the CSV input cannot be parsed
 	 */
-	public static NamedFieldMatrix parseCSV(Reader csvReader) throws Exception {
+	public static NamedFieldMatrix parseCSV(Reader csvReader, String delimiter) throws Exception {
 
 		// Instantiate matrix
 		NamedFieldMatrix matrix = new NamedFieldMatrix();
 
 		// Use scanner for input
 		Scanner input = new Scanner(csvReader);
-		input.useDelimiter("\\n");
+		input.useDelimiter("\\R");
 
 		// Read csv head row
 		String[] colNames = null;
 		if (input.hasNext()) {
-			colNames = input.next().split(",");
+			colNames = input.next().split(delimiter, -1);
 		} else {
 			input.close();
 			throw new IOException("Cannot parse CSV data -- no head row found.");
@@ -456,7 +500,7 @@ public class NamedFieldMatrix {
 
 		// Read data rows
 		while (input.hasNext()) {
-			String[] data = input.next().split(",");
+			String[] data = input.next().split(delimiter, -1);
 			// Store data into matrix (assuming the first column contains the
 			// dataset names)
 			for (int i = 1; i < data.length && i < colNames.length; i++) {
