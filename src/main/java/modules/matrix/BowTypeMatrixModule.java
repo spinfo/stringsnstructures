@@ -14,6 +14,7 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
+import modules.bagOfWords.BagOfWordsHelper;
 
 public class BowTypeMatrixModule extends ModuleImpl {
 	
@@ -21,6 +22,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 	public static final String PROPERTYKEY_DELIMITER_OUTPUT = "output delimiter";
 	public static final String PROPERTYKEY_ZEROVALUE = "empty value";
 	public static final String PROPERTYKEY_OUTPUTFORMAT = "output format";
+	public static final String PROPERTYKEY_APPLYTFIDF = "apply TF-iDF";
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "BoW";
@@ -30,6 +32,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 	private String outputdelimiter;
 	private String emptyFieldValue;
 	private String outputformat;
+	private boolean applyTfidf;
 
 	public BowTypeMatrixModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -44,15 +47,17 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		this.setCategory("Matrix");
 
 		// Add property descriptions (obligatory for every property!)
-		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT, "String to insert as segmentation delimiter into the output name-sum-pairs.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT, "String to insert as CSV delimiter (only applicable to CSV output).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_ZEROVALUE, "String to insert as empty value into the output (only applicable to CSV output).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTFORMAT, "Desired output format [csv|json].");
+		this.getPropertyDescriptions().put(PROPERTYKEY_APPLYTFIDF, "Multiply the token values with their <i>Inverse Document Frequencies</i> before calculating the type sum [true|false].");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "BoW Type Matrix"); // Property key for module name is defined in parent class
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT, ";");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ZEROVALUE, "0");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTFORMAT, "csv");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_APPLYTFIDF, "false");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "JSON BoW data input.", this);
@@ -80,6 +85,24 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		Map<Double,Map<String,Double>> bowMap = new HashMap<Double,Map<String,Double>>();
 		bowMap = gson.fromJson(this.getInputPorts().get(ID_INPUT).getInputReader(), bowMap.getClass());
 		
+		// Prepare iDF map
+		Map<String,Double> inverseDocumentFrequencies = null;
+		
+		// Calculate inverse document frequencies if TF-iDF is to be applied
+		if (this.applyTfidf){
+			
+			Map<String, Double> termFrequencies = new TreeMap<String, Double>();
+			
+			// Iterate over input BoW's
+			Iterator<Map<String,Double>> bows = bowMap.values().iterator();
+			while(bows.hasNext()){
+				BagOfWordsHelper.mergeDouble(termFrequencies, bows.next());
+			}
+			
+			// Calculate inverse Document frequencies
+			inverseDocumentFrequencies = BagOfWordsHelper.inverseDocumentFrequenciesDouble(termFrequencies, bowMap.size());
+		}
+					
 		// Iterate over input BoW's
 		Iterator<Map<String,Double>> bows = bowMap.values().iterator();
 		while(bows.hasNext()){
@@ -92,22 +115,29 @@ public class BowTypeMatrixModule extends ModuleImpl {
 				// Determine next token
 				String token = tokens.next();
 				
-				// If the type has no entry yet, we can just add the current BoW
-				if (!matrix.containsKey(token))
-					matrix.put(token, bow);
+				// Determine existing matrix line
+				Map<String, Double> matrixLine = matrix.getOrDefault(token, new TreeMap<String, Double>());
 				
-				// Else we add the values of the current BoW to the existing entry
-				else {
-					Map<String,Double> existingEntry = matrix.get(token);
-					Iterator<String> tokens2 = bow.keySet().iterator();
-					while (tokens2.hasNext()){
-						String token2 = tokens2.next();
-						if (existingEntry.containsKey(token2)){
-							existingEntry.put(token2, existingEntry.get(token2)+bow.get(token2));
-						} else
-							existingEntry.put(token2, bow.get(token2));
-					}
+				// Iterate over tokens a second time
+				Iterator<String> tokens2 = bow.keySet().iterator();
+				while (tokens2.hasNext()) {
+					// Determine next token
+					String token2 = tokens2.next();
+					// ... and its value
+					Double value = bow.get(token2);
+					
+					// Apply TF-iDF
+					if (this.applyTfidf)
+						value = value * inverseDocumentFrequencies.get(token2);
+					
+					// Add value to existing one
+					value += matrixLine.getOrDefault(token2, 0d);
+
+					// Add value to matrix line
+					matrixLine.put(token2, value);
 				}
+				// Add line to matrix
+				matrix.put(token, matrixLine);
 			}
 		}
 		
@@ -159,6 +189,10 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		this.outputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT));
 		this.emptyFieldValue = this.getProperties().getProperty(PROPERTYKEY_ZEROVALUE, this.getPropertyDefaultValues().get(PROPERTYKEY_ZEROVALUE));
 		this.outputformat = this.getProperties().getProperty(PROPERTYKEY_OUTPUTFORMAT, this.getPropertyDefaultValues().get(PROPERTYKEY_OUTPUTFORMAT));
+		
+		String value = this.getProperties().getProperty(PROPERTYKEY_APPLYTFIDF, this.getPropertyDefaultValues().get(PROPERTYKEY_APPLYTFIDF));
+		if (value != null && !value.isEmpty())
+			this.applyTfidf = Boolean.parseBoolean(value);
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();

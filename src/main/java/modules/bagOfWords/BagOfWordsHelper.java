@@ -9,7 +9,7 @@ import java.util.logging.Logger;
  * 
  * @author david
  */
-class BagOfWordsHelper {
+public class BagOfWordsHelper {
 
 	private static final Logger LOGGER = Logger.getLogger(BagOfWordsHelper.class.getName());
 
@@ -35,6 +35,23 @@ class BagOfWordsHelper {
 	}
 
 	/**
+	 * Merges all words from givingBag to the receivingBag, incrementing the
+	 * word counts, such that after this operation the receivingBag is a Bag of
+	 * all Words in both original bags.
+	 * 
+	 * The second bag of words is left as is.
+	 */
+	public static void mergeDouble(Map<String, Double> receivingBag, Map<String, Double> givingBag) {
+		double wordCount = 0d;
+
+		for (String term : givingBag.keySet()) {
+			wordCount = receivingBag.getOrDefault(term, 0d);
+			wordCount += givingBag.getOrDefault(term, 0d);
+			receivingBag.put(term, wordCount);
+		}
+	}
+
+	/**
 	 * Compute an IDF values for the terms given. IDF here is simply the number
 	 * of all
 	 * 
@@ -46,6 +63,27 @@ class BagOfWordsHelper {
 			int documentCount) {
 		TreeMap<String, Double> result = new TreeMap<String, Double>();
 		int freq = 0;
+		double idf = 0.0;
+		for (String term : termFrequencies.keySet()) {
+			freq = termFrequencies.get(term);
+			idf = Math.log10((double) documentCount / (double) freq);
+			result.put(term, idf);
+		}
+		return result;
+	}
+
+	/**
+	 * Compute an IDF values for the terms given. IDF here is simply the number
+	 * of all
+	 * 
+	 * @param termFrequencies
+	 * @param documentCount
+	 * @return
+	 */
+	public static Map<String, Double> inverseDocumentFrequenciesDouble(Map<String, Double> termFrequencies,
+			int documentCount) {
+		TreeMap<String, Double> result = new TreeMap<String, Double>();
+		double freq = 0;
 		double idf = 0.0;
 		for (String term : termFrequencies.keySet()) {
 			freq = termFrequencies.get(term);
