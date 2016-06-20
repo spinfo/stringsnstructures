@@ -27,13 +27,7 @@ public class NamedFieldMatrixTest {
 	@Test
 	public void testAddValue() {
 		try {
-			NamedFieldMatrix matrix = new NamedFieldMatrix();
-			matrix.addValue("set1", "data1", 1.1d);
-			matrix.addValue("set1", "data2", 1.2d);
-			matrix.addValue("set1", "data3", 1.3d);
-			matrix.addValue("set2", "data1", 2.1d);
-			matrix.addValue("set2", "data2", 2.2d);
-			matrix.addValue("set2", "data3", 2.3d);
+			NamedFieldMatrix matrix = makeTestMatrix();
 			Double value = matrix.getValue("set2", "data2");
 			assertTrue(value.doubleValue() == 2.2d);
 		} catch (Exception e) {
@@ -95,6 +89,70 @@ public class NamedFieldMatrixTest {
 			e.printStackTrace();
 			fail("Exception: " + e.getMessage());
 		}
+	}
+
+	@Test
+	public void testSetValues() {
+		NamedFieldMatrix matrix1 = makeTestMatrix();
+		NamedFieldMatrix matrix2 = makeTestMatrix();
+
+		// Exchanging values between equal matrices should work
+		matrix1.setValues(matrix2.getValues());
+		assertTrue(matrix1.getValues() == matrix2.getValues());
+
+		// changing a value in one matrix should change it in both
+		matrix1.setValue("set2", "data2", 22.22);
+		matrix2.setValues(matrix1.getValues());
+		assertTrue(matrix1.getValue("set2", "data2") == 22.22);
+		assertTrue(matrix2.getValue("set2", "data2") == 22.22);
+
+		// increasing one matrix and exchanging arrays should fail
+		boolean threwException = false;
+		matrix2.setValue("newSet", "data1", 123.4);
+		try {
+			matrix1.setValues(matrix2.getValues());
+		} catch (IllegalArgumentException e) {
+			threwException = true;
+		}
+		assertTrue(threwException);
+
+		// setting a completely new array should work
+		double[][] values = { { 10.1, 10.2, 10.3 }, { 20.1, 20.2, 20.3 } };
+		matrix1.setValues(values);
+		assertTrue(matrix1.getValue(0, 1) == 10.2);
+		assertTrue(matrix1.getValue(1, 2) == 20.3);
+		assertTrue(matrix1.getValue("set1", "data3") == 10.3);
+
+		// setting an array with too few rows should fail
+		double[][] valuesFewRows = { { 10.1, 10.2, 10.3 } };
+		threwException = false;
+		try {
+			matrix1.setValues(valuesFewRows);
+		} catch (IllegalArgumentException e) {
+			threwException = true;
+		}
+		assertTrue(threwException);
+		
+		// setting an array with too few cols should fail
+		double[][] valuesFewCols = { { 10.1, 10.2, 10.3 }, { 20.1, 20.2 } };
+		threwException = false;
+		try {
+			matrix1.setValues(valuesFewCols);
+		} catch (IllegalArgumentException e) {
+			threwException = true;
+		}
+		assertTrue(threwException);
+	}
+
+	private NamedFieldMatrix makeTestMatrix() {
+		NamedFieldMatrix matrix = new NamedFieldMatrix();
+		matrix.addValue("set1", "data1", 1.1d);
+		matrix.addValue("set1", "data2", 1.2d);
+		matrix.addValue("set1", "data3", 1.3d);
+		matrix.addValue("set2", "data1", 2.1d);
+		matrix.addValue("set2", "data2", 2.2d);
+		matrix.addValue("set2", "data3", 2.3d);
+		return matrix;
 	}
 
 }

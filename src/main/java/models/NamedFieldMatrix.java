@@ -130,15 +130,41 @@ public class NamedFieldMatrix {
 	}
 
 	/**
-	 * Exposes the internal array of the matrix' values.
+	 * Contracts the matrix' array to it's minimum length and exposes it.
 	 * 
 	 * NOTE: Once exposed the user of this method has to take care, that row and
 	 * column names match the actual values and matrix dimensions.
 	 * 
-	 * @return
+	 * @return a pointer to the matrix' values.
 	 */
 	public double[][] getValues() {
+		contract();
 		return values;
+	}
+
+	/**
+	 * Replace all values of this matrix by the specified values.
+	 * 
+	 * @param values
+	 *            The new values to use.
+	 * @throws IllegalArgumentException
+	 *             If the provided array does not match the previous matrix' column and row dimensions.
+	 */
+	public void setValues(double[][] values) {
+		// check rows array
+		if (values == null || values.length != rowAmount) {
+			throw new IllegalArgumentException("Null array or bad array length. Should equal amount of rows.");
+		}
+		// check cols array
+		for (int i = 0; i < values.length; i++) {
+			if (values[i] == null || values[i].length != colAmount) {
+				throw new IllegalArgumentException("Column arrays must match amount of columns.");
+			}
+		}
+		// all ok, so set
+		this.colMax = colAmount;
+		this.rowMax = rowAmount;
+		this.values = values;
 	}
 
 	/**
