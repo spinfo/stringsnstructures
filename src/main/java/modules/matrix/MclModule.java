@@ -80,12 +80,11 @@ public class MclModule extends ModuleImpl {
 			final NamedFieldMatrix nfMatrix = NamedFieldMatrix.parseCSV(inputReader, this.csvDelimiter);
 
 			// The JAMA matrix is initialised from the named field matrix'
-			// values and will operate on them directly, avoiding duplication of
-			// memory or copying of values.
+			// values and will operate on them directly, avoiding some
+			// duplication of memory or copying of values.
 			// This is ok because the mcl algorithm changes field's values
 			// but not their location, such that the mapping of array fields to
 			// column and row names in the named field matrix stays intact.
-			nfMatrix.contract();
 			Matrix matrix = new Matrix(nfMatrix.getValues());
 
 			// run the algorithm as many times as specified by the user
@@ -93,8 +92,9 @@ public class MclModule extends ModuleImpl {
 				matrix = mcl(matrix, this.l, this.r);
 			}
 
-			// As the NamedFieldMatrix' values were operated on directly we can
-			// just write it to the output port
+			// Set the named fields matrix' values to the ones given by mcl
+			// and write them to the output port
+			nfMatrix.setValues(matrix.getArray());
 			OutputPort out = this.getOutputPorts().get(ID_OUTPUT);
 			nfMatrix.setDelimiter(this.csvDelimiter);
 			out.outputToAllCharPipes(nfMatrix.csvHeader());
@@ -134,20 +134,22 @@ public class MclModule extends ModuleImpl {
 				denom = denom + Math.pow(A.get(i, k), r);
 			}
 
-			for (int j = 0; j < A.getColumnDimension(); j++) {
-				A.set(i, j, Math.pow(A.get(i, j), r) / denom);
+			if (denom != 0) {
+				for (int j = 0; j < A.getColumnDimension(); j++) {
+					A.set(i, j, Math.pow(A.get(i, j), r) / denom);
+				}
 			}
 		}
 
 		return A;
 	}
 
-	// alters and returns the input matrix by multiplying it l times with
+	// alters and returns the input matrix by multiplying it l-1 times with
 	// itself.
 	private Matrix power(Matrix A, int l) {
 		Matrix B = A.copy();
 
-		for (int i = 0; i < l; i++) {
+		for (int i = 1; i < l; i++) {
 			A = A.times(B);
 		}
 
