@@ -56,7 +56,7 @@ public class MclModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_CSV_DELIMITER, ";");
 
 		// Define I/O
-		InputPort inputPort = new InputPort(ID_INPUT, "[text/csv] Matrix to cluster.", this);
+		InputPort inputPort = new InputPort(ID_INPUT, "[text/csv] (Named Field) Matrix to cluster. NOTE: x and y dimensions of the matrix must agree.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort(ID_OUTPUT, "[text/csv] Matrix clustered.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
