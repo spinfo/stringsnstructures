@@ -43,8 +43,55 @@ public class HammingDistance {
 				
 				System.out.println(distance + "  "  + row.get(j));
 			}
+			
 			System.out.println("   " + row.get(row.size()-1));
-    
+			System.out.println("   ");
+
+			
+			float globalDistance;
+//			for (int j = 1; j < row.size() -1; j++) {
+//				globalDistance = 0;
+//
+//				first = row.get(j).split(";", -1);
+//				second = row.get(j + 1).split(";", -1);
+//				
+//				for(int k = 1; k < first.length; k++) {
+//					
+//					if (!first[j].equals(second[k])) {
+						
+//						globalDistance++;
+						
+//					}
+//				}
+
+	//			System.out.println(row.get(j) + "   " + globalDistance / row.size());
+		//	}
+			System.out.println("   ");
+
+			System.out.println("   ");
+
+			
+			for(int i=1; i<row.size(); i++){
+				globalDistance =0;
+				
+				  for(int j=i + 1; j<row.size()-1; j++){
+					  first = row.get(j).split(";", -1);
+						second = row.get(j + 1).split(";", -1);
+						
+						for(int k = 1; k < first.length; k++) {
+							
+							if (!first[k].equals(second[k])) {
+								
+								globalDistance++;
+								
+							}
+						}
+				  	}
+				  
+					System.out.println(row.get(i) + "   " + globalDistance / row.size());
+
+			}
+			
 	        scanner.close();
 
 	
