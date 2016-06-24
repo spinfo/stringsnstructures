@@ -76,6 +76,7 @@ import modules.suffixTreeModuleWrapper.LabelDataMergeModule;
 import modules.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.transform.BurrowsWheelerTransformationModule;
 import modules.treeBuilder.AtomicRangeSuffixTrieBuilder;
+import modules.treeBuilder.CSV2GEXFModule;
 import modules.treeBuilder.ExtensibleTreeNode2GEXFModule;
 import modules.treeBuilder.TreeBalanceIndexModule;
 import modules.treeBuilder.TreeBuilder;
@@ -574,6 +575,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		MclModule mclModule = new MclModule(moduleNetwork, mclProperties);
 		mclProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, mclModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		mclModule.applyProperties();
+
+		// CSV2GEXF Module
+		Properties csv2GEXFModuleProperties = new Properties();
+		CSV2GEXFModule csv2GEXFModule = new CSV2GEXFModule(moduleNetwork, csv2GEXFModuleProperties);
+		csv2GEXFModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, csv2GEXFModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		csv2GEXFModule.applyProperties();
 		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -647,6 +654,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(bowTypeMatrixModule.getName(), bowTypeMatrixModule);
 		availableModules.put(burrowsWheelerTransformationModule.getName(), burrowsWheelerTransformationModule);
 		availableModules.put(mclModule.getName(), mclModule);
+		availableModules.put(csv2GEXFModule.getName(), csv2GEXFModule);
 	}
 	
 	/**

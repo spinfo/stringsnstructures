@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import common.StringUnescaper;
 import common.VectorCalculation;
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
@@ -24,14 +25,20 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 
 	// Property keys
 	private static final String PROPERTYKEY_INPUTFORMAT = "input format";
-	public static final String PROPERTYKEY_DELIMITER_INPUT_REGEX = "input delimiter regex";
+	private static final String PROPERTYKEY_OUTPUTFORMAT = "ouput format";
+	public static final String PROPERTYKEY_DELIMITER_INPUT_REGEX = "csv input delimiter regex";
+	public static final String PROPERTYKEY_DELIMITER_OUTPUT_STRING = "csv output delimiter";
+	public static final String PROPERTYKEY_ZEROVALUE = "csv empty value";
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "input";
 	private static final String ID_OUTPUT = "output";
 
 	private String inputFormat;
+	private String outputFormat;
 	private String inputdelimiter;
+	private String outputdelimiter;
+	private String emptyValue;
 
 	public MinkowskiDistanceMatrixModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 
@@ -47,12 +54,19 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_REGEX,
 				"Regular expression to use as segmentation delimiter for CSV input.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT_STRING,
+				"String to use as segmentation delimiter for CSV output (will be unescaped).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_INPUTFORMAT, "Format of input [json|csv].");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTFORMAT, "Format of output [json|csv].");
+		this.getPropertyDescriptions().put(PROPERTYKEY_ZEROVALUE, "String to insert as empty value into the output (only applicable to CSV output).");
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Minkowski Distance Matrix");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT_REGEX, "[\\,;]");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT_STRING, ";");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_INPUTFORMAT, "csv");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTFORMAT, "csv");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_ZEROVALUE, "0");
 
 		// Define I/O
 		/*
@@ -66,7 +80,7 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 				"CSV or JSON formatted two-dimensional matrix (Map&lt;String,Set&lt;Double&gt;&gt;).", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort(ID_OUTPUT,
-				"JSON formatted distance matrix output (Map&lt;String,Map&lt;String,Double&gt;&gt;).", this);
+				"CSV or JSON formatted distance matrix output (Map&lt;String,Map&lt;String,Double&gt;&gt;).", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 
 		// Add I/O ports to instance (don't forget...)
@@ -83,7 +97,7 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 		// Minkowski Distance matrix
-		Map<String, Map<String, Double>> minkowskiDistanceMatrix = new HashMap<String, Map<String, Double>>();
+		Map<String, Map<String, Double>> minkowskiDistanceMatrix = new TreeMap<String, Map<String, Double>>();
 
 		Map<String, List<Double>> aberrationValuesMap = null;
 		
@@ -161,12 +175,46 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 			}
 
 		}
+		
+		// Output
+		if (this.outputFormat.equals("json")) {
+			// Prepare JSON output
+			String jsonOutput = gson.toJson(minkowskiDistanceMatrix);
 
-		// Prepare JSON output
-		String jsonOutput = gson.toJson(minkowskiDistanceMatrix);
-
-		// Write output
-		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(jsonOutput);
+			// Write output
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(jsonOutput);
+		} else if (this.outputFormat.equals("csv")) {
+			// Write CSV header line
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
+			Iterator<String> matrixFirstLevelKeys = minkowskiDistanceMatrix.keySet().iterator();
+			while (matrixFirstLevelKeys.hasNext()){
+				String matrixFirstLevelKey = matrixFirstLevelKeys.next();
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(matrixFirstLevelKey+this.outputdelimiter);
+			}
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
+			
+			// Write data lines
+			matrixFirstLevelKeys = minkowskiDistanceMatrix.keySet().iterator();
+			while (matrixFirstLevelKeys.hasNext()){
+				String matrixFirstLevelKey = matrixFirstLevelKeys.next();
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(matrixFirstLevelKey+this.outputdelimiter);
+				Iterator<String> matrixSecondLevelKeys = minkowskiDistanceMatrix.keySet().iterator();
+				while (matrixSecondLevelKeys.hasNext()){
+					String matrixSecondLevelKey = matrixSecondLevelKeys.next();
+					Double value = minkowskiDistanceMatrix.get(matrixFirstLevelKey).get(matrixSecondLevelKey);
+					if (value == null)
+						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.emptyValue+this.outputdelimiter);
+					else
+						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(value+this.outputdelimiter);
+				}
+			}
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
+			
+			
+		} else {
+			throw new Exception("Unknown output format specified: '"+this.outputFormat+"'. Valid values are 'csv' or 'json'.");
+		}
+		
 
 		// Close output port
 		this.closeAllOutputs();
@@ -182,8 +230,14 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 
 		this.inputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_INPUT_REGEX,
 				this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT_REGEX));
+		this.outputdelimiter = StringUnescaper.unescape_perl_string(this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT_STRING,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT_STRING)));
+		this.emptyValue = this.getProperties().getProperty(PROPERTYKEY_ZEROVALUE,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_ZEROVALUE));
 		this.inputFormat = this.getProperties().getProperty(PROPERTYKEY_INPUTFORMAT,
 				this.getPropertyDefaultValues().get(PROPERTYKEY_INPUTFORMAT));
+		this.outputFormat = this.getProperties().getProperty(PROPERTYKEY_OUTPUTFORMAT,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_OUTPUTFORMAT));
 
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
