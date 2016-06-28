@@ -69,7 +69,7 @@ public class FileReaderModule extends ModuleImpl {
 		this.setDescription("Reads contents from a file. Can handle GZIP compression.");
 		
 		// Add module category
-		this.setCategory("I/O");
+
 	}
 
 	@Override

@@ -38,7 +38,7 @@ public class KwipBowMatrixModule extends ModuleImpl {
 		this.setDescription("Constructs a matrix from Kwip and BoW results.");
 		
 		// Add module category
-		//this.setCategory("");
+
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_OMITZEROVALUES, "Omit zero values in output [true/false]");

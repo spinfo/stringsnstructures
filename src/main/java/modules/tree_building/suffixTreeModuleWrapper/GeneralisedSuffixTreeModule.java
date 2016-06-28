@@ -82,7 +82,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		this.setDescription(MODULE_DESCRIPTION);
 
 		// Add module category
-		this.setCategory("Tree-building");
+
 
 		// Setup I/O, reads from char input produced by KWIP.
 		InputPort inputTextPort = new InputPort(INPUT_TEXT_ID, INPUT_TEXT_DESC, this);

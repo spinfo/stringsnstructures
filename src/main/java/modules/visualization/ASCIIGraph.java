@@ -69,7 +69,7 @@ public class ASCIIGraph extends ModuleImpl {
 		// Add module description
 		this.setDescription("Creates ASCII output with a visual representation of the node distribution within the input graph.");
 		// Add module category
-		this.setCategory("Visualisation");
+
 
 	}
 

@@ -38,7 +38,7 @@ public class MatrixColumnSumModule extends ModuleImpl {
 		this.setDescription("Calculates the sum of all numerical values for each column of a given matrix. Outputs a linebreak-separated list of name-sum-pairs (in the same order as the columns were).");
 		
 		// Add module category
-		this.setCategory("Matrix");
+
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_REGEX, "Regular expression to use as segmentation delimiter for CSV input.");

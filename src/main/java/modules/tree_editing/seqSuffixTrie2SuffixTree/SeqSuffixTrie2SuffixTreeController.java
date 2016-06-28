@@ -69,7 +69,7 @@ public class SeqSuffixTrie2SuffixTreeController extends ModuleImpl {
 		// Add module description
 		this.setDescription("Reduces a suffix trie to a suffix tree.");
 		// Add module category
-		this.setCategory("Tree-building");
+
 		
 	}
 	//end constructors

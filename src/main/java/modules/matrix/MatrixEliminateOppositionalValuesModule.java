@@ -46,7 +46,7 @@ public class MatrixEliminateOppositionalValuesModule extends ModuleImpl {
 				"Eliminates matrix values that stand in opposition based on the specified column sums (columns with larger sums are given precedence over those with smaller ones).");
 
 		// Add module category
-		this.setCategory("Matrix");
+
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_REGEX,

@@ -91,7 +91,7 @@ public class SuffixTreeVectorizationWrapperController extends ModuleImpl {
 				+ "which is serialized in JSON format.");
 		
 		// Add module category
-		this.setCategory("Vectorization");
+
 		
 		// property descriptions 
 		this.getPropertyDescriptions().put(PROPERTYKEY_VECTYPE, "The feature type of the vector. Possible inputs:"

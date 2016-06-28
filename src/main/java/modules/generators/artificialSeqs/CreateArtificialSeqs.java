@@ -45,8 +45,6 @@ public class CreateArtificialSeqs extends modules.ModuleImpl {
 		
 		// Add module description
 		this.setDescription("Creates a randomly composed DNA sequences of defined length.");
-		// Add module category
-		this.setCategory("Generators");
 	}
 		
 	//end constructors 

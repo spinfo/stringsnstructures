@@ -118,7 +118,7 @@ public class SeqTreePropController extends ModuleImpl {
 				"\"false\": do not show tree frequencies");
 		
 		// Add module category.
-		this.setCategory("TreeStructure");
+
 				
 		// Add property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Sequence Tree Properties");

@@ -35,9 +35,6 @@ public class RegExReplacementModule extends ModuleImpl {
 		
 		// Add description
 		this.setDescription("Regular expression text replacement module. Can use escape characters (e.g. '\\n') and backreferences (marked with '$', e.g. '$1').");
-		
-		// Add module category
-		this.setCategory("Basic text processing");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_REGEX, "Regular expression to search for");

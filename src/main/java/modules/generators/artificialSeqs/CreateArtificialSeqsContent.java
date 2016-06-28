@@ -43,8 +43,6 @@ public class CreateArtificialSeqsContent extends modules.ModuleImpl {
 		
 		// Add module description
 		this.setDescription("Creates a randomly composed DNA sequences of defined length. Allows for specification of the amount of Letters 'C' and 'G', in the form of a decimal probability.");
-		// Add module category
-		this.setCategory("Generators");
 	}
 		
 	//end constructors 

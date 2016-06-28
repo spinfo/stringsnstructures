@@ -37,8 +37,8 @@ public class ExampleModule extends ModuleImpl {
 		// Add module description
 		this.setDescription("<p>Segments two inputs and entwines them.</p><p>Among other things, you can use it<br/><ul><li>as a template to base your own modules on,</li><li>to review basic practices, like I/O,</li><li>and to get an overview of the standard implementations needed.</li></ul></p>");
 		
-		// Add module category
-		this.setCategory("Examples");
+		// You can override the automatic category selection (for example if a module is to be shown in "deprecated")
+		//this.setCategory("Examples");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_A, "Regular expression to use as segmentation delimiter for input A");

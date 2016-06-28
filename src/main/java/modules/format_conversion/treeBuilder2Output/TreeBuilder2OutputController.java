@@ -71,8 +71,6 @@ public class TreeBuilder2OutputController extends ModuleImpl {
 		// Add module description
 		this.setDescription("This module converts the treeBuilder output so that it can be read buy other" 
 				+ "downstream modules such as seqNewickExporter");
-		// Add module category
-		this.setCategory("Format conversion");
 	}
 	//end constructors
 	

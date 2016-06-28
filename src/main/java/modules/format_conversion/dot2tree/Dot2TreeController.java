@@ -113,9 +113,6 @@ public class Dot2TreeController extends ModuleImpl {
 		// Initialize module specific fields.
 		this.dot2TreeNodesMap = new TreeMap <Integer, Dot2TreeNodes>();
 		this.gstXmlNodes = new TreeMap <Integer, GSTXmlNode>();
-		
-		// Add module category
-		this.setCategory("Format conversion");
 				
 		// Property defaults.
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Dot2GST converter");

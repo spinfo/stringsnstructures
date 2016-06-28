@@ -1,4 +1,4 @@
-package vectorization;
+package modules.vectorization;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,7 +33,7 @@ public class VectorMedianCalculatorModule extends ModuleImpl {
 		this.setDescription("Calculates median of elements within the input vectors.");
 
 		// Add module category
-		this.setCategory("Vectorization");
+
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Vector Median Calculator");

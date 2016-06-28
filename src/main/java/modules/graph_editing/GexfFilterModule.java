@@ -54,9 +54,6 @@ public class GexfFilterModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINTOKENAMOUNT,
 				"Minimum amount of tokens a type must have to be kept in the graph.");
 
-		// Add module category
-		this.setCategory("Clustering");
-
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "GEXF Filter");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MINSIMILARITY, "0.1");

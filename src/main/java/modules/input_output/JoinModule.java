@@ -20,7 +20,7 @@ public class JoinModule extends ModuleImpl {
 
 		// add neccessary module descriptions
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Join Module");
-		this.setCategory("I/O");
+
 		this.setDescription("Module to join the character output of two modules.");
 
 		// add input and output ports

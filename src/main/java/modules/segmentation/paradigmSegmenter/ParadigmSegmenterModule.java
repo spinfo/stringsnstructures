@@ -118,7 +118,7 @@ public class ParadigmSegmenterModule extends ModuleImpl {
 				+ "<br/>Available at http://link.springer.com/article/10.1007/PL00009177</p>");
 
 		// Add module category
-		this.setCategory("Segmentation");
+
 	}
 
 	@Override

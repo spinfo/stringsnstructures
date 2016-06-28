@@ -13,9 +13,9 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,6 +45,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import common.PrettyLogRecord;
+import common.parallelization.CallbackReceiverImpl;
 import modules.InputPort;
 import modules.Module;
 import modules.ModuleNetwork;
@@ -52,9 +54,6 @@ import modules.NotFoundException;
 import modules.NotSupportedException;
 import modules.OccupiedException;
 import modules.OutputPort;
-
-import common.PrettyLogRecord;
-import common.parallelization.CallbackReceiverImpl;
 
 /**
  * Provides a GUI to create/edit/run module trees.
@@ -178,9 +177,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		moduleTemplateTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		
 		// Map to keep track of created category label nodes (we only allow one level of categories within the module tree)
-		Map<String,DefaultMutableTreeNode> categoryLabelMap = new HashMap<String,DefaultMutableTreeNode>();
+		Map<String,DefaultMutableTreeNode> categoryLabelMap = new TreeMap<String,DefaultMutableTreeNode>();
 		
-		// Loop over the controller's available modules list
+		// Loop over the controller's available modules list to determine existing categories
 		Iterator<Module> moduleTemplateIterator = this.controller.getAvailableModules().values().iterator();
 		while(moduleTemplateIterator.hasNext()){
 			
@@ -189,18 +188,29 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			String categoryName = module.getCategory();
 			
 			// Create category node to attach the module to
-			DefaultMutableTreeNode categoryNode = moduleTemplateTreeRootNode;
-			if (categoryName != null)
-				if (categoryLabelMap.containsKey(categoryName)){
-					categoryNode = categoryLabelMap.get(categoryName);
-				} else {
-					categoryNode = new DefaultMutableTreeNode(categoryName);
-					moduleTemplateTreeModel.insertNodeInto(categoryNode, moduleTemplateTreeRootNode, 0);
-					categoryLabelMap.put(categoryName, categoryNode);
-				}
+			if (categoryName != null && !categoryLabelMap.containsKey(categoryName)) {
+				DefaultMutableTreeNode categoryNode = new DefaultMutableTreeNode(categoryName);
+				categoryLabelMap.put(categoryName, categoryNode);
+			}
+		}
+		
+		// Create tree nodes for categories
+		Iterator<String> categoryLabels = categoryLabelMap.keySet().iterator();
+		while (categoryLabels.hasNext()){
+			String categoryLabel = categoryLabels.next();
+			moduleTemplateTreeModel.insertNodeInto(categoryLabelMap.get(categoryLabel), moduleTemplateTreeRootNode, moduleTemplateTreeRootNode.getChildCount());
+		}
+		
+		// Loop over the controller's available modules list a second time to insert modules into our tree in an orderly fashion
+		moduleTemplateIterator = this.controller.getAvailableModules().values().iterator();
+		while(moduleTemplateIterator.hasNext()){
+			
+			// Determine next module and its category
+			Module module = moduleTemplateIterator.next();
+			String categoryName = module.getCategory();
 			
 			// Attach module to category node
-			moduleTemplateTreeModel.insertNodeInto(new DefaultMutableTreeNode(module), categoryNode, categoryNode.getChildCount());
+			moduleTemplateTreeModel.insertNodeInto(new DefaultMutableTreeNode(module), categoryLabelMap.get(categoryName), categoryLabelMap.get(categoryName).getChildCount());
 		}
 		
 		// Expand the first level of the module template tree

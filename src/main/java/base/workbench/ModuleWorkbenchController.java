@@ -85,11 +85,11 @@ import modules.tree_editing.seqNewick.SeqQueryController;
 import modules.tree_editing.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
 import modules.tree_properties.seqTreeProperties.SeqTreePropController;
 import modules.tree_properties.treeIndexes.TreeIndexController;
+import modules.vectorization.VectorAberrationCalculatorModule;
+import modules.vectorization.VectorMedianCalculatorModule;
 import modules.vectorization.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.visualization.ASCIIGraph;
 import modules.visualization.ColourGraph;
-import vectorization.VectorAberrationCalculatorModule;
-import vectorization.VectorMedianCalculatorModule;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	

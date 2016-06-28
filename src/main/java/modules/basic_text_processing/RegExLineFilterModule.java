@@ -30,7 +30,6 @@ public class RegExLineFilterModule extends ModuleImpl {
 		// the module's name, description and category
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "RegEx Line Filter Module");
 		this.setDescription("Filters input lines by the provided regex into matching and non-matching lines.");
-		this.setCategory("Basic text processing");
 
 		// description and default value for the regular expression
 		this.getPropertyDescriptions().put(PROPERTYKEY_REGEX, "Regular expression to search for");

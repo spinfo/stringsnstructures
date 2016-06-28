@@ -65,7 +65,7 @@ public class SeqQueryController extends ModuleImpl {
 				+ "\"false\" = by node occurence");
 		
 		// Add module category
-		this.setCategory("TreeQuery");
+
 		
 		// Add property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "SeqQuery");

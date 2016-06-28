@@ -41,7 +41,7 @@ public class FileFinderModule extends ModuleImpl {
 		this.setDescription("Searches for files with the specified suffix beneath the specified path(s) and outputs their locations in a JSON-encoded file list.");
 		
 		// Add module category
-		this.setCategory("I/O");
+
 		
 		// Define I/O
 		OutputPort outputPort = new OutputPort(OUTPUTID, "JSON-encoded list of source file locations.", this);

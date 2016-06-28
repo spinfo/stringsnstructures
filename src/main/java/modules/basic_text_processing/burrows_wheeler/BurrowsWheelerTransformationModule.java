@@ -42,9 +42,6 @@ public class BurrowsWheelerTransformationModule extends ModuleImpl {
 		this.setDescription(
 				"Performs the Burrows-Wheeler Transformation (see https://en.wikipedia.org/wiki/Burrows-Wheeler_transform)");
 
-		// Add module category
-		this.setCategory("Basic text processing");
-
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_REGEX,
 				"Regular expression to use as string delimiter.");

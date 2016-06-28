@@ -42,9 +42,6 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		
 		// Add module description
 		this.setDescription("Creates a type-type matrix from Bag of Words data.");
-		
-		// Add module category
-		this.setCategory("Matrix");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT, "String to insert as CSV delimiter (only applicable to CSV output).");

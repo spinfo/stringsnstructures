@@ -86,7 +86,7 @@ public class SmbFileWriterModule extends ModuleImpl {
 		this.setDescription("Writes received input to a SMB/CIFS share. Can apply GZIP compression.");
 		
 		// Add module category
-		this.setCategory("I/O");
+
 	}
 
 	@Override

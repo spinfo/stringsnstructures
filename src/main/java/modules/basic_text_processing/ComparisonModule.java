@@ -45,9 +45,6 @@ public class ComparisonModule extends ModuleImpl {
 	public ComparisonModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		// Call parent constructor
 		super(callbackReceiver, properties);
-
-		// Add module category
-		this.setCategory("Basic text processing");
 		
 		// Set the modules name and description
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, MODULE_NAME);

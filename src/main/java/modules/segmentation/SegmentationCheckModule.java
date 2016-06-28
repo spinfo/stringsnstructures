@@ -45,7 +45,7 @@ public class SegmentationCheckModule extends ModuleImpl {
 		// set module name and description
 		this.setName("Segmentatation Check Module");
 		this.setDescription(MODULE_DESC);
-		this.setCategory("Segmentation");
+
 
 		// setup i/o
 		InputPort in = new InputPort(INPUT_ID, INPUT_DESC, this);

@@ -48,9 +48,6 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 		// Add module description
 		this.setDescription("Calculates the minkowski distances for the specified Map of Sets.");
 
-		// Add module category
-		this.setCategory("Clustering");
-
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_REGEX,
 				"Regular expression to use as segmentation delimiter for CSV input.");

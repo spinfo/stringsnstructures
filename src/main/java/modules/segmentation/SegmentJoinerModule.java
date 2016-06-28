@@ -52,7 +52,7 @@ public class SegmentJoinerModule extends ModuleImpl {
 		this.setDescription("Takes a segmented string as input and outputs every possible combination of it with two neighbouring segments being joined.");
 		
 		// Add module category
-		this.setCategory("Segmentation");
+
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_SEGMENT, "Regular expression to use as segmentation delimiter for the segments of the string.");

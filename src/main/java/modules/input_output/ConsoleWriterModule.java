@@ -30,7 +30,7 @@ public class ConsoleWriterModule extends ModuleImpl {
 		this.setDescription("Writes char output to console.");
 		
 		// Add module category
-		this.setCategory("I/O");
+
 
 		// Define I/O Ports
 		InputPort inputPort = new InputPort(INPUTID,

@@ -32,6 +32,14 @@ public abstract class ModuleImpl implements Module {
 		this.callbackReceiver = callbackReceiver;
 		this.setProperties(properties);
 		this.setStatusDetail(null);
+		
+		// Determine default category from package name. Relies on a specific package hierarchy.
+		try {
+			this.category = this.getClass().getCanonicalName().split("\\.")[1].replaceAll("_", " ");
+		} catch (Exception e){
+			this.category = "uncategorized";
+		}
+		
 		this.getPropertyDescriptions().put(PROPERTYKEY_NAME,
 				"The module instance's name");
 		// Add default values

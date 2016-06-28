@@ -52,8 +52,8 @@ public class ExampleRandString extends modules.ModuleImpl {
 		//Add module description
 		this.setDescription("Creates a random string of defined length.");
 		
-		//Add module category
-		this.setCategory("Examples");
+		// You can override the automatic category selection (for example if a module is to be shown in "deprecated")
+		//this.setCategory("Examples");
 	} 
 	
 	//Add methods:

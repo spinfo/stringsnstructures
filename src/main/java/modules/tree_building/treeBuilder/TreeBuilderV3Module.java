@@ -69,7 +69,7 @@ public class TreeBuilderV3Module extends ModuleImpl {
 				+ "</ol>");
 
 		// Add module category
-		this.setCategory("Tree-building");
+
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions()

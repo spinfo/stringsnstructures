@@ -89,9 +89,6 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 		+ "It takes one input:<br/>"
 		+ "<ul type =\"disc\" ><li>vectors of the type \"SuffixTreeInfo\" in JSON format</li></ul>");
 	
-	// Add module category
-	this.setCategory("Clustering");
-	
 	// property descriptions 
 	this.getPropertyDescriptions().put(PROPERTYKEY_CLUST, "Three possible clustering types: \"NJ\" "
 		+ "(Neighbor Joining), \"KM\" (flat k-means), \"HAC\" (hierachial agglomerative clustering)");

@@ -30,9 +30,6 @@ public class CaseChangerModule extends ModuleImpl {
 		
 		// Add module description
 		this.setDescription("Changes the input to uppercase or lowercase.");
-		
-		// Add module category
-		this.setCategory("Basic text processing");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_CASE, "Case to change the input to. Accepted values are 'lower[case]' or 'upper[case]'.");

@@ -76,9 +76,6 @@ public class TreeSimilarityClusteringModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_MAXCOMPARISONDEPTH, "Maximum depth of the individual tree branches that will be used for comparison (-1 for no max.).");
 		this.getPropertyDescriptions().put(PROPERTYKEY_PROGRESSWATCHERINTERVAL, "Interval (in milliseconds) that the module will give out details about the progress in. It will also calculate an estimated time remaining, so larger values may yield more precise information. Default is 10 seconds (10000 ms); minimum is 250 ms.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINTOKENAMOUNT, "Minimum amount of tokens a type must have to enter comparison.");
-		
-		// Add module category
-		this.setCategory("Clustering");
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Tree Similarity Clustering");

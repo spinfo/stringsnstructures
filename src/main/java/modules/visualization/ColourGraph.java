@@ -117,7 +117,7 @@ public class ColourGraph extends ModuleImpl {
 		// Add module description
 		this.setDescription("Creates an image file a with visual representation of the node distribution within the input graph.");
 		// Add module category
-		this.setCategory("Visualisation");
+
 
 	}
 

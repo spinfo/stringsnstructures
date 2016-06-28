@@ -1,4 +1,4 @@
-package vectorization;
+package modules.vectorization;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,7 +42,7 @@ public class VectorAberrationCalculatorModule extends ModuleImpl {
 		this.setDescription("Calculates aberration for elements within the input vectors, optionally re-sorting them afterwards.");
 
 		// Add module category
-		this.setCategory("Vectorization");
+
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_EXPONENT, "Exponent for aberration amplification [double]; Aberration is taken times 2^E. Takes effect if value is above zero.");

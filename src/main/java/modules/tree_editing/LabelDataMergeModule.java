@@ -62,7 +62,7 @@ public class LabelDataMergeModule extends modules.ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BLANK_TRIM, "FOLLOWING");
 
 		// Add module category
-		this.setCategory("Tree-building");
+
 
 		// setup input and output ports
 		InputPort inputLabelsPort = new InputPort(INPUT_LABELS_ID, INPUT_LABELS_DESC, this);

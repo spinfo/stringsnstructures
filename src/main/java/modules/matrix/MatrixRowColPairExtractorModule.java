@@ -42,7 +42,7 @@ public class MatrixRowColPairExtractorModule extends ModuleImpl {
 				"Lets you specify a regex and extracts every row/column combination that has a matching value.");
 
 		// Add module category
-		this.setCategory("Matrix");
+
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT_REGEX,

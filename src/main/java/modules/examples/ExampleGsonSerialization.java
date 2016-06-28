@@ -53,8 +53,8 @@ public class ExampleGsonSerialization extends ModuleImpl {
 		//Add module description
 		this.setDescription("Example Module: Serializing a plain test string.<br/> Output is JSON format.");
 		
-		//Add module category
-		this.setCategory("Examples");
+		// You can override the automatic category selection (for example if a module is to be shown in "deprecated")
+		//this.setCategory("Examples");
 	}
 	
 	//Add methods:
