@@ -3,10 +3,15 @@ package base.workbench;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.Constructor;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -792,6 +797,62 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		
         // Write log message
         Logger.getLogger("").log(Level.INFO, "Successfully saved the module tree into the file "+file.getPath());
+	}
+	
+	/**
+	 * Updates the specified EXP file, searching invalid module classes and replacing them with valid ones (if possible). 
+	 * @param input Input file
+	 * @param output Output file
+	 * @throws IOException Thrown on I/O error
+	 */
+	public void updateExpFile(File input, File output) throws IOException{
+		byte[] encoded = Files.readAllBytes(input.toPath());
+		String outString = this.updateExpDefinition(new String(encoded));
+		Files.write(output.toPath(), outString.getBytes(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+	}
+	
+	/**
+	 * Updates the specified JSON string, searching invalid module classes and replacing them with valid ones (if possible). 
+	 * @param jsonString JSON string
+	 * @return updated JSON string
+	 */
+	public String updateExpDefinition(String jsonString){
+		StringBuffer returnBuffer = new StringBuffer();
+		
+		Scanner lineScanner = new Scanner(new StringReader(jsonString));
+		lineScanner.useDelimiter("\\R+");
+		while(lineScanner.hasNext()){
+			String line = lineScanner.next();
+			if (line.matches("^[\\s]+\\\"moduleCanonicalClassName\\\"\\:.*$")){
+				// Determine whether module class is valid
+				String className = line.substring(line.indexOf("\"", line.indexOf(":"))+1, line.lastIndexOf('"'));
+				try {
+					Class.forName(className);
+				} catch (ClassNotFoundException e){
+					// Search for replacement class
+					Class<?> moduleClass = null;
+					Iterator<Module> modules = this.availableModules.values().iterator();
+					while (modules.hasNext()){
+						Module module = modules.next();
+						if (module.getClass().getSimpleName().equals(className.substring(className.lastIndexOf('.')+1))){
+							moduleClass = module.getClass();
+							break;
+						}
+					}
+					
+					if (moduleClass != null){
+						Logger.getLogger("").log(Level.INFO, "The module class '"+className+"' will be replaced by '"+moduleClass.getCanonicalName()+"'.");
+						line = line.replace(className, moduleClass.getCanonicalName());
+					} else {
+						Logger.getLogger("").log(Level.WARNING, "The module class '"+className+"' is missing and a substitute could not be found.");
+					}
+				}
+			}
+			returnBuffer.append(line+"\n");
+		}
+		lineScanner.close();
+		
+		return returnBuffer.toString();
 	}
 
 }

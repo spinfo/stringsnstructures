@@ -22,6 +22,7 @@ public class ModuleBatchRunner {
 		// Define command line options
 		Options options = new Options();
 		options.addOption("c", "config", true, "Module tree configuration file");
+		options.addOption("u", "update", true, "Update module tree configuration file and write it to the specified location");
 		options.addOption("h", "help", false, "Show help and exit");
 		
 		// Instantiate parser for CLI options
@@ -51,6 +52,12 @@ public class ModuleBatchRunner {
 			System.exit(1);
 		}
 		
+		// Update?
+		String updatedFilePath = null;
+		if(commandLine.hasOption("u")) {
+			updatedFilePath = commandLine.getOptionValue("u");
+		}
+		
 		/*
 		 *  All options are read, now to create a controller and reconstruct the module tree from the config file
 		 */
@@ -62,6 +69,18 @@ public class ModuleBatchRunner {
 		} catch (Exception e) {
 			Logger.getLogger("").log(Level.SEVERE, "Could not instantiate a new module workbench controller.", e);
 			System.exit(1);
+		}
+		
+		if (updatedFilePath != null && !updatedFilePath.isEmpty()){
+			Logger.getLogger("").log(Level.INFO, "Updating exp file '"+configFilePath+"'.");
+			try {
+				controller.updateExpFile(new File(configFilePath), new File(updatedFilePath));
+				Logger.getLogger("").log(Level.INFO, "Update successful.");
+			} catch (Exception e){
+				Logger.getLogger("").log(Level.SEVERE, "An error has occurred.", e);
+				System.exit(1);
+			}
+			System.exit(0);
 		}
 		
 		// Load module tree config file
