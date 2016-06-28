@@ -9,10 +9,10 @@ import modules.ModuleImpl;
 import modules.ModuleNetwork;
 import modules.ModuleNetworkGsonSerializer;
 import modules.ModuleTreeGsonDeserializer;
-import modules.basemodules.ConsoleWriterModule;
-import modules.basemodules.FileFinderModule;
-import modules.basemodules.FileWriterModule;
-import modules.oanc.OANCXMLParser;
+import modules.input_output.ConsoleWriterModule;
+import modules.input_output.FileFinderModule;
+import modules.input_output.FileWriterModule;
+import modules.parser.oanc.OANCXMLParser;
 
 import org.junit.Test;
 

@@ -11,12 +11,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import modules.suffixTreeClustering.data.Token;
-import modules.suffixTreeClustering.data.Type;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import modules.tree_building.suffixTreeClustering.data.Token;
+import modules.tree_building.suffixTreeClustering.data.Type;
 
 public class KwipXmlStreamReader extends DefaultHandler {
 	

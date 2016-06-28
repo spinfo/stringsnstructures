@@ -10,12 +10,12 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import modules.suffixTree.AbstractResultNodeStackListener;
-import modules.suffixTree.BaseSuffixTree;
-import modules.suffixTree.GST;
-import modules.suffixTree.Node;
-import modules.suffixTree.NodePosition;
-import modules.suffixTree.TreeWalker;
+import modules.tree_building.suffixTree.AbstractResultNodeStackListener;
+import modules.tree_building.suffixTree.BaseSuffixTree;
+import modules.tree_building.suffixTree.GST;
+import modules.tree_building.suffixTree.Node;
+import modules.tree_building.suffixTree.NodePosition;
+import modules.tree_building.suffixTree.TreeWalker;
 
 public class AbstractResultNodeStackListenerTest {
 

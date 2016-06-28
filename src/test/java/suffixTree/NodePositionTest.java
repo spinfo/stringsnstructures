@@ -8,8 +8,8 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
-import modules.suffixTree.NodePosition;
-import modules.suffixTree.NodePositionEnd;
+import modules.tree_building.suffixTree.NodePosition;
+import modules.tree_building.suffixTree.NodePositionEnd;
 
 public class NodePositionTest {
 

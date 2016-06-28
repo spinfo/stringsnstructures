@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import modules.suffixTree.SuffixTree;
+import modules.tree_building.suffixTree.SuffixTree;
 
 public class GstTest {
 

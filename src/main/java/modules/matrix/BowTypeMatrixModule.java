@@ -14,7 +14,7 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.bagOfWords.BagOfWordsHelper;
+import modules.bag_of_words.BagOfWordsHelper;
 
 public class BowTypeMatrixModule extends ModuleImpl {
 	

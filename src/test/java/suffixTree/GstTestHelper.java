@@ -16,10 +16,10 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import modules.suffixTree.BaseSuffixTree;
-import modules.suffixTree.GST;
-import modules.suffixTree.Node;
-import modules.suffixTree.SuffixTree;
+import modules.tree_building.suffixTree.BaseSuffixTree;
+import modules.tree_building.suffixTree.GST;
+import modules.tree_building.suffixTree.Node;
+import modules.tree_building.suffixTree.SuffixTree;
 
 /**
  * Helper class that provides static test methods related to the creation and
