@@ -207,8 +207,8 @@ public class MinkowskiDistanceMatrixModule extends ModuleImpl {
 					else
 						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(value+this.outputdelimiter);
 				}
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
 			}
-			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
 			
 			
 		} else {

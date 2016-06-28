@@ -123,7 +123,7 @@ public class CSV2GEXFModule extends ModuleImpl {
 		gexf.setVisualization(true);
 
 		Graph graph = gexf.getGraph();
-		graph.setDefaultEdgeType(EdgeType.DIRECTED).setMode(Mode.STATIC);
+		graph.setDefaultEdgeType(EdgeType.UNDIRECTED).setMode(Mode.STATIC);
 
 		AttributeList attrList = new AttributeListImpl(AttributeClass.NODE);
 		graph.getAttributeLists().add(attrList);
@@ -174,7 +174,7 @@ public class CSV2GEXFModule extends ModuleImpl {
 				
 				// Create edge between both nodes
 				Edge newEdge = rowNode.connectTo(""+edgeId, this.edgeDesignator, EdgeType.UNDIRECTED, colNode);
-				newEdge.getAttributeValues().addValue(attrList.get(i), value.toString());
+				newEdge.getAttributeValues().addValue(edgeWeight, value.toString());
 				edgeId++;
 			}
 		}
