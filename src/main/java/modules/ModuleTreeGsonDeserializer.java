@@ -86,7 +86,7 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 				
 			} catch (Exception e) {
 				Logger.getLogger("").log(Level.WARNING, "Error deserializing module tree object from JSON.", e);
-				e.printStackTrace();
+				throw new JsonParseException(e);
 			}
 		}
 		
