@@ -14,13 +14,8 @@ import it.uniroma1.dis.wsngroup.gexf4j.core.Gexf;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Graph;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Mode;
 import it.uniroma1.dis.wsngroup.gexf4j.core.Node;
-import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeClass;
-import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeList;
-import it.uniroma1.dis.wsngroup.gexf4j.core.data.AttributeType;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.GexfImpl;
 import it.uniroma1.dis.wsngroup.gexf4j.core.impl.StaxGraphWriter;
-import it.uniroma1.dis.wsngroup.gexf4j.core.impl.data.AttributeImpl;
-import it.uniroma1.dis.wsngroup.gexf4j.core.impl.data.AttributeListImpl;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
@@ -122,17 +117,17 @@ public class CSV2GEXFModule extends ModuleImpl {
 		Graph graph = gexf.getGraph();
 		graph.setDefaultEdgeType(EdgeType.UNDIRECTED).setMode(Mode.STATIC);
 
-		AttributeList attrList = new AttributeListImpl(AttributeClass.NODE);
-		graph.getAttributeLists().add(attrList);
+		//AttributeList attrList = new AttributeListImpl(AttributeClass.NODE);
+		//graph.getAttributeLists().add(attrList);
 
-		AttributeImpl edgeWeight = new AttributeImpl("0", AttributeType.DOUBLE, "edgeWeight");
-		attrList.add(0, edgeWeight);
+		//AttributeImpl edgeWeight = new AttributeImpl("0", AttributeType.DOUBLE, "edgeWeight");
+		//attrList.add(0, edgeWeight);
 		
 		/*
 		 *  Create nodes from header fields
 		 */
 		Map<String,Node> nodeMap = new TreeMap<String,Node>();
-		for (int i=0; i<headerFields.length; i++){
+		for (int i=1; i<headerFields.length; i++){
 			Node gexfNode = graph.createNode();
 			gexfNode.setLabel(headerFields[i]);
 			gexfNode.setSize(1);
@@ -161,7 +156,7 @@ public class CSV2GEXFModule extends ModuleImpl {
 				Node rowNode = nodeMap.get(lineTitle);
 				
 				// Determine column node
-				Node colNode = nodeMap.get(headerFields[i-1]);
+				Node colNode = nodeMap.get(headerFields[i]);
 				
 				// Determine numerical data value
 				Double value = 0d;
@@ -171,7 +166,8 @@ public class CSV2GEXFModule extends ModuleImpl {
 				
 				// Create edge between both nodes
 				Edge newEdge = rowNode.connectTo(""+edgeId, this.edgeDesignator, EdgeType.UNDIRECTED, colNode);
-				newEdge.getAttributeValues().addValue(edgeWeight, value.toString());
+				newEdge.setWeight(value.floatValue());
+				//newEdge.getAttributeValues().addValue(edgeWeight, value.toString());
 				edgeId++;
 			}
 		}
