@@ -1,7 +1,6 @@
 package base.workbench;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
@@ -753,11 +752,21 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	public ModuleNetwork loadModuleNetworkFromFile(File file, boolean replaceCurrent) throws Exception {
 				
 		// Read JSON representation of the current module tree from file
-		FileReader fileReader = new FileReader(file);
-		ModuleNetwork loadedModuleNetwork = this.jsonConverter.fromJson(fileReader, ModuleNetwork.class);
-				
-		// Close file writer
-		fileReader.close();
+		byte[] encoded = Files.readAllBytes(file.toPath());
+		String jsonString = new String(encoded);
+		ModuleNetwork loadedModuleNetwork = null;
+		try {
+			loadedModuleNetwork = this.jsonConverter.fromJson(jsonString, ModuleNetwork.class);
+		} catch (Exception e){
+			Logger.getLogger("").log(Level.WARNING, "The specified module network seems to be invalid/out-of-date -- trying autoupdate.", e);
+			try {
+				loadedModuleNetwork = this.jsonConverter.fromJson(this.updateExpDefinition(jsonString), ModuleNetwork.class);
+				Logger.getLogger("").log(Level.INFO, "Autoupdate successful -- please save the module network to make this change permanent.");
+			} catch (Exception e1){
+				Logger.getLogger("").log(Level.WARNING, "Autoupdate failed -- cannot load the specified module network.", e1);
+				throw e1;
+			}
+		}
 		
 		// Apply properties to modules
 		Iterator<Module> modules = loadedModuleNetwork.getModuleList().iterator();
