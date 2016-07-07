@@ -34,6 +34,7 @@ import modules.basic_text_processing.FilterModule;
 import modules.basic_text_processing.RegExLineFilterModule;
 import modules.basic_text_processing.RegExReplacementModule;
 import modules.basic_text_processing.ReverserModule;
+import modules.basic_text_processing.TextSorterModule;
 import modules.basic_text_processing.burrows_wheeler.BurrowsWheelerTransformationModule;
 import modules.clustering.minkowskiDistance.MinkowskiDistanceMatrixModule;
 import modules.clustering.suffixTreeClusteringModuleWrapper.SuffixTreeClusteringModuleWrapper;
@@ -576,6 +577,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		CSV2GEXFModule csv2GEXFModule = new CSV2GEXFModule(moduleNetwork, csv2GEXFModuleProperties);
 		csv2GEXFModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, csv2GEXFModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		csv2GEXFModule.applyProperties();
+
+		// textSorterModule
+		Properties textSorterModuleProperties = new Properties();
+		TextSorterModule textSorterModule = new TextSorterModule(moduleNetwork, textSorterModuleProperties);
+		textSorterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, textSorterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		textSorterModule.applyProperties();
 		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -649,6 +656,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(burrowsWheelerTransformationModule.getName(), burrowsWheelerTransformationModule);
 		availableModules.put(mclModule.getName(), mclModule);
 		availableModules.put(csv2GEXFModule.getName(), csv2GEXFModule);
+		availableModules.put(textSorterModule.getName(), textSorterModule);
 	}
 	
 	/**
