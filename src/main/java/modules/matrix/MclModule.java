@@ -37,9 +37,6 @@ public class MclModule extends ModuleImpl {
 		// Add module description
 		this.setDescription("Takes a matrix and runs a fixed number of iterations of markov clustering on it.");
 
-		// Add module category
-
-
 		// Add property descriptions (obligatory for every property!)
 		// TODO: Write proper descriptions
 		this.getPropertyDescriptions().put(PROPERTYKEY_ITERATIONS,
