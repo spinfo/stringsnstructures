@@ -197,5 +197,58 @@ public class GstTest {
 		// (type 2)
 		GstTestHelper.checkTypeContexts(tree, "a cc$", Arrays.asList(0, 2));
 	}
+	
+	@Test
+	public void testFindPattern() {
+		String input = "banana$New York$";
+		SuffixTree tree = GstTestHelper.buildAndCheckTree(input);
+
+		assertTrue(tree.findPattern("ba", tree.getRoot()));
+
+		assertTrue(tree.findPattern("banana$"));
+		assertTrue(tree.findPattern("banana"));
+		assertTrue(tree.findPattern("banan"));
+		assertTrue(tree.findPattern("bana"));
+		assertTrue(tree.findPattern("ban"));
+		assertTrue(tree.findPattern("ba"));
+		assertTrue(tree.findPattern("b"));
+		assertTrue(tree.findPattern("anana$"));
+		assertTrue(tree.findPattern("nana$"));
+		assertTrue(tree.findPattern("ana$"));
+		assertTrue(tree.findPattern("na$"));
+		assertTrue(tree.findPattern("a$"));
+		assertTrue(tree.findPattern("$"));
+		assertTrue(tree.findPattern("anana"));
+		assertTrue(tree.findPattern("nan"));
+		assertTrue(tree.findPattern("a"));
+		
+		assertTrue(tree.findPattern("New York$"));
+		assertTrue(tree.findPattern("New York"));
+		assertTrue(tree.findPattern("New Yor"));
+		assertTrue(tree.findPattern("New Yo"));
+		assertTrue(tree.findPattern("New Y"));
+		assertTrue(tree.findPattern("New "));
+		assertTrue(tree.findPattern("New"));
+		assertTrue(tree.findPattern("Ne"));
+		assertTrue(tree.findPattern("N"));
+		assertTrue(tree.findPattern("ew York$"));
+		assertTrue(tree.findPattern("w York$"));
+		assertTrue(tree.findPattern(" York$"));
+		assertTrue(tree.findPattern("York$"));
+		assertTrue(tree.findPattern("ork$"));
+		assertTrue(tree.findPattern("rk$"));
+		assertTrue(tree.findPattern("k$"));
+		assertTrue(tree.findPattern("ew York"));
+		assertTrue(tree.findPattern("w Yor"));
+		assertTrue(tree.findPattern(" Yo"));
+		assertTrue(tree.findPattern("Y"));
+		
+		assertFalse(tree.findPattern("bananas"));
+		assertFalse(tree.findPattern("New Yorks"));
+		assertFalse(tree.findPattern("bas"));
+		assertFalse(tree.findPattern("ananas"));
+		assertFalse(tree.findPattern("na$N"));
+		assertFalse(tree.findPattern("$N"));
+	}
 
 }

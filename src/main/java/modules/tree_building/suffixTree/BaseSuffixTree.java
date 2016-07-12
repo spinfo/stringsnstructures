@@ -244,9 +244,51 @@ public class BaseSuffixTree {
 		return i;
 	} // longestPath
 	
-	// TODO: implement, mostly like longestpath
-	boolean findPattern(String pattern, int node /*root*/){
-		return false;
+	// Checks if pattern is a path (maybe partial) in this tree, starting at the specified node.
+	public boolean findPattern(String pattern, int node /*root*/){
+		if (pattern == null || pattern.length() == 0) {
+			return false;
+		}
+
+		boolean result = true;
+		Integer current = node;
+
+		// variables for the edge string currently compared
+		int start = 0;
+		int length = 0;
+		int pos = 0;
+		if(current != root) {
+			start = nodes[current].getStart(0);
+			length = nodes[current].edgeLength(this);
+		}
+
+		for(int i = 0; i < pattern.length(); i++) {
+			// do we have to jump to the next node?
+			if (pos == length) {
+				current = nodes[current].getNext(pattern.charAt(i));
+				// no node found for the next char
+				if (current == null) {
+					result = false;
+					break;
+				}
+				start = nodes[current].getStart(0);
+				length = nodes[current].edgeLength(this);
+				pos = 0;
+			}
+			// actual comparison
+			if(pattern.charAt(i) != text[start + pos]) {
+				result = false;
+				break;
+			}
+			// chars matched, increase position on the edge and repeat
+			pos += 1;
+		}
+
+		return result;
+	}
+	
+	public boolean findPattern(String pattern) {
+		return findPattern(pattern, getRoot());
 	}
 	
 	// return the root nodes node nr

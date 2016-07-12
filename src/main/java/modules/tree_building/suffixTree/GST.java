@@ -98,6 +98,17 @@ public class GST {
 	    
 	}
 	
+
+	// Convenience method to build a GST for a String with the specified contexts. Multiple inputs should be separated by '$'. 
+	public static SuffixTree buildGST(String input, List<Integer> typeContextEndIndices) throws Exception {
+		return buildGST(new StringReader(input), typeContextEndIndices);
+	}
+	
+	// Convenience method to build a GST for a String. Multiple inputs should be separated by '$'. 
+	public static SuffixTree buildGST(String input) throws Exception {
+		return buildGST(new StringReader(input), null);
+	}
+	
 	private static void incrementTypeContexts(BaseSuffixTree st, List<Integer> typeContextEndIndices, int nrText) {
 		// if type context end indices are provided, they may never be empty at this step
 		if (typeContextEndIndices.isEmpty()) {
