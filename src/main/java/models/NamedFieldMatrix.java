@@ -284,7 +284,7 @@ public class NamedFieldMatrix {
 	 *            the name of the row
 	 * @return the row number or null if the rowName is not part of the table.
 	 */
-	public int getRowNo(String rowName) {
+	public Integer getRowNo(String rowName) {
 		return rowNamesToRows.get(rowName);
 	}
 
@@ -296,7 +296,7 @@ public class NamedFieldMatrix {
 	 * @return the column number or null if the columnName is not part of the
 	 *         table.
 	 */
-	public int getColumnNo(String columnName) {
+	public Integer getColumnNo(String columnName) {
 		return colNamesToCols.get(columnName);
 	}
 
