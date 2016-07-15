@@ -68,6 +68,7 @@ import modules.input_output.SmbFileReaderModule;
 import modules.input_output.SmbFileWriterModule;
 import modules.kwip.KeyWordInPhraseModule;
 import modules.kwip.KwipBowMatrixModule;
+import modules.lfgroups.LFGroupBuildingModule;
 import modules.matrix.BowTypeMatrixModule;
 import modules.matrix.MatrixBitwiseOperationModule;
 import modules.matrix.MatrixColumnSumModule;
@@ -584,6 +585,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		textSorterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, textSorterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		textSorterModule.applyProperties();
 		
+		// LFGroupBuilding Module
+		Properties lfgroupBuildingModuleProperties = new Properties();
+		LFGroupBuildingModule lfgroupBuildingModule = new LFGroupBuildingModule(moduleNetwork, lfgroupBuildingModuleProperties);
+		lfgroupBuildingModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, lfgroupBuildingModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		lfgroupBuildingModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -657,6 +664,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(mclModule.getName(), mclModule);
 		availableModules.put(csv2GEXFModule.getName(), csv2GEXFModule);
 		availableModules.put(textSorterModule.getName(), textSorterModule);
+		availableModules.put(lfgroupBuildingModule.getName(), lfgroupBuildingModule);
 	}
 	
 	/**
