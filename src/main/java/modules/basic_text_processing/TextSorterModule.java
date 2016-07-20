@@ -3,6 +3,7 @@ package modules.basic_text_processing;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -23,6 +24,7 @@ public class TextSorterModule extends ModuleImpl {
 	public static final String PROPERTYKEY_OUTPUT_DELIMITER = "output delimiter";
 	public static final String PROPERTYKEY_SORT_ORDER = "order";
 	public static final String PROPERTYKEY_SORT_BY = "sort by";
+	public static final String PROPERTYKEY_UNIQUE = "unique";
 
 	// Identifiers for inputs and outputs
 	public static final String INPUT = "input";
@@ -33,6 +35,7 @@ public class TextSorterModule extends ModuleImpl {
 	private String outputDelimiter = null;
 	private boolean ascendingOrder = false;
 	private String sortBy = null;
+	private boolean unique = false;
 
 	public TextSorterModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
@@ -50,6 +53,8 @@ public class TextSorterModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_SORT_ORDER, "ascending");
 		this.getPropertyDescriptions().put(PROPERTYKEY_SORT_BY, "Attribute to sort elementy by [alphabet|length].");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_SORT_BY, "length");
+		this.getPropertyDescriptions().put(PROPERTYKEY_UNIQUE, "Whether to exclude duplicate segments from the list.");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_UNIQUE, "false");
 
 		// setup I/O
 		InputPort input = new InputPort(INPUT, "[text/plain] Input text to sort.", this);
@@ -92,8 +97,16 @@ public class TextSorterModule extends ModuleImpl {
 		// Sort list
 		segmentList.sort(comparator);
 		
+		// Output iterator is taken from a set for unique values or from the normal list otherwise
+		Iterator<String> segments;
+		if (this.unique) {
+			// use a linked hash set to preserve order
+			segments = new LinkedHashSet<String>(segmentList).iterator();
+		} else {
+			segments = segmentList.iterator();
+		}
+		
 		// Output list elements
-		Iterator<String> segments = segmentList.iterator();
 		while (segments.hasNext())
 			this.getOutputPorts().get(OUTPUT).outputToAllCharPipes(segments.next()+this.outputDelimiter);
 		
@@ -121,6 +134,9 @@ public class TextSorterModule extends ModuleImpl {
 		
 		this.sortBy = this.getProperties().getProperty(PROPERTYKEY_SORT_BY,
 				this.getPropertyDefaultValues().get(PROPERTYKEY_SORT_BY));
+		
+		propertyValue = this.getProperties().getProperty(PROPERTYKEY_UNIQUE);
+		this.unique = Boolean.parseBoolean(propertyValue);
 
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
