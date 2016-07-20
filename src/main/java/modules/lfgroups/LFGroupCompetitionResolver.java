@@ -1,13 +1,15 @@
 package modules.lfgroups;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+
+import com.google.common.collect.Sets;
 
 /**
  * This is a class with purely static methods. It contains all steps necessary
@@ -25,29 +27,35 @@ final class LFGroupCompetitionResolver {
 
 	// TODO: Name should reflect that this is an attempt or should return
 	// boolean indicating success or failure
-	// TODO: Should not be in this class itself.
 	static void resolveCompetition(LFGroup integrating, LFGroup integrated) {
 		// condition 1: All of the integrating group's lexicals must be the
 		// starts of some lexicals of the integrated group
 		Map<String, Set<String>> matchingLexicalsWithEnds = new TreeMap<>();
+		Set<String> commonEnds = null;
 		for (String lexical : integrating.lexicals) {
 			Set<String> matchingLexicalEnds = integrated.getLexicalEndsBeginningWith(lexical);
 			if (!matchingLexicalEnds.isEmpty()) {
 				matchingLexicalsWithEnds.put(lexical, matchingLexicalEnds);
+				if (commonEnds == null) {
+					commonEnds = matchingLexicalEnds;
+				} else {
+					commonEnds = Sets.intersection(commonEnds, matchingLexicalEnds);
+				}
 			}
 		}
-		if (matchingLexicalsWithEnds.keySet().isEmpty()
-				|| !matchingLexicalsWithEnds.keySet().equals(integrating.lexicals)) {
-			// TODO: Should not happen. Delete messages after testing?
-			if (!matchingLexicalsWithEnds.isEmpty()) {
-				// TODO: Turn to warning again?
-				LOGGER.warning("Matching lexical begins without possibility to integrate. Some info:");
-				LOGGER.warning("Lexicals: " + matchingLexicalsWithEnds);
-				LOGGER.warning("Should equal integrating: " + integrating.lexicals);
-
-				// throw new IllegalStateException("Matching lexicalal begins
-				// without possibility to integrate.");
-			}
+		if (matchingLexicalsWithEnds.keySet().isEmpty() || commonEnds.isEmpty()) {
+			return;
+		}
+		
+		if (!matchingLexicalsWithEnds.keySet().equals(integrating.lexicals)) {
+			// At this point the groups clearly bear some resemblance due to
+			// the matching lexicals, but integration is not possible,
+			// because some information would be lost.
+			// However some different treatment of groups could be possible
+			// at this stage.
+			// TODO: Take a second look. What could be done with such
+			// groups?
+			 LOGGER.warning("Matching lexical begins without possibility to integrate.");
 			return;
 		}
 
@@ -68,30 +76,32 @@ final class LFGroupCompetitionResolver {
 			return;
 		}
 
-		Set<String> lexicalBegins = matchingLexicalsWithEnds.keySet();
-		System.out.println("Integrating by: " + matchingLexicalsWithEnds + " with: " + matchingFunctionals);
-		for (String lexicalBegin : lexicalBegins) {
-			Set<String> lexicalEnds = matchingLexicalsWithEnds.get(lexicalBegin);
+		// If the conditions above are met, the integration can begin
+		LOGGER.info("Integrating by: " + matchingLexicalsWithEnds + " with: " + matchingFunctionals);
+
+		// The following three loops look complicated, but are (I think)
+		// necessary. We iterate over the beginning of the lexicals with their
+		// respective ends and then look for a functional that begins with the
+		// end of the lexical.
+		// If such a combination is found, we still have to make sure, that
+		// there is a matching functional in the integrated group. Only once
+		// that is found, the integration may proceed.
+		for (String lexicalBegin : matchingLexicalsWithEnds.keySet()) {
+			Set<String> validLexicalEnds = Sets.intersection(commonEnds, matchingLexicalsWithEnds.get(lexicalBegin));
 			// for each lexical begin we count the number of
 			// replacements made
 			int splitsMade = 0;
-			for (String lexicalEnd : lexicalEnds) {
+			for (String lexicalEnd : validLexicalEnds) {
 				for (Functional f : matchingFunctionals.keySet()) {
 					// splits from the corresponding functional in the
 					// integrated group must be added, so search it
 					if (f.get().startsWith(lexicalEnd)) {
-						try {
-							// TODO: This is ugly and will fail if there is no
-							// such element, there should always be one though.
-							// This could use a check for multiple matches.
-							// There should or even can be none
-							Functional other = matchingFunctionals.get(f).stream()
-									.filter(o -> o.get().equals(f.get().substring(lexicalEnd.length()))).findFirst()
-									.get();
-							f.splitOn(other);
-							splitsMade += 1;
-						} catch (NoSuchElementException e) {
-							LOGGER.warning("No matching functional: '" + f.get().substring(lexicalEnd.length()) + "'");
+						String integratedFunctionalNeeded = f.get().substring(lexicalEnd.length());
+						for (Functional integratedFunctional : matchingFunctionals.get(f)) {
+							if (integratedFunctional.get().equals(integratedFunctionalNeeded)) {
+								f.splitOn(integratedFunctional);
+								splitsMade += 1;
+							}
 						}
 					}
 				}
@@ -100,7 +110,7 @@ final class LFGroupCompetitionResolver {
 			// the integrated group, the corresponding lexical for that
 			// group may be deleted
 			if (splitsMade == integrated.functionals.size()) {
-				for (String lexicalEnd : lexicalEnds) {
+				for (String lexicalEnd : validLexicalEnds) {
 					integrated.lexicals.remove(lexicalBegin + lexicalEnd);
 					// TODO: Has this to happen here? We should not have to
 					// call this at all.
@@ -114,7 +124,7 @@ final class LFGroupCompetitionResolver {
 				// This is possible because per condition 1 above all lexicals
 				// in the integrating group are starts of ones of the integrated
 				// group. Thus no invalid claims about combinations can be made.
-				for (String lexicalEnd : lexicalEnds) {
+				for (String lexicalEnd : validLexicalEnds) {
 					for (Functional f : integrated.functionals) {
 						List<String> parts = new LinkedList<>(f.parts);
 						parts.add(0, lexicalEnd);

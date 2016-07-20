@@ -102,15 +102,16 @@ public class LFGroupBuildingModule extends ModuleImpl {
 			// 1. Read and merge groups
 			// 1.a) Read a list of all groups read from the matrix by using the
 			// combinations. Equal groups are merged in the process
-			out.outputToAllCharPipes("AFTER MERGING\n");
 			List<LFGroup> all = createGroupsAndMergeMatches(pairs, successors);
-			for (LFGroup g : all) {
-				out.outputToAllCharPipes(g.prettyPrint() + "\n");
-			}
+
 			// 1.b) eliminate functional subgroups to remove duplicates that are
 			// fully contained in another group.
 			eliminateFunctionalSubgroups(all);
 
+			out.outputToAllCharPipes("AFTER MERGING\n");
+			for (LFGroup g : all) {
+				out.outputToAllCharPipes(g.prettyPrint() + "\n");
+			}
 			// 2. DETECT competing groups
 			// they are saved as the sum of their middle lex length ordered to
 			// all
