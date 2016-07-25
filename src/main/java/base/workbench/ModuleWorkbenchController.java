@@ -96,6 +96,7 @@ import modules.vectorization.VectorMedianCalculatorModule;
 import modules.vectorization.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.visualization.ASCIIGraph;
 import modules.visualization.ColourGraph;
+import modules.tree_properties.branchLenghtGroups.BranchLengthGrouping;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -591,6 +592,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		lfgroupBuildingModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, lfgroupBuildingModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		lfgroupBuildingModule.applyProperties();
 		
+		// BranchLengthGrouping
+		Properties branchLengthGroupingProperties = new Properties();
+		BranchLengthGrouping branchLengthGrouping = new BranchLengthGrouping(moduleNetwork, branchLengthGroupingProperties);
+		branchLengthGroupingProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, branchLengthGrouping.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		branchLengthGrouping.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -665,6 +672,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(csv2GEXFModule.getName(), csv2GEXFModule);
 		availableModules.put(textSorterModule.getName(), textSorterModule);
 		availableModules.put(lfgroupBuildingModule.getName(), lfgroupBuildingModule);
+		availableModules.put(branchLengthGrouping.getName(), branchLengthGrouping);
 	}
 	
 	/**
