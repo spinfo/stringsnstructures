@@ -22,6 +22,10 @@ public class Dot2TreeInnerNodesParent extends Dot2TreeInnerNode {
 		super(number, frequency, label);
 	}
 	
+	public Dot2TreeInnerNodesParent (int number, int frequency, String label, String edgeLabel) {
+		super(number, frequency, label, edgeLabel);
+	}
+	
 	public Dot2TreeInnerNodesParent (int number, int frequency, String label, int pNumber) {
 		super(number, frequency, label);
 		this.parentNodeNumber = pNumber;
