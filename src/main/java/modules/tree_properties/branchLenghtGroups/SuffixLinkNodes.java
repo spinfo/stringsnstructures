@@ -20,14 +20,18 @@ public class SuffixLinkNodes {
 	// This variable holds the end of the iteration.
 	private int finalNodeNumber;
 	
+	// This variable holds the concatenated edgeLabels for following suffix links.
+	private String concatEdgeLabs;
+	
 	// End variables.
 	
 	// Constructors:
 	
-	public SuffixLinkNodes (int pathLen, int startNum, int endNum) {
+	public SuffixLinkNodes (int pathLen, int startNum, int endNum, String edgeLab) {
 		this.suffixLinkPathLen = pathLen;
 		this.startNodeNumber = startNum;
 		this.finalNodeNumber = endNum;
+		this.concatEdgeLabs = edgeLab;
 	}
 	
 	// End constructors.
@@ -56,6 +60,14 @@ public class SuffixLinkNodes {
 	public void setFinalNodeNumber (int nodeNum) {
 		this.finalNodeNumber = nodeNum;
 	}
+	
+	/**
+	 * Sets the concatenated edge labels after following suffix links.
+	 * @param edgeLab
+	 */
+	public void setConcatEdgeLabs (String edgeLab) {
+		this.concatEdgeLabs = edgeLab;
+	}
 	// End setters.
 	
 	// Getters:
@@ -82,6 +94,14 @@ public class SuffixLinkNodes {
 	 */
 	public int getFinalNodeNumber () {
 		return this.finalNodeNumber;
+	}
+	
+	/**
+	 * Returns the concatenated edge labels after following suffix links.
+	 * @return String this.concatEdgeLabs
+	 */
+	public String getConcatEdgeLabs () {
+		return this.concatEdgeLabs;
 	}
 	// End getters.
 

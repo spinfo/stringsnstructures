@@ -5,16 +5,13 @@ import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Comparator;
 
+// Apache utility imports.
 import org.apache.commons.lang3.ArrayUtils;
-
-import java.util.Properties;
-
-//Google Gson imports.
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 //Java I/O imports.
 import java.io.BufferedReader;
@@ -22,12 +19,12 @@ import java.io.StringReader;
 import java.io.PipedInputStream;
 
 //Workbench specific imports.
+import java.util.Properties;
 import modules.CharPipe;
 import modules.BytePipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.Pipe;
 import common.parallelization.CallbackReceiver;
 
 //Workbench GSTXmlNode imports.
@@ -93,10 +90,10 @@ public class BranchLengthGrouping extends ModuleImpl {
 	private TreeMap <Integer, Dot2TreeNodes> dot2TreeNodesMap;
 	
 	
-	// TreeMap holding the results of the backtracking process to 
+	// ArrayList holding the results of the backtracking process to 
 	// infer the edgeLabels with the longest strings via following 
 	// the suffix links.
-	private TreeMap <Integer, SuffixLinkNodes> suffixLinkSearchRes;
+	private ArrayList <SuffixLinkNodes> suffixLinkSearchRes;
 	
 	// Variable holding each line of the input.
 	private String inputString;
@@ -188,13 +185,11 @@ public class BranchLengthGrouping extends ModuleImpl {
 		this.analyzeBranchLabels ();
 		
 		// Sort and extract longest cumulative branches.
+		this.sortSuffixRes();
 		
-		// Write JSON output.
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		Iterator<Pipe> charPipes = this.getOutputPorts().get(OUTPUTID).getPipes(CharPipe.class).iterator();
-		while (charPipes.hasNext()){
-			gson.toJson(this.rootNode, ((CharPipe)charPipes.next()).getOutput());
-		}
+		// Write the output in table (tsv) form.
+		if (this.getOutputPorts().get(OUTPUTID).isConnected()) 
+			this.writeOutput();
 		
 		// Close outputs.
 		this.closeAllOutputs();
@@ -468,7 +463,7 @@ public class BranchLengthGrouping extends ModuleImpl {
 	private void analyzeBranchLabels () {
 		
 		// Initialize the TreeMap holding the results for the suffix link node search.
-		this.suffixLinkSearchRes = new TreeMap <Integer, SuffixLinkNodes> ();
+		this.suffixLinkSearchRes = new ArrayList <SuffixLinkNodes> ();
 		
 		// Iterate over all nodes.
 		Iterator<Map.Entry<Integer,Dot2TreeNodes>> it = this.dot2TreeNodesMap.entrySet().iterator();
@@ -486,9 +481,10 @@ public class BranchLengthGrouping extends ModuleImpl {
 				if ( !(suffixLink == 1) ) {
 					
 					// Start the backwards iteration process to get the longest cumulative labels.
-					this.suffixLinkSearchRes.put(pair.getValue().getNodeNumber(), backwardsIteration ( suffixLink, 
+					this.suffixLinkSearchRes.add(backwardsIteration ( suffixLink, 
 							pair.getValue().getEdgeLabel().length(),
-							pair.getKey()) 
+							pair.getKey(),
+							pair.getValue().getEdgeLabel()) 
 							);
 				}
 			}
@@ -510,7 +506,7 @@ public class BranchLengthGrouping extends ModuleImpl {
 	 * @param startNode
 	 * @return SuffixLinkNodes object
 	 */
-	private SuffixLinkNodes backwardsIteration(int suffixLink, int lastResult, int startNode) {
+	private SuffixLinkNodes backwardsIteration(int suffixLink, int lastResult, int startNode, String edgeLabel) {
 		
 		// If the suffix link node parent is the root node.
 		// Or if the edgeLabel of the parent node is smaller than the defined threshold then stop the iteration
@@ -523,7 +519,9 @@ public class BranchLengthGrouping extends ModuleImpl {
 						SuffixLinkNodes suffixLinkNodes = new SuffixLinkNodes(
 								lastResult,
 								startNode,
-								((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getNodeNumber());
+								((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getNodeNumber(),
+								edgeLabel
+								);
 						
 						return suffixLinkNodes;
 		}
@@ -542,21 +540,59 @@ public class BranchLengthGrouping extends ModuleImpl {
 			SuffixLinkNodes suffixLinkNodes = new SuffixLinkNodes(
 					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel().length() + lastResult,
 					startNode,
-					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getNodeNumber());
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getNodeNumber(),
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel() + "|" + edgeLabel);
 			
 			return suffixLinkNodes;
 			
 		} 
+		
+		// New concatenated edge label.
+		String newEdgeLabel = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel() + "|" + edgeLabel;
 		
 		// Next recursion cycle.
 		int newSuffixLink = ((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().get(0);
 		
 		return backwardsIteration( newSuffixLink, 
 				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel().length() + lastResult,
-				startNode);
+				startNode,
+				newEdgeLabel);
 	}
 	
+	private void sortSuffixRes () {
+		
+		// Create a custom comparator to sort the ArrayList "this.suffixLinkSearchRes" form the greatest
+		// suffix path length to the smallest.
+		class SuffixComparator implements Comparator<SuffixLinkNodes> {
+			@Override
+			public int compare(SuffixLinkNodes s1, SuffixLinkNodes s2) {
+				if (s1.getSuffixLinkPathLen() > s2.getSuffixLinkPathLen()) {
+					return -1;
+				} else if (s1.getSuffixLinkPathLen() < s2.getSuffixLinkPathLen()) {
+					return 1;
+				}
+				return 0;
+			}
+		}
+		
+		// Sort the ArrayList.
+		Collections.sort(this.suffixLinkSearchRes, new SuffixComparator());
+		
+	}
 	
+	private void writeOutput () throws Exception {
+		String header = "SuffixPathLength\tStartNodeNumber\tEndNodeNumber\tConcatPathEdgeLabel\n";
+		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(header);
+		Iterator <SuffixLinkNodes> it = this.suffixLinkSearchRes.iterator();
+		while (it.hasNext()) {
+			SuffixLinkNodes currSuffixRes = it.next();
+			String line = Integer.toString(currSuffixRes.getSuffixLinkPathLen()) + "\t";
+			line += Integer.toString(currSuffixRes.getStartNodeNumber()) + "\t";
+			line += Integer.toString(currSuffixRes.getFinalNodeNumber()) + "\t";
+			line += currSuffixRes.getConcatEdgeLabs() + "\n";
+			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(line);
+		}
+	}
 	
 	@Override
 	public void applyProperties () throws Exception {
