@@ -187,6 +187,8 @@ public class BranchLengthGrouping extends ModuleImpl {
 		// Follow all suffix links and the length of the branch labels.
 		this.analyzeBranchLabels ();
 		
+		// Sort and extract longest cumulative branches.
+		
 		// Write JSON output.
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		Iterator<Pipe> charPipes = this.getOutputPorts().get(OUTPUTID).getPipes(CharPipe.class).iterator();
@@ -459,6 +461,10 @@ public class BranchLengthGrouping extends ModuleImpl {
 		}
 	}
 	
+	/**
+	 * This private method initiates the backtracking process a long the path of suffix links.
+	 * @return void
+	 */
 	private void analyzeBranchLabels () {
 		
 		// Initialize the TreeMap holding the results for the suffix link node search.
@@ -476,30 +482,56 @@ public class BranchLengthGrouping extends ModuleImpl {
 				
 				int suffixLink = ((Dot2TreeInnerNodesParent) pair.getValue()).getAllSuffixLinks().get(0);
 				
-				// Start the backwards iteration process to get the longest cumulative labels.
-				this.suffixLinkSearchRes.put(pair.getValue().getNodeNumber(), backwardsIteration ( suffixLink, 
-						pair.getValue().getEdgeLabel().length(),
-						pair.getKey()) 
-						);
+				// Following a suffix link to the root is not allowed.
+				if ( !(suffixLink == 1) ) {
+					
+					// Start the backwards iteration process to get the longest cumulative labels.
+					this.suffixLinkSearchRes.put(pair.getValue().getNodeNumber(), backwardsIteration ( suffixLink, 
+							pair.getValue().getEdgeLabel().length(),
+							pair.getKey()) 
+							);
+				}
 			}
 			
-			// Avoid ConcurrentModificationException by removing the last element after usage form iterator.
-			it.remove();
+			// ATTENTION: ConcurrentModificationException is not of concern, as the 
+			// elements of dot2TreeNodesMap will not be modified. Hence, the following command is not necessary.
+			// it.remove();
 		}
 		
 	}
 	
+	/**
+	 * This method follows the suffix links due to recursion.
+	 * It returns a SuffixLinkNodes object which holds
+	 * the start node, the end node, and the cumulative length of the 
+	 * concatenated edge labels.
+	 * @param suffixLink
+	 * @param lastResult
+	 * @param startNode
+	 * @return SuffixLinkNodes object
+	 */
 	private SuffixLinkNodes backwardsIteration(int suffixLink, int lastResult, int startNode) {
 		
 		// If the suffix link node parent is the root node.
-		// Or if the edgeLabel of the parent node is smaller than the defined threshold then stop the iteration.
-		// Or if the node to which the suffix link is pointing and the parent of the currentNode are the very same node.
+		// Or if the edgeLabel of the parent node is smaller than the defined threshold then stop the iteration
+		// and do not add the current edgeLabel length to the results.
+		
+		if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().get(0) == 1
+				||	this.minLength > ((Dot2TreeInnerNodesParent) 
+					this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel().length()) {
+			// Retrieve the last node after following the suffix links bottom up.
+						SuffixLinkNodes suffixLinkNodes = new SuffixLinkNodes(
+								lastResult,
+								startNode,
+								((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getNodeNumber());
+						
+						return suffixLinkNodes;
+		}
+		
+		// If the node to which the suffix link is pointing and the parent of the currentNode are the very same node.
 		// Or if the suffix link node has no further suffix links.
 		
-		// TODO: Here is still an unforseen bug which causes the path to follow to the root, which is not intended.
-		if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().get(0) == 1
-				|| this.minLength > ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel().length() 
-				||  ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+		if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
 					(((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().get(0))
 					)).getNodeNumber() == 
 					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent()
@@ -516,13 +548,15 @@ public class BranchLengthGrouping extends ModuleImpl {
 			
 		} 
 		
-		// Next iteration cycle.
+		// Next recursion cycle.
 		int newSuffixLink = ((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().get(0);
 		
 		return backwardsIteration( newSuffixLink, 
 				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel().length() + lastResult,
 				startNode);
 	}
+	
+	
 	
 	@Override
 	public void applyProperties () throws Exception {
