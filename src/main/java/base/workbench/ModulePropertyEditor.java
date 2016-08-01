@@ -2,8 +2,12 @@ package base.workbench;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +19,7 @@ import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
@@ -44,6 +49,14 @@ public class ModulePropertyEditor extends JDialog implements ActionListener {
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
+			{
+				JButton fileSelectorButton = new JButton();
+				fileSelectorButton.setActionCommand("File");
+				fileSelectorButton.setIcon(ModuleWorkbenchGui.ICON_LOAD);
+				fileSelectorButton.setToolTipText("Opens a dialogue that allows selection of a file path that gets copied to the system clipboard.");
+				fileSelectorButton.addActionListener(this);
+				buttonPane.add(fileSelectorButton);
+			}
 			{
 				JButton okButton = new JButton("OK");
 				okButton.setActionCommand("OK");
@@ -137,6 +150,23 @@ public class ModulePropertyEditor extends JDialog implements ActionListener {
 			// Close dialog
 			this.dispose();
 			
+		} else if (e.getActionCommand().equals("File")){
+			// Open file selector dialogue and copy selected path to the system clipboard.
+			JFileChooser fc = new JFileChooser();
+			fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+			fc.setDialogTitle("Copy file path to clipboard");
+			fc.setApproveButtonText("Copy path");
+			fc.setApproveButtonMnemonic('c');
+			fc.setApproveButtonToolTipText("Copy selected file path to system clipboard");
+			int returnVal = fc.showOpenDialog(this);
+
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                Clipboard systemClip = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection selection = new StringSelection(file.getAbsolutePath());
+                systemClip.setContents(selection, selection);
+                Logger.getLogger("").log(Level.INFO, "The path '"+file.getAbsolutePath()+"' has been copied to the system clipboard.");
+            }
 		} else if (e.getActionCommand().equals("Cancel")){
 			// Do nothing, just exit
 			this.setVisible(false);

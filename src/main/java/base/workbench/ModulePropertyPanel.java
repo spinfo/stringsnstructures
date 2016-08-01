@@ -92,5 +92,14 @@ public class ModulePropertyPanel extends JPanel implements KeyListener {
 		// Update the property object if there is text input
 		this.property.setValue(this.valueTextField.getText());
 	}
+	
+	/**
+	 * Sets the property value.
+	 * @param value Value to set
+	 */
+	public void setValue(String value){
+		this.valueTextField.setText(value);
+		this.property.setValue(value);
+	}
 
 }
