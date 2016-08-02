@@ -1,11 +1,13 @@
 package modules.lfgroups;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * A group of lexicals with functionals together representing a set of combinations of themselves.
+ * A group of lexicals with functionals together representing a set of
+ * combinations of themselves.
  */
 class LFGroup {
 
@@ -15,6 +17,8 @@ class LFGroup {
 	Set<String> combinations = new TreeSet<>();
 
 	Set<LFGroup> functionalSubgroups = new HashSet<>();
+
+	private static final Set<String> EMPTY_STRING_SET = new TreeSet<String>(Arrays.asList(""));
 
 	void makeCombinations() {
 		combinations.clear();
@@ -59,6 +63,10 @@ class LFGroup {
 			}
 		}
 		return result;
+	}
+
+	boolean hasLexicalChars() {
+		return !(this.lexicals.isEmpty() || EMPTY_STRING_SET.equals(lexicals));
 	}
 
 	String prettyPrint() {

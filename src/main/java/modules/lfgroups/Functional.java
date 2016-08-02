@@ -11,6 +11,8 @@ import java.util.ListIterator;
  */
 class Functional implements Comparable<Functional>, CharSequence {
 
+	// TODO: Refactor class to work with an int array of split positions instead
+	// of this String list
 	final List<String> parts = new ArrayList<String>(1);
 
 	public Functional(String complete) {

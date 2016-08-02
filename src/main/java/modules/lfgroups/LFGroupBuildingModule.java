@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,8 +29,6 @@ import modules.OutputPort;
  */
 public class LFGroupBuildingModule extends ModuleImpl {
 
-	private static final Logger LOGGER = Logger.getLogger(LFGroupBuildingModule.class.getName());
-
 	private static final String INPUT_SUCCESSOR_MATRIX_ID = "Successor Matrix";
 	private static final String INPUT_PAIR_LIST_ID = "List of Pairs";
 
@@ -39,8 +36,10 @@ public class LFGroupBuildingModule extends ModuleImpl {
 
 	public static final String PROPERTYKEY_CSV_DELIMITER = "csv delimiter";
 	public static final String PROPERTYKEY_PAIR_LIST_CUTOFF_VALUE = "Pair list cutoff value";
+	public static final String PROPERTYKEY_EMPTY_LEXICAL_OUTPUT = "output empty lexical groups";
 	private String csvInputDelimiter;
 	private int pairListCutoffValue;
+	private boolean emptyLexicalGroupsOutput;
 
 	// A regex to split the pair list input on
 	private static final Pattern PAIRS_INPUT_LINE = Pattern.compile("([^-]*)-([^-]*): ([0-9]+)");
@@ -57,6 +56,9 @@ public class LFGroupBuildingModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_PAIR_LIST_CUTOFF_VALUE,
 				"At or below which value reading of the pair list should stop.");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_PAIR_LIST_CUTOFF_VALUE, "5");
+		this.getPropertyDescriptions().put(PROPERTYKEY_EMPTY_LEXICAL_OUTPUT,
+				"A boolean value. Whether to output gorups with no or only the empty (i.e. \"\") lexical");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_EMPTY_LEXICAL_OUTPUT, "false");
 
 		// set name
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "LFGroup Building Module");
@@ -114,9 +116,8 @@ public class LFGroupBuildingModule extends ModuleImpl {
 			}
 			// 2. DETECT competing groups
 			// they are saved as the sum of their middle lex length ordered to
-			// all
-			// Groups with that lex length, ordering is descending to get at the
-			// first groups fast
+			// all groups with that lex length, ordering is descending to get at
+			// the first groups fast
 			Map<Double, HashSet<LFGroupPair>> competitions = new TreeMap<Double, HashSet<LFGroupPair>>(
 					Collections.reverseOrder());
 
@@ -127,8 +128,7 @@ public class LFGroupBuildingModule extends ModuleImpl {
 
 			// 2.b) compare each to each other and test for conccurences
 			// use a new list of the same size to make sure, that combinations
-			// are
-			// only tested once
+			// are only tested once
 			List<LFGroup> others = new ArrayList<LFGroup>(all.size());
 			for (LFGroup current : all) {
 				if (others.isEmpty()) {
@@ -159,9 +159,8 @@ public class LFGroupBuildingModule extends ModuleImpl {
 			// repeatedly get the highest ranked competition and remove it
 			while (!competitions.keySet().isEmpty()) {
 				// The highest ranked is taken to be the first key returned by
-				// the
-				// iterator. This is guaranteed by how the TreeSet was set up
-				// above.
+				// the iterator. This is guaranteed by how the TreeSet was set
+				// up above.
 				Double highestRank = competitions.keySet().iterator().next();
 				HashSet<LFGroupPair> competingPairs = competitions.remove(highestRank);
 
@@ -184,17 +183,21 @@ public class LFGroupBuildingModule extends ModuleImpl {
 					sameRanked.add(competition);
 					competitions.put(currentRank, sameRanked);
 				} else {
-					competition.resolveCompetition();
-					// TODO: Check might be omitted after testing
-					if (competition.isCompeting()) {
-						LOGGER.warning("Competition not resolved.");
+					// never try to resolve concurrencies where the lexicals of
+					// one group is empty. Just ignore those.
+					if (competition.one.hasLexicalChars() && competition.two.hasLexicalChars()) {
+						competition.resolveCompetition();
 					}
+					// TODO: Check might be omitted after testing
+					// if (competition.isCompeting()) {
+					// LOGGER.warning("Competition not resolved.");
+					// }
 				}
 			}
 
 			out.outputToAllCharPipes("AFTER REMOVING COMPETITIONS\n");
 			for (LFGroup g : all) {
-				if (!g.lexicals.isEmpty()) {
+				if (emptyLexicalGroupsOutput || g.hasLexicalChars()) {
 					out.outputToAllCharPipes(g.prettyPrint() + "\n");
 				}
 			}
@@ -364,6 +367,10 @@ public class LFGroupBuildingModule extends ModuleImpl {
 		if (this.getProperties().getProperty(PROPERTYKEY_PAIR_LIST_CUTOFF_VALUE) != null) {
 			this.pairListCutoffValue = Integer
 					.parseInt(this.getProperties().getProperty(PROPERTYKEY_PAIR_LIST_CUTOFF_VALUE));
+		}
+		if (this.getProperties().getProperty(PROPERTYKEY_EMPTY_LEXICAL_OUTPUT) != null) {
+			this.emptyLexicalGroupsOutput = Boolean
+					.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_EMPTY_LEXICAL_OUTPUT));
 		}
 
 		// Apply parent object's properties (just the name variable actually)

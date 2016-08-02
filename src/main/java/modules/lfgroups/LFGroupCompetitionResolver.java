@@ -120,7 +120,9 @@ final class LFGroupCompetitionResolver {
 				for (String lexicalEnd : validLexicalEnds) {
 					for (Functional f : integrated.functionals) {
 						List<String> parts = new LinkedList<>(f.parts);
-						parts.add(0, lexicalEnd);
+						if (lexicalEnd.length() > 0) {
+							parts.add(0, lexicalEnd);
+						}
 						Functional test = new Functional(parts);
 						if (!integrating.functionals.contains(test)) {
 							integrating.functionals.add(test);
