@@ -1,13 +1,11 @@
 package modules.lfgroups;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.logging.Logger;
 
 import com.google.common.collect.Sets;
 
@@ -16,8 +14,6 @@ import com.google.common.collect.Sets;
  * to resolve a competition between two LFGroups.
  */
 final class LFGroupCompetitionResolver {
-
-	private static final Logger LOGGER = Logger.getLogger(LFGroupCompetitionResolver.class.getName());
 
 	/**
 	 * Class needs no instances
@@ -46,7 +42,7 @@ final class LFGroupCompetitionResolver {
 		if (matchingLexicalsWithEnds.keySet().isEmpty() || commonEnds.isEmpty()) {
 			return;
 		}
-		
+
 		if (!matchingLexicalsWithEnds.keySet().equals(integrating.lexicals)) {
 			// At this point the groups clearly bear some resemblance due to
 			// the matching lexicals, but integration is not possible,
@@ -55,7 +51,6 @@ final class LFGroupCompetitionResolver {
 			// at this stage.
 			// TODO: Take a second look. What could be done with such
 			// groups?
-			 LOGGER.warning("Matching lexical begins without possibility to integrate.");
 			return;
 		}
 
@@ -71,14 +66,12 @@ final class LFGroupCompetitionResolver {
 			}
 		}
 		if (matchingFunctionals.keySet().isEmpty()) {
-			LOGGER.warning(
-					"Found matching lexical begins but no matching functional ends. Groups are not actually competing.");
+			// Found matching lexical begins but no matching functional ends.
+			// Groups are not actually competing.
 			return;
 		}
 
 		// If the conditions above are met, the integration can begin
-		LOGGER.info("Integrating by: " + matchingLexicalsWithEnds + " with: " + matchingFunctionals);
-
 		// The following three loops look complicated, but are (I think)
 		// necessary. We iterate over the beginning of the lexicals with their
 		// respective ends and then look for a functional that begins with the
