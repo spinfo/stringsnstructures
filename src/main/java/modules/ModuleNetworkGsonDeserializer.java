@@ -18,7 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import common.parallelization.CallbackReceiver;
 
-public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwork> {
+public class ModuleNetworkGsonDeserializer implements JsonDeserializer<ModuleNetwork> {
 
 	@Override
 	public ModuleNetwork deserialize(JsonElement json, Type typeOfT,
@@ -80,6 +80,8 @@ public class ModuleTreeGsonDeserializer implements JsonDeserializer<ModuleNetwor
 					outputPortIdMap.put(serializableOutputPort.getInstanceHashCode(), newModuleInstance.getOutputPorts().get(serializableOutputPort.getName()));
 				} 
 
+				// Add metadata to module
+				newModuleInstance.setMetadata(serializableModule.getMetadata());
 				
 				// Add module to network
 				moduleNetwork.addModule(newModuleInstance);

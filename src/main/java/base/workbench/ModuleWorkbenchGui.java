@@ -599,7 +599,10 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				}
 				
 				// We will need a frame without an input connection when arranging them later
-				ModuleInternalFrame frameWithoutInput = null;
+				ModuleInternalFrame startingFrame = null;
+				
+				// Determine desktop manager
+				ModuleDesktopManager desktopManager = (ModuleDesktopManager) this.moduleJDesktopPane.getDesktopManager();
 				
 				// Loop over constructed module frames (in order to draw port connection lines)
 				Iterator<ModuleInternalFrame> moduleFrames = this.moduleFrameMap.values().iterator();
@@ -651,20 +654,18 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 						
 					}
 					
-					// Determine if module has an input
+					// Determine if module has an input -- if it does not, we define it as our starting frame
 					if (moduleFrame.getInputButtons().isEmpty() || !inputConnected){
-						frameWithoutInput = moduleFrame;
+						startingFrame = moduleFrame;
+						
+						// Arrange other frames in dependence of this one (has to be done with each starting frame)
+						desktopManager.rearrangeInternalFrame(startingFrame, this.moduleFrameMap);
 					}
 						
 				}
 				
-				// Check whether a frame without input connection has been found
-				if (frameWithoutInput != null){
-					// Arrange frames
-					ModuleDesktopManager desktopManager = (ModuleDesktopManager) this.moduleJDesktopPane.getDesktopManager();
-					desktopManager.rearrangeInternalFrame(frameWithoutInput, this.moduleFrameMap);
-					
-				} else {
+				// If no frame without input connection has been found, issue a warning
+				if (startingFrame == null){
 					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I could not find a good start for arranging the frames -- did you construct a loop? If so, please don't.");
 				}
 				

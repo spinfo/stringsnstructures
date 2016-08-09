@@ -25,7 +25,7 @@ import modules.Module;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
 import modules.ModuleNetworkGsonSerializer;
-import modules.ModuleTreeGsonDeserializer;
+import modules.ModuleNetworkGsonDeserializer;
 import modules.bag_of_words.BagsOfWordsDistancesModule;
 import modules.bag_of_words.BagsOfWordsModule;
 import modules.basic_text_processing.CaseChangerModule;
@@ -116,7 +116,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		// Initialize JSON converter
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.registerTypeAdapter(ModuleNetwork.class, new ModuleNetworkGsonSerializer());
-		gsonBuilder.registerTypeAdapter(ModuleNetwork.class, new ModuleTreeGsonDeserializer());
+		gsonBuilder.registerTypeAdapter(ModuleNetwork.class, new ModuleNetworkGsonDeserializer());
 		this.jsonConverter = gsonBuilder.setPrettyPrinting().create();
 		
 		// Add jlist handler to logger

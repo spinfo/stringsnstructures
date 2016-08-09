@@ -19,6 +19,7 @@ public class SerializableModule {
 	private Map<String,SerializablePort> serializableInputPortList;
 
 	private Map<String,SerializablePort> serializableOutputPortList;
+	private Map<String,Object> metadata;
 	
 	public SerializableModule() {
 	}
@@ -72,6 +73,9 @@ public class SerializableModule {
 			
 			this.serializableOutputPortList.put(outputPort.getName(), serializablePort);
 		}
+		
+		// Metadata
+		this.metadata = module.getMetadata();
 	}
 
 	/**
@@ -127,6 +131,14 @@ public class SerializableModule {
 	 */
 	protected Map<String, SerializablePort> getSerializableOutputPortList() {
 		return serializableOutputPortList;
+	}
+
+	public Map<String,Object> getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(Map<String,Object> metadata) {
+		this.metadata = metadata;
 	}
 
 }

@@ -133,5 +133,17 @@ public interface Module extends CallbackProcess {
 	 * @param statusDetail String with status details or null
 	 */
 	public void setStatusDetail(String statusDetail);
+	
+	/**
+	 * Returns a map containing metadata.
+	 * @return Map
+	 */
+	public Map<String,Object> getMetadata();
+	
+	/**
+	 * Set map containing metadata.
+	 * @param metadata Map to set
+	 */
+	public void setMetadata(Map<String,Object> metadata);
 
 }

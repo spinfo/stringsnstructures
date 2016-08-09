@@ -8,7 +8,6 @@ import java.util.Map;
 import javax.swing.DefaultDesktopManager;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
-import javax.swing.JInternalFrame;
 
 import modules.InputPort;
 import modules.Module;
@@ -21,6 +20,8 @@ import modules.Pipe;
 public class ModuleDesktopManager extends DefaultDesktopManager {
 
 	private static final long serialVersionUID = 3915844154537065196L;
+	public static final String METADATAKEY_YPOS = "ypos";
+	public static final String METADATAKEY_XPOS = "xpos";
 	private ModuleNetworkGlasspane glasspane;
 	
 	/**
@@ -36,7 +37,7 @@ public class ModuleDesktopManager extends DefaultDesktopManager {
 		moduleFrameMapLocal.putAll(moduleFrameMap);
 		
 		// Call private method with map clone
-		rearrangeInternalFrame_changeMap(frame, moduleFrameMapLocal);
+		rearrangeInternalFrame_changeMap(frame, moduleFrameMapLocal, 0);
 	}
 	
 	/**
@@ -44,17 +45,28 @@ public class ModuleDesktopManager extends DefaultDesktopManager {
 	 * crudely guessing decent placement. Makes changes to the given Map.
 	 * @param frame Frame whose output nodes shall be rearranged
 	 */
-	private void rearrangeInternalFrame_changeMap(ModuleInternalFrame frame, Map<Module,ModuleInternalFrame> moduleFrameMap){
+	private void rearrangeInternalFrame_changeMap(ModuleInternalFrame frame, Map<Module,ModuleInternalFrame> moduleFrameMap, int yOffset){
 		
 		// Set margins
 		int xMargin = 10;
 		int yMargin = 10;
 		
+		// Place frame according to position metadata (or best space estimation if that fails)
+		try {
+			Double xpos = Double.parseDouble(frame.getModule().getMetadata().get(METADATAKEY_XPOS).toString());
+			Double ypos = Double.parseDouble(frame.getModule().getMetadata().get(METADATAKEY_YPOS).toString());
+			this.dragFrame(frame, xpos.intValue(), ypos.intValue());
+		} catch (Exception e) {
+			e.printStackTrace();
+			this.dragFrame(frame,
+					new Double(xMargin + frame.getBounds().x + frame.getBounds().getWidth()).intValue(),
+					yOffset + frame.getBounds().y);
+		}
+		
 		// Determine output nodes
 		Iterator<ModuleOutputPortButton> outputButtons = frame.getOutputButtons().iterator();
 		
 		// Position connected frames relative to current one
-		int yOffset=0;
 		while(outputButtons.hasNext()){
 			
 			// Determine output button next in list
@@ -91,15 +103,11 @@ public class ModuleDesktopManager extends DefaultDesktopManager {
 						if (connectedFrame == null)
 							continue;
 						
-						// Place frame
-						this.dragFrame(connectedFrame, new Double(xMargin+frame.getBounds().x+frame.getBounds().getWidth()).intValue(), yOffset+frame.getBounds().y);
-						
+						// Recurse
+						this.rearrangeInternalFrame_changeMap(connectedFrame, moduleFrameMap, yOffset);
 						
 						// Update offset
-						yOffset += yMargin+connectedFrame.getBounds().getHeight();
-						
-						// Recurse
-						this.rearrangeInternalFrame_changeMap(connectedFrame, moduleFrameMap);
+						yOffset += yMargin + connectedFrame.getBounds().getHeight();
 						
 					}
 				}
@@ -113,8 +121,8 @@ public class ModuleDesktopManager extends DefaultDesktopManager {
 	@Override
 	public void dragFrame(JComponent f, int x, int y) {
 		JDesktopPane desk = null;
-		if (f instanceof JInternalFrame) { // Deal only w/internal frames
-			JInternalFrame frame = (JInternalFrame) f;
+		if (f instanceof ModuleInternalFrame) { // Deal only w/internal frames
+			ModuleInternalFrame frame = (ModuleInternalFrame) f;
 			desk = frame.getDesktopPane();
 			Dimension d = desk.getSize();
 
@@ -135,12 +143,20 @@ public class ModuleDesktopManager extends DefaultDesktopManager {
 					// bottom
 				}
 			}
+			
+			// Store new coordinates as module metadata
+			Module module = frame.getModule();
+			if (module.getMetadata() == null)
+				module.setMetadata(new HashMap<String,Object>());
+			module.getMetadata().put(METADATAKEY_YPOS, y);
+			module.getMetadata().put(METADATAKEY_XPOS, x);
 		}
 
 		// Pass along the (possibly cropped) values to the normal drag handler.
 		try {
 			super.dragFrame(f, x, y);
 		} catch (Exception e){
+			e.printStackTrace();
 			/*
 			 * FIXME: Strangely enough, that method sometimes throws a
 			 * NullPointerException for no apparent reason.

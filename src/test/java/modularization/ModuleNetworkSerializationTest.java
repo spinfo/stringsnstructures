@@ -8,7 +8,7 @@ import modules.CharPipe;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
 import modules.ModuleNetworkGsonSerializer;
-import modules.ModuleTreeGsonDeserializer;
+import modules.ModuleNetworkGsonDeserializer;
 import modules.input_output.ConsoleWriterModule;
 import modules.input_output.FileFinderModule;
 import modules.input_output.FileWriterModule;
@@ -95,7 +95,7 @@ public class ModuleNetworkSerializationTest {
 			gsonBuilder.registerTypeAdapter(ModuleNetwork.class,
 					new ModuleNetworkGsonSerializer());
 			gsonBuilder.registerTypeAdapter(ModuleNetwork.class,
-					new ModuleTreeGsonDeserializer());
+					new ModuleNetworkGsonDeserializer());
 			Gson gson = gsonBuilder.setPrettyPrinting().create();
 
 			String json = gson.toJson(moduleNetwork);

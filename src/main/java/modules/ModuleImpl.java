@@ -19,6 +19,7 @@ public abstract class ModuleImpl implements Module {
 	private Properties properties = new Properties();
 	private Map<String, String> propertyDescriptions = new HashMap<String, String>();
 	private Map<String, String> propertyDefaultValues = new HashMap<String, String>();
+	private Map<String, Object> metadata = new HashMap<String, Object>();
 	private int status = Module.STATUSCODE_NOTYETRUN;
 	private String statusDetail = null;
 	private String description = "(no description)";
@@ -315,6 +316,16 @@ public abstract class ModuleImpl implements Module {
 	@Override
 	public void setStatusDetail(String statusDetail) {
 		this.statusDetail = statusDetail;
+	}
+
+	@Override
+	public Map<String, Object> getMetadata() {
+		return metadata;
+	}
+
+	@Override
+	public void setMetadata(Map<String, Object> metadata) {
+		this.metadata = metadata;
 	}
 
 }
