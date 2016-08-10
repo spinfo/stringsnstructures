@@ -24,8 +24,8 @@ import common.parallelization.CallbackReceiver;
 import modules.Module;
 import modules.ModuleImpl;
 import modules.ModuleNetwork;
-import modules.ModuleNetworkGsonSerializer;
 import modules.ModuleNetworkGsonDeserializer;
+import modules.ModuleNetworkGsonSerializer;
 import modules.bag_of_words.BagsOfWordsDistancesModule;
 import modules.bag_of_words.BagsOfWordsModule;
 import modules.basic_text_processing.CaseChangerModule;
@@ -73,6 +73,7 @@ import modules.matrix.BowTypeMatrixModule;
 import modules.matrix.MatrixBitwiseOperationModule;
 import modules.matrix.MatrixColumnSumModule;
 import modules.matrix.MatrixEliminateOppositionalValuesModule;
+import modules.matrix.MatrixFilterModule;
 import modules.matrix.MatrixRowColPairExtractorModule;
 import modules.matrix.MclModule;
 import modules.parser.oanc.OANCXMLParser;
@@ -89,6 +90,7 @@ import modules.tree_building.treeBuilder.TreeBuilderV3Module;
 import modules.tree_editing.LabelDataMergeModule;
 import modules.tree_editing.seqNewick.SeqQueryController;
 import modules.tree_editing.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
+import modules.tree_properties.branchLenghtGroups.BranchLengthGrouping;
 import modules.tree_properties.seqTreeProperties.SeqTreePropController;
 import modules.tree_properties.treeIndexes.TreeIndexController;
 import modules.vectorization.VectorAberrationCalculatorModule;
@@ -96,7 +98,6 @@ import modules.vectorization.VectorMedianCalculatorModule;
 import modules.vectorization.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.visualization.ASCIIGraph;
 import modules.visualization.ColourGraph;
-import modules.tree_properties.branchLenghtGroups.BranchLengthGrouping;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -598,6 +599,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		branchLengthGroupingProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, branchLengthGrouping.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		branchLengthGrouping.applyProperties();
 		
+		// MatrixFilterModule
+		Properties matrixFilterModuleProperties = new Properties();
+		MatrixFilterModule matrixFilterModule = new MatrixFilterModule(moduleNetwork, matrixFilterModuleProperties);
+		matrixFilterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixFilterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		matrixFilterModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -673,6 +680,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(textSorterModule.getName(), textSorterModule);
 		availableModules.put(lfgroupBuildingModule.getName(), lfgroupBuildingModule);
 		availableModules.put(branchLengthGrouping.getName(), branchLengthGrouping);
+		availableModules.put(matrixFilterModule.getName(), matrixFilterModule);
 	}
 	
 	/**
