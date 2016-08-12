@@ -1,4 +1,4 @@
-package modules.tree_properties.branchLenghtGroups;
+package modules.tree_properties.branchLengthGroups;
 
 /**
  * This class saves the results of the backwards iteration following the 

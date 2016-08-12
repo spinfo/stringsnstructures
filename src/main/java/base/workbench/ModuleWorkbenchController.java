@@ -90,7 +90,7 @@ import modules.tree_building.treeBuilder.TreeBuilderV3Module;
 import modules.tree_editing.LabelDataMergeModule;
 import modules.tree_editing.seqNewick.SeqQueryController;
 import modules.tree_editing.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
-import modules.tree_properties.branchLenghtGroups.BranchLengthGrouping;
+import modules.tree_properties.branchLengthGroups.BranchLengthGrouping;
 import modules.tree_properties.seqTreeProperties.SeqTreePropController;
 import modules.tree_properties.treeIndexes.TreeIndexController;
 import modules.vectorization.VectorAberrationCalculatorModule;

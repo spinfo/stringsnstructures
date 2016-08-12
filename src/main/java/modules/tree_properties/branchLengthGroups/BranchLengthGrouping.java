@@ -1,4 +1,4 @@
-package modules.tree_properties.branchLenghtGroups;
+package modules.tree_properties.branchLengthGroups;
 
 //Java utility imports.
 import java.util.TreeMap;

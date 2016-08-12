@@ -1,4 +1,4 @@
-package modules.tree_properties.branchLenghtGroups;
+package modules.tree_properties.branchLengthGroups;
 
 // Workbench internal imports.
 import models.Dot2TreeInnerNode;
