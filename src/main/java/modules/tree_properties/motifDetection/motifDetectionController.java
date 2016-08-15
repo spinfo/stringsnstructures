@@ -25,7 +25,6 @@ import modules.BytePipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.tree_properties.branchLengthGroups.Dot2TreeInnerNodesParent;
 import modules.tree_properties.branchLengthGroups.SuffixLinkNodes;
 import common.parallelization.CallbackReceiver;
 
@@ -35,6 +34,7 @@ import models.GSTXmlNode;
 
 //Workbench Dot2TreeNodes imports.
 import models.Dot2TreeInnerNode;
+import models.Dot2TreeInnerNodesParent;
 import models.Dot2TreeLeafNode;
 import models.Dot2TreeNodes;
 

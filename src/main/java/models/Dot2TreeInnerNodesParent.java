@@ -1,7 +1,5 @@
-package modules.tree_properties.branchLengthGroups;
+package models;
 
-// Workbench internal imports.
-import models.Dot2TreeInnerNode;
 /**
  * This helper class extends Dot2TreeInnerNode.java and adds 
  * the functionality that each internal node keeps track of 

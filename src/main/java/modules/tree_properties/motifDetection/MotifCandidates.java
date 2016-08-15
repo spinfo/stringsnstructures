@@ -3,8 +3,8 @@ package modules.tree_properties.motifDetection;
 // Java util imports.
 import java.util.TreeMap;
 
-// Module specific imports.
-import modules.tree_properties.branchLengthGroups.Dot2TreeInnerNodesParent;
+// Workbench specific imports.
+import models.Dot2TreeInnerNodesParent;
 
 public class MotifCandidates {
 	

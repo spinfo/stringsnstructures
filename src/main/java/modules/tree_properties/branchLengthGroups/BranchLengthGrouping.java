@@ -33,6 +33,7 @@ import models.GSTXmlNode;
 
 //Workbench Dot2TreeNodes imports.
 import models.Dot2TreeInnerNode;
+import models.Dot2TreeInnerNodesParent;
 import models.Dot2TreeLeafNode;
 import models.Dot2TreeNodes;
 
