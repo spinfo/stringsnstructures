@@ -110,6 +110,17 @@ public class TreeIndexController extends ModuleImpl {
 	public TreeIndexController(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
 		super(callbackReceiver, properties);
+		
+		// Add module description
+				this.setDescription("This modules transverse a Generalized Suffix Tree (GST) depth-first<br>"
+						+ "and analysis different properties for each node and subtree:<br>"
+						+ "<ul><li>Number of Leaves</li>"
+						+ "<li>Path Length(s)</li>"
+						+ "<li>Cophenetic index</li>"
+						+ "<li>(normalized) Sackin Index</li></ul>"
+						+ "<b>Requirements:</b>"
+						+ "<ul><li>JSON output from (pre-buffered) \"dot2tree\" conversion module</li>"
+						+ "<li>XML output from GST builder module</li></ul>");
 
 		// Add property descriptions.
 		this.getPropertyDescriptions().put(PROPERTYKEY_FREQOUT, "\"true\": show tree frequencies</br>" + 

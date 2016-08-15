@@ -1,4 +1,4 @@
-package modules.tree_properties.branchLengthGroups;
+package modules.tree_properties.motifDetection;
 
 //Java utility imports.
 import java.util.TreeMap;
@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Comparator;
 
-// Apache utility imports.
+//Apache utility imports.
 import org.apache.commons.lang3.ArrayUtils;
 
 //Java I/O imports.
@@ -25,6 +25,8 @@ import modules.BytePipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
+import modules.tree_properties.branchLengthGroups.Dot2TreeInnerNodesParent;
+import modules.tree_properties.branchLengthGroups.SuffixLinkNodes;
 import common.parallelization.CallbackReceiver;
 
 //Workbench GSTXmlNode imports.
@@ -37,33 +39,22 @@ import models.Dot2TreeLeafNode;
 import models.Dot2TreeNodes;
 
 /**
- * This module reads plain text dot format from I/O pipe.
- * It parses form the obtained information inner nodes, leaf nodes, 
- * edges and suffix links. 
- * 
- * This module scans the inner nodes exclusively and adds up the length
- * of the branches depending on a pre-defined threshold for a minimum 
- * branch length. For this purpose the module follows suffix-links bottom-up
- * a previously constructed generalized suffix tree.
- * 
- * The aim is to find sub-trees which potentially represent functional
- * units in a (alpha-numerical) string or DNA sequence (A,T,G,C). 
- * 
- * @author Christopher Kraus
- * 
+ * This modue is experimental.
+ * @author christopher
+ *
  */
 
-public class BranchLengthGrouping extends ModuleImpl {
-	// Enumerators:
+
+public class motifDetectionController extends ModuleImpl {
 	
+	// Enumerators:	
 	private enum DotTags {
 			ROOT, LEAFSTART, LEAFEND, INTERNAL, EDGE, SUFFIXLINK, UNDEFINED
 	}
 	// End enumerators.
 	
 	// Property keys:
-	//Add property keys:
-		public static final String PROPERTYKEY_MINBRANCH = "Minimal branch length allowed";
+		/* Not required yet. */
 	// End property keys.
 	
 	// Variables:
@@ -106,43 +97,35 @@ public class BranchLengthGrouping extends ModuleImpl {
 	// End variables.
 	
 	// Constructors:
-	
-	public BranchLengthGrouping (CallbackReceiver callbackReceiver,
+	public motifDetectionController (CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
 		super (callbackReceiver, properties);
 		
-		// Add module description
-		this.setDescription("This module reads plain text dot format from I/O pipe.</br>"
-				+ "It parses form the obtained information inner nodes, leaf nodes,</br>" 
-				+ "edges and suffix links.</br>" 
-				+ "This module scans the inner nodes exclusively and adds up the length</br>"
-				+ "of the branches depending on a pre-defined threshold for a minimum</br>" 
-				+ "branch length. For this purpose the module follows suffix-links bottom-up</br>"
-				+ "a previously constructed generalized suffix tree.</br>");
-
-				
+		// Module description.
+		this.setDescription("This module transverses a Generalized Suffix Tree (GST) bottom up<br>"
+			+ "and detects nodes which are linked by suffix-links to one-another. <br>"
+			+ "Such nodes which include a common starting edge (constant identical edge) and <br>"
+			+ "<b>Requirements:</b><br>"
+			+ "<em>pending...</em>");
+		
 		// Property descriptions.
-		this.getPropertyDescriptions().put(PROPERTYKEY_MINBRANCH,
-				"Minimal branch length for edges between nodes needed.</br>"
-				+ "This determines the stop during the search(es).");
+			/* No module properties required at the moment.*/
 		
 		// Initialize module specific fields.
 		this.dot2TreeNodesMap = new TreeMap <Integer, Dot2TreeNodes>();
 		this.gstXmlNodes = new TreeMap <Integer, GSTXmlNode>();
-				
-		// Property defaults.
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Branch Length Grouping");
 		
-		this.getPropertyDefaultValues().put(PROPERTYKEY_MINBRANCH, "2");
+		// Property defaults.
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Motif Detection");
 		
 		// Initialize I/O pipelines.
-		InputPort inputDotPort = new InputPort(INPUTDOTID, "[dot format] Dot output from the</br>GST builder module.", this);
+		InputPort inputDotPort = new InputPort(INPUTDOTID, "<b>[dot format]</b> Dot output from the<br>GST builder module.", this);
 		inputDotPort.addSupportedPipe(CharPipe.class);
 		
-		InputPort inputXmlPort = new InputPort(INPUTXMLID, "[xml format] Xml output from the</br>GST builder module.", this);
+		InputPort inputXmlPort = new InputPort(INPUTXMLID, "<b>[xml format]</b> Xml output from the<br>GST builder module.", this);
 		inputXmlPort.addSupportedPipe(BytePipe.class);
 		
-		OutputPort outputPort = new OutputPort (OUTPUTID, "[tsv]</br>Table format", this);
+		OutputPort outputPort = new OutputPort (OUTPUTID, "<b>[tsv]</b> Table format", this);
 		outputPort.addSupportedPipe(CharPipe.class);
 		
 		super.addInputPort(inputDotPort);
@@ -150,18 +133,9 @@ public class BranchLengthGrouping extends ModuleImpl {
 		super.addOutputPort(outputPort);
 	}
 	
-
 	// End constructors.
 	
 	// Methods:
-	
-	// Setters:
-	
-	// End setters.
-	
-	// Getters:
-	
-	// End getters.
 	
 	@Override
 	public boolean process () throws Exception {
@@ -196,6 +170,20 @@ public class BranchLengthGrouping extends ModuleImpl {
 		
 		// Success.
 		return true;
+	}
+	
+	private void writeOutput () throws Exception {
+		String header = "SuffixPathLength\tStartNodeNumber\tEndNodeNumber\tConcatPathEdgeLabel\n";
+		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(header);
+		Iterator <SuffixLinkNodes> it = this.suffixLinkSearchRes.iterator();
+		while (it.hasNext()) {
+			SuffixLinkNodes currSuffixRes = it.next();
+			String line = Integer.toString(currSuffixRes.getSuffixLinkPathLen()) + "\t";
+			line += Integer.toString(currSuffixRes.getStartNodeNumber()) + "\t";
+			line += Integer.toString(currSuffixRes.getFinalNodeNumber()) + "\t";
+			line += currSuffixRes.getConcatEdgeLabs() + "\n";
+			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(line);
+		}
 	}
 	
 	/**
@@ -496,8 +484,7 @@ public class BranchLengthGrouping extends ModuleImpl {
 			// ATTENTION: ConcurrentModificationException is not of concern, as the 
 			// elements of dot2TreeNodesMap will not be modified. Hence, the following command is not necessary.
 			// it.remove();
-		}
-		
+		}	
 	}
 	
 	/**
@@ -529,7 +516,6 @@ public class BranchLengthGrouping extends ModuleImpl {
 						
 						return suffixLinkNodes;
 		}
-		
 		// If the node to which the suffix link is pointing and the parent of the currentNode are the very same node.
 		// Or if the suffix link node has no further suffix links.
 		
@@ -584,33 +570,17 @@ public class BranchLengthGrouping extends ModuleImpl {
 		
 	}
 	
-	private void writeOutput () throws Exception {
-		String header = "SuffixPathLength\tStartNodeNumber\tEndNodeNumber\tConcatPathEdgeLabel\n";
-		this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(header);
-		Iterator <SuffixLinkNodes> it = this.suffixLinkSearchRes.iterator();
-		while (it.hasNext()) {
-			SuffixLinkNodes currSuffixRes = it.next();
-			String line = Integer.toString(currSuffixRes.getSuffixLinkPathLen()) + "\t";
-			line += Integer.toString(currSuffixRes.getStartNodeNumber()) + "\t";
-			line += Integer.toString(currSuffixRes.getFinalNodeNumber()) + "\t";
-			line += currSuffixRes.getConcatEdgeLabs() + "\n";
-			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(line);
-		}
-	}
-	
 	@Override
 	public void applyProperties () throws Exception {
 		super.setDefaultsIfMissing();
 		
-		// Apply own properties
-		
-		if (this.getProperties().containsKey(PROPERTYKEY_MINBRANCH))
-			this.minLength = Integer.parseInt(this.getProperties().getProperty(
-					PROPERTYKEY_MINBRANCH));
+		// Apply own properties.
+		/* No properties defined at right now.*/
 		
 		// Apply parent object's properties
 		super.applyProperties();
 	}
 	
 	// End methods.
+	
 }
