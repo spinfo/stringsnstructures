@@ -156,7 +156,7 @@ public class motifDetectionController extends ModuleImpl {
 		this.convertString2TreeNodes ();
 		
 		// Follow all suffix links and the length of the branch labels.
-		this.moveTopDown ();
+		this.bottomUp ();
 		
 		// Sort and extract longest cumulative branches.
 		this.sortSuffixRes();
@@ -452,7 +452,7 @@ public class motifDetectionController extends ModuleImpl {
 	 * This private method initiates the backtracking process a long the path of suffix links.
 	 * @return void
 	 */
-	private void moveTopDown () {
+	private void bottomUp () {
 		
 		// Initialize the TreeMap holding the results for the suffix link node search.
 		this.suffixLinkSearchRes = new ArrayList <SuffixLinkNodes> ();
