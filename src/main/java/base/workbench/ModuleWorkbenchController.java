@@ -339,7 +339,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				treeBuilder2OutputV2ControllerProperties);
 		treeBuilder2OutputV2ControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder2OutputControllerV2.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		treeBuilder2OutputControllerV2.applyProperties();
-		
+				
 		// Prepare GeneralisedSuffixTree module
 		Properties generalisedSuffixTreeProperties = new Properties();
 		GeneralisedSuffixTreeModule generalisedSuffixTreeModule = new GeneralisedSuffixTreeModule(moduleNetwork,
@@ -647,6 +647,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(treeBuilder2OutputController.getName(), treeBuilder2OutputController);
 		availableModules.put(treeBuilder2OutputControllerV2.getName(), treeBuilder2OutputControllerV2);
 		availableModules.put(generalisedSuffixTreeModule.getName(), generalisedSuffixTreeModule);
+		
 		availableModules.put(bufferModule.getName(), bufferModule);
 		availableModules.put(suffixTreeClusteringModuleWrapper.getName(), suffixTreeClusteringModuleWrapper);
 		availableModules.put(bagsOfWordsDistancesModule.getName(), bagsOfWordsDistancesModule);

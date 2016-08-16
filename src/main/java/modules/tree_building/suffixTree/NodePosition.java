@@ -55,7 +55,7 @@ public class NodePosition implements Comparable<NodePosition> {
 
 	/**
 	 * A NodePosition is smaller/greater than another if any of it's values is
-	 * smaller/greter than the others. Vlues are checked in the order:
+	 * smaller/greater than the others. Values are checked in the order:
 	 * typeContextNr, textNr, star, end If any of those is smaller/greater, the
 	 * appropriate result is returned.
 	 */

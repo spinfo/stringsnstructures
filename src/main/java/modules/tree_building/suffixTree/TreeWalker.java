@@ -23,7 +23,7 @@ public class TreeWalker {
 	 * @throws IOException on error
 	 */
 	public static void walk(int startNodeNr, BaseSuffixTree suffixTree, ITreeWalkerListener listener) throws IOException {
-		walk(startNodeNr, suffixTree, listener, 0);
+		walk(startNodeNr, suffixTree, listener, 0/*level*/);
 	}
 
 	/**
@@ -35,6 +35,7 @@ public class TreeWalker {
 	 * @param level level
 	 * @throws IOException on error
 	 */
+	
 	private static void walk(int startNodeNr, BaseSuffixTree suffixTree, ITreeWalkerListener listener, int level)
 			throws IOException {
 		listener.entryaction(startNodeNr, level);

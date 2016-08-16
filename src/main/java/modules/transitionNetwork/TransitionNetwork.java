@@ -1,0 +1,122 @@
+package modules.transitionNetwork;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.Scanner;
+
+import modules.CharPipe;
+import modules.InputPort;
+import modules.ModuleImpl;
+import modules.OutputPort;
+import modules.transitionNetwork.elements.StateElement;
+import modules.transitionNetwork.elements.SuffixElement;
+import modules.tree_building.suffixTree.Node;
+import common.parallelization.CallbackReceiver;
+
+public class TransitionNetwork extends ModuleImpl {
+	
+	// Define property keys (every setting has to have a unique key to associate it with)
+	public static final String PROPERTYKEY_DELIMITER_A = "delimiter A";
+	public static final String PROPERTYKEY_DELIMITER_B = "delimiter B";
+	public static final String PROPERTYKEY_DELIMITER_OUTPUT = "delimiter out";
+	
+	// Define I/O IDs (must be unique for every input or output)
+	private static final String ID_INPUT_A = "input A";
+	private static final String ID_INPUT_B = "input B";
+	private static final String ID_OUTPUT_ENTWINED = "entwined";
+	private static final String ID_OUTPUT_ENTWINED_CAPITALISED = "capitals";
+	
+	// Local variables
+	private String inputdelimiter_a;
+	private String inputdelimiter_b;
+	private String outputdelimiter;
+
+	public TransitionNetwork(CallbackReceiver callbackReceiver,
+			Properties properties) throws Exception {
+		
+		// Call parent constructor
+		super(callbackReceiver, properties);
+		
+		// Add module description
+		this.setDescription("<p>Segments two inputs and entwines them.</p><p>Among other things, you can use it<br/><ul><li>as a template to base your own modules on,</li><li>to review basic practices, like I/O,</li><li>and to get an overview of the standard implementations needed.</li></ul></p>");
+		
+		// You can override the automatic category selection (for example if a module is to be shown in "deprecated")
+		//this.setCategory("Examples");
+
+		// Add property descriptions (obligatory for every property!)
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_A, "Regular expression to use as segmentation delimiter for input A");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_B, "Regular expression to use as segmentation delimiter for input B");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT, "String to insert as segmentation delimiter into the output");
+		
+		// Add property defaults (_should_ be provided for every property)
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Example Module"); // Property key for module name is defined in parent class
+		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_A, "[\\s]+");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_B, "[\\s]+");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT, "\t");
+		
+		// Define I/O
+		/*
+		 * I/O is structured into separate ports (input~/output~).
+		 * Every port can support a range of pipe types (currently
+		 * byte or character pipes). Output ports can provide data
+		 * to multiple pipe instances at once, input ports can
+		 * in contrast only obtain data from one pipe instance.
+		 */
+		InputPort inputPort1 = new InputPort(ID_INPUT_A, "Plain text character input A.", this);
+		inputPort1.addSupportedPipe(CharPipe.class);
+		InputPort inputPort2 = new InputPort(ID_INPUT_B, "Plain text character input B.", this);
+		inputPort2.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort = new OutputPort(ID_OUTPUT_ENTWINED, "Plain text character output.", this);
+		outputPort.addSupportedPipe(CharPipe.class);
+		OutputPort capsOutputPort = new OutputPort(ID_OUTPUT_ENTWINED_CAPITALISED, "Plain text character output (all uppercase).", this);
+		capsOutputPort.addSupportedPipe(CharPipe.class);
+		
+		// Add I/O ports to instance (don't forget...)
+		super.addInputPort(inputPort1);
+		super.addInputPort(inputPort2);
+		super.addOutputPort(outputPort);
+		super.addOutputPort(capsOutputPort);
+		
+	}
+	
+	public StateElement stateElement(Node node) {
+		// to do
+		// if node in List, return element else create element, insert (at begin of List)
+		// and return element
+		return null;
+	}
+	
+	public SuffixElement suffixElement(Node node){
+		// to do
+		// if suffix node pointing to is in List, return element else create element, insert suffix(at end of List)
+				// and return element
+		
+		return null;
+	}
+
+	@Override
+	public boolean process() throws Exception {
+		List<StateElement> stateList=null;
+		List<SuffixElement> suffixList=null;
+		
+		return true;
+	}
+		
+		
+	
+	@Override
+	public void applyProperties() throws Exception {
+		
+		// Set defaults for properties not yet set
+		super.setDefaultsIfMissing();
+		
+		// Apply own properties
+		this.inputdelimiter_a = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_A, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_A));
+		this.inputdelimiter_b = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_B, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_B));
+		this.outputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT));
+		
+		// Apply parent object's properties (just the name variable actually)
+		super.applyProperties();
+	}
+
+}

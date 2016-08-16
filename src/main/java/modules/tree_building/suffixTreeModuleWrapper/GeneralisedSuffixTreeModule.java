@@ -19,6 +19,7 @@ import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.tree_building.suffixTree.GST;
 import modules.tree_building.suffixTree.ResultEdgeSegmentsListener;
+import modules.tree_building.suffixTree.ResultToFiniteStateMachineListener;
 import modules.tree_building.suffixTree.ResultLabelListListener;
 import modules.tree_building.suffixTree.ResultToGstLabelDataListener;
 import modules.tree_building.suffixTree.ResultToJsonListener;
@@ -62,6 +63,9 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_DOT_FILE_DESC = "Prints a graphical representation of the tree as a graphviz .dot file.";
 	private static final String OUTPUT_EDGE_SEGMENTS_ID = "edge segments";
 	private static final String OUTPUT_EDGE_SEGMENTS_DESC = "For each input text the output is that path in the tree split into it's edges.";
+
+	private static final String OUTPUT_FOR_TN_ID= "tn";
+	private static final String OUTPUT_FOR_TN_DESC = "[bytestream] A forTN representation of the tree build, suitbale for clustering.";
 
 	/**
 	 * Constructor
@@ -156,6 +160,17 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				}
 				edgeSegmentsOut.close();
 			}
+			
+			// output a list of edge segments
+			final OutputPort forTransitionNetwork = this.getOutputPorts().get(OUTPUT_FOR_TN_ID);
+			if (forTransitionNetwork.isConnected()) {
+				final ResultToFiniteStateMachineListener listener = new ResultToFiniteStateMachineListener(suffixTree, edgeSegmentsOut);
+				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+				if (!listener.hasCompleted()) {
+								throw new IllegalStateException("Listener did not finish correctly. Result may be wrong.");
+				}
+				forTransitionNetwork.close();
+			}
 
 			// output an XML-Representation of the tree
 			final OutputPort xmlOut = this.getOutputPorts().get(OUTPUT_XML_ID);
@@ -223,6 +238,13 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 		OutputPort outputEdgeSegmentsPort = new OutputPort(OUTPUT_EDGE_SEGMENTS_ID, OUTPUT_EDGE_SEGMENTS_DESC, this);
 		outputEdgeSegmentsPort.addSupportedPipe(CharPipe.class);
 		super.addOutputPort(outputEdgeSegmentsPort);
+		
+		// tn (for TransitionNetWork) Output goes to a BytePipe for compatibility to the clustering
+		// module
+		OutputPort outputForTnPort = new OutputPort(OUTPUT_FOR_TN_ID, OUTPUT_FOR_TN_DESC, this);
+				outputForTnPort.addSupportedPipe(BytePipe.class);
+				super.addOutputPort(outputForTnPort);
+		
 	}
 
 	/**
