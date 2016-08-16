@@ -54,11 +54,13 @@ public class motifDetectionController extends ModuleImpl {
 	// End enumerators.
 	
 	// Property keys:
-		/* Not required yet. */
+	public static final String PROPERTYKEY_MINALPHA = "Minimal length for identical string alpha allowed";
 	// End property keys.
 	
 	// Variables:
-	private int minLength;
+	
+	// This variable defines the minimum length of an identical starting string alpha.
+	private int minAlpha;
 	
 	// Dot document status.
 	DotTags DotStat = DotTags.UNDEFINED;
@@ -454,6 +456,22 @@ public class motifDetectionController extends ModuleImpl {
 	 */
 	private void bottomUp () {
 		
+		/* The general purpose of the methods bottomUp() and backwardsIteration() is to transverse the GST
+		 * bottom up to the root. During that process the algorithm will find identical suffixes leading to 
+		 * suffix links. It will follow these suffix links while keeping track of the parental nodes of
+		 * visited nodes. If identical start sequences were found (alpha) a alpha set, a delta set and a
+		 * N-set will be defined and saves as MotifCandidates object. 
+		 * Key-requirements are: 
+		 * 1.) A minimum length for alpha must be established.
+		 * 2.) A N-set needs to have at least 2 entries (2 parallel occurring branches and nodes at at least 2
+		 *     positions in the tree.
+		 */
+		
+		/*
+		 * Pseudo code for the algorithm:
+		 */
+		
+		
 		// Initialize the TreeMap holding the results for the suffix link node search.
 		this.suffixLinkSearchRes = new ArrayList <SuffixLinkNodes> ();
 		
@@ -504,7 +522,7 @@ public class motifDetectionController extends ModuleImpl {
 		// and do not add the current edgeLabel length to the results.
 		
 		if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().get(0) == 1
-				||	this.minLength > ((Dot2TreeInnerNodesParent) 
+				||	this.minAlpha > ((Dot2TreeInnerNodesParent) 
 					this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel().length()) {
 			// Retrieve the last node after following the suffix links bottom up.
 						SuffixLinkNodes suffixLinkNodes = new SuffixLinkNodes(
@@ -575,7 +593,9 @@ public class motifDetectionController extends ModuleImpl {
 		super.setDefaultsIfMissing();
 		
 		// Apply own properties.
-		/* No properties defined at right now.*/
+		if (this.getProperties().containsKey(PROPERTYKEY_MINALPHA))
+			this.minAlpha = Integer.parseInt(this.getProperties().getProperty(
+					PROPERTYKEY_MINALPHA));
 		
 		// Apply parent object's properties
 		super.applyProperties();
