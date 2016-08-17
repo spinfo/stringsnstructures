@@ -46,6 +46,7 @@ import modules.examples.ExampleModule;
 import modules.examples.ExampleRandString;
 import modules.experimental.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.format_conversion.CSV2GEXFModule;
+import modules.format_conversion.ExtensibleTreeNode2CSVModule;
 import modules.format_conversion.ExtensibleTreeNode2GEXFModule;
 import modules.format_conversion.dot2tree.Dot2TreeController;
 import modules.format_conversion.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
@@ -605,6 +606,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		matrixFilterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixFilterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		matrixFilterModule.applyProperties();
 		
+		// ExtensibleTreeNode2CSVModule
+		Properties extensibleTreeNode2CSVModuleProperties = new Properties();
+		ExtensibleTreeNode2CSVModule extensibleTreeNode2CSVModule = new ExtensibleTreeNode2CSVModule(moduleNetwork, extensibleTreeNode2CSVModuleProperties);
+		extensibleTreeNode2CSVModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, extensibleTreeNode2CSVModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		extensibleTreeNode2CSVModule.applyProperties();
+		
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -681,6 +688,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(lfgroupBuildingModule.getName(), lfgroupBuildingModule);
 		availableModules.put(branchLengthGrouping.getName(), branchLengthGrouping);
 		availableModules.put(matrixFilterModule.getName(), matrixFilterModule);
+		availableModules.put(extensibleTreeNode2CSVModule.getName(), extensibleTreeNode2CSVModule);
 	}
 	
 	/**

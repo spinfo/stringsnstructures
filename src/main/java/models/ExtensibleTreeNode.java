@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ExtensibleTreeNode {
+public class ExtensibleTreeNode implements Comparable<ExtensibleTreeNode> {
 	
 	private String nodeValue;
 	private int nodeCounter = 0;
@@ -65,6 +65,11 @@ public class ExtensibleTreeNode {
 	 */
 	public void setNodeValue(String nodeValue) {
 		this.nodeValue = nodeValue;
+	}
+	
+	@Override
+	public int compareTo(ExtensibleTreeNode node) {
+		return (this.nodeValue+this.toString()).compareTo(node.nodeValue+node.toString());
 	}
 
 }
