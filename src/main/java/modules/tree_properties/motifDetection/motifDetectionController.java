@@ -54,13 +54,13 @@ public class motifDetectionController extends ModuleImpl {
 	// End enumerators.
 	
 	// Property keys:
-	public static final String PROPERTYKEY_MINALPHA = "Minimal length for identical string alpha allowed";
+	public static final String PROPERTYKEY_MAXCOMBINATORICS = "Minimal length for identical string alpha allowed";
 	// End property keys.
 	
 	// Variables:
 	
 	// This variable defines the minimum length of an identical starting string alpha.
-	private int minAlpha;
+	private int maxTrials;
 	
 	// Dot document status.
 	DotTags DotStat = DotTags.UNDEFINED;
@@ -88,6 +88,9 @@ public class motifDetectionController extends ModuleImpl {
 	// the suffix links.
 	private ArrayList <SuffixLinkNodes> suffixLinkSearchRes;
 	
+	// This ArrayList holds all motif candidates.
+	private ArrayList <MotifCandidates> motifCandidatesRes;
+	
 	// Variable holding each line of the input.
 	private String inputString;
 	
@@ -112,13 +115,18 @@ public class motifDetectionController extends ModuleImpl {
 		
 		// Property descriptions.
 			/* No module properties required at the moment.*/
+		this.getPropertyDescriptions().put(this.PROPERTYKEY_MAXCOMBINATORICS, "Maximum parallel search strategies");
 		
 		// Initialize module specific fields.
-		this.dot2TreeNodesMap = new TreeMap <Integer, Dot2TreeNodes>();
+		
+		// Reverse order for the dot2TreeNodesMap to iterate in ascending order (not descending).
+		this.dot2TreeNodesMap = new TreeMap <Integer, Dot2TreeNodes>(Collections.reverseOrder());
+		
 		this.gstXmlNodes = new TreeMap <Integer, GSTXmlNode>();
 		
 		// Property defaults.
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Motif Detection");
+		this.getPropertyDefaultValues().put(this.PROPERTYKEY_MAXCOMBINATORICS, "4");
 		
 		// Initialize I/O pipelines.
 		InputPort inputDotPort = new InputPort(INPUTDOTID, "<b>[dot format]</b> Dot output from the<br>GST builder module.", this);
@@ -464,22 +472,17 @@ public class motifDetectionController extends ModuleImpl {
 		 * Key-requirements are: 
 		 * 1.) A minimum length for alpha must be established.
 		 * 2.) A N-set needs to have at least 2 entries (2 parallel occurring branches and nodes at at least 2
-		 *     positions in the tree.
+		 *     positions in the tree).
 		 */
-		
-		/*
-		 * Pseudo code for the algorithm:
-		 */
-		
-		
+
 		// Initialize the TreeMap holding the results for the suffix link node search.
 		this.suffixLinkSearchRes = new ArrayList <SuffixLinkNodes> ();
 		
 		// Iterate over all nodes.
-		Iterator<Map.Entry<Integer,Dot2TreeNodes>> it = this.dot2TreeNodesMap.entrySet().iterator();
+		Iterator <Map.Entry<Integer,Dot2TreeNodes>> it = this.dot2TreeNodesMap.entrySet().iterator();
 		
 		while(it.hasNext()) {
-			Map.Entry<Integer, Dot2TreeNodes> pair = it.next();
+			Map.Entry <Integer, Dot2TreeNodes> pair = it.next();
 			
 			// Analyze only internal nodes which have suffix links.
 			if (pair.getValue().getClass().equals(Dot2TreeInnerNodesParent.class) 
@@ -491,11 +494,10 @@ public class motifDetectionController extends ModuleImpl {
 				if ( !(suffixLink == 1) ) {
 					
 					// Start the backwards iteration process to get the longest cumulative labels.
-					this.suffixLinkSearchRes.add(backwardsIteration ( suffixLink, 
-							pair.getValue().getEdgeLabel().length(),
-							pair.getKey(),
-							pair.getValue().getEdgeLabel()) 
-							);
+					// If the search fails continue with the next node.
+					if (!backwardsIteration ( pair.getKey(), suffixLink) ) {
+						continue;
+					}
 				}
 			}
 			
@@ -504,67 +506,212 @@ public class motifDetectionController extends ModuleImpl {
 			// it.remove();
 		}	
 	}
-	
+		
 	/**
 	 * This method follows the suffix links due to recursion.
 	 * It returns a SuffixLinkNodes object which holds
 	 * the start node, the end node, and the cumulative length of the 
 	 * concatenated edge labels.
 	 * @param suffixLink
-	 * @param lastResult
 	 * @param startNode
-	 * @return SuffixLinkNodes object
+	 * @return MotifCandidates object
 	 */
-	private SuffixLinkNodes backwardsIteration(int suffixLink, int lastResult, int startNode, String edgeLabel) {
+	private Boolean backwardsIteration(int startNode, int suffixLink) {
 		
-		// If the suffix link node parent is the root node.
-		// Or if the edgeLabel of the parent node is smaller than the defined threshold then stop the iteration
-		// and do not add the current edgeLabel length to the results.
+		/*
+		 * Pseudo code for the algorithm:
+		 * 1.) If internal node N1 exist and has a suffix link (SL) node N2, follow it.
+		 * 2.) Follow N2 to its parent P2. Follow N1 to its parent P1. 
+		 * 3.) If the edge of P1 and P2 are equal and there is a SL from P1 to P2, or 
+		 *     otherwise, define the edge as alpha.
+		 *     If they are not equal follow their parent nodes as long as the edges of 
+		 *     the parents have a greater length than defined by the minAlpha variable.
+		 * 4.) If an alpha was found define delta and the N-set. Save this information as
+		 *     MotifCandidate object.
+		 * 5.) Continue steps 1 to 4 with the next internal node.
+		 */
 		
-		if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().get(0) == 1
-				||	this.minAlpha > ((Dot2TreeInnerNodesParent) 
-					this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel().length()) {
-			// Retrieve the last node after following the suffix links bottom up.
-						SuffixLinkNodes suffixLinkNodes = new SuffixLinkNodes(
-								lastResult,
-								startNode,
-								((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getNodeNumber(),
-								edgeLabel
-								);
+		// Step 1: If the edge label of the parent node and the parent node of the suffix link are identical
+		//         report the sets. Otherwise continue iterating.
+		if ( this.dot2TreeNodesMap.get(
+				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent())
+				.getEdgeLabel().equals(
+			this.dot2TreeNodesMap.get(
+				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent())
+			.getEdgeLabel())
+			) {
+			// TODO: Stop iteration if sets are established.
+		} else {
+			// Follow the suffix link to the linked node.
+			int [] linkedParents = this.followParents(startNode, suffixLink, 0);
+			
+			// Abort the search if no alpha could be determined.
+			if (linkedParents[0] == 0 && linkedParents[1] == 0) {
+				return false;
+			} else {
+				MotifCandidates newMotifCandidate = new MotifCandidates (
+						(Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(linkedParents[0]));
+				
+				// Do a string comparison for startNode and suffixLink to define delta and N-set.
+				char [] startNodeChars = this.dot2TreeNodesMap.get(startNode).getEdgeLabel().toCharArray();
+				char [] suffixLinkChars = this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().toCharArray();
+				
+				// Define the longest string.
+				int maxChar;
+				
+				// Define the offSet between both strings.
+				int offSet;
+				ArrayList <Character> resultDelta = new ArrayList <Character> ();
+				
+				if (this.dot2TreeNodesMap.get(startNode).getEdgeLabel().length() >
+					this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length()) {
+					maxChar = this.dot2TreeNodesMap.get(startNode).getEdgeLabel().length();	
+					offSet = this.dot2TreeNodesMap.get(startNode).getEdgeLabel().length()
+							- this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length();
+				} 
+				
+				else if (this.dot2TreeNodesMap.get(startNode).getEdgeLabel().length() ==
+					this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length()) {
+					maxChar = this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length();
+					offSet = 0;
+				} 
+				
+				else {
+					maxChar = this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length();
+					offSet = this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length()
+							- this.dot2TreeNodesMap.get(startNode).getEdgeLabel().length();
+				}
+							
+				// Compare both Strings char by char from suffix to prefix.
+				for (int i = maxChar; i > 1; i --) {
+					if (startNodeChars[i] == suffixLinkChars[i]) {
+						resultDelta.add(startNodeChars[i]);
+					} else {
 						
-						return suffixLinkNodes;
+					}
+				}
+				
+				newMotifCandidate.setDelta(resultDelta.toString());
+			}
 		}
-		// If the node to which the suffix link is pointing and the parent of the currentNode are the very same node.
-		// Or if the suffix link node has no further suffix links.
 		
-		if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
-					(((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().get(0))
-					)).getNodeNumber() == 
-					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent()
-				|| ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().isEmpty()
-				)  {
-			
-			// Retrieve the last node after following the suffix links bottom up.
-			SuffixLinkNodes suffixLinkNodes = new SuffixLinkNodes(
-					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel().length() + lastResult,
-					startNode,
-					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getNodeNumber(),
-					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel() + "|" + edgeLabel);
-			
-			return suffixLinkNodes;
-			
-		} 
-		
-		// New concatenated edge label.
-		String newEdgeLabel = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel() + "|" + edgeLabel;
-		
-		// Next recursion cycle.
 		int newSuffixLink = ((Dot2TreeInnerNode) this.dot2TreeNodesMap.get(suffixLink)).getAllSuffixLinks().get(0);
 		
-		return backwardsIteration( newSuffixLink, 
-				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getEdgeLabel().length() + lastResult,
-				startNode,
-				newEdgeLabel);
+		// Follow the suffix links and re-check the coherence between their respective parents.
+		return backwardsIteration (suffixLink, newSuffixLink);
+		
+	}
+	
+	
+	// TODO: Follow up to maximum of 4 recombinatoric events. Right now the algorithm follows only pairwise.
+	private int [] followParents(int startNode, int suffixLink, int numberOfIteration) {
+		
+		int [] resultsArray = new int [2];
+		if ( this.dot2TreeNodesMap.get(
+				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent())
+				.getEdgeLabel().equals(
+			this.dot2TreeNodesMap.get(
+				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent())
+				.getEdgeLabel())
+			) {
+			
+			resultsArray[0] = this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent()
+					).getNodeNumber();
+			resultsArray[1] = this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent()
+					).getNodeNumber();
+			return resultsArray;
+			
+		} else {
+			
+			// Check if all the combinatorial trials were used up.
+			// Check whether the parents of startNode and suffixLink have parents which are not root. 
+			// If they have root as parent or all trials were used up, return an "zero" array.
+			if (numberOfIteration >= this.maxTrials 
+				|| (this.dot2TreeNodesMap.get((
+					(Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent()))
+					))
+					.getParent()).getNodeNumber() == 1
+				&& this.dot2TreeNodesMap.get((
+					(Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent()))
+					))
+					.getParent()).getNodeNumber() == 1)) {
+				
+				resultsArray[0] = 0;
+				resultsArray[1] = 0;
+				return resultsArray;
+			}
+	
+			numberOfIteration ++;
+			
+			// Test the parent of parent of startNode versus the parent of suffixLink.
+			if ( this.dot2TreeNodesMap.get((
+					(Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent()))
+					))
+					.getParent())
+					.equals(
+				this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent())
+					.getEdgeLabel())
+				) {
+				
+				// Get the node number of the parent of the parent of startNode.
+				resultsArray[0] = this.dot2TreeNodesMap.get((
+						(Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+						((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+						((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent()))
+						))
+						.getParent())
+						.getNodeNumber();
+				
+				// Get the node number of the parent of suffixLink.
+				resultsArray[1] = this.dot2TreeNodesMap.get(
+						((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent()
+						).getNodeNumber();
+				return resultsArray;
+				
+			}
+			
+			// Test the parent of the parent of suffixLink versus the parent of startNode.
+			if ( this.dot2TreeNodesMap.get((
+					(Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent()))
+					))
+					.getParent())
+					.equals(
+				this.dot2TreeNodesMap.get(
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent())
+					.getEdgeLabel())
+				) {
+				
+				// Get the node number of the parent of the parent of startNode.
+				resultsArray[0] = this.dot2TreeNodesMap.get((
+						(Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+						((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(
+						((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent()))
+						))
+						.getParent())
+						.getNodeNumber();
+				
+				// Get the node number of the parent of suffixLink.
+				resultsArray[1] = this.dot2TreeNodesMap.get(
+						((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent()
+						).getNodeNumber();
+				return resultsArray;
+				
+			}
+			
+			// If none of the above is true continue with the next iteration.
+			return this.followParents(startNode, suffixLink, numberOfIteration);
+		}
 	}
 	
 	private void sortSuffixRes () {
@@ -593,9 +740,9 @@ public class motifDetectionController extends ModuleImpl {
 		super.setDefaultsIfMissing();
 		
 		// Apply own properties.
-		if (this.getProperties().containsKey(PROPERTYKEY_MINALPHA))
-			this.minAlpha = Integer.parseInt(this.getProperties().getProperty(
-					PROPERTYKEY_MINALPHA));
+		if (this.getProperties().containsKey(PROPERTYKEY_MAXCOMBINATORICS))
+			this.maxTrials = Integer.parseInt(this.getProperties().getProperty(
+					PROPERTYKEY_MAXCOMBINATORICS));
 		
 		// Apply parent object's properties
 		super.applyProperties();
