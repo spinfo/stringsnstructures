@@ -99,6 +99,7 @@ import modules.vectorization.VectorMedianCalculatorModule;
 import modules.vectorization.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.visualization.ASCIIGraph;
 import modules.visualization.ColourGraph;
+import modules.tree_properties.motifDetection.MotifDetectionController;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -612,6 +613,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		extensibleTreeNode2CSVModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, extensibleTreeNode2CSVModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		extensibleTreeNode2CSVModule.applyProperties();
 		
+		// Motif Detection Module
+		Properties motifDetectionControllerProperties = new Properties();
+		MotifDetectionController motifDetectionController = new MotifDetectionController(moduleNetwork, motifDetectionControllerProperties);
+		motifDetectionControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, motifDetectionController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		motifDetectionController.applyProperties();
+				
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
@@ -690,6 +697,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(branchLengthGrouping.getName(), branchLengthGrouping);
 		availableModules.put(matrixFilterModule.getName(), matrixFilterModule);
 		availableModules.put(extensibleTreeNode2CSVModule.getName(), extensibleTreeNode2CSVModule);
+		availableModules.put(motifDetectionController.getName(), motifDetectionController);
 	}
 	
 	/**

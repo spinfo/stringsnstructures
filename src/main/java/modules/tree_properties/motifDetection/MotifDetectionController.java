@@ -43,7 +43,7 @@ import models.Dot2TreeNodes;
  */
 
 
-public class motifDetectionController extends ModuleImpl {
+public class MotifDetectionController extends ModuleImpl {
 	
 	// Enumerators:	
 	private enum DotTags {
@@ -94,7 +94,7 @@ public class motifDetectionController extends ModuleImpl {
 	// End variables.
 	
 	// Constructors:
-	public motifDetectionController (CallbackReceiver callbackReceiver,
+	public MotifDetectionController (CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
 		super (callbackReceiver, properties);
 		
