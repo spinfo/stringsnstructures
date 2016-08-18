@@ -2,7 +2,6 @@ package modules.transitionNetwork.elements;
 
 
 import modules.transitionNetwork.List.TNArrayList;
-import modules.tree_building.suffixTree.Node;
 
 
 public class StateElement extends AbstractElement{

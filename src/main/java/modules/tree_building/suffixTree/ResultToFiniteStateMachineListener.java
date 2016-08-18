@@ -133,8 +133,6 @@ public class ResultToFiniteStateMachineListener extends AbstractResultNodeStackL
 	private boolean inverted= true;
 	
 	private TransitionNetwork1 tn;
-	
-	private final OutputPort out=null;
 
 	private Stack<Integer> nodeNrs=null;
 	private boolean afterBacktrack=true;

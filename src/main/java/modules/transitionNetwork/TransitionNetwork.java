@@ -1,8 +1,6 @@
 package modules.transitionNetwork;
 
-import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 
 import modules.CharPipe;
 import modules.InputPort;
@@ -25,11 +23,6 @@ public class TransitionNetwork extends ModuleImpl {
 	private static final String ID_INPUT_B = "input B";
 	private static final String ID_OUTPUT_ENTWINED = "entwined";
 	private static final String ID_OUTPUT_ENTWINED_CAPITALISED = "capitals";
-	
-	// Local variables
-	private String inputdelimiter_a;
-	private String inputdelimiter_b;
-	private String outputdelimiter;
 
 	public TransitionNetwork(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -96,8 +89,6 @@ public class TransitionNetwork extends ModuleImpl {
 
 	@Override
 	public boolean process() throws Exception {
-		List<StateElement> stateList=null;
-		List<SuffixElement> suffixList=null;
 		
 		return true;
 	}
@@ -109,11 +100,6 @@ public class TransitionNetwork extends ModuleImpl {
 		
 		// Set defaults for properties not yet set
 		super.setDefaultsIfMissing();
-		
-		// Apply own properties
-		this.inputdelimiter_a = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_A, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_A));
-		this.inputdelimiter_b = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_B, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_B));
-		this.outputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT));
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
