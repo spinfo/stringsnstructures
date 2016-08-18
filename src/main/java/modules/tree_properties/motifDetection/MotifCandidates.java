@@ -1,6 +1,6 @@
 package modules.tree_properties.motifDetection;
 
-// Java util imports.
+// Java utility imports.
 import java.util.TreeMap;
 
 // Workbench specific imports.
@@ -17,7 +17,7 @@ public class MotifCandidates {
 	private TreeMap <Integer, Dot2TreeInnerNodesParent> alphaSet;
 	
 	// This variable holds the information about the ending suffix (delta).
-	private String deltaSuffix;
+	private TreeMap <Integer, String> deltaSuffix;
 	
 	// This TreeMap holds the so-called delta-set (all nodes which edge end on the suffix delta).
 	private TreeMap <Integer, Dot2TreeInnerNodesParent> deltaSet;
@@ -28,18 +28,20 @@ public class MotifCandidates {
 	// End variables.
 	
 	// Constructors:
-	public MotifCandidates (Dot2TreeInnerNodesParent node) {
+	public MotifCandidates (Dot2TreeInnerNodesParent startNode, Dot2TreeInnerNodesParent linkedNode) {
 		
 		// Define the alphaEdge.
-		alphaEdge = node.getEdgeLabel();
+		alphaEdge = startNode.getEdgeLabel();
 		
 		// Instantiate all TreeMaps.
 		this.alphaSet = new TreeMap <Integer, Dot2TreeInnerNodesParent> ();
 		this.deltaSet = new TreeMap <Integer, Dot2TreeInnerNodesParent> ();
 		this.nSetStrings = new TreeMap <Integer, String> ();
+		this.deltaSuffix = new TreeMap <Integer, String> ();
 		
 		// Initialize the alphaSet.
-		this.alphaSet.put(node.getNodeNumber(), node);
+		this.alphaSet.put(startNode.getNodeNumber(), startNode);
+		this.alphaSet.put(linkedNode.getNodeNumber(), linkedNode);
 		
 	}
 		
@@ -74,10 +76,10 @@ public class MotifCandidates {
 	}
 	
 	/**
-	 * This getter returns the string of the suffix delta.
+	 * This getter returns the string of the suffix delta set.
 	 * @return String deltaSuffix
 	 */
-	public String getDelta ()  {
+	public TreeMap <Integer, String> getDelta ()  {
 		return this.deltaSuffix;
 	}
 	
@@ -97,8 +99,8 @@ public class MotifCandidates {
 	 * This setter sets the string of the suffix delta.
 	 * @param String delta
 	 */
-	public void setDelta (String delta)  {
-		this.deltaSuffix = delta;
+	public void setDelta (int node, String delta)  {
+		this.deltaSuffix.put(node, delta);
 	}
 	
 	/**

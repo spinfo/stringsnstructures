@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +59,8 @@ public class MotifDetectionController extends ModuleImpl {
 	public static final String PROPERTYKEY_MAXCOMBINATORICS = "Maximum number of trials";
 	
 	public static final String PROPERTYKEY_MINALPHA = "Minimum length for alpha";
+	
+	public static final String PROPERTYKEY_MINDELTA = "Minim length for delta";
 	// End property keys.
 	
 	// Variables:
@@ -67,6 +70,9 @@ public class MotifDetectionController extends ModuleImpl {
 	
 	// This variable defines maximum amount of tries allowed to identify parents with common strings alpha.
 	private int maxTrials;
+	
+	// This variable defines the minimum length of the string delta.
+	private int minDeltaLen;
 	
 	// Dot document status.
 	DotTags DotStat = DotTags.UNDEFINED;
@@ -90,6 +96,11 @@ public class MotifDetectionController extends ModuleImpl {
 		
 	// This ArrayList holds all motif candidates.
 	private ArrayList <MotifCandidates> motifCandidatesRes;
+	
+	// Variables for alpha, delta and N-Set comparisons.
+	private HashMap <String, CompareSets> deltaCompared;
+	
+	private HashMap <String, CompareSets> nSetCompared;
 	
 	// Variable holding each line of the input.
 	private String inputString;
@@ -118,8 +129,14 @@ public class MotifDetectionController extends ModuleImpl {
 				"Maximal tries allowed to find linked parents with alpha edge.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_MINALPHA, 
 				"Minimal length for identical string alpha allowed.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_MINDELTA, 
+				"Minimal length for identical string delta allowed.");
 		
 		// Initialize module specific fields.
+		
+		this.deltaCompared = new HashMap <String, CompareSets> ();
+		
+		this.nSetCompared = new HashMap <String, CompareSets> ();
 		
 		// Reverse order for the dot2TreeNodesMap to iterate in ascending order (not descending).
 		this.dot2TreeNodesMap = new TreeMap <Integer, Dot2TreeNodes>(Collections.reverseOrder());
@@ -130,6 +147,7 @@ public class MotifDetectionController extends ModuleImpl {
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Motif Detection");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXCOMBINATORICS, "4");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MINALPHA, "3");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MINDELTA, "2");
 		
 		// Initialize I/O pipelines.
 		InputPort inputDotPort = new InputPort(INPUTDOTID, "<b>[dot format]</b> Dot output from the<br>GST builder module.", this);
@@ -193,7 +211,12 @@ public class MotifDetectionController extends ModuleImpl {
 			String line = motifCandidateRes.getAlphaEdge() + "\t";
 			
 			// Print delta.
-			line += motifCandidateRes.getDelta() + "\t";
+			
+			for (Map.Entry<Integer, String> delta : motifCandidateRes.getDelta().entrySet()) {
+				line += delta.getKey() + ";";
+				line += delta.getValue() + ";";
+			}
+			line +=  "\t";
 			
 			// Print alpha set.
 			Iterator <Map.Entry<Integer, Dot2TreeInnerNodesParent>> alphaSetIt = 
@@ -569,16 +592,55 @@ public class MotifDetectionController extends ModuleImpl {
 		
 		// Step 1: If the edge label of the parent node and the parent node of the suffix link are identical
 		//         report the sets. Otherwise continue iterating.
-		if ( this.dot2TreeNodesMap.get(
-				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent())
-				.getEdgeLabel().equals(
-			this.dot2TreeNodesMap.get(
-				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent())
-			.getEdgeLabel())
-			) {
+		
+		// Get parents of the startNode and the suffixLink.
+		int startNodeParent = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent();
+		int suffixLinkParent = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent();
+		
+		// Check whether both parents have the same edgeLabels and whether they are directly linked. 
+		if ( this.dot2TreeNodesMap.get(startNodeParent).getEdgeLabel().equals(
+			this.dot2TreeNodesMap.get(suffixLinkParent).getEdgeLabel())
+			&& (
+					(((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent)).getAllSuffixLinks().get(0) 
+							== suffixLinkParent)
+					|| ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkParent)).getAllSuffixLinks().get(0) 
+						== startNodeParent)
+			){
 			
+			// Now explore the other descendants of startNodeParent. Are they also internal nodes? Are they linked?
+			
+			// Save all children of suffixLinkParent which are linked to children of startNodeParent.
+			ArrayList <Integer> suffixLinkParentChildren = new ArrayList <Integer> (); 
+			
+			// Save all children of startNodeParent which are linked to the children of suffixLinkParent.
+			ArrayList <Integer> startNodeParentChildren = new ArrayList <Integer> ();
+			
+			// Iterate over the children.
+			Iterator<Map.Entry<Integer, Dot2TreeInnerNode>> childIt = 
+					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent))
+					.getAllChildNodes().entrySet().iterator();
+			
+			while (childIt.hasNext()) {
+				Map.Entry<Integer, Dot2TreeInnerNode> childPair = childIt.next();
+				
+				// Check whether any child of suffixLinkParent is linked to any child of startNodeParent.
+				
+				if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkParent))
+						.getAllChildNodes().containsKey(childPair.getValue().getAllSuffixLinks().get(0))) {
+					
+					suffixLinkParentChildren.add(childPair.getValue().getAllSuffixLinks().get(0));
+					startNodeParentChildren.add(childPair.getKey());
+				}
+			}
+			
+			// Check whether more than one linked child pair was retrieved and the continue otherwise stop the search.
+			if (suffixLinkParentChildren.size() < 2 && startNodeParentChildren.size() < 2) 
+				return false;
+			
+			// If everything went well thus far, create a new motif Candidate.
 			MotifCandidates newMotifCandidate = new MotifCandidates (
-					(Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(startNode));
+					(Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(startNodeParent),
+					(Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(suffixLinkParent));
 			
 			// Do a string comparison for startNode and suffixLink to define delta and N-set.
 			char [] startNodeChars = this.dot2TreeNodesMap.get(startNode).getEdgeLabel().toCharArray();
@@ -604,11 +666,8 @@ public class MotifDetectionController extends ModuleImpl {
 			else if (this.dot2TreeNodesMap.get(startNode).getEdgeLabel().length() ==
 				this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length()) {
 				maxChar = this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length();
-				// suffixLinkOffSet = 0;
-				// startNodeOffSet = 0;
-				
-				// This condition means there is no N-Set! Search thus failed!
-				return false;
+				startNodeOffSet = 0;
+				suffixLinkOffSet = 0;
 			} 
 			
 			else {
@@ -630,33 +689,63 @@ public class MotifDetectionController extends ModuleImpl {
 					resultDelta.add(0, startNodeChars[i - startNodeOffSet]);
 				} else {
 					if (i - startNodeOffSet >= 0) {
-						startNodeNSet.add(startNodeChars[i - startNodeOffSet]);
+						startNodeNSet.add(0, startNodeChars[i - startNodeOffSet]);
 					} 
 					if (i - suffixLinkOffSet >= 0)  {
-						suffixLinkNSet.add(suffixLinkChars[i - suffixLinkOffSet]);
+						suffixLinkNSet.add(0, suffixLinkChars[i - suffixLinkOffSet]);
 					}
 				}
 			}
 			
-			// Set the delta for the motif candidate.
-			newMotifCandidate.setDelta(resultDelta.toString());
+			// Compare the retrieved delta with a cross comparison of two children of 
+			// startNodeParent and suffixLinkParent.
+			this.compareSets (startNodeParentChildren, suffixLinkParentChildren, resultDelta, startNodeNSet, suffixLinkNSet);
 			
-			// Add the N-Sets to the motif candidate.
-			newMotifCandidate.setNSet(startNode, startNodeNSet.toString());
-			newMotifCandidate.setNSet(suffixLink, suffixLinkNSet.toString());
+			// Delete all entries from the fields this.deltaCompared and this.nSetCompared which have less than 2 entries.
+			// 4 entries should equal two pairs. TODO: Check whether this is truly applicable.
 			
-			// Add delta set to motif candidate.
-			newMotifCandidate.putDeltaSet(startNode, ((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(startNode)));
-			newMotifCandidate.putDeltaSet(suffixLink, ((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(suffixLink)));
+			Iterator <Map.Entry<String, CompareSets>> deltaIt = this.deltaCompared.entrySet().iterator();
 			
-			// Add alpha set to motif candidate.
-			newMotifCandidate.putAlphaSet(startNode, ((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(startNode)));
-			newMotifCandidate.putAlphaSet(suffixLink, ((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(suffixLink)));
+			while (deltaIt.hasNext()) {
+				Map.Entry<String, CompareSets> deltaEntry = deltaIt.next();
+				if (deltaEntry.getValue().getOccurences() >= 2) {
+					for (Map.Entry<Integer, String> entry : deltaEntry.getValue().getAllNodeStrings().entrySet()) {
+						// Set the delta for the motif candidate.
+						newMotifCandidate.setDelta(entry.getKey(), entry.getValue());
+						// Add delta set to motif candidate.
+						newMotifCandidate.putDeltaSet(entry.getKey(), 
+								((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(entry.getKey())));
+					}
+				} else { 
+					deltaIt.remove();
+				}
+			}
 			
+			Iterator <Map.Entry<String, CompareSets>> nSetIt = this.nSetCompared.entrySet().iterator();
+			
+			while (nSetIt.hasNext()) {
+				Map.Entry<String, CompareSets> nSetEntry = nSetIt.next();
+				if (nSetEntry.getValue().getOccurences() >= 2) {
+					for (Map.Entry<Integer, String> entry : nSetEntry.getValue().getAllNodeStrings().entrySet()) {
+						// Add the N-Sets to the motif candidate.
+						newMotifCandidate.setNSet(entry.getKey(), entry.getValue());
+					}
+				} else {
+					nSetIt.remove();
+				}
+					
+			}
+			
+			// Remove the current results from the fields this.deltaCompared and this.nSetCompared.
+			this.deltaCompared.clear();
+			this.nSetCompared.clear();
+			
+			// Add the retrieved motif candidate to the list.
 			this.motifCandidatesRes.add(newMotifCandidate);
 			
 			// Successful identification of a motif candidate.
 			return true;
+			
 		} else {
 			// Follow the suffix link to the linked node.
 			int [] linkedParents = this.followParents(startNode, suffixLink, 0);
@@ -665,8 +754,39 @@ public class MotifDetectionController extends ModuleImpl {
 			if (linkedParents[0] == 0 && linkedParents[1] == 0) {
 				return false;
 			} else if (linkedParents[0] != linkedParents[1]) {
+								
+				// Now explore the other descendants of startNodeParent. Are they also internal nodes? Are they linked?
+				
+				// Save all children of suffixLinkParent which are linked to children of startNodeParent.
+				ArrayList <Integer> suffixLinkParentChildren = new ArrayList <Integer> (); 
+				
+				// Save all children of startNodeParent which are linked to the children of suffixLinkParent.
+				ArrayList <Integer> startNodeParentChildren = new ArrayList <Integer> ();
+				
+				// Iterate over the children.
+				Iterator<Map.Entry<Integer, Dot2TreeInnerNode>> childIt = 
+						((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent))
+						.getAllChildNodes().entrySet().iterator();
+				
+				while (childIt.hasNext()) {
+					Map.Entry<Integer, Dot2TreeInnerNode> childPair = childIt.next();
+					
+					// Check whether any child of suffixLinkParent is linked to any child of startNodeParent.
+					if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkParent))
+						.getAllChildNodes().containsKey(childPair.getValue().getAllSuffixLinks().get(0)) ) {
+						suffixLinkParentChildren.add(childPair.getValue().getAllSuffixLinks().get(0));
+						startNodeParentChildren.add(childPair.getKey());
+					}
+				}
+				
+				// Check whether more than one linked child pair was retrieved and the continue otherwise stop the search.
+				if (suffixLinkParentChildren.size() < 2 && startNodeParentChildren.size() < 2) 
+					return false;
+				
+				// If everything went well thus far, create a new motif Candidate.
 				MotifCandidates newMotifCandidate = new MotifCandidates (
-						(Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(linkedParents[0]));
+						(Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(linkedParents[0]),
+						(Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(linkedParents[1]));
 				
 				// Do a string comparison for startNode and suffixLink to define delta and N-set.
 				char [] startNodeChars = this.dot2TreeNodesMap.get(startNode).getEdgeLabel().toCharArray();
@@ -692,11 +812,9 @@ public class MotifDetectionController extends ModuleImpl {
 				else if (this.dot2TreeNodesMap.get(startNode).getEdgeLabel().length() ==
 					this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length()) {
 					maxChar = this.dot2TreeNodesMap.get(suffixLink).getEdgeLabel().length();
-					// suffixLinkOffSet = 0;
-					// startNodeOffSet = 0;
 					
-					// This condition means there is no N-Set! Search thus failed!
-					return false;
+					startNodeOffSet = 0;
+					suffixLinkOffSet = 0;
 				} 
 				
 				else {
@@ -711,35 +829,68 @@ public class MotifDetectionController extends ModuleImpl {
 				ArrayList <Character> suffixLinkNSet = new ArrayList <Character> ();
 							
 				// Compare both Strings char by char from suffix to prefix.
-				for (int i = maxChar - 1; i >= 0; i --) {
-					if (i >= startNodeOffSet && i >= suffixLinkOffSet
+				for (int i = maxChar - 1 ; i >= 0; i --) {
+					if (i >= startNodeOffSet
+						&& i >= suffixLinkOffSet
 						&& startNodeChars[i - startNodeOffSet] == suffixLinkChars[i - suffixLinkOffSet]) {
 						resultDelta.add(0, startNodeChars[i - startNodeOffSet]);
 					} else {
 						if (i - startNodeOffSet >= 0) {
-							startNodeNSet.add(startNodeChars[i - startNodeOffSet]);
+							startNodeNSet.add(0, startNodeChars[i - startNodeOffSet]);
 						} 
 						if (i - suffixLinkOffSet >= 0)  {
-							suffixLinkNSet.add(suffixLinkChars[i - suffixLinkOffSet]);
+							suffixLinkNSet.add(0, suffixLinkChars[i - suffixLinkOffSet]);
 						}
 					}
 				}
 				
-				// Set the delta for the motif candidate.
-				newMotifCandidate.setDelta(resultDelta.toString());
+				// Compare the retrieved delta with a cross comparison of two children of 
+				// startNodeParent and suffixLinkParent.
+				this.compareSets (startNodeParentChildren, suffixLinkParentChildren, resultDelta, startNodeNSet, suffixLinkNSet);
 				
-				// Add the N-Sets to the motif candidate.
-				newMotifCandidate.setNSet(startNode, startNodeNSet.toString());
-				newMotifCandidate.setNSet(suffixLink, suffixLinkNSet.toString());
+				// Delete all entries from the fields this.deltaCompared and this.nSetCompared which have less than 4 entries.
+				// 4 entries should equal two pairs. TODO: Check whether this is truly applicable.
 				
-				// Add delta set to motif candidate.
-				newMotifCandidate.putDeltaSet(startNode, ((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(startNode)));
-				newMotifCandidate.putDeltaSet(suffixLink, ((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(suffixLink)));
+				Iterator <Map.Entry<String, CompareSets>> deltaIt = this.deltaCompared.entrySet().iterator();
 				
-				// Add alpha set to motif candidate.
-				newMotifCandidate.putAlphaSet(startNode, ((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(startNode)));
-				newMotifCandidate.putAlphaSet(suffixLink, ((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(suffixLink)));
+				while (deltaIt.hasNext()) {
+					Map.Entry<String, CompareSets> deltaEntry = deltaIt.next();
+					if (deltaEntry.getValue().getOccurences() > 4) {
+						for (Map.Entry<Integer, String> entry : deltaEntry.getValue().getAllNodeStrings().entrySet()) {
+							// Set the delta for the motif candidate.
+							newMotifCandidate.setDelta(entry.getKey(), entry.getValue());
+							// Add delta set to motif candidate.
+							newMotifCandidate.putDeltaSet(entry.getKey(), 
+									((Dot2TreeInnerNodesParent)this.dot2TreeNodesMap.get(entry.getKey())));
+						}
+					} else { 
+						deltaIt.remove();
+					}
+				}
 				
+				Iterator <Map.Entry<String, CompareSets>> nSetIt = this.nSetCompared.entrySet().iterator();
+				
+				while (nSetIt.hasNext()) {
+					Map.Entry<String, CompareSets> nSetEntry = nSetIt.next();
+					if (nSetEntry.getValue().getOccurences() > 4) {
+						for (Map.Entry<Integer, String> entry : nSetEntry.getValue().getAllNodeStrings().entrySet()) {
+							// Add the N-Sets to the motif candidate.
+							newMotifCandidate.setNSet(entry.getKey(), entry.getValue());
+						}
+					} else {
+						nSetIt.remove();
+					}
+						
+				}
+				
+				// Remove the current results from the fields this.deltaCompared and this.nSetCompared.
+				this.deltaCompared.clear();
+				this.nSetCompared.clear();
+				
+				// Add the retrieved motif candidate to the list.
+				this.motifCandidatesRes.add(newMotifCandidate);
+				
+				// Successful identification of a motif candidate.
 				this.motifCandidatesRes.add(newMotifCandidate);
 				
 				// Successful identification of a motif candidate.
@@ -851,6 +1002,8 @@ public class MotifDetectionController extends ModuleImpl {
 			if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent)).getAllSuffixLinks().isEmpty() )  {
 				startNodeParent = startNodeParentParent;
 			}
+			
+			// Check if parent of parent of startNode is root.
 			if ( startNodeParentParent == 1 ) {
 				resultsArray[0] = 0;
 				resultsArray[1] = 0;
@@ -861,6 +1014,137 @@ public class MotifDetectionController extends ModuleImpl {
 					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent))
 						.getAllSuffixLinks().get(0), 
 					numberOfIteration);
+		}
+	}
+	
+	private void compareSets (ArrayList <Integer> startNodeParentChildren, 
+			ArrayList <Integer> suffixLinkParentChildren, ArrayList <Character> resultDelta, 
+			ArrayList <Character> startNodeNSet, ArrayList <Character> suffixLinkNSet) {
+				
+		for (int child : startNodeParentChildren) {
+			ArrayList <Character> childEdgeLabel = new ArrayList <Character>();
+			
+			// Save the edgeLabel of the child as Character ArrayList.
+			 for (char j : this.dot2TreeNodesMap.get(child).getEdgeLabel().toCharArray())
+				 childEdgeLabel.add(j);
+			
+			// Check whether the last character of resultDelta and childEdgeLabel are identical.
+			// Check whether resultDelta is longer than childEdgeLabel.
+			// Continue with the next child if they are not.
+			if ( !childEdgeLabel.get(childEdgeLabel.size() - 1)
+					.equals(resultDelta.get(resultDelta.size() - 1)) 
+				|| resultDelta.size() > childEdgeLabel.size())
+				continue;
+			
+			// Define offset for childEdgeLabel.
+			int deltaOffSet = childEdgeLabel.size() - resultDelta.size(); 
+			
+			// Define offset for startNodeNSet.
+			//int startNodeNSetOffSet = childEdgeLabel.size() - startNodeNSet.size();
+			
+			// Define a new ArrayLists which holds temporary results.
+			ArrayList <Character> newDelta = new ArrayList <Character> ();
+			ArrayList <Character> newStartNodeNSet = new ArrayList <Character> ();
+			
+			// Compare delta and the edgeLabel from last to first element character by character.
+			for (int j = childEdgeLabel.size() - 1; j >= 0; j --) {
+				if (j - deltaOffSet >= 0 
+						&& resultDelta.get(j - deltaOffSet).equals(childEdgeLabel.get(j)))
+					newDelta.add(0, resultDelta.get(j));
+				
+				// The newDelta must have a length of at least 2 characters.
+				// Compare the startNodeNSet with the childEdgeLabel. Integrate 'N's to show differences.
+				else if (j - deltaOffSet < 0 && newDelta.size() >= this.minDeltaLen) {
+					if (startNodeNSet.get(j).equals(childEdgeLabel.get(j))) {
+						newStartNodeNSet.add(0, childEdgeLabel.get(j));
+					} else {
+						newStartNodeNSet.add(0, 'N');
+					}
+				} else if ( !resultDelta.get(j - deltaOffSet).equals(childEdgeLabel.get(j)) ) {
+					if (startNodeNSet.contains(j) && startNodeNSet.get(j).equals(childEdgeLabel.get(j))) {
+						newStartNodeNSet.add(0, childEdgeLabel.get(j));
+					} else if (!startNodeNSet.contains(j)) {
+						newStartNodeNSet.add(0, 'N');
+					}
+				}
+			}
+			
+			// Add the newStartNodeNSet and the newDelta to this.deltaCompared and nSetCompared.
+			
+			if (this.deltaCompared.containsKey(newDelta.toString())) 
+				this.deltaCompared.get(newDelta.toString()).increOccur();
+			else 
+				this.deltaCompared.put(newDelta.toString(), 
+						new CompareSets(newDelta.toString(), child, 1) );
+			
+			if (this.nSetCompared.containsKey(newStartNodeNSet.toString()))
+				this.nSetCompared.get(newStartNodeNSet.toString()).increOccur();
+			else 
+				this.nSetCompared.put(newStartNodeNSet.toString(), 
+						new CompareSets(newStartNodeNSet.toString(), child, 1) );
+		}
+		
+		for (int child : suffixLinkParentChildren) {
+			ArrayList <Character> childEdgeLabel = new ArrayList <Character>();
+			
+			// Save the edgeLabel of the child as Character ArrayList.
+			 for (char j : this.dot2TreeNodesMap.get(child).getEdgeLabel().toCharArray())
+				 childEdgeLabel.add(j);
+			
+			// Check whether the last character of resultDelta and childEdgeLabel are identical.
+			// Check whether resultDelta is longer than childEdgeLabel.
+			// Continue with the next child if they are not.
+			if ( !childEdgeLabel.get(childEdgeLabel.size() - 1 )
+					.equals(resultDelta.get(resultDelta.size() - 1)) 
+				|| resultDelta.size() > childEdgeLabel.size())
+				continue;
+			
+			// Define offset for childEdgeLabel.
+			int deltaOffSet = childEdgeLabel.size() - resultDelta.size(); 
+			
+			// Define offset for startNodeNSet.
+			// int nSetOffSet = childEdgeLabel.size() - suffixLinkNSet.size();
+			
+			// Define a new ArrayLists which holds temporary results.
+			ArrayList <Character> newDelta = new ArrayList <Character> ();
+			ArrayList <Character> newSuffixLinkNSet = new ArrayList <Character> ();
+			
+			// Compare delta and the edgeLabel from last to first element character by character.
+			for (int j = childEdgeLabel.size() - 1; j >= 0; j --) {
+				if (j - deltaOffSet >= 0 
+						&& resultDelta.get(j - deltaOffSet).equals(childEdgeLabel.get(j)))
+					newDelta.add(0, resultDelta.get(j));
+				
+				// The newDelta must have a length of at least 2 characters.
+				// Compare the startNodeNSet with the childEdgeLabel. Integrate 'N's to show differences.
+				else if (j - deltaOffSet < 0 && newDelta.size() >= this.minDeltaLen) {
+					if (suffixLinkNSet.get(j).equals(childEdgeLabel.get(j))) {
+						newSuffixLinkNSet.add(0, childEdgeLabel.get(j));
+					} else {
+						newSuffixLinkNSet.add(0, 'N');
+					}
+				} else if ( !resultDelta.get(j - deltaOffSet).equals(childEdgeLabel.get(j)) ) {
+					if (suffixLinkNSet.contains(j) && suffixLinkNSet.get(j).equals(childEdgeLabel.get(j))) {
+						newSuffixLinkNSet.add(0, childEdgeLabel.get(j));
+					} else if (!suffixLinkNSet.contains(j)) {
+						newSuffixLinkNSet.add(0, 'N');
+					}
+				}
+			}
+			
+			// Add the newStartNodeNSet and the newDelta to this.deltaCompared and this.nSetCompared.
+			if (this.deltaCompared.containsKey(newDelta.toString())) 
+				this.deltaCompared.get(newDelta.toString()).increOccur();
+			else 
+				this.deltaCompared.put(newDelta.toString(), 
+						new CompareSets(newDelta.toString(), child, 1) );
+			
+			
+			if (this.nSetCompared.containsKey(newSuffixLinkNSet.toString()))
+				this.nSetCompared.get(newSuffixLinkNSet.toString()).increOccur();
+			else 
+				this.nSetCompared.put(newSuffixLinkNSet.toString(), 
+						new CompareSets(newSuffixLinkNSet.toString(), child, 1) );
 		}
 	}
 	
@@ -876,6 +1160,10 @@ public class MotifDetectionController extends ModuleImpl {
 		if (this.getProperties().containsKey(PROPERTYKEY_MINALPHA))
 			this.minAlpha = Integer.parseInt(this.getProperties().getProperty(
 					PROPERTYKEY_MINALPHA));
+		
+		if (this.getProperties().containsKey(PROPERTYKEY_MINDELTA))
+			this.minDeltaLen = Integer.parseInt(this.getProperties().getProperty(
+					PROPERTYKEY_MINDELTA));
 		
 		// Apply parent object's properties
 		super.applyProperties();
