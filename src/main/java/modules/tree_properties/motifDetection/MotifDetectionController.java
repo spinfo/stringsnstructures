@@ -598,6 +598,7 @@ public class MotifDetectionController extends ModuleImpl {
 		int suffixLinkParent = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent();
 		
 		// Check whether both parents have the same edgeLabels and whether they are directly linked. 
+		// TODO: Make sure non of the parents can't be the root node.
 		if ( this.dot2TreeNodesMap.get(startNodeParent).getEdgeLabel().equals(
 			this.dot2TreeNodesMap.get(suffixLinkParent).getEdgeLabel())
 			&& (
