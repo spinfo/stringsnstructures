@@ -145,7 +145,7 @@ public class MotifDetectionController extends ModuleImpl {
 		
 		// Property defaults.
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Motif Detection");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXCOMBINATORICS, "4");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_MAXCOMBINATORICS, "16");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MINALPHA, "3");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_MINDELTA, "2");
 		
@@ -702,7 +702,7 @@ public class MotifDetectionController extends ModuleImpl {
 			this.compareSets (startNodeParentChildren, suffixLinkParentChildren, resultDelta, startNodeNSet, suffixLinkNSet);
 			
 			// Delete all entries from the fields this.deltaCompared and this.nSetCompared which have less than 2 entries.
-			// 4 entries should equal two pairs. TODO: Check whether this is truly applicable.
+			// 2 entries should equal two pairs. TODO: Check whether this is truly applicable.
 			
 			Iterator <Map.Entry<String, CompareSets>> deltaIt = this.deltaCompared.entrySet().iterator();
 			
@@ -848,14 +848,14 @@ public class MotifDetectionController extends ModuleImpl {
 				// startNodeParent and suffixLinkParent.
 				this.compareSets (startNodeParentChildren, suffixLinkParentChildren, resultDelta, startNodeNSet, suffixLinkNSet);
 				
-				// Delete all entries from the fields this.deltaCompared and this.nSetCompared which have less than 4 entries.
-				// 4 entries should equal two pairs. TODO: Check whether this is truly applicable.
+				// Delete all entries from the fields this.deltaCompared and this.nSetCompared which have less than 2 entries.
+				// 2 entries should equal two pairs. TODO: Check whether this is truly applicable.
 				
 				Iterator <Map.Entry<String, CompareSets>> deltaIt = this.deltaCompared.entrySet().iterator();
 				
 				while (deltaIt.hasNext()) {
 					Map.Entry<String, CompareSets> deltaEntry = deltaIt.next();
-					if (deltaEntry.getValue().getOccurences() > 4) {
+					if (deltaEntry.getValue().getOccurences() > 2) {
 						for (Map.Entry<Integer, String> entry : deltaEntry.getValue().getAllNodeStrings().entrySet()) {
 							// Set the delta for the motif candidate.
 							newMotifCandidate.setDelta(entry.getKey(), entry.getValue());
@@ -872,7 +872,7 @@ public class MotifDetectionController extends ModuleImpl {
 				
 				while (nSetIt.hasNext()) {
 					Map.Entry<String, CompareSets> nSetEntry = nSetIt.next();
-					if (nSetEntry.getValue().getOccurences() > 4) {
+					if (nSetEntry.getValue().getOccurences() > 2) {
 						for (Map.Entry<Integer, String> entry : nSetEntry.getValue().getAllNodeStrings().entrySet()) {
 							// Add the N-Sets to the motif candidate.
 							newMotifCandidate.setNSet(entry.getKey(), entry.getValue());
@@ -916,13 +916,25 @@ public class MotifDetectionController extends ModuleImpl {
 	// TODO: Follow up to maximum of 4 recombinatoric events. Right now the algorithm follows only pairwise.
 	private int [] followParents(int startNode, int suffixLink, int numberOfIteration) {
 		
+		// Define parents of the current suffixNode and the current suffixLink.
+		int startNodeParent = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent();
+		int suffixLinkParent = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent();
+		
+		// Define returnArray to give back the common ancestors of the previous startNode and the suffixLink.
 		int [] resultsArray = new int [2];
+		
+		// If the startNodeParent and the suffixLinkParent share the same edgeLabel and are linked then
+		// return this pair. Otherwise continue searching as long as the edgeLabels for startNode parents
+		// are greater or equal to this.minAlpha.
+		
 		if ( this.dot2TreeNodesMap.get(
 				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent())
 				.getEdgeLabel().equals(
 			this.dot2TreeNodesMap.get(
 				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent())
-				.getEdgeLabel())
+				.getEdgeLabel()) 
+			&& ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent)).getAllSuffixLinks().get(0) 
+				== suffixLinkParent
 			) {
 			
 			resultsArray[0] = this.dot2TreeNodesMap.get(
@@ -938,18 +950,20 @@ public class MotifDetectionController extends ModuleImpl {
 			// Check if all the combinatorial trials were used up.
 			// Check whether the parents of startNode and suffixLink have parents which are not root. 
 			// If they have root as parent or all trials were used up, return an "zero" array.
-			
-			int startNodeParent = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode)).getParent();
-			
+					
 			int startNodeParentParent = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent))
 					.getParent();
-			
-			int suffixLinkParent = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent();
 			
 			int suffixLinkParentParent = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkParent))
 					.getParent();
 			
-			if (numberOfIteration >= this.maxTrials 
+			// If the trials are used up, or the edgeLabel becomes shorter than this.minAlpha or 
+			// either the suffixLinkParentParent equals root or the startNodeParentParent equals root
+			// then return an empty array to signal that the search was not successful.
+			
+			if (numberOfIteration > this.maxTrials
+				|| ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNode))
+					.getEdgeLabel().length() < this.minAlpha
 				|| (startNodeParentParent == 1
 				||  suffixLinkParentParent == 1)
 				) {
@@ -958,8 +972,13 @@ public class MotifDetectionController extends ModuleImpl {
 				resultsArray[1] = 0;
 				return resultsArray;
 			}
-	
+			
+			// Continue searching and keep track of the iterations thus far.
 			numberOfIteration ++;
+			
+			
+			// Test first the least time consuming options: 
+			// startNodeParent vs suffixLink and startNode vs suffixLinkParent.
 			
 			// Test the parent of parent of startNode versus the parent of the suffixLink.
 			if ( this.dot2TreeNodesMap.get(startNodeParentParent).getEdgeLabel()
@@ -996,12 +1015,53 @@ public class MotifDetectionController extends ModuleImpl {
 				
 			}
 			
+			/* 
+			 * Test all combinations pairwise. 
+			 * 1.) First move upwards to the parents of the startNode and combine them with suffixLink.
+			 * 2.) If no target pair was retrieved move upwards the path of the suffixLink.
+			 * 3.) If still no target pair was retrieved, update the current startNodeParentParent to be
+			 *     the future startNodeParent. Also update the suffixLinkParentParent to be the 
+			 *     suffixLinkParent. Continue with step 1.)
+			 *     
+			 * Continue this procedure until either any of the above described failure requirements are met
+			 * or an startNodeParent-suffixLinkParent pair was found.
+			 */
+			
+			// Step 1.)
+			
+			// Define a new parent pair.
+			ParentPair newPair;
+			
+			newPair = this.followStartNodeParents(startNode, startNodeParentParent, 2, suffixLink, suffixLinkParent, 1);
+			
+			// If the search failed delete newPair and continue with step 2.
+			if (!newPair.getOutcome())
+				newPair = null;	
+			else {
+				resultsArray[0] = newPair.getStartNodeAncestor();
+				resultsArray[1] = newPair.getSuffixLinkAncestor();
+				return resultsArray;
+			}
+			
+			// Step 2.)
+			newPair = this.followSuffixLinkParents(startNode, startNodeParent, 1, suffixLink, suffixLinkParentParent, 2);
+			
+			// If the search still failed delete newPair and continue with step 3.
+			if (!newPair.getOutcome())
+				newPair = null;	
+			else {
+				resultsArray[0] = newPair.getStartNodeAncestor();
+				resultsArray[1] = newPair.getSuffixLinkAncestor();
+				return resultsArray;
+			}
+			
+			// Step 3.)
+			startNodeParent = startNodeParentParent;
+			suffixLinkParent = suffixLinkParentParent;
+			
 			// If none of the above is true continue with the next iteration.
 			
-			// If startNodeParent has not suffix link, skip this parent.
-			if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent)).getAllSuffixLinks().isEmpty() )  {
-				startNodeParent = startNodeParentParent;
-			}
+			
 			
 			// Check if parent of parent of startNode is root.
 			if ( startNodeParentParent == 1 ) {
@@ -1010,11 +1070,126 @@ public class MotifDetectionController extends ModuleImpl {
 				return resultsArray;
 			}
 			
-			return this.followParents(startNodeParent, 
-					((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent))
-						.getAllSuffixLinks().get(0), 
-					numberOfIteration);
+			return this.followParents(startNodeParent, suffixLinkParent, numberOfIteration);
 		}
+	}
+	
+	private ParentPair followStartNodeParents(int startNode, int startNodeParentParent, int startNodeDistance, 
+			int suffixLink, int suffixLinkParent, int suffixLinkDistance) {
+		
+		// Get startNode ancestor.
+		int startNodeAncestor = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParentParent)).getParent();
+		
+		// If startNodeParent has not suffix link, skip this parent.
+		if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeAncestor)).getAllSuffixLinks().isEmpty() )  {
+			startNodeAncestor = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeAncestor)).getParent();
+		}
+		
+		// If the edgeLabel of the startNodeAncestor is smaller than alphaMin abort the iterations
+		// by returning an empty pair.
+		if (
+				startNodeAncestor <= 1
+				|| ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeAncestor))
+					.getEdgeLabel().length() < this.minAlpha
+			) {
+			
+			ParentPair newPair =  new ParentPair (startNode, startNodeAncestor, startNodeDistance, 
+					suffixLink, suffixLinkParent, suffixLinkDistance);
+			
+			// Search failed, hence outcome is false.
+			newPair.setOutcome(false);
+			
+			return newPair;
+		}
+				
+		// If the startNodeAncestor and the suffixLinkParent share the same edgeLabel and are linked
+		// then return the identified pair.
+		if (
+				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeAncestor)).getEdgeLabel()
+					.equals(
+							((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkParent)).getEdgeLabel()	
+				)
+					
+			&&	((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeAncestor))
+					.getAllSuffixLinks().get(0)
+				== suffixLinkParent
+			) {
+			
+			ParentPair newPair =  new ParentPair (startNode, startNodeAncestor, startNodeDistance, 
+					suffixLink, suffixLinkParent, suffixLinkDistance);
+			
+			// Search was a success, hence outcome is true.
+			newPair.setOutcome(true);
+			
+			return newPair;
+		}
+		
+		// Nothing found thus initiate the next iteration. Increment the distance between startNode 
+		// and startNodeAncestor by 1 internal node.
+		startNodeDistance ++;
+		
+		return followStartNodeParents (startNode, startNodeAncestor, startNodeDistance, 
+				suffixLink, suffixLinkParent, suffixLinkDistance);
+		
+	}
+	
+	private ParentPair followSuffixLinkParents(int startNode, int startNodeParent, int startNodeDistance, 
+			int suffixLink, int suffixLinkParentParent, int suffixLinkDistance) {
+			
+		// Get suffixLinkNode ancestor.
+		int suffixLinkAncestor = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkParentParent)).getParent();
+		
+		// If startNodeParent has not suffix link, skip this parent.
+		if ( ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkAncestor)).getAllSuffixLinks().isEmpty() )  {
+			suffixLinkAncestor = ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkAncestor)).getParent();
+		}
+		
+		// If the edgeLabel of the suffixLinkAncestor is smaller than alphaMin abort the iterations
+		// by returning an empty pair.
+		if (
+				suffixLinkAncestor <= 1
+				||	((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkAncestor))
+					.getEdgeLabel().length() < this.minAlpha
+			) {
+			
+			ParentPair newPair =  new ParentPair (startNode, startNodeParent, startNodeDistance, 
+					suffixLink, suffixLinkAncestor, suffixLinkDistance);
+			
+			// Search failed, hence outcome is false.
+			newPair.setOutcome(false);
+			
+			return newPair;
+		}
+		
+		// If the suffixLinkAncestor and the startNodeParent share the same edgeLabel and are linked
+		// then return the identified pair.
+		if (
+				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLinkAncestor)).getEdgeLabel()
+					.equals(
+							((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent)).getEdgeLabel()	
+				)
+					
+			&&	((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent))
+					.getAllSuffixLinks().get(0)
+				== suffixLinkAncestor
+			) {
+			
+			ParentPair newPair =  new ParentPair (startNode, startNodeParent, startNodeDistance, 
+					suffixLink, suffixLinkAncestor, suffixLinkDistance);
+			
+			// Search was a success, hence outcome is true.
+			newPair.setOutcome(true);
+			
+			return newPair;
+		}
+		
+		// Nothing found thus initiate the next iteration. Increment the distance between startNode 
+		// and startNodeAncestor by 1 internal node.
+		suffixLinkDistance ++;
+		
+		return followStartNodeParents (startNode, startNodeParent, startNodeDistance, 
+				suffixLink, suffixLinkAncestor, suffixLinkDistance);
+		
 	}
 	
 	private void compareSets (ArrayList <Integer> startNodeParentChildren, 
