@@ -1,5 +1,8 @@
 package modules.transitionNetwork;
 
+import java.io.IOException;
+
+import modules.OutputPort;
 import modules.transitionNetwork.List.TNArrayList;
 import modules.transitionNetwork.elements.comparator.StateComparator;
 import modules.transitionNetwork.elements.StateElement;
@@ -45,29 +48,28 @@ public class TransitionNetwork {
 		return index;
 	}
 
-	public void writeSuffixes() {
-		System.out.println("writeSuffixes");
+	public void writeSuffixes(OutputPort out) throws IOException {
+		out.outputToAllCharPipes("writeSuffixes\n");
 		for (int i = 0; i < this.suffixes.size(); i++) {
 			SuffixElement e = (SuffixElement) this.suffixes.get(i);
-			e.writeSuffix(text, this.inverted);
-
+			out.outputToAllCharPipes(e.writeSuffix(text, this.inverted) + "\n");
 		}
 
 	}
 
-	public void writeTN() {
-		System.out.println("writeTN");
-		this.writeSuffixes();
-		System.out.println("writeStates");
+	public void writeTN(OutputPort out) throws IOException {
+		out.outputToAllCharPipes("writeTN\n");
+		this.writeSuffixes(out);
+		out.outputToAllCharPipes("writeStates\n");
 		for (int i = 0; i < this.states.size(); i++) {
 			StateElement stateElement = (StateElement) this.states.get(i);
-			System.out.println("Line: " + i + "  " + "State(Element)(Node): " + stateElement.state);
+			out.outputToAllCharPipes("Line: " + i + "  " + "State(Element)(Node): " + stateElement.state + "\n");
 			for (int j = 0; j < stateElement.toStateTransitions.size(); j++) {
 				StateTransitionElement stateTransitionElement = (StateTransitionElement) stateElement.toStateTransitions
 						.get(j);
-				System.out.print("		StateTransitionElement: " + stateTransitionElement.toStateElement + "  ");
+				out.outputToAllCharPipes("		StateTransitionElement: " + stateTransitionElement.toStateElement + "  ");
 				SuffixElement suffixElement = (SuffixElement) this.suffixes.get(stateTransitionElement.toSuffixElement);
-				suffixElement.writeSuffix(text, this.inverted);
+				out.outputToAllCharPipes(suffixElement.writeSuffix(text, this.inverted) + "\n");
 			}
 		}
 	}

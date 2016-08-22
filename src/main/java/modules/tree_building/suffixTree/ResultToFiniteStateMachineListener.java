@@ -159,7 +159,7 @@ public class ResultToFiniteStateMachineListener extends AbstractResultNodeStackL
 						nodeIndex=childNr;
 				}// for (ListIterator<Integer> it ...
 					
-				tn.writeTN();
+				tn.writeTN(outputPort);
 			}
 			
 		}
