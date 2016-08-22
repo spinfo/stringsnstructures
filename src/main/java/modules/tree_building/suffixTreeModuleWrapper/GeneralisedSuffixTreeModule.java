@@ -161,14 +161,11 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				edgeSegmentsOut.close();
 			}
 			
-			// output a list of edge segments
+			// output the transition network
 			final OutputPort forTransitionNetwork = this.getOutputPorts().get(OUTPUT_FOR_TN_ID);
 			if (forTransitionNetwork.isConnected()) {
 				final ResultToFiniteStateMachineListener listener = new ResultToFiniteStateMachineListener(suffixTree, edgeSegmentsOut);
 				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
-				if (!listener.hasCompleted()) {
-								throw new IllegalStateException("Listener did not finish correctly. Result may be wrong.");
-				}
 				forTransitionNetwork.close();
 			}
 
