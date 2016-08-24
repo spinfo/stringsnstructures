@@ -241,7 +241,7 @@ public class MotifDetectionController extends ModuleImpl {
 			
 			// Print delta set.
 			Iterator <Map.Entry<Integer, Dot2TreeInnerNodesParent>> deltaSetIt = 
-					motifCandidateRes.getAlphaSet().entrySet().iterator();
+					motifCandidateRes.getDeltaSet().entrySet().iterator();
 			
 			while (deltaSetIt.hasNext()) {
 				Map.Entry<Integer, Dot2TreeInnerNodesParent> deltaSetPair = deltaSetIt.next();
@@ -601,6 +601,7 @@ public class MotifDetectionController extends ModuleImpl {
 		// TODO: Make sure non of the parents can't be the root node.
 		if ( this.dot2TreeNodesMap.get(startNodeParent).getEdgeLabel().equals(
 			this.dot2TreeNodesMap.get(suffixLinkParent).getEdgeLabel())
+			&& !((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent)).getAllSuffixLinks().isEmpty()
 			&& (
 					(((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent)).getAllSuffixLinks().get(0) 
 							== suffixLinkParent)
@@ -934,6 +935,7 @@ public class MotifDetectionController extends ModuleImpl {
 			this.dot2TreeNodesMap.get(
 				((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(suffixLink)).getParent())
 				.getEdgeLabel()) 
+			&& !((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent)).getAllSuffixLinks().isEmpty()
 			&& ((Dot2TreeInnerNodesParent) this.dot2TreeNodesMap.get(startNodeParent)).getAllSuffixLinks().get(0) 
 				== suffixLinkParent
 			) {
@@ -967,6 +969,8 @@ public class MotifDetectionController extends ModuleImpl {
 					.getEdgeLabel().length() < this.minAlpha
 				|| (startNodeParentParent == 1
 				||  suffixLinkParentParent == 1)
+				|| (startNodeParentParent == 0
+				||  suffixLinkParentParent == 0)
 				) {
 				
 				resultsArray[0] = 0;
@@ -1226,15 +1230,16 @@ public class MotifDetectionController extends ModuleImpl {
 			for (int j = childEdgeLabel.size() - 1; j >= 0; j --) {
 				if (j - deltaOffSet >= 0 
 						&& resultDelta.get(j - deltaOffSet).equals(childEdgeLabel.get(j)))
-					newDelta.add(0, resultDelta.get(j));
+					newDelta.add(0, resultDelta.get(j - deltaOffSet));
 				
 				// The newDelta must have a length of at least 2 characters.
 				// Compare the startNodeNSet with the childEdgeLabel. Integrate 'N's to show differences.
 				else if (j - deltaOffSet < 0 && newDelta.size() >= this.minDeltaLen) {
-					if (startNodeNSet.get(j).equals(childEdgeLabel.get(j))) {
-						newStartNodeNSet.add(0, childEdgeLabel.get(j));
-					} else {
+					if (startNodeNSet.isEmpty() || !startNodeNSet.get(j).equals(childEdgeLabel.get(j))) {
 						newStartNodeNSet.add(0, 'N');
+					}
+					else if (startNodeNSet.get(j).equals(childEdgeLabel.get(j))) {
+						newStartNodeNSet.add(0, childEdgeLabel.get(j));
 					}
 				} else if ( !resultDelta.get(j - deltaOffSet).equals(childEdgeLabel.get(j)) ) {
 					if (startNodeNSet.contains(j) && startNodeNSet.get(j).equals(childEdgeLabel.get(j))) {
@@ -1289,15 +1294,16 @@ public class MotifDetectionController extends ModuleImpl {
 			for (int j = childEdgeLabel.size() - 1; j >= 0; j --) {
 				if (j - deltaOffSet >= 0 
 						&& resultDelta.get(j - deltaOffSet).equals(childEdgeLabel.get(j)))
-					newDelta.add(0, resultDelta.get(j));
+					newDelta.add(0, resultDelta.get(j -  deltaOffSet));
 				
 				// The newDelta must have a length of at least 2 characters.
 				// Compare the startNodeNSet with the childEdgeLabel. Integrate 'N's to show differences.
 				else if (j - deltaOffSet < 0 && newDelta.size() >= this.minDeltaLen) {
-					if (suffixLinkNSet.get(j).equals(childEdgeLabel.get(j))) {
-						newSuffixLinkNSet.add(0, childEdgeLabel.get(j));
-					} else {
+					if (suffixLinkNSet.isEmpty() || !suffixLinkNSet.get(j).equals(childEdgeLabel.get(j))) {
 						newSuffixLinkNSet.add(0, 'N');
+					}
+					else if (suffixLinkNSet.get(j).equals(childEdgeLabel.get(j))) {
+						newSuffixLinkNSet.add(0, childEdgeLabel.get(j));
 					}
 				} else if ( !resultDelta.get(j - deltaOffSet).equals(childEdgeLabel.get(j)) ) {
 					if (suffixLinkNSet.contains(j) && suffixLinkNSet.get(j).equals(childEdgeLabel.get(j))) {
