@@ -17,7 +17,7 @@ public abstract class AbstractResultNodeStackListener implements ITreeWalkerList
 	// available
 	private final Stack<String> edges;
 
-	// while iterating the tree keep track of the current path's length
+	// while iterating the tree keeps track of the current path's length
 	private int pathLength = 0;
 
 	/**

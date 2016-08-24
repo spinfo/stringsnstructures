@@ -3,7 +3,7 @@ package modules.transitionNetwork.List;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-// Class of E is an AbstractElement in most cases
+// Class of E is an Implementation of AbstractElement in most cases
 public class TNArrayList<E> extends ArrayList<E> {
 
 	private static final long serialVersionUID = -2117613876524895627L;
