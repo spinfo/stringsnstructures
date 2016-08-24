@@ -11,7 +11,7 @@ import modules.transitionNetwork.elements.StateElement;
 import modules.transitionNetwork.elements.StateTransitionElement;
 import modules.transitionNetwork.elements.SuffixElement;
 
-public class ResultToFiniteStateMachineListener extends AbstractResultNodeStackListener {
+public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
 
 	// the OutputPort to write to
 	private final OutputPort outputPort;
@@ -30,8 +30,6 @@ public class ResultToFiniteStateMachineListener extends AbstractResultNodeStackL
 	private int lengthOfPath;
 
 	public ResultToFiniteStateMachineListener(BaseSuffixTree suffixTree, OutputPort outputPort, boolean inverted) {
-		super(suffixTree);
-
 		this.tree = suffixTree;
 		this.outputPort = outputPort;
 		this.nodeNrs = new Stack<Integer>();
@@ -87,7 +85,6 @@ public class ResultToFiniteStateMachineListener extends AbstractResultNodeStackL
 		this.nodeNrs.pop();
 	}
 
-	@Override
 	public void process(int nodeNr, List<Node> path, int pathLength, int level) throws IOException {
 
 		// get the node and label in question
