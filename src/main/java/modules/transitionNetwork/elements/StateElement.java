@@ -22,5 +22,9 @@ public class StateElement extends AbstractElement {
 			int suffix /* suffix pointing to */) {
 		return null;
 	}
+	
+	public boolean isFinal() {
+		return (this.toStateTransitions.size() == 0);
+	}
 
 }
