@@ -4,16 +4,12 @@ import java.io.IOException;
 import java.util.ListIterator;
 import java.util.Stack;
 
-import modules.OutputPort;
 import modules.transitionNetwork.TransitionNetwork;
 import modules.transitionNetwork.elements.StateElement;
 import modules.transitionNetwork.elements.StateTransitionElement;
 import modules.transitionNetwork.elements.SuffixElement;
 
 public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
-
-	// the OutputPort to write to
-	private final OutputPort outputPort;
 
 	// the suffix tree this will work on
 	private final BaseSuffixTree tree;
@@ -28,16 +24,15 @@ public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
 
 	private int lengthOfPath;
 
-	public ResultToFiniteStateMachineListener(BaseSuffixTree suffixTree, OutputPort outputPort, boolean inverted) {
+	public ResultToFiniteStateMachineListener(BaseSuffixTree suffixTree, boolean inverted) {
 		this.tree = suffixTree;
-		this.outputPort = outputPort;
 		this.nodeNrs = new Stack<Integer>();
 		this.inverted = inverted;
 		this.tn = new TransitionNetwork(suffixTree.text, this.inverted);
 	}
 
-	public ResultToFiniteStateMachineListener(BaseSuffixTree suffixTree, OutputPort outputPort) {
-		this(suffixTree, outputPort, true);
+	public ResultToFiniteStateMachineListener(BaseSuffixTree suffixTree) {
+		this(suffixTree, true);
 	}
 
 	public void setTN(TransitionNetwork tn) {
@@ -122,8 +117,6 @@ public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
 			// this loop's child will be next loop's parent
 			nodeIndex = childNr;
 		}
-
-		tn.writeTN(outputPort);
 	}
 
 	// checks if the given node in this listeners tree corresponds to a whole

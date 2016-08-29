@@ -17,6 +17,7 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
+import modules.transitionNetwork.TransitionNetwork;
 import modules.tree_building.suffixTree.GST;
 import modules.tree_building.suffixTree.ResultEdgeSegmentsListener;
 import modules.tree_building.suffixTree.ResultToFiniteStateMachineListener;
@@ -163,9 +164,10 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 			// output the transition network
 			final OutputPort transitionNetworkOut = this.getOutputPorts().get(OUTPUT_FOR_TN_ID);
 			if (transitionNetworkOut.isConnected()) {
-				final ResultToFiniteStateMachineListener listener = new ResultToFiniteStateMachineListener(suffixTree,
-						transitionNetworkOut);
+				final ResultToFiniteStateMachineListener listener = new ResultToFiniteStateMachineListener(suffixTree);
 				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
+				TransitionNetwork tn = listener.getTN();
+				tn.writeTN(transitionNetworkOut);
 				transitionNetworkOut.close();
 			}
 
