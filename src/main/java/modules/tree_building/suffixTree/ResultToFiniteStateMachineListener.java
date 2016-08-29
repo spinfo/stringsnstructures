@@ -1,7 +1,6 @@
 package modules.tree_building.suffixTree;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
 
@@ -75,89 +74,74 @@ public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
 	public void exitaction(int nodeNr, int level) throws IOException {
 		this.afterBacktrack = true;
 
-		final Node node = tree.getNode(nodeNr);
-
-		if (node.isTerminal()) {
-			process(nodeNr, null, 0, level);
+		if (nodeIsLeafOfWholeInputText(nodeNr, this.lengthOfPath)) {
+			processLeavesOfInputTexts(nodeNr);
 		}
 
 		this.lengthOfPath = this.lengthOfPath - (tree.getNode(nodeNr).getEnd(0) - tree.getNode(nodeNr).getStart(0));
 		this.nodeNrs.pop();
 	}
 
-	public void process(int nodeNr, List<Node> path, int pathLength, int level) throws IOException {
+	public void processLeavesOfInputTexts(int nodeNr) throws IOException {
 
-		// get the node and label in question
-		final Node node = tree.getNode(nodeNr);
+		ListIterator<Integer> it = nodeNrs.listIterator(this.nodeNrsStackPos);
 
-		final String label = tree.edgeString(node);
+		// the index of the node in the Transition Network equals the node's
+		// nodeNr in the tree
+		int nodeIndex = 0;
+		if (it.hasNext())
+			nodeIndex = it.next();
 
-		if (node.isTerminal()) {
+		while (it.hasNext()) {
 
-			// path starts with first sign of text, i.e. whole word
-			// to Do PositionAmounts, e.g. aufhören$ hören$
-			if (node.getEnd(0) == this.tree.getTextBegin(node.getTextNr(0)) + this.lengthOfPath)
+			// get or insert the node's corresponding state element if
+			// it doesn't exist
+			int posInStates = this.tn.addStateElement(new StateElement(nodeIndex));
+			StateElement stateElement = this.tn.states.get(posInStates);
 
-			{
-				System.out.println("whole word");
-				System.out.print("leave: " + nodeNr + "  ");
-				System.out.println("label: " + label);
+			// the child of this loop's node is the next element on the node
+			// stack
+			int childNr = it.next();
 
-				// stack
-				int nodeIndex = 0;
-				ListIterator<Integer> it = nodeNrs.listIterator(this.nodeNrsStackPos);
-				if (it.hasNext())
-					nodeIndex = it.next();
-				// do not repeat already written nodes
-				System.out
-						.println("process nodeIndex: " + nodeIndex + "  " + "nodeNrsStackPos: " + this.nodeNrsStackPos);
-				// while((nodeIndex !=this.entryActionNewNodeNr)&&
-				// (it.hasNext())) nodeIndex=it.next();
-				// for (ListIterator<Integer> it = nodeNrs.listIterator(0);
-				// it.hasNext(); )
-				while (it.hasNext()) {
+			// generate StateTransition to model the transition to the child
+			// node
+			StateTransitionElement stateTransitionElement = new StateTransitionElement();
+			int childPosInStateElementList = this.tn.addStateElement(new StateElement(childNr));
+			stateTransitionElement.toStateElement = childPosInStateElementList;
+			stateElement.toStateTransitions.add(stateTransitionElement);
 
-					// int nodeIndex=it.next();
-					System.out.println("mother: " + nodeIndex + "  " + tree.edgeString(tree.getNode(nodeIndex)));
+			// generate Suffix Element and link it to the network and the
+			// transition
+			// TODO: Repeat this for all positions reported by the node?
+			int suffixStart = this.tree.nodes[childNr].getStart(0);
+			int suffixEnd = this.tree.nodes[childNr].getEnd(0);
+			SuffixElement suffixElement = new SuffixElement(suffixStart, suffixEnd);
+			int posInSuffixes = this.tn.addSuffixElement(suffixElement);
+			stateTransitionElement.toSuffixElement = posInSuffixes;
 
-					// node(Index) in stateList? insert, if not
-
-					int posInStates = this.tn.addStateElement(new StateElement(nodeIndex));
-					System.out.println("posInStates: " + posInStates);
-					StateElement stateElement = (StateElement) this.tn.states.get(posInStates);
-					System.out.println("PosInStateElementList:" + posInStates);
-					// get children (follow states) and suffix strings which
-					// lead to them
-					int childNr = it.next();
-					/*
-					 * for (int childNr :
-					 * this.tree.nodes[nodeIndex].next.values()) {
-					 */
-					// generate StateTransitionElement
-					StateTransitionElement stateTransitionElement = new StateTransitionElement();
-					int childPosInStateElementList = this.tn.addStateElement(new StateElement(childNr));
-					// follow state, transition in next state
-					stateTransitionElement.toStateElement = childPosInStateElementList;
-					// suffixes (?? for all PositionAmounts (???, TODo)
-					int suffixStart = this.tree.nodes[childNr].getStart(0);
-					int suffixEnd = this.tree.nodes[childNr].getEnd(0);
-
-					SuffixElement suffixElement = new SuffixElement(suffixStart, suffixEnd);
-					int posInSuffixes = this.tn.addSuffixElement(suffixElement);
-					stateTransitionElement.toSuffixElement = posInSuffixes;
-					// append in toStateTransitions in (mother)State element
-					/* int posInStateTransitions= */
-					stateElement.toStateTransitions.add/* StateTransitionElement */(stateTransitionElement);
-
-					/* } */
-
-					nodeIndex = childNr;
-				} // for (ListIterator<Integer> it ...
-
-				tn.writeTN(outputPort);
-			}
-
+			// this loop's child will be next loop's parent
+			nodeIndex = childNr;
 		}
+
+		tn.writeTN(outputPort);
+	}
+
+	// checks if the given node in this listeners tree corresponds to a whole
+	// input text given the current path length.
+	private boolean nodeIsLeafOfWholeInputText(int nodeNr, int pathLength) {
+		Node node = this.tree.getNode(nodeNr);
+
+		if (!node.isTerminal()) {
+			return false;
+		}
+
+		for (NodePosition position : node.getPositions()) {
+			if (position.getEnd() == tree.getTextBegin(position.getTextNr()) + pathLength) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }
