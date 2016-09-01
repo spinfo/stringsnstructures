@@ -48,6 +48,7 @@ import modules.experimental.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.format_conversion.CSV2GEXFModule;
 import modules.format_conversion.ExtensibleTreeNode2CSVModule;
 import modules.format_conversion.ExtensibleTreeNode2GEXFModule;
+import modules.format_conversion.SuffixTreeVector2CsvModule;
 import modules.format_conversion.dot2tree.Dot2TreeController;
 import modules.format_conversion.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
 import modules.format_conversion.seqNewickExporter.SeqNewickExporterController;
@@ -92,6 +93,7 @@ import modules.tree_editing.LabelDataMergeModule;
 import modules.tree_editing.seqNewick.SeqQueryController;
 import modules.tree_editing.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
 import modules.tree_properties.branchLengthGroups.BranchLengthGrouping;
+import modules.tree_properties.motifDetection.MotifDetectionController;
 import modules.tree_properties.seqTreeProperties.SeqTreePropController;
 import modules.tree_properties.treeIndexes.TreeIndexController;
 import modules.vectorization.VectorAberrationCalculatorModule;
@@ -99,7 +101,6 @@ import modules.vectorization.VectorMedianCalculatorModule;
 import modules.vectorization.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.visualization.ASCIIGraph;
 import modules.visualization.ColourGraph;
-import modules.tree_properties.motifDetection.MotifDetectionController;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -618,6 +619,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		MotifDetectionController motifDetectionController = new MotifDetectionController(moduleNetwork, motifDetectionControllerProperties);
 		motifDetectionControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, motifDetectionController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		motifDetectionController.applyProperties();
+		
+		// SuffixTreeVector2CsvModule
+		Properties suffixTreeVector2CsvModuleProperties = new Properties();
+		SuffixTreeVector2CsvModule suffixTreeVector2CsvModule = new SuffixTreeVector2CsvModule(moduleNetwork, suffixTreeVector2CsvModuleProperties);
+		suffixTreeVector2CsvModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeVector2CsvModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		suffixTreeVector2CsvModule.applyProperties();
 				
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -698,6 +705,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(matrixFilterModule.getName(), matrixFilterModule);
 		availableModules.put(extensibleTreeNode2CSVModule.getName(), extensibleTreeNode2CSVModule);
 		availableModules.put(motifDetectionController.getName(), motifDetectionController);
+		availableModules.put(suffixTreeVector2CsvModule.getName(), suffixTreeVector2CsvModule);
 	}
 	
 	/**
