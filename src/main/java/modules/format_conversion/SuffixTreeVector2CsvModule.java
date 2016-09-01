@@ -79,7 +79,6 @@ public class SuffixTreeVector2CsvModule extends ModuleImpl {
 			LinkedTreeMap<String, Object> featureMap = (LinkedTreeMap<String, Object>) type.get("vector");
 			
 			ArrayList<?> featureList = (ArrayList<?>) featureMap.get("features");
-			System.out.println(featureList.size());
 			for (int i=0; i<featureList.size(); i++){
 				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(featureList.get(i)+this.csvdelimiter);
 			}
