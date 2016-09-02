@@ -19,9 +19,12 @@ public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
 	private TransitionNetwork tn;
 
 	private Stack<Integer> nodeNrs = null;
-	private boolean afterBacktrack = true;
-	private int nodeNrsStackPos;
 
+	// this listener needs a second stack that records only those node numbers
+	// of the last whole input word that has been processed
+	private Stack<Integer> nodeNrsOfLastFullPath = null;
+
+	// the length of the path currently read
 	private int lengthOfPath;
 
 	public ResultToFiniteStateMachineListener(BaseSuffixTree suffixTree, boolean inverted) {
@@ -29,6 +32,7 @@ public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
 		this.nodeNrs = new Stack<Integer>();
 		this.inverted = inverted;
 		this.tn = new TransitionNetwork(suffixTree.text, this.inverted);
+		this.nodeNrsOfLastFullPath = new Stack<Integer>();
 	}
 
 	public ResultToFiniteStateMachineListener(BaseSuffixTree suffixTree) {
@@ -49,43 +53,51 @@ public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
 
 	@Override
 	public void entryaction(int nodeNr, int level) throws IOException {
-		if (this.afterBacktrack) {
-			this.afterBacktrack = false;
-			nodeNrsStackPos = this.nodeNrs.size() - 1;
-		}
 		this.nodeNrs.push(nodeNr);
 		this.lengthOfPath = this.lengthOfPath + tree.getNode(nodeNr).getEnd(0) - tree.getNode(nodeNr).getStart(0);
 	}
 
-	/**
-	 * NOTE: This assumes depth-first traversal of the tree in the tree walker.
-	 * 
-	 * @param nodeNr
-	 *            the node whose edges are to be printed.
-	 * @param level
-	 *            (irrelevant here, required by interface)
-	 */
 	@Override
 	public void exitaction(int nodeNr, int level) throws IOException {
-		this.afterBacktrack = true;
-
+		// if the current node is a leaf of a whole input text, it gets
+		// processed and the the path to it is recorded in a separate stack
 		if (nodeIsLeafOfWholeInputText(nodeNr, this.lengthOfPath)) {
-			processLeavesOfInputTexts(nodeNr);
-		}
+			processLeavesOfInputTexts(nodeNr, level);
 
+			this.nodeNrsOfLastFullPath.clear();
+			this.nodeNrsOfLastFullPath.addAll(nodeNrs);
+		}
 		this.lengthOfPath = this.lengthOfPath - (tree.getNode(nodeNr).getEnd(0) - tree.getNode(nodeNr).getStart(0));
 		this.nodeNrs.pop();
+
+		// if we are backtracking away from a node that was on the last full
+		// path processed, pop that node as well
+		if (!nodeNrsOfLastFullPath.isEmpty() && nodeNr == nodeNrsOfLastFullPath.peek()) {
+			nodeNrsOfLastFullPath.pop();
+		}
 	}
 
-	public void processLeavesOfInputTexts(int nodeNr) throws IOException {
+	public void processLeavesOfInputTexts(int nodeNr, int level) throws IOException {
 
-		ListIterator<Integer> it = nodeNrs.listIterator(this.nodeNrsStackPos);
+		// we need to enter the node stack (i.e. the path that leads to the
+		// current node) at that position where a backtrack into the last full
+		// path processed by this method occurred
+		ListIterator<Integer> it;
+		if (this.nodeNrsOfLastFullPath.isEmpty()) {
+			it = this.nodeNrs.listIterator();
+		} else {
+			it = this.nodeNrs.listIterator(nodeNrsOfLastFullPath.size() - 1);
+		}
 
 		// the index of the node in the Transition Network equals the node's
 		// nodeNr in the tree
 		int nodeIndex = 0;
-		if (it.hasNext())
+
+		if (it.hasNext()) {
 			nodeIndex = it.next();
+		} else {
+			throw new IllegalStateException("Node stack empty or not entered at correct position.");
+		}
 
 		while (it.hasNext()) {
 
@@ -94,12 +106,11 @@ public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
 			int posInStates = this.tn.addStateElement(new StateElement(nodeIndex));
 			StateElement stateElement = this.tn.states.get(posInStates);
 
-			// the child of this loop's node is the next element on the node
-			// stack
+			// the node numer of the next node on the path
 			int childNr = it.next();
 
-			// generate StateTransition to model the transition to the child
-			// node
+			// generate StateTransition to model the transition to the path's
+			// next node
 			StateTransitionElement stateTransitionElement = new StateTransitionElement();
 			int childPosInStateElementList = this.tn.addStateElement(new StateElement(childNr));
 			stateTransitionElement.toStateElement = childPosInStateElementList;
