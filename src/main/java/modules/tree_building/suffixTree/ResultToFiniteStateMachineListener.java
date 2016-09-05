@@ -92,41 +92,50 @@ public class ResultToFiniteStateMachineListener implements ITreeWalkerListener {
 		// the index of the node in the Transition Network equals the node's
 		// nodeNr in the tree
 		int nodeIndex = 0;
-
 		if (it.hasNext()) {
 			nodeIndex = it.next();
 		} else {
 			throw new IllegalStateException("Node stack empty or not entered at correct position.");
 		}
 
+		// loop over the remaining path and generate transition elements to
+		// model the transition from one node to another
 		while (it.hasNext()) {
 
 			// get or insert the node's corresponding state element if
 			// it doesn't exist
-			int posInStates = this.tn.addStateElement(new StateElement(nodeIndex));
-			StateElement stateElement = this.tn.states.get(posInStates);
+			int stateId = this.tn.addStateElement(new StateElement(nodeIndex));
+			StateElement stateElement = this.tn.states.get(stateId);
 
 			// the node numer of the next node on the path
-			int childNr = it.next();
+			int childNodeIndex = it.next();
 
-			// generate StateTransition to model the transition to the path's
-			// next node
-			StateTransitionElement stateTransitionElement = new StateTransitionElement();
-			int childPosInStateElementList = this.tn.addStateElement(new StateElement(childNr));
-			stateTransitionElement.toStateElement = childPosInStateElementList;
-			stateElement.toStateTransitions.add(stateTransitionElement);
+			// model the transition to the next state
+			StateTransitionElement transition = new StateTransitionElement();
 
-			// generate Suffix Element and link it to the network and the
-			// transition
-			// TODO: Repeat this for all positions reported by the node?
-			int suffixStart = this.tree.nodes[childNr].getStart(0);
-			int suffixEnd = this.tree.nodes[childNr].getEnd(0);
+			// the transition leads to the next suffix tree node (i.e. state),
+			// but if that node is the last on the stack (i.e. a leaf per
+			// definition of this method), model it as a transition to the
+			// network's final state instead
+			int childStateId;
+			if (it.hasNext()) {
+				childStateId = this.tn.addStateElement(new StateElement(childNodeIndex));
+			} else {
+				childStateId = this.tn.getFinalStateId();
+			}
+			transition.toStateElement = childStateId;
+			stateElement.toStateTransitions.add(transition);
+
+			// generate Suffix Element, add it to the network and link to it
+			// from the transition
+			int suffixStart = this.tree.nodes[childNodeIndex].getStart(0);
+			int suffixEnd = this.tree.nodes[childNodeIndex].getEnd(0);
 			SuffixElement suffixElement = new SuffixElement(suffixStart, suffixEnd);
 			int posInSuffixes = this.tn.addSuffixElement(suffixElement);
-			stateTransitionElement.toSuffixElement = posInSuffixes;
+			transition.toSuffixElement = posInSuffixes;
 
 			// this loop's child will be next loop's parent
-			nodeIndex = childNr;
+			nodeIndex = childNodeIndex;
 		}
 	}
 
