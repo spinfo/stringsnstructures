@@ -2,8 +2,6 @@ package modules.format_conversion;
 
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.TreeSet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -19,18 +17,19 @@ public class TextReducerModule extends ModuleImpl {
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_DELIMITER_INPUT = "input token delimiter";
-	public static final String PROPERTYKEY_DELIMITER_OUTPUT = "output token delimiter";
 	public static final String PROPERTYKEY_DIRECTION = "direction";
 	
 	// Define I/O IDs
-	private static final String ID_INPUT = "unencoded";
+	private static final String ID_INPUT = "input";
 	private static final String ID_INPUT_DICT = "dictionary";
 	private static final String ID_OUTPUT = "output";
 	private static final String ID_OUTPUT_DICT = "dictionary";
 	
+	// Regex definitions
+	public static final String REGEX_WITH_DELIMITER = "((?<=%1$s)|(?=%1$s))";
+	
 	// Local variables
 	private String inputdelimiter;
-	private String outputdelimiter;
 	private boolean encode;
 
 	public TextReducerModule(CallbackReceiver callbackReceiver,
@@ -40,18 +39,16 @@ public class TextReducerModule extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("Reduces text tokens to a single unique character (or the reverse).");
+		this.setDescription("Encodes the input text by replacing each token with a unique character, producing a reduced text and a dictionary. Can also decode (requires dictionary input).");
 
 		// Add property descriptions
-		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT, "Regular expression to use as token delimiter for input (when decoding, set to '\\z')");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT, "Part of a regular expression to use as token delimiter for input (ignored when decoding). The full regex (with the current setting) is <pre>"+this.inputdelimiter+"</pre>; only single char matches are supported. Delimiters will be retained and encoded as tokens, too.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DIRECTION, "Direction [encode|decode]. Decoding requires input both on port '"+ID_INPUT+"' and '"+ID_INPUT_DICT+"'");
-		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT, "String to insert as token delimiter into the output");
 		
 		// Add property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Text Reducer");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT, "\\s+");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT, "[\\s\\n\\r]");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DIRECTION, "encode");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT, " ");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "Plain text character input.", this);
@@ -79,8 +76,9 @@ public class TextReducerModule extends ModuleImpl {
 		Scanner inputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
 		inputScanner.useDelimiter(this.inputdelimiter);
 		
-		// Encoding dictionary
-		LinkedTreeMap<String,String> dictionary;
+		// Encoding/decoding dictionaries
+		LinkedTreeMap<String,String> dictionaryValueEnc;
+		LinkedTreeMap<String,String> dictionaryEncValue;
 		
 		// Instantiate JSON parser
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -88,11 +86,16 @@ public class TextReducerModule extends ModuleImpl {
 		// encoding character index (starts with space char index)
 		int charIndex = 32;
 		
-		// If we are decoding, read the dictionary from input, else we create a new instance.
-		if (this.encode)
-			dictionary = new LinkedTreeMap<String,String>();
-		else
-			dictionary = gson.fromJson(this.getInputPorts().get(ID_INPUT_DICT).getInputReader(), new LinkedTreeMap<String,String>().getClass());
+		// If we are decoding, read the dictionary from input, else we create new instances.
+		if (this.encode){
+			// When encoding, we need both dictionaries
+			dictionaryEncValue = new LinkedTreeMap<String,String>();
+			dictionaryValueEnc = new LinkedTreeMap<String,String>();
+		} else {
+			// For decoding, the decoding dictionary suffices
+			dictionaryEncValue = gson.fromJson(this.getInputPorts().get(ID_INPUT_DICT).getInputReader(), new LinkedTreeMap<String,String>().getClass());
+			dictionaryValueEnc = null;
+		}
 		
 		// Input read loop
 		while (inputScanner.hasNext()){
@@ -104,28 +107,39 @@ public class TextReducerModule extends ModuleImpl {
 				throw new InterruptedException("Thread has been interrupted.");
 			}
 			
+			// Retrieve next token from input scanner
 			String token = inputScanner.next();
 			
+			// Determine output dependent on encode/decode switch
+			String output;
 			if (this.encode){
-				String output = dictionary.get(token);
+				// Retrieve previously encoded symbol
+				output = dictionaryValueEnc.get(token);
+				
+				// If the current token has not yet been encoded, do so now
 				if (output == null){
+					// Construct one-char string as placeholder
 					output = new Character((char)charIndex).toString();
-					dictionary.put(token, output);
+					// Write to dictionaries
+					dictionaryValueEnc.put(token, output);
+					dictionaryEncValue.put(output, token);
+					// Increment char index (so the next placeholder will be another unique char)
 					charIndex++;
 				}
-				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(output+this.outputdelimiter);
+				
 			} else {
-				// TODO
+				// Retrieve unencoded value from dictionary
+				output = dictionaryEncValue.get(token);
 			}
+			// Write to output
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(output);
 		}
 		
-		// Output dictionary
-		this.getOutputPorts().get(ID_OUTPUT_DICT).outputToAllCharPipes(gson.toJson(dictionary));
+		// Output decoding dictionary
+		this.getOutputPorts().get(ID_OUTPUT_DICT).outputToAllCharPipes(gson.toJson(dictionaryEncValue));
 
 		//Close input scanners.
 		inputScanner.close();
-		
-		
 		
 		// Close outputs
 		this.closeAllOutputs();
@@ -141,12 +155,19 @@ public class TextReducerModule extends ModuleImpl {
 		super.setDefaultsIfMissing();
 		
 		// Apply own properties
-		this.inputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_INPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT));
-		this.outputdelimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_OUTPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_OUTPUT));
-		
-		String value = this.getProperties().getProperty(PROPERTYKEY_DIRECTION, this.getPropertyDefaultValues().get(PROPERTYKEY_DIRECTION));
+		String value = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_INPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT));
 		if (value != null && !value.isEmpty())
-			this.encode = Boolean.parseBoolean(value);
+			this.inputdelimiter = String.format(REGEX_WITH_DELIMITER, value);
+		
+		value = this.getProperties().getProperty(PROPERTYKEY_DIRECTION, this.getPropertyDefaultValues().get(PROPERTYKEY_DIRECTION));
+		if (value != null && !value.isEmpty())
+			if (value.equalsIgnoreCase("encode"))
+				this.encode = true;
+			else {
+				this.encode = false;
+				this.inputdelimiter = "";
+			}
+					
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();

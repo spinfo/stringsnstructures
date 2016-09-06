@@ -49,6 +49,7 @@ import modules.format_conversion.CSV2GEXFModule;
 import modules.format_conversion.ExtensibleTreeNode2CSVModule;
 import modules.format_conversion.ExtensibleTreeNode2GEXFModule;
 import modules.format_conversion.SuffixTreeVector2CsvModule;
+import modules.format_conversion.TextReducerModule;
 import modules.format_conversion.dot2tree.Dot2TreeController;
 import modules.format_conversion.plainText2TreeBuilder.PlainText2TreeBuilderConverter;
 import modules.format_conversion.seqNewickExporter.SeqNewickExporterController;
@@ -625,6 +626,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		SuffixTreeVector2CsvModule suffixTreeVector2CsvModule = new SuffixTreeVector2CsvModule(moduleNetwork, suffixTreeVector2CsvModuleProperties);
 		suffixTreeVector2CsvModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeVector2CsvModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		suffixTreeVector2CsvModule.applyProperties();
+		
+		// TextReducerModule
+		Properties textReducerModuleProperties = new Properties();
+		TextReducerModule textReducerModule = new TextReducerModule(moduleNetwork, textReducerModuleProperties);
+		textReducerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, textReducerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		textReducerModule.applyProperties();
 				
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -706,6 +713,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(extensibleTreeNode2CSVModule.getName(), extensibleTreeNode2CSVModule);
 		availableModules.put(motifDetectionController.getName(), motifDetectionController);
 		availableModules.put(suffixTreeVector2CsvModule.getName(), suffixTreeVector2CsvModule);
+		availableModules.put(textReducerModule.getName(), textReducerModule);
 	}
 	
 	/**
