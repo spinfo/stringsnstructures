@@ -144,7 +144,8 @@ public class OutputPort extends AbstractPort {
 	 * @throws IOException Thrown if an I/O problem occurs
 	 */
 	public void outputToAllCharPipes(String data) throws IOException {
-		this.outputToAllCharPipes(data.toCharArray(), 0, data.length());
+		if (data != null && !data.isEmpty())
+			this.outputToAllCharPipes(data.toCharArray(), 0, data.length());
 	}
 	
 	public void close() throws IOException{

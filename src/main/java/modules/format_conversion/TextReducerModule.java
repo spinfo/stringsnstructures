@@ -18,6 +18,7 @@ public class TextReducerModule extends ModuleImpl {
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_DELIMITER_INPUT = "input token delimiter";
 	public static final String PROPERTYKEY_DIRECTION = "direction";
+	public static final String PROPERTYKEY_ENCDELIMITERS = "encode delimiters";
 	
 	// Define I/O IDs
 	private static final String ID_INPUT = "input";
@@ -30,7 +31,9 @@ public class TextReducerModule extends ModuleImpl {
 	
 	// Local variables
 	private String inputdelimiter;
+	private String extendedInputdelimiter;
 	private boolean encode;
+	private boolean encodeDelimiters;
 
 	public TextReducerModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -42,13 +45,15 @@ public class TextReducerModule extends ModuleImpl {
 		this.setDescription("Encodes the input text by replacing each token with a unique character, producing a reduced text and a dictionary. Can also decode (requires dictionary input).");
 
 		// Add property descriptions
-		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT, "Part of a regular expression to use as token delimiter for input (ignored when decoding). The full regex (with the current setting) is <pre>"+this.inputdelimiter+"</pre>; only single char matches are supported. Delimiters will be retained and encoded as tokens, too.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT, "Part of a regular expression to use as token delimiter for input (ignored when decoding <i>and</i> input delimiters are encoded as well). The full regex (with the current setting) is <pre>"+this.extendedInputdelimiter+"</pre>; only single char matches are supported.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DIRECTION, "Direction [encode|decode]. Decoding requires input both on port '"+ID_INPUT+"' and '"+ID_INPUT_DICT+"'");
+		this.getPropertyDescriptions().put(PROPERTYKEY_ENCDELIMITERS, "Encode input delimiters same as tokens [true] or keep them as they are [false]. Only applicable if encoding.");
 		
 		// Add property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Text Reducer");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT, "[\\s\\n\\r]");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DIRECTION, "encode");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_ENCDELIMITERS, "false");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "Plain text character input.", this);
@@ -74,7 +79,7 @@ public class TextReducerModule extends ModuleImpl {
 		
 		// Construct scanner instances for input segmentation
 		Scanner inputScanner = new Scanner(this.getInputPorts().get(ID_INPUT).getInputReader());
-		inputScanner.useDelimiter(this.inputdelimiter);
+		inputScanner.useDelimiter(this.extendedInputdelimiter);
 		
 		// Encoding/decoding dictionaries
 		LinkedTreeMap<String,String> dictionaryValueEnc;
@@ -113,20 +118,33 @@ public class TextReducerModule extends ModuleImpl {
 			// Determine output dependent on encode/decode switch
 			String output;
 			if (this.encode){
-				// Retrieve previously encoded symbol
-				output = dictionaryValueEnc.get(token);
 				
-				// If the current token has not yet been encoded, do so now
-				if (output == null){
-					// Construct one-char string as placeholder
-					output = new Character((char)charIndex).toString();
-					// Write to dictionaries
-					dictionaryValueEnc.put(token, output);
-					dictionaryEncValue.put(output, token);
-					// Increment char index (so the next placeholder will be another unique char)
-					charIndex++;
+				// If delimiters are to be retained as is, check whether read token is a delimiter
+				if (!this.encodeDelimiters && token.matches(this.inputdelimiter)){
+					output = token;
+				} else {
+					// Retrieve previously encoded symbol
+					output = dictionaryValueEnc.get(token);
+					
+					// If the current token has not yet been encoded, do so now
+					if (output == null){
+						// Construct one-char string as placeholder
+						output = new Character((char)charIndex).toString();
+						// Skip placeholders that match delimiters (if those are to be retained)
+						while (!this.encodeDelimiters && output.matches(this.inputdelimiter)){
+							charIndex++;
+							output = new Character((char)charIndex).toString();
+						}
+						// Write to dictionaries
+						dictionaryValueEnc.put(token, output);
+						dictionaryEncValue.put(output, token);
+						// Increment char index (so the next placeholder will be another unique char)
+						charIndex++;
+					}
 				}
 				
+			} else if (!this.encodeDelimiters && token.matches(this.inputdelimiter)){
+				output = token;
 			} else {
 				// Retrieve unencoded value from dictionary
 				output = dictionaryEncValue.get(token);
@@ -156,8 +174,10 @@ public class TextReducerModule extends ModuleImpl {
 		
 		// Apply own properties
 		String value = this.getProperties().getProperty(PROPERTYKEY_DELIMITER_INPUT, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT));
-		if (value != null && !value.isEmpty())
-			this.inputdelimiter = String.format(REGEX_WITH_DELIMITER, value);
+		if (value != null && !value.isEmpty()){
+			this.inputdelimiter = value;
+			this.extendedInputdelimiter = String.format(REGEX_WITH_DELIMITER, value);
+		}
 		
 		value = this.getProperties().getProperty(PROPERTYKEY_DIRECTION, this.getPropertyDefaultValues().get(PROPERTYKEY_DIRECTION));
 		if (value != null && !value.isEmpty())
@@ -165,9 +185,12 @@ public class TextReducerModule extends ModuleImpl {
 				this.encode = true;
 			else {
 				this.encode = false;
-				this.inputdelimiter = "";
+				this.extendedInputdelimiter = "";
 			}
-					
+		
+		value = this.getProperties().getProperty(PROPERTYKEY_ENCDELIMITERS, this.getPropertyDefaultValues().get(PROPERTYKEY_ENCDELIMITERS));
+		if (value != null && !value.isEmpty())
+			this.encodeDelimiters = Boolean.parseBoolean(value);
 		
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
