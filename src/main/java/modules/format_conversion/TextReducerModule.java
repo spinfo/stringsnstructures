@@ -44,16 +44,16 @@ public class TextReducerModule extends ModuleImpl {
 		// Add module description
 		this.setDescription("Encodes the input text by replacing each token with a unique character, producing a reduced text and a dictionary. Can also decode (requires dictionary input).");
 
-		// Add property descriptions
-		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT, "Part of a regular expression to use as token delimiter for input (ignored when decoding <i>and</i> input delimiters are encoded as well). The full regex (with the current setting) is <pre>"+this.extendedInputdelimiter+"</pre>; only single char matches are supported.");
-		this.getPropertyDescriptions().put(PROPERTYKEY_DIRECTION, "Direction [encode|decode]. Decoding requires input both on port '"+ID_INPUT+"' and '"+ID_INPUT_DICT+"'");
-		this.getPropertyDescriptions().put(PROPERTYKEY_ENCDELIMITERS, "Encode input delimiters same as tokens [true] or keep them as they are [false]. Only applicable if encoding.");
-		
 		// Add property defaults
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Text Reducer");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT, "[\\s\\n\\r]");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DIRECTION, "encode");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ENCDELIMITERS, "false");
+		
+		// Add property descriptions
+		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_INPUT, "Part of a regular expression to use as token delimiter (also applicable if decoding when the input delimiters have not been encoded). With the default value<pre>"+this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT)+"</pre>the full regex would be<pre>"+String.format(REGEX_WITH_DELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER_INPUT))+"</pre>This is in order to get both the tokens <i>and</i> the delimiters from the scanner that parses the input. Only single char matches are supported.");
+		this.getPropertyDescriptions().put(PROPERTYKEY_DIRECTION, "Direction [encode|decode]. Decoding requires input both on port '"+ID_INPUT+"' and '"+ID_INPUT_DICT+"'");
+		this.getPropertyDescriptions().put(PROPERTYKEY_ENCDELIMITERS, "Encode/decode input delimiters same as tokens [true] or keep them as they are [false].");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "Plain text character input.", this);
