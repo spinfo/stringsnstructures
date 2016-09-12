@@ -24,6 +24,9 @@ public class TransitionNetwork {
 	private final int finalStateId = Integer.MAX_VALUE;
 	private final StateElement finalState = new StateElement(finalStateId);
 
+	// the id of the root state may be set by the user.
+	private Integer rootStateId = null;
+
 	public TransitionNetwork(char[] text, boolean inverted) {
 		this.states = new TNArrayList<StateElement>();
 		this.suffixes = new TNArrayList<SuffixElement>();
@@ -34,17 +37,21 @@ public class TransitionNetwork {
 	}
 
 	public int addStateElement(StateElement stateElement) {
-		if (this.finalState.equals(stateElement)) {
-			return this.finalStateId;
-		}
-		
-		int index = this.states.find(stateElement, this.stateComparator);
+		int index = getStateId(stateElement);
 
 		if (index < 0) {
 			this.states.add(stateElement);
 			index = this.states.size() - 1;
 		}
 		return index;
+	}
+
+	public int getStateId(StateElement stateElement) {
+		if (this.finalState.equals(stateElement)) {
+			return this.finalStateId;
+		}
+
+		return this.states.find(stateElement, this.stateComparator);
 	}
 
 	public int addSuffixElement(SuffixElement suffixElement) {
@@ -56,8 +63,32 @@ public class TransitionNetwork {
 		return index;
 	}
 
+	public SuffixElement getSuffixElement(int id) {
+		return this.suffixes.get(id);
+	}
+
+	public StateElement getState(int id) {
+		if (id == this.getFinalStateId()) {
+			return this.finalState;
+		} else {
+			return this.states.get(id);
+		}
+	}
+
 	public int getFinalStateId() {
 		return this.finalStateId;
+	}
+
+	public void setRootStateId(int id) {
+		if (rootStateId != null && rootStateId != id) {
+			throw new IllegalStateException(
+					"Attempt to set the root state to " + id + ", when already set to " + this.rootStateId);
+		}
+		this.rootStateId = id;
+	}
+	
+	public String getSuffixLabel(int suffixId) {
+		return suffixes.get(suffixId).writeSuffix(this.text, this.inverted);
 	}
 
 	public void writeSuffixes(OutputPort out) throws IOException {
