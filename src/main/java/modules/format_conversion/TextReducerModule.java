@@ -1,5 +1,7 @@
 package modules.format_conversion;
 
+import java.awt.event.KeyEvent;
+import java.lang.Character.UnicodeBlock;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -88,8 +90,8 @@ public class TextReducerModule extends ModuleImpl {
 		// Instantiate JSON parser
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
-		// encoding character index (starts with space char index)
-		int charIndex = 32;
+		// encoding character index (will start with space char index)
+		int charIndex = 31;
 		
 		// If we are decoding, read the dictionary from input, else we create new instances.
 		if (this.encode){
@@ -100,6 +102,12 @@ public class TextReducerModule extends ModuleImpl {
 			// For decoding, the decoding dictionary suffices
 			dictionaryEncValue = gson.fromJson(this.getInputPorts().get(ID_INPUT_DICT).getInputReader(), new LinkedTreeMap<String,String>().getClass());
 			dictionaryValueEnc = null;
+			// If the dictionary is missing, we cannot continue
+			if (dictionaryEncValue == null){
+				inputScanner.close();
+				this.closeAllOutputs();
+				throw new Exception("Cannot read dictionary -- aborting.");
+			}
 		}
 		
 		// Input read loop
@@ -128,18 +136,22 @@ public class TextReducerModule extends ModuleImpl {
 					
 					// If the current token has not yet been encoded, do so now
 					if (output == null){
-						// Construct one-char string as placeholder
-						output = new Character((char)charIndex).toString();
-						// Skip placeholders that match delimiters (if those are to be retained)
-						while (!this.encodeDelimiters && output.matches(this.inputdelimiter)){
-							charIndex++;
+						do {
+							// Increment char index and construct a one-char string as placeholder
+							try {
+								charIndex = this.incCharIndex(charIndex);
+							} catch (Exception e) {
+								inputScanner.close();
+								this.closeAllOutputs();
+								throw new Exception("Too many different token to encode (over "+dictionaryEncValue.size()+"), try reducing variety.",e);
+							}
 							output = new Character((char)charIndex).toString();
 						}
+						// Skip those that match delimiters (if those are to be retained) or that already exist as keys in the dictionary
+						while ((!this.encodeDelimiters && output.matches(this.inputdelimiter)) || dictionaryEncValue.get(output) != null);
 						// Write to dictionaries
 						dictionaryValueEnc.put(token, output);
 						dictionaryEncValue.put(output, token);
-						// Increment char index (so the next placeholder will be another unique char)
-						charIndex++;
 					}
 				}
 				
@@ -164,6 +176,34 @@ public class TextReducerModule extends ModuleImpl {
 		
 		// Done
 		return true;
+	}
+	
+	/**
+	 * Increases the specified index to the next higher Unicode code point value that denotes a printable character. 
+	 * @param charIndex Index to increment
+	 * @return incremented value
+	 * @throws Exception Thrown if incremented value is beyond the max code point range
+	 */
+	private int incCharIndex(int charIndex) throws Exception {
+		UnicodeBlock unicodeBlock = null;
+		do {
+			// Increment code point
+			charIndex++;
+
+			// Check if we are beyond the maximum code point
+			if (charIndex > Character.MAX_CODE_POINT)
+				throw new Exception("Maximum Unicode code point reached -- cannot continue.");
+			
+			// Determine the Unicode block of that code point
+			unicodeBlock = Character.UnicodeBlock.of(charIndex);
+		}
+		// Iterate until the code point denotes a printable character
+		while (Character.isISOControl(charIndex)
+				|| charIndex == KeyEvent.CHAR_UNDEFINED
+				|| unicodeBlock == null
+				|| unicodeBlock == Character.UnicodeBlock.SPECIALS);
+		// Return final code point value
+		return charIndex;
 	}
 	
 	@Override
