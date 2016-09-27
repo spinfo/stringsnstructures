@@ -19,6 +19,8 @@ public class ReverserModule extends ModuleImpl {
 	// Define a property for line-by-line reversal with switch to turn that on
 	private static final String PROPERTYKEY_LINE_BY_LINE = "Reverse each line";
 	private boolean reverseLineByLine = false;
+	
+	
 
 	public ReverserModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -32,9 +34,11 @@ public class ReverserModule extends ModuleImpl {
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Reverser Module"); // Property key for module name is defined in parent class
 		this.getPropertyDefaultValues().put(PROPERTYKEY_LINE_BY_LINE, "false");
+		
 
 		// Add property descriptions
 		this.getPropertyDescriptions().put(PROPERTYKEY_LINE_BY_LINE, "Reverse line by line instead of reverting the whole input.");
+		
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(INPUTID, "Plain text character input.", this);
@@ -65,7 +69,9 @@ public class ReverserModule extends ModuleImpl {
 				sb.setLength(0);
 			}
 			reader.close();
-		} else {
+		} else 
+		
+		{
 			sb.append(super.readStringFromInputPort(in));
 			out.outputToAllCharPipes(sb.reverse().toString());
 		}

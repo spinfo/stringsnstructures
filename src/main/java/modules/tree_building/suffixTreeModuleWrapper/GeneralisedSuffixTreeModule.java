@@ -66,7 +66,7 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_EDGE_SEGMENTS_DESC = "For each input text the output is that path in the tree split into it's edges.";
 
 	private static final String OUTPUT_FOR_TN_ID = "tn";
-	private static final String OUTPUT_FOR_TN_DESC = "[bytestream] A forTN representation of the tree build, suitbale for clustering.";
+	private static final String OUTPUT_FOR_TN_DESC = "[bytestream] A forTN representation of the tree build, suitable for clustering.";
 
 	/**
 	 * Constructor
@@ -170,7 +170,8 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 				tn.writeTN(transitionNetworkOut);
 				transitionNetworkOut.close();
 			}
-
+			
+			
 			// output an XML-Representation of the tree
 			final OutputPort xmlOut = this.getOutputPorts().get(OUTPUT_XML_ID);
 			if (xmlOut.isConnected()) {

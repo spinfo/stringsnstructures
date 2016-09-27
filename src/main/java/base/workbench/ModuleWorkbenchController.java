@@ -44,6 +44,7 @@ import modules.examples.ExampleGsonDeserialization;
 import modules.examples.ExampleGsonSerialization;
 import modules.examples.ExampleModule;
 import modules.examples.ExampleRandString;
+import modules.tree_building.suffixTreeModuleWrapper.GeneralizedSuffixTreesMorphologyModule; 
 import modules.experimental.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.format_conversion.CSV2GEXFModule;
 import modules.format_conversion.ExtensibleTreeNode2CSVModule;
@@ -90,6 +91,7 @@ import modules.tree_building.treeBuilder.AtomicRangeSuffixTrieBuilder;
 import modules.tree_building.treeBuilder.TreeBuilder;
 import modules.tree_building.treeBuilder.TreeBuilderV2Module;
 import modules.tree_building.treeBuilder.TreeBuilderV3Module;
+import modules.tree_building.suffixTree.ResultToMorphListListener;
 import modules.tree_editing.LabelDataMergeModule;
 import modules.tree_editing.seqNewick.SeqQueryController;
 import modules.tree_editing.seqSuffixTrie2SuffixTree.SeqSuffixTrie2SuffixTreeController;
@@ -632,6 +634,16 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		TextReducerModule textReducerModule = new TextReducerModule(moduleNetwork, textReducerModuleProperties);
 		textReducerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, textReducerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		textReducerModule.applyProperties();
+		
+		// MorphologyModule
+		Properties resultToGeneralizedSuffixTreesMorphologyModuleProperties = new Properties();
+		GeneralizedSuffixTreesMorphologyModule resultToGeneralizedSuffixTreesMorphologyModule = 
+		new GeneralizedSuffixTreesMorphologyModule(moduleNetwork, resultToGeneralizedSuffixTreesMorphologyModuleProperties);
+		resultToGeneralizedSuffixTreesMorphologyModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, 
+		resultToGeneralizedSuffixTreesMorphologyModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		resultToGeneralizedSuffixTreesMorphologyModule.applyProperties();
+				
+		
 				
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -714,6 +726,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(motifDetectionController.getName(), motifDetectionController);
 		availableModules.put(suffixTreeVector2CsvModule.getName(), suffixTreeVector2CsvModule);
 		availableModules.put(textReducerModule.getName(), textReducerModule);
+		availableModules.put(resultToGeneralizedSuffixTreesMorphologyModule.getName(), resultToGeneralizedSuffixTreesMorphologyModule);
 	}
 	
 	/**
