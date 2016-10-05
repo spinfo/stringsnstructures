@@ -23,7 +23,7 @@ public class Properties2CLIOptionTest {
 		propertyDescriptions.put("nix", "this is a description");
 		propertyDescriptions.put("zapp", "this is a description");
 		propertyDescriptions.put("zupp", "this is a description");
-		Options options = Properties2CLIOption.getCLIOptions(properties, propertyDescriptions);
+		Options options = Properties2CLIOption.properties2cliOptions(properties, propertyDescriptions);
 		Option blablaopt = options.getOption("blabla");
 		Option nixopt = options.getOption("nix");
 		Option zappopt = options.getOption("zapp");
