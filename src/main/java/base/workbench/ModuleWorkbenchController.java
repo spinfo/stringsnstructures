@@ -61,6 +61,7 @@ import modules.generators.artificialSeqs.CreateArtificialSeqsContent;
 import modules.graph_editing.GexfFilterModule;
 import modules.hal.HalAdvancedModule;
 import modules.input_output.BufferModule;
+import modules.input_output.ConsoleReaderModule;
 import modules.input_output.ConsoleWriterModule;
 import modules.input_output.ExternalCommandModule;
 import modules.input_output.FileFinderModule;
@@ -632,6 +633,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		TextReducerModule textReducerModule = new TextReducerModule(moduleNetwork, textReducerModuleProperties);
 		textReducerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, textReducerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		textReducerModule.applyProperties();
+		
+		// ConsoleReaderModule
+		Properties consoleReaderModuleProperties = new Properties();
+		ConsoleReaderModule consoleReaderModule = new ConsoleReaderModule(moduleNetwork, consoleReaderModuleProperties);
+		consoleReaderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, consoleReaderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		consoleReaderModule.applyProperties();
 				
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -714,6 +721,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(motifDetectionController.getName(), motifDetectionController);
 		availableModules.put(suffixTreeVector2CsvModule.getName(), suffixTreeVector2CsvModule);
 		availableModules.put(textReducerModule.getName(), textReducerModule);
+		availableModules.put(consoleReaderModule.getName(), consoleReaderModule);
 	}
 	
 	/**
