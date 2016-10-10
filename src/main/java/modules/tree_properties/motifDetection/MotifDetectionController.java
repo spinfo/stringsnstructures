@@ -1234,7 +1234,7 @@ public class MotifDetectionController extends ModuleImpl {
 				
 				// The newDelta must have a length of at least 2 characters.
 				// Compare the startNodeNSet with the childEdgeLabel. Integrate 'N's to show differences.
-				else if (j - deltaOffSet < 0 && newDelta.size() >= this.minDeltaLen) {
+				else if (j - deltaOffSet < 0 || newDelta.size() >= this.minDeltaLen) {
 					if (startNodeNSet.isEmpty() || !startNodeNSet.get(j).equals(childEdgeLabel.get(j))) {
 						newStartNodeNSet.add(0, 'N');
 					}
@@ -1298,7 +1298,7 @@ public class MotifDetectionController extends ModuleImpl {
 				
 				// The newDelta must have a length of at least 2 characters.
 				// Compare the startNodeNSet with the childEdgeLabel. Integrate 'N's to show differences.
-				else if (j - deltaOffSet < 0 && newDelta.size() >= this.minDeltaLen) {
+				else if (j - deltaOffSet < 0 || newDelta.size() >= this.minDeltaLen) {
 					if (suffixLinkNSet.isEmpty() || !suffixLinkNSet.get(j).equals(childEdgeLabel.get(j))) {
 						newSuffixLinkNSet.add(0, 'N');
 					}
