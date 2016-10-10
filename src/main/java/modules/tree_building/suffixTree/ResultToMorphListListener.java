@@ -6,20 +6,38 @@ package modules.tree_building.suffixTree;
  */
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Stack;
+import modules.tree_building.suffixTree.Word;
+
 
 public class ResultToMorphListListener  implements ITreeWalkerListener{
 	
 	// the suffix tree this will work on
-	private final BaseSuffixTree tree;
-	private boolean inverted = true;
+	final BaseSuffixTree tree;
+	boolean inverted = true;
 	private Stack<Integer> nodeNrs = null;
 	// the length of the path currently read
 	private int lengthOfPath;
 	
+	
+	
+	
+	public ArrayList <Word>words;
+	
+	int[] nodesWholePhrases;
+	
+	
 	public ResultToMorphListListener(BaseSuffixTree suffixTree, boolean inverted) {
 		this.tree = suffixTree;
-	
+		this.nodeNrs = new Stack<Integer>();
+		
+		this.inverted = inverted;
+		this.nodesWholePhrases=new int[this.tree.nodes.length];
+		
+		this.words = new ArrayList<Word>();
+		
 	}
 	
 	@Override
@@ -34,16 +52,40 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 	@Override
 	public void exitaction(int nodeNr, int level) throws IOException {
 	// if the current node is a leaf of a whole input text, write out stack
-		if (nodeIsLeafOfWholeInputText(nodeNr, this.lengthOfPath)) {
+		//System.out.println("exitAction entry nodeNr: "+nodeNr+" lengthOfPath: "+this.lengthOfPath);
+		if (nodeIsLeafOfWholeInputText(nodeNr, this.lengthOfPath)) 
+		
+			{
+			
+			// mark node as in whole phrase;for paradigmatic relation;
+			// except terminal nodes which don't branch but should be maintanined
+			this.nodesWholePhrases[nodeNr]=3;//terminal node
 			int anf, end, node;
-			System.out.println();
+			if (this.inverted) System.out.println("exitAction inverted LeafNode: "+nodeNr);
+			else System.out.println("exitAction not inverted LeafNode: "+nodeNr);
+			
+			Word word=new Word();
+			word.morphInWordList=new ArrayList<Integer>();
+			this.words.add(word);
+			
 			if (this.inverted)
+				
 				{
+				
+				// 2-for loops, first loop for inverted order in word
+				for (int i=0;i<this.nodeNrs.size();i++) 
+					word.morphInWordList.add(this.nodeNrs.get(i));
+				
 				for (int i=this.nodeNrs.size()-1;i>=0;i-- )
+				
 					{ node=this.nodeNrs.get(i);
+					
+					  System.out.println("exitAction node: "+node);
 					  anf=tree.getNode(node).getStart(0);
 					  end=tree.getNode(node).getEnd(0)-1;
+					 
 					  for(int pos=end;pos>=anf;pos--)
+						  if (this.tree.text[pos]!='$')
 						  System.out.print(this.tree.text[pos]);
 					  System.out.print(" ");
 					}
@@ -55,8 +97,10 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 				
 				{
 					node=this.nodeNrs.get(i);
+					word.morphInWordList.add(node);
+					
 					anf=tree.getNode(node).getStart(0);
-					end=tree.getNode(node).getEnd(0)-1;
+					end=tree.getNode(node).getEnd(0);
 					 for(int pos=anf;pos<end;pos++)
 						  System.out.print(this.tree.text[pos]);
 					  System.out.print(" ");
@@ -67,9 +111,25 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 
 				
 		}
-	
+		this.lengthOfPath = this.lengthOfPath - 
+				(tree.getNode(nodeNr).getEnd(0) - tree.getNode(nodeNr).getStart(0));
 		this.nodeNrs.pop();
-
+		
+		// morphemes in contrast; mark mother if child is marked
+		if (this.nodesWholePhrases[nodeNr]>0 )
+			{
+				System.out.println("exitaction nodeNrs nodeNr: "+nodeNr);
+				if(!this.nodeNrs.empty())
+					{System.out.println("peek: "+this.nodeNrs.peek() );
+					if (this.nodesWholePhrases[this.nodeNrs.peek()]==0) {
+					this.nodesWholePhrases[this.nodeNrs.peek()]=1;
+					}
+					else if (this.nodesWholePhrases[this.nodeNrs.peek()]==1) {
+						this.nodesWholePhrases[this.nodeNrs.peek()]=2;
+					}
+				}
+			
+		}
 	}
 	
 	// checks if the given node in this listeners tree corresponds to a whole
@@ -80,19 +140,74 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			if (!node.isTerminal()) {
 				return false;
 			}
-
+			System.out.println("nodeIsLeafOfWholeInputText terminal node:"+nodeNr+
+					" pathLength: "+pathLength);
 			for (NodePosition position : node.getPositions()) {
+				//System.out.println("nodeIsLeafOfWholeInputText position.getEnd: "+
+				//		position.getEnd() +" tree.getTextBegin "+tree.getTextBegin(position.getTextNr())+
+				//				" TextBegin+pathLength: "+(tree.getTextBegin(position.getTextNr()) + 
+				//					pathLength));
 				if (position.getEnd() == tree.getTextBegin(position.getTextNr()) + pathLength) {
+					
 					return true;
 				}
 			}
 
 			return false;
 		}
-	
-		public void testOut(){
-			System.out.println("----------TEST-----------");
+		
+		public ArrayList<BranchedStringElement> results() {
+			ArrayList <BranchedStringElement>branchedStringElementList=new ArrayList <BranchedStringElement>();
+			BranchedStringElement branchedStringElement;
+			System.out.print("results ");
+			if(this.inverted) System.out.println("inverted");
+			else System.out.println("normal");
+			System.out.println();
+			for (int i=0;i<this.words.size();i++){
+				Word word=this.words.get(i);
+				branchedStringElement=word.branchedString(this);
+				branchedStringElementList.add(branchedStringElement);
+				System.out.println();
+			}
+			Collections.sort(branchedStringElementList,new BranchedStringElementComparator());
+			
+			printBranchedStringElementList(branchedStringElementList);
+			return branchedStringElementList;
 		}
+		
+		public void printBranchedStringElementList(ArrayList<BranchedStringElement>branchedStringElementList){
+			System.out.println("\nSortedList\n");
+			for(BranchedStringElement b:branchedStringElementList){
+				System.out.println(b.stringBuffer);
+				for (int i=0;i<b.bitSet.length();i++){
+					if(b.bitSet.get(i)) System.out.print('|');else System.out.print(' ');					
+				}
+				System.out.println();
+			}
+		}
+		
+		public ArrayList<BranchedStringElement>logOp(ArrayList<BranchedStringElement>l1,
+				ArrayList<BranchedStringElement>l2, ILogOp il ) {
+			// necessary precondition in1 and in2 contain identical strings
+			// ??toDo throw eception if not??
+			ArrayList<BranchedStringElement>resList=new ArrayList<BranchedStringElement>();
+			for (int i=0;i<l1.size();i++){
+				// warning, to check: no new strinbuffer, newElement has common reference with
+				// element from l1 List!!!
+				BranchedStringElement newElement=new BranchedStringElement(l1.get(i).stringBuffer,
+				il.logOperation(l1.get(i).bitSet,l2.get(i).bitSet));
+				resList.add(newElement);
+				
+			}
+			
+			
+			
+			return resList;
+			
+		}
+		
+	
+		
 }
 	
 	

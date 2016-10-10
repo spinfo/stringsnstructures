@@ -14,9 +14,11 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-
+import modules.tree_building.suffixTree.BranchedStringElement;
 import modules.tree_building.suffixTree.GST;
-
+import modules.tree_building.suffixTree.ILogOp;
+import modules.tree_building.suffixTree.LogOpAND;
+import modules.tree_building.suffixTree.LogOpOR;
 import modules.tree_building.suffixTree.ResultToMorphListListener;
 
 import modules.tree_building.suffixTree.SuffixTree;
@@ -111,7 +113,7 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 	public boolean process() throws Exception {
 		
 
-		ResultToMorphListListener test=new ResultToMorphListListener(null,false);
+		//ResultToMorphListListener test=new ResultToMorphListListener(null,false);
 
 		boolean result = true;
 
@@ -128,29 +130,28 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 			
 			System.out.println("SuffixTrees Built");
 			
-			/*JR output the transition network
-			final OutputPort transitionNetworkOut = this.getOutputPorts().get(OUTPUT_FOR_TN_ID);
-			if (transitionNetworkOut.isConnected()) {
-				final ResultToFiniteStateMachineListener listener = 
-				new ResultToFiniteStateMachineListener(suffixTree);
-				TreeWalker.walk(suffixTree.getRoot(), suffixTree, listener);
-				TransitionNetwork tn = listener.getTN();
-				tn.writeTN(transitionNetworkOut);
-				transitionNetworkOut.close();
-			}
-			*/
 			
-			/*???*/
+			// to do: attach result of walk to listener component
 			ResultToMorphListListener resultToMorphListListener1=
 					new ResultToMorphListListener(suffixTree1,false);
 			TreeWalker.walk(suffixTree1.getRoot(), suffixTree1, 
 			resultToMorphListListener1);
+			ArrayList<BranchedStringElement> branchedStringElementList1=
+			resultToMorphListListener1.results();
+			System.out.println();System.out.println();System.out.println();
 			ResultToMorphListListener resultToMorphListListener2=
 					new ResultToMorphListListener(suffixTree2,true);
 			TreeWalker.walk(suffixTree2.getRoot(), suffixTree2, 
 					resultToMorphListListener2);
-			
-
+			ArrayList<BranchedStringElement> branchedStringElementList2=
+			resultToMorphListListener2.results();
+			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementList1);
+			resultToMorphListListener2.printBranchedStringElementList(branchedStringElementList2);
+			ArrayList<BranchedStringElement> branchedStringElementListAnd=
+				resultToMorphListListener1.logOp(branchedStringElementList1,
+				branchedStringElementList2,new LogOpAND());		
+			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementListAnd);
+					
 		} catch (Exception e) {
 			result = false;
 			throw e;

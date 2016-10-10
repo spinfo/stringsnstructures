@@ -21,12 +21,16 @@ public class GST {
 
 	// cstr
 	public static SuffixTree buildGST(Reader inputReader, List<Integer> typeContextEndIndices) throws Exception {
+		//JR test 16-09-29
+		System.out.println("SuffixTree");
+		
 		int nrText = 0;
 		 
 		String line,inText="",nextinText;		
 	    BufferedReader in = new BufferedReader(inputReader);
 	    inText=in.readLine();
 	    while ((line=in.readLine())!=null) {
+	    	
 	    	if(line.charAt(line.length()-1)=='$')inText=inText+line; else inText=inText+" "+line;
 	    }
 	    in.close();
@@ -46,9 +50,13 @@ public class GST {
 	    }
 		
 		for (int i = 0; i < inText.length(); i++) {
+			//JR test 16-09-29
+			System.out.print(inText.charAt(i));
 			st.addChar(inText.charAt(i), nrText);
 			// while loop as completely repeated texts are possible
 			while(inText.charAt(i) == '$') {
+				//JR test  16-09-29
+				System.out.println();
 				// set value for end in leaves
 				oo.val=i+1;
 				// generate new element for next text
