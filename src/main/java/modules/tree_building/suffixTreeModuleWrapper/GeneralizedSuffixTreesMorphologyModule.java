@@ -149,7 +149,7 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 			resultToMorphListListener2.printBranchedStringElementList(branchedStringElementList2);
 			ArrayList<BranchedStringElement> branchedStringElementListAnd=
 				resultToMorphListListener1.logOp(branchedStringElementList1,
-				branchedStringElementList2,new LogOpAND());		
+				branchedStringElementList2,new LogOpOR());		
 			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementListAnd);
 					
 		} catch (Exception e) {
