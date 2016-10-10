@@ -16,9 +16,9 @@ import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.tree_building.suffixTree.BranchedStringElement;
 import modules.tree_building.suffixTree.GST;
-import modules.tree_building.suffixTree.ILogOp;
-import modules.tree_building.suffixTree.LogOpAND;
-import modules.tree_building.suffixTree.LogOpOR;
+import common.logicBits.ILogOp;
+import common.logicBits.LogOpAND;
+import common.logicBits.LogOpOR;
 import modules.tree_building.suffixTree.ResultToMorphListListener;
 
 import modules.tree_building.suffixTree.SuffixTree;

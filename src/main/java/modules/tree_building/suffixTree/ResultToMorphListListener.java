@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Stack;
+
+import common.logicBits.ILogOp;
 import modules.tree_building.suffixTree.Word;
 
 
