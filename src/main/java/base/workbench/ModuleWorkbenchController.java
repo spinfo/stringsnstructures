@@ -62,6 +62,7 @@ import modules.generators.artificialSeqs.CreateArtificialSeqsContent;
 import modules.graph_editing.GexfFilterModule;
 import modules.hal.HalAdvancedModule;
 import modules.input_output.BufferModule;
+import modules.input_output.ConsoleReaderModule;
 import modules.input_output.ConsoleWriterModule;
 import modules.input_output.ExternalCommandModule;
 import modules.input_output.FileFinderModule;
@@ -84,6 +85,7 @@ import modules.parser.oanc.OANCXMLParser;
 import modules.segmentation.SegmentJoinerModule;
 import modules.segmentation.SegmentMatrixModule;
 import modules.segmentation.SegmentationCheckModule;
+import modules.segmentation.SegmentsTransitionNetworkModule;
 import modules.segmentation.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.segmentation.seqSplitting.SeqMemory;
 import modules.tree_building.suffixTreeModuleWrapper.GeneralisedSuffixTreeModule;
@@ -635,6 +637,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		textReducerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, textReducerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		textReducerModule.applyProperties();
 		
+
 		// MorphologyModule
 		Properties resultToGeneralizedSuffixTreesMorphologyModuleProperties = new Properties();
 		GeneralizedSuffixTreesMorphologyModule resultToGeneralizedSuffixTreesMorphologyModule = 
@@ -644,6 +647,19 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		resultToGeneralizedSuffixTreesMorphologyModule.applyProperties();
 				
 		
+
+		// ConsoleReaderModule
+		Properties consoleReaderModuleProperties = new Properties();
+		ConsoleReaderModule consoleReaderModule = new ConsoleReaderModule(moduleNetwork, consoleReaderModuleProperties);
+		consoleReaderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, consoleReaderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		consoleReaderModule.applyProperties();
+
+		// SegmentsTransitionNetworkModule
+		Properties segmentsTransitionNetworkModuleProperties = new Properties();
+		SegmentsTransitionNetworkModule segmentsTransitionNetworkModule = new SegmentsTransitionNetworkModule(moduleNetwork, segmentsTransitionNetworkModuleProperties);
+		segmentsTransitionNetworkModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentsTransitionNetworkModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		segmentsTransitionNetworkModule.applyProperties();
+
 				
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -727,6 +743,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(suffixTreeVector2CsvModule.getName(), suffixTreeVector2CsvModule);
 		availableModules.put(textReducerModule.getName(), textReducerModule);
 		availableModules.put(resultToGeneralizedSuffixTreesMorphologyModule.getName(), resultToGeneralizedSuffixTreesMorphologyModule);
+		availableModules.put(consoleReaderModule.getName(), consoleReaderModule);
+		availableModules.put(segmentsTransitionNetworkModule.getName(), segmentsTransitionNetworkModule);
 	}
 	
 	/**

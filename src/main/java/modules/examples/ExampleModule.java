@@ -3,6 +3,7 @@ package modules.examples;
 import java.util.Properties;
 import java.util.Scanner;
 
+import base.workbench.ModuleRunner;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
@@ -28,6 +29,11 @@ public class ExampleModule extends ModuleImpl {
 	private String inputdelimiter_b;
 	private String outputdelimiter;
 
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(ExampleModule.class, args);
+	}
+	
 	public ExampleModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
 		
