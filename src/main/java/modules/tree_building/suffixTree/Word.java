@@ -11,7 +11,7 @@ import java.util.BitSet;
 public class Word {
 	ArrayList <Integer> morphInWordList;
 	
-	public BranchedStringElement branchedString(ResultToMorphListListener r) {
+	public BranchedStringBufferElement branchedString(ResultToMorphListListener r) {
 		int node, start,end,branchPosition;
 		// necessary for inverted positions
 		ArrayList<Integer> branchPosList=new ArrayList<Integer>();
@@ -55,7 +55,7 @@ public class Word {
 			bitSetBranches.set(pos, true);
 		}
 		System.out.println();
-		BranchedStringElement bs=new BranchedStringElement(sb,bitSetBranches);
+		BranchedStringBufferElement bs=new BranchedStringBufferElement(sb,bitSetBranches);
 		return bs;
 	}
 }

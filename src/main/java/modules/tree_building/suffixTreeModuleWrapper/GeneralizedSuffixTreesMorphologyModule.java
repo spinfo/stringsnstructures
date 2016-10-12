@@ -14,7 +14,7 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.tree_building.suffixTree.BranchedStringElement;
+import modules.tree_building.suffixTree.BranchedStringBufferElement;
 import modules.tree_building.suffixTree.GST;
 import common.logicBits.ILogOp;
 import common.logicBits.LogOpAND;
@@ -131,23 +131,23 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 			System.out.println("SuffixTrees Built");
 			
 			
-			// to do: attach result of walk to listener component
+			// 
 			ResultToMorphListListener resultToMorphListListener1=
 					new ResultToMorphListListener(suffixTree1,false);
 			TreeWalker.walk(suffixTree1.getRoot(), suffixTree1, 
 			resultToMorphListListener1);
-			ArrayList<BranchedStringElement> branchedStringElementList1=
+			ArrayList<BranchedStringBufferElement> branchedStringElementList1=
 			resultToMorphListListener1.results();
 			System.out.println();System.out.println();System.out.println();
 			ResultToMorphListListener resultToMorphListListener2=
 					new ResultToMorphListListener(suffixTree2,true);
 			TreeWalker.walk(suffixTree2.getRoot(), suffixTree2, 
 					resultToMorphListListener2);
-			ArrayList<BranchedStringElement> branchedStringElementList2=
+			ArrayList<BranchedStringBufferElement> branchedStringElementList2=
 			resultToMorphListListener2.results();
 			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementList1);
 			resultToMorphListListener2.printBranchedStringElementList(branchedStringElementList2);
-			ArrayList<BranchedStringElement> branchedStringElementListAnd=
+			ArrayList<BranchedStringBufferElement> branchedStringElementListAnd=
 				resultToMorphListListener1.logOp(branchedStringElementList1,
 				branchedStringElementList2,new LogOpOR());		
 			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementListAnd);

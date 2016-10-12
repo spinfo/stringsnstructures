@@ -7,11 +7,11 @@ import java.util.BitSet;
  * @version 1.0
  */
 
-public class BranchedStringElement{
+public class BranchedStringBufferElement extends StringBufferElement{
 
-	StringBuffer stringBuffer;
+	
 	BitSet bitSet;
-	public BranchedStringElement(StringBuffer sb, BitSet bitSet){
+	public BranchedStringBufferElement(StringBuffer sb, BitSet bitSet){
 		this.stringBuffer=sb;
 		this.bitSet=bitSet;
 	}

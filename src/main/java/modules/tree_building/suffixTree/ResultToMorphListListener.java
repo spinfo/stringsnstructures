@@ -158,9 +158,9 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			return false;
 		}
 		
-		public ArrayList<BranchedStringElement> results() {
-			ArrayList <BranchedStringElement>branchedStringElementList=new ArrayList <BranchedStringElement>();
-			BranchedStringElement branchedStringElement;
+		public ArrayList<BranchedStringBufferElement> results() {
+			ArrayList <BranchedStringBufferElement>branchedStringElementList=new ArrayList <BranchedStringBufferElement>();
+			BranchedStringBufferElement branchedStringElement;
 			System.out.print("results ");
 			if(this.inverted) System.out.println("inverted");
 			else System.out.println("normal");
@@ -171,15 +171,15 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 				branchedStringElementList.add(branchedStringElement);
 				System.out.println();
 			}
-			Collections.sort(branchedStringElementList,new BranchedStringElementComparator());
+			Collections.sort(branchedStringElementList,new StringBufferElementComparator());
 			
 			printBranchedStringElementList(branchedStringElementList);
 			return branchedStringElementList;
 		}
 		
-		public void printBranchedStringElementList(ArrayList<BranchedStringElement>branchedStringElementList){
+		public void printBranchedStringElementList(ArrayList<BranchedStringBufferElement>branchedStringElementList){
 			System.out.println("\nSortedList\n");
-			for(BranchedStringElement b:branchedStringElementList){
+			for(BranchedStringBufferElement b:branchedStringElementList){
 				System.out.println(b.stringBuffer);
 				for (int i=0;i<b.bitSet.length();i++){
 					if(b.bitSet.get(i)) System.out.print('|');else System.out.print(' ');					
@@ -188,15 +188,15 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			}
 		}
 		
-		public ArrayList<BranchedStringElement>logOp(ArrayList<BranchedStringElement>l1,
-				ArrayList<BranchedStringElement>l2, ILogOp il ) {
+		public ArrayList<BranchedStringBufferElement>logOp(ArrayList<BranchedStringBufferElement>l1,
+				ArrayList<BranchedStringBufferElement>l2, ILogOp il ) {
 			// necessary precondition in1 and in2 contain identical strings
 			// ??toDo throw eception if not??
-			ArrayList<BranchedStringElement>resList=new ArrayList<BranchedStringElement>();
+			ArrayList<BranchedStringBufferElement>resList=new ArrayList<BranchedStringBufferElement>();
 			for (int i=0;i<l1.size();i++){
 				// warning, to check: no new strinbuffer, newElement has common reference with
 				// element from l1 List!!!
-				BranchedStringElement newElement=new BranchedStringElement(l1.get(i).stringBuffer,
+				BranchedStringBufferElement newElement=new BranchedStringBufferElement(l1.get(i).stringBuffer,
 				il.logOperation(l1.get(i).bitSet,l2.get(i).bitSet));
 				resList.add(newElement);
 				
