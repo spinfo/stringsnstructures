@@ -255,7 +255,7 @@ public class Properties2CLIOption {
 
 		// Stash of mnemonics we can use (like "-c" for "--config")
 		TreeSet<String> unUsedMnemonics = new TreeSet<String>();
-		for (int i = 'a'; i < 'z'; i++){
+		for (int i = 'a'; i <= 'z'; i++){
 			if (i=='h')
 				continue;
 			unUsedMnemonics.add("" + ((char) i));
