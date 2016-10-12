@@ -240,4 +240,61 @@
 		<url>http://www.uni-koeln.de</url>
 	</organization>
 	<description>An extensible software workbench tool that comes with a collection of modules used in context of the Strings &amp; Structures project.</description>
+	<profiles>
+		<profile>
+			<id>standalone</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>2.6</version>
+						<executions>
+						<!-- For stand-alone module builds, add execution elements below this line -->
+							<execution>
+								<id>ExampleModule</id>
+								<phase>package</phase>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>
+										${project.build.directory}/release
+									</outputDirectory>
+									<finalName>ExampleModule</finalName>
+									<archive>
+										<manifest>
+											<addClasspath>true</addClasspath>
+											<classpathPrefix>lib/</classpathPrefix>
+											<mainClass>modules.examples.ExampleModule</mainClass>
+										</manifest>
+									</archive>
+								</configuration>
+							</execution>
+							<execution>
+								<id>ExampleRandString</id>
+								<phase>package</phase>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>
+										${project.build.directory}/release
+									</outputDirectory>
+									<finalName>ExampleRandString</finalName>
+									<archive>
+										<manifest>
+											<addClasspath>true</addClasspath>
+											<classpathPrefix>lib/</classpathPrefix>
+											<mainClass>modules.examples.ExampleRandString</mainClass>
+										</manifest>
+									</archive>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
