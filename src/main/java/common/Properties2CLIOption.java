@@ -404,8 +404,8 @@ public class Properties2CLIOption {
 					outputModule = new FileWriterModule(moduleNetwork,
 							fileWriterProperties);
 					fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, outputModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-					fileWriterProperties.setProperty(FileReaderModule.PROPERTYKEY_INPUTFILE, fileName);
-					fileWriterProperties.setProperty(FileReaderModule.PROPERTYKEY_USEGZIP, "false");
+					fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_OUTPUTFILE, fileName);
+					fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_USEGZIP, "false");
 					outputModule.applyProperties();
 				}
 				
