@@ -90,7 +90,7 @@ public class ModuleRunner {
 			return;
 		
 		// Parse command line and convert the values to properties that our modules understand
-		Properties properties = Properties2CLIOption.cmdLineArgs2Properties(args, options);
+		Properties properties = Properties2CLIOption.cmdLineArgs2Properties(args, options, module.getPropertyDescriptions().keySet());
 		
 		// Set and apply properties
 		module.setProperties(properties);

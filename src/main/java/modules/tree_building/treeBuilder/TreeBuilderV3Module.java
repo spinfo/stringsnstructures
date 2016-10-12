@@ -12,16 +12,17 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.SortedMap;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import base.workbench.ModuleRunner;
+import common.parallelization.CallbackReceiver;
 import models.ExtensibleTreeNode;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.Pipe;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import common.parallelization.CallbackReceiver;
 
 public class TreeBuilderV3Module extends ModuleImpl {
 
@@ -48,6 +49,11 @@ public class TreeBuilderV3Module extends ModuleImpl {
 	private boolean compactTree;
 
 	// private int maxThreads;
+	
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(TreeBuilderV3Module.class, args);
+	}
 
 	public TreeBuilderV3Module(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {

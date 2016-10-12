@@ -291,6 +291,26 @@
 									</archive>
 								</configuration>
 							</execution>
+							<execution>
+								<id>TreeBuilderV3Module</id>
+								<phase>package</phase>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>
+										${project.build.directory}/release
+									</outputDirectory>
+									<finalName>TreeBuilderV3Module</finalName>
+									<archive>
+										<manifest>
+											<addClasspath>true</addClasspath>
+											<classpathPrefix>lib/</classpathPrefix>
+											<mainClass>modules.tree_building.treeBuilder.TreeBuilderV3Module</mainClass>
+										</manifest>
+									</archive>
+								</configuration>
+							</execution>
 						</executions>
 					</plugin>
 				</plugins>
