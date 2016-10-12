@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import base.workbench.ModuleRunner;
 import common.XmlPrintWriter;
 import common.parallelization.CallbackReceiver;
 import models.GstLabelData;
@@ -20,8 +21,8 @@ import modules.OutputPort;
 import modules.transitionNetwork.TransitionNetwork;
 import modules.tree_building.suffixTree.GST;
 import modules.tree_building.suffixTree.ResultEdgeSegmentsListener;
-import modules.tree_building.suffixTree.ResultToFiniteStateMachineListener;
 import modules.tree_building.suffixTree.ResultLabelListListener;
+import modules.tree_building.suffixTree.ResultToFiniteStateMachineListener;
 import modules.tree_building.suffixTree.ResultToGstLabelDataListener;
 import modules.tree_building.suffixTree.ResultToJsonListener;
 import modules.tree_building.suffixTree.ResultToXmlListener;
@@ -68,6 +69,11 @@ public class GeneralisedSuffixTreeModule extends modules.ModuleImpl {
 	private static final String OUTPUT_FOR_TN_ID = "tn";
 	private static final String OUTPUT_FOR_TN_DESC = "[bytestream] A forTN representation of the tree build, suitable for clustering.";
 
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(GeneralisedSuffixTreeModule.class, args);
+	}
+	
 	/**
 	 * Constructor
 	 * 

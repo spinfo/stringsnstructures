@@ -2,6 +2,7 @@ package modules.examples;
 
 import java.util.Properties;
 
+import base.workbench.ModuleRunner;
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.ModuleImpl;
@@ -27,6 +28,11 @@ public class ExampleRandString extends modules.ModuleImpl {
 	
 	//Add I/O labels
 	private final String OUTPUTID = "output";
+	
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(ExampleRandString.class, args);
+	}
 	
 	//Add constructors:
 	public ExampleRandString(CallbackReceiver callbackReceiver,

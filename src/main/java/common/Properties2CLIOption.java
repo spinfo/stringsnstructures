@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.cli.CommandLine;
@@ -36,15 +37,19 @@ public class Properties2CLIOption {
 	// Prefixes for i/o port options
 	public static final String INPUT_PREFIX = "I";
 	public static final String OUTPUT_PREFIX = "O";
+	// Parameters to make property key string usable on CLI
+	public static final String PROPERTYKEY2CLIOPTIONREGEX = "[^A-Za-z0-9_]";
+	public static final String PROPERTYKEY2CLIOPTIONREPLACEMENT = "_";
 	
 	/**
 	 * Creates module properties from the specified command line arguments + CLI options set.
 	 * @param args Command line parameters
 	 * @param options CLI option set
+	 * @param propertyKeySet Set of property keys
 	 * @return Module properties
 	 * @throws ParseException Thrown if parsing the command line failed
 	 */
-	public static Properties cmdLineArgs2Properties(String[] args, Options options) throws ParseException {
+	public static Properties cmdLineArgs2Properties(String[] args, Options options, Set<String> propertyKeySet) throws ParseException {
 		// Instantiate new Properties object
 		Properties properties = new Properties();
 
@@ -65,9 +70,20 @@ public class Properties2CLIOption {
 				value = commandLine.getOptionValue(option.getOpt());
 			}
 			
-			// If we have got a value, insert it into the Properties object
-			if (value != null){
-				properties.setProperty(option.getLongOpt(), value);
+			// Determine the correct property key
+			String propertyKey = null;
+			Iterator<String> propertyKeys = propertyKeySet.iterator();
+			while(propertyKeys.hasNext()){
+				String key = propertyKeys.next();
+				if (key.replaceAll(PROPERTYKEY2CLIOPTIONREGEX, PROPERTYKEY2CLIOPTIONREPLACEMENT).equals(option.getLongOpt())){
+					propertyKey = key;
+					break;
+				}
+			}
+			
+			// If we have got a key and a value, insert it into the Properties object
+			if (propertyKey != null && value != null){
+				properties.setProperty(propertyKey, value);
 			}
 		}
 
@@ -203,7 +219,7 @@ public class Properties2CLIOption {
 			 *    a) prevent overlapping with other (lowercase) options
 			 *    b) make it possible to identify the port from the option alone.
 			 */
-			String longOpt = prefix+portName.replace(' ', '_');
+			String longOpt = prefix+portName.replaceAll(PROPERTYKEY2CLIOPTIONREGEX, PROPERTYKEY2CLIOPTIONREPLACEMENT);
 			// Add option to set
 			options.addOption(opt, longOpt, true, portMap.get(portName).getDescription());
 		}
@@ -255,7 +271,7 @@ public class Properties2CLIOption {
 
 		// Stash of mnemonics we can use (like "-c" for "--config")
 		TreeSet<String> unUsedMnemonics = new TreeSet<String>();
-		for (int i = 'a'; i < 'z'; i++){
+		for (int i = 'a'; i <= 'z'; i++){
 			if (i=='h')
 				continue;
 			unUsedMnemonics.add("" + ((char) i));
@@ -266,7 +282,8 @@ public class Properties2CLIOption {
 		while (keys.hasNext()) {
 
 			// Retrieve property key, this will be our long option string
-			String longOpt = keys.next().toString();
+			String key = keys.next().toString();
+			String longOpt = key.replaceAll(PROPERTYKEY2CLIOPTIONREGEX, PROPERTYKEY2CLIOPTIONREPLACEMENT);
 			// We also need a short option string (one character)
 			String shortOpt = null;
 
@@ -291,7 +308,7 @@ public class Properties2CLIOption {
 
 			}
 			// At this stage we have all we need to construct the option element
-			options.addOption(shortOpt, longOpt, true, propertyDescriptions.get(longOpt));
+			options.addOption(shortOpt, longOpt, true, propertyDescriptions.get(key));
 		}
 
 		// Return the complete option set
@@ -322,7 +339,7 @@ public class Properties2CLIOption {
 			// Determine next input port name
 			String inputPortName = inputPortNames.next();
 			// Determine port name used for command line
-			String inputPortNameCli = Properties2CLIOption.INPUT_PREFIX + inputPortName.replace(' ', '_');
+			String inputPortNameCli = Properties2CLIOption.INPUT_PREFIX + inputPortName.replaceAll(PROPERTYKEY2CLIOPTIONREGEX, PROPERTYKEY2CLIOPTIONREPLACEMENT);
 			// Check whether the input is among the CLI arguments
 			if (inputFileNamesMap.containsKey(inputPortNameCli)){
 				// Determine file name
@@ -365,7 +382,7 @@ public class Properties2CLIOption {
 			// Determine next output port name
 			String outputPortName = outputPortNames.next();
 			// Determine port name used for command line
-			String outputPortNameCli = Properties2CLIOption.OUTPUT_PREFIX + outputPortName.replace(' ', '_');
+			String outputPortNameCli = Properties2CLIOption.OUTPUT_PREFIX + outputPortName.replaceAll(PROPERTYKEY2CLIOPTIONREGEX, PROPERTYKEY2CLIOPTIONREPLACEMENT);
 			// Check whether the output is among the CLI arguments
 			if (outputFileNamesMap.containsKey(outputPortNameCli)){
 				// Determine file name
@@ -387,8 +404,8 @@ public class Properties2CLIOption {
 					outputModule = new FileWriterModule(moduleNetwork,
 							fileWriterProperties);
 					fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, outputModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-					fileWriterProperties.setProperty(FileReaderModule.PROPERTYKEY_INPUTFILE, fileName);
-					fileWriterProperties.setProperty(FileReaderModule.PROPERTYKEY_USEGZIP, "false");
+					fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_OUTPUTFILE, fileName);
+					fileWriterProperties.setProperty(FileWriterModule.PROPERTYKEY_USEGZIP, "false");
 					outputModule.applyProperties();
 				}
 				
