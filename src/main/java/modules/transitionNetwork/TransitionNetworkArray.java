@@ -133,6 +133,37 @@ public class TransitionNetworkArray {
 		return transitionsAmount;
 	}
 
+	public double stateDistance(int stateOne, int stateTwo) {
+		if (!stateExists(stateOne))
+			throw new IllegalArgumentException("State does not exist: " + stateOne);
+		if (!stateExists(stateTwo))
+			throw new IllegalArgumentException("State does not exist: " + stateTwo);
+
+		return new StateDistanceComparator(stateOne, stateTwo).compare();
+	}
+
+	public int countSubStates(int state) {
+		if (!stateExists(state)) {
+			throw new IllegalArgumentException("State does not exist: " + state);
+		}
+		int result = 0;
+		
+		for (int i = 0; i < transitionsAmount; i++) {
+			switch (network[state][i]) {
+			case INVALID_STATE:
+				break;
+			case FINAL_STATE:
+				result += 1;
+				break;
+			default:
+				result += countSubStates(network[state][i]);
+				break;
+			}
+		}
+
+		return result;
+	}
+
 	public String print() {
 		StringBuilder sb = new StringBuilder();
 
@@ -192,6 +223,74 @@ public class TransitionNetworkArray {
 
 	public int getInvalidState() {
 		return INVALID_STATE;
+	}
+
+	private class StateDistanceComparator {
+
+		Double distance = null;
+
+		int match = 0;
+		int noMatch = 0;
+
+		int one;
+		int two;
+
+		StateDistanceComparator(int stateOne, int stateTwo) {
+			this.one = stateOne;
+			this.two = stateTwo;
+		}
+
+		double compare() {
+			if (distance != null) {
+				return distance;
+			}
+
+			helpCompare(one, two);
+
+			distance = 1 - ((double) match / (match + noMatch));
+
+			return distance;
+		}
+
+		void helpCompare(int stateOne, int stateTwo) {
+
+			int transOne;
+			int transTwo;
+
+			for (int i = 0; i < transitionsAmount; i++) {
+				transOne = network[stateOne][i];
+				transTwo = network[stateTwo][i];
+
+				if (transOne != transTwo) {
+					// if the transitions do not match simply count their
+					// children and add them to the count of non matching
+					if (transOne != INVALID_STATE) {
+						noMatch += 1;
+						noMatch += countSubStates(transOne);
+					}
+					if (transTwo != INVALID_STATE) {
+						noMatch += 1;
+						noMatch += countSubStates(transTwo);
+					}
+				} else {
+					// in case of a match, check what the match consist in.
+					// Invalid States do not count towards anything. Final
+					// states count and terminate the search. Other matches
+					// count and let the search recurse.
+					switch (transOne) {
+					case INVALID_STATE:
+						break;
+					case FINAL_STATE:
+						match += 2;
+						break;
+					default:
+						match += 2;
+						helpCompare(transOne, transTwo);
+						break;
+					}
+				}
+			}
+		}
 	}
 
 }
