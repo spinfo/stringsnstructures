@@ -3,21 +3,14 @@ package modules.tree_building.suffixTreeModuleWrapper;
 
 
 import java.io.BufferedReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
-import modules.OutputPort;
 import modules.tree_building.suffixTree.BranchedStringBufferElement;
 import modules.tree_building.suffixTree.GST;
-import common.logicBits.ILogOp;
-import common.logicBits.LogOpAND;
 import common.logicBits.LogOpOR;
 import modules.tree_building.suffixTree.ResultToMorphListListener;
 
