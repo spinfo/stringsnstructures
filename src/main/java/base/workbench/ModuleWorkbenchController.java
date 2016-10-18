@@ -30,6 +30,7 @@ import modules.bag_of_words.BagsOfWordsDistancesModule;
 import modules.bag_of_words.BagsOfWordsModule;
 import modules.basic_text_processing.CaseChangerModule;
 import modules.basic_text_processing.ComparisonModule;
+import modules.basic_text_processing.ContextsModule;
 import modules.basic_text_processing.FilterModule;
 import modules.basic_text_processing.RegExLineFilterModule;
 import modules.basic_text_processing.RegExReplacementModule;
@@ -68,6 +69,7 @@ import modules.input_output.FileFinderModule;
 import modules.input_output.FileReaderModule;
 import modules.input_output.FileWriterModule;
 import modules.input_output.JoinModule;
+import modules.input_output.MultiFileReaderModule;
 import modules.input_output.SmbFileReaderModule;
 import modules.input_output.SmbFileWriterModule;
 import modules.kwip.KeyWordInPhraseModule;
@@ -149,6 +151,19 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 				fileWriterProperties);
 		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		fileWriter.applyProperties();
+		
+		// Prepare MultiFileReader module
+		Properties multiFileReaderProperties = new Properties();
+		MultiFileReaderModule multiFileReader = new MultiFileReaderModule(moduleNetwork,
+				multiFileReaderProperties);
+		multiFileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, multiFileReader.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		multiFileReader.applyProperties();
+		
+		// Prepare ContextsModule module
+		Properties contextsModuleProperties = new Properties();
+		ContextsModule contextsModule = new ContextsModule(moduleNetwork, contextsModuleProperties);
+		contextsModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, contextsModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		contextsModule.applyProperties();
 
 		// Prepare SmbFileWriter module
 		Properties smbFileWriterProperties = new Properties();
@@ -664,6 +679,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
 		
+		availableModules.put(contextsModule.getName(),contextsModule);
+		availableModules.put(multiFileReader.getName(),multiFileReader);
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
 		availableModules.put(fileReader.getName(),fileReader);
