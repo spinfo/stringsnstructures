@@ -52,7 +52,7 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 	//JRprivate static final String ID_INPUT_A = "input A";
 	//private static final String ID_INPUT_B = "input B";
 	//JR
-	private static final String ID_OUTPUT/*_ENTWINED*/ = "output";
+	// private static final String ID_OUTPUT/*_ENTWINED*/ = "output";
 	//JRprivate static final String ID_OUTPUT_ENTWINED_CAPITALISED = "capitals";
 	
 	// Local variables

@@ -85,7 +85,6 @@ import modules.segmentation.SegmentDistanceMatrixModule;
 import modules.segmentation.SegmentJoinerModule;
 import modules.segmentation.SegmentMatrixModule;
 import modules.segmentation.SegmentationCheckModule;
-import modules.segmentation.SegmentDistanceMatrix;
 import modules.segmentation.SegmentsTransitionNetworkModule;
 import modules.segmentation.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.segmentation.seqSplitting.SeqMemory;
