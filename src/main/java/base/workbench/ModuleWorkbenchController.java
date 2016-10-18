@@ -81,9 +81,11 @@ import modules.matrix.MatrixFilterModule;
 import modules.matrix.MatrixRowColPairExtractorModule;
 import modules.matrix.MclModule;
 import modules.parser.oanc.OANCXMLParser;
+import modules.segmentation.SegmentDistanceMatrixModule;
 import modules.segmentation.SegmentJoinerModule;
 import modules.segmentation.SegmentMatrixModule;
 import modules.segmentation.SegmentationCheckModule;
+import modules.segmentation.SegmentDistanceMatrix;
 import modules.segmentation.SegmentsTransitionNetworkModule;
 import modules.segmentation.paradigmSegmenter.ParadigmSegmenterModule;
 import modules.segmentation.seqSplitting.SeqMemory;
@@ -659,6 +661,11 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		segmentsTransitionNetworkModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentsTransitionNetworkModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		segmentsTransitionNetworkModule.applyProperties();
 
+		// SegmentDistanceMatrixModule
+		Properties segmentDistanceMatrixProperties = new Properties();
+		SegmentDistanceMatrixModule segmentDistanceMatrixModule = new SegmentDistanceMatrixModule(moduleNetwork, segmentDistanceMatrixProperties);
+		segmentDistanceMatrixProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentDistanceMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		segmentDistanceMatrixModule.applyProperties();
 				
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -744,6 +751,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(resultToGeneralizedSuffixTreesMorphologyModule.getName(), resultToGeneralizedSuffixTreesMorphologyModule);
 		availableModules.put(consoleReaderModule.getName(), consoleReaderModule);
 		availableModules.put(segmentsTransitionNetworkModule.getName(), segmentsTransitionNetworkModule);
+		availableModules.put(segmentDistanceMatrixModule.getName(), segmentDistanceMatrixModule);
 	}
 	
 	/**
