@@ -32,7 +32,7 @@ public class ContextsModule extends ModuleImpl {
 
 		// the module's name, description and category
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Contexts Extraction Module");
-		this.setDescription("Extracts contexts of a term form a text corpus");
+		this.setDescription("Extracts contexts of a term form a given text corpus");
 
 		// description and default value for the regular expression
 		this.getPropertyDescriptions().put(PROPERTYKEY_TERM, "term of which contexts will be extracted");
