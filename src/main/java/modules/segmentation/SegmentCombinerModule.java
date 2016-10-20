@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
@@ -14,6 +15,8 @@ import modules.ModuleImpl;
 import modules.OutputPort;
 
 public class SegmentCombinerModule extends ModuleImpl {
+
+	private static final Logger LOGGER = Logger.getLogger(SegmentCombinerModule.class.getName());
 
 	private static final String ID_INPUT = "input";
 	private static final String ID_OUTPUT = "output";
@@ -64,6 +67,11 @@ public class SegmentCombinerModule extends ModuleImpl {
 			// First collect the Strings and mark their split's positions
 			while ((line = reader.readLine()) != null) {
 				splitPos = line.indexOf(SPLIT_DELIM);
+				if (splitPos == -1) {
+					LOGGER.warning("Line without delimiter ignored: '" + line + "', delimiter: " + SPLIT_DELIM);
+					continue;
+				}
+
 				token = line.substring(0, splitPos) + line.substring(splitPos + 1);
 
 				// the splits set needs to be a tree set because we later need
@@ -73,7 +81,7 @@ public class SegmentCombinerModule extends ModuleImpl {
 				splits.add(splitPos);
 				stringSplits.put(token, splits);
 			}
-			
+
 			// Output the combined splits
 			String output;
 			for (String str : stringSplits.keySet()) {
