@@ -179,13 +179,25 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 		
 		public void printBranchedStringElementList(ArrayList<BranchedStringBufferElement>branchedStringElementList){
 			System.out.println("\nSortedList\n");
+			
 			for(BranchedStringBufferElement b:branchedStringElementList){
 				System.out.println(b.stringBuffer);
+				StringBuffer outSb=new StringBuffer(b.stringBuffer);
+				int nrInserts=0;
 				for (int i=0;i<b.bitSet.length();i++){
-					if(b.bitSet.get(i)) System.out.print('|');else System.out.print(' ');					
-				}
-				System.out.println();
+					if(b.bitSet.get(i)) {
+						System.out.print('|');
+						outSb.insert(i+nrInserts,'|');
+						nrInserts++;
+						}
+						else System.out.print(' ');
+					
+				} //for int i=0;i<b.bitSet.length();i++)
+				System.out.println();System.out.println();
+				System.out.println(outSb);
 			}
+				
+						
 		}
 		
 		public ArrayList<BranchedStringBufferElement>logOp(ArrayList<BranchedStringBufferElement>l1,
