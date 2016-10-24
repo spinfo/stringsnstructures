@@ -173,30 +173,31 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			}
 			Collections.sort(branchedStringElementList,new StringBufferElementComparator());
 			
-			printBranchedStringElementList(branchedStringElementList);
+			//printBranchedStringElementList(branchedStringElementList);
 			return branchedStringElementList;
 		}
 		
-		public void printBranchedStringElementList(ArrayList<BranchedStringBufferElement>branchedStringElementList){
-			System.out.println("\nSortedList\n");
-			
+		public StringBuffer printBranchedStringElementList(ArrayList<BranchedStringBufferElement>branchedStringElementList){
+			System.out.println("SortedList\n");
+			StringBuffer outputBuffer= new StringBuffer();
 			for(BranchedStringBufferElement b:branchedStringElementList){
 				System.out.println(b.stringBuffer);
-				StringBuffer outSb=new StringBuffer(b.stringBuffer);
+				StringBuffer outSbElement=new StringBuffer(b.stringBuffer);
 				int nrInserts=0;
 				for (int i=0;i<b.bitSet.length();i++){
 					if(b.bitSet.get(i)) {
 						System.out.print('|');
-						outSb.insert(i+nrInserts,'|');
+						outSbElement.insert(i+nrInserts,'|');
 						nrInserts++;
 						}
 						else System.out.print(' ');
 					
 				} //for int i=0;i<b.bitSet.length();i++)
 				System.out.println();System.out.println();
-				System.out.println(outSb);
+				System.out.println(outSbElement);
+				outputBuffer.append(outSbElement.append(System.getProperty("line.separator")));
 			}
-				
+			 return outputBuffer;
 						
 		}
 		
