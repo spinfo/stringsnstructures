@@ -33,7 +33,15 @@ import common.KwipXmlStreamReader;
  * were originally written by neumannm
  */
 
+import base.workbench.ModuleRunner;
+
 public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(SuffixTreeClusteringModuleWrapper.class, args);
+	}
+
 				
 	// property keys:
 	

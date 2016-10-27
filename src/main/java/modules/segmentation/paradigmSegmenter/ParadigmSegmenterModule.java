@@ -22,7 +22,15 @@ import com.google.gson.GsonBuilder;
 import common.StringUnescaper;
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class ParadigmSegmenterModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(ParadigmSegmenterModule.class, args);
+	}
+
 
 	// Property keys
 	public static final String PROPERTYKEY_BUFFERSIZE = "Buffer size";

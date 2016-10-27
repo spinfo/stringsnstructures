@@ -16,7 +16,15 @@ import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.bag_of_words.BagOfWordsHelper;
 
+import base.workbench.ModuleRunner;
+
 public class BowTypeMatrixModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(BowTypeMatrixModule.class, args);
+	}
+
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_DELIMITER_OUTPUT = "output delimiter";

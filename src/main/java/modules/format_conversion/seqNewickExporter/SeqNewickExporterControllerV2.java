@@ -24,7 +24,15 @@ import common.parallelization.CallbackReceiver;
  * @author christopher
  *
  */
+import base.workbench.ModuleRunner;
+
 public class SeqNewickExporterControllerV2 extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(SeqNewickExporterControllerV2.class, args);
+	}
+
 	//property keys:
 	public static final String PROPERTYKEY_NEWICK = "Newick branch length";
 	//end keys

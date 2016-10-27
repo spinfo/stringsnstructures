@@ -36,7 +36,15 @@ import common.parallelization.CallbackReceiver;
  * 
  */
 
+import base.workbench.ModuleRunner;
+
 public class SeqTreePropController extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(SeqTreePropController.class, args);
+	}
+
 		
 	//property keys:
 	private static final String PROPERTYKEY_FREQOUT = "Print out tree frequencies?";

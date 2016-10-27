@@ -23,7 +23,15 @@ import common.parallelization.CallbackReceiver;
  *
  */
 
+import base.workbench.ModuleRunner;
+
 public class PlainText2TreeBuilderConverter extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(PlainText2TreeBuilderConverter.class, args);
+	}
+
 	//property keys:
 	 //public static final String PROPERTYKEY_
 	//end property keys

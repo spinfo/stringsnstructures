@@ -18,7 +18,15 @@ import modules.OutputPort;
  * A module to check the morphological segmentation of words against the output
  * of a stemmer that would be produced for the same words.
  */
+import base.workbench.ModuleRunner;
+
 public class SegmentationCheckModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(SegmentationCheckModule.class, args);
+	}
+
 
 	private static final Logger LOGGER = Logger.getLogger(SegmentationCheckModule.class.getName());
 

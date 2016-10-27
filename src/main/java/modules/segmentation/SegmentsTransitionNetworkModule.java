@@ -14,7 +14,15 @@ import modules.ModuleImpl;
 import modules.OutputPort;
 import modules.transitionNetwork.TransitionNetworkArray;
 
+import base.workbench.ModuleRunner;
+
 public class SegmentsTransitionNetworkModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(SegmentsTransitionNetworkModule.class, args);
+	}
+
 
 	private static final String ID_INPUT = "input";
 	private static final String ID_OUTPUT = "output";

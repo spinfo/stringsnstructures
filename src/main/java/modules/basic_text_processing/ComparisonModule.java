@@ -13,7 +13,15 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
+import base.workbench.ModuleRunner;
+
 public class ComparisonModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(ComparisonModule.class, args);
+	}
+
 
 	private static final String MODULE_NAME = "Comparison Module";
 	private static final String MODULE_DESCRIPTION = "Module reads from two input ports and outputs "

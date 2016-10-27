@@ -10,7 +10,15 @@ import modules.OutputPort;
 
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class ReverserModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(ReverserModule.class, args);
+	}
+
 	
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String INPUTID = "input";

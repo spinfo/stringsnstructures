@@ -40,7 +40,15 @@ import org.apache.lucene.util.Version;
 
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class KeyWordInPhraseModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(KeyWordInPhraseModule.class, args);
+	}
+
 
 	/*
 	 * Various variables

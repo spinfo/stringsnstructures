@@ -15,7 +15,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class AtomicRangeSuffixTrieBuilder extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(AtomicRangeSuffixTrieBuilder.class, args);
+	}
+
 	
 	// Property keys
 	public static final String PROPERTYKEY_MAXLENGTH = "Maximum length of branches";

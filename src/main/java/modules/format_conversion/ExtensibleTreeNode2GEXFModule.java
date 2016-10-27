@@ -27,7 +27,15 @@ import modules.Pipe;
 import com.google.gson.Gson;
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class ExtensibleTreeNode2GEXFModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(ExtensibleTreeNode2GEXFModule.class, args);
+	}
+
 
 	// Define property keys (every setting has to have a unique key to associate
 	// it with)

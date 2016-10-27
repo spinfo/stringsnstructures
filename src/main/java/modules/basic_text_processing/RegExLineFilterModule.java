@@ -10,7 +10,15 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
+import base.workbench.ModuleRunner;
+
 public class RegExLineFilterModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(RegExLineFilterModule.class, args);
+	}
+
 
 	// Identifiers for the Regex to filter on and whether it should be escaped
 	public static final String PROPERTYKEY_REGEX = "regex";

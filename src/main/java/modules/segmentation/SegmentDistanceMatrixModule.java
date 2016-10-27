@@ -9,7 +9,15 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
+import base.workbench.ModuleRunner;
+
 public class SegmentDistanceMatrixModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(SegmentDistanceMatrixModule.class, args);
+	}
+
 
 	// Define property keys (every setting has to have a unique key to associate
 	// it with)

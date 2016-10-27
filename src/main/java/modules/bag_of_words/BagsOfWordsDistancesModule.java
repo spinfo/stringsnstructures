@@ -24,7 +24,15 @@ import modules.OutputPort;
  * substitutions, deletions or additions of words that would be needed to
  * transform one Bag of Words into another.
  */
+import base.workbench.ModuleRunner;
+
 public class BagsOfWordsDistancesModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(BagsOfWordsDistancesModule.class, args);
+	}
+
 
 	private static final Logger LOGGER = Logger.getLogger(BagsOfWordsDistancesModule.class.getName());
 

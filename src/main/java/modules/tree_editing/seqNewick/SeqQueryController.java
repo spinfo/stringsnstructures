@@ -26,7 +26,15 @@ import common.parallelization.CallbackReceiver;
  * @author christopher
  *
  */
+import base.workbench.ModuleRunner;
+
 public class SeqQueryController extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(SeqQueryController.class, args);
+	}
+
 	//property keys:
 	public static final String PROPERTYKEY_NEWICK = "Newick branch length";
 	public static final String PROPERTYKEY_EDGELABEL = "Path label";

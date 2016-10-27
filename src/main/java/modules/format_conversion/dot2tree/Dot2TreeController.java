@@ -53,7 +53,15 @@ import models.Dot2TreeNodes;
  * 
  */
 
+import base.workbench.ModuleRunner;
+
 public class Dot2TreeController extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(Dot2TreeController.class, args);
+	}
+
 	// Enumerators:
 	
 	private enum DotTags {

@@ -25,7 +25,15 @@ import modules.OutputPort;
  * is again a matrix showing how many bits are set for each combination of
  * rows/columns after the operation is performed.
  */
+import base.workbench.ModuleRunner;
+
 public class MatrixBitwiseOperationModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(MatrixBitwiseOperationModule.class, args);
+	}
+
 
 	private static final String MODULE_DESC = "Module interprets either rows or columns of an input matrix as binary bitsets"
 			+ " and performs symmetrical operations (AND, OR, XOR) on these bitsets. Output"

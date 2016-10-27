@@ -11,7 +11,15 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class RegExReplacementModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(RegExReplacementModule.class, args);
+	}
+
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_REGEX = "regex";

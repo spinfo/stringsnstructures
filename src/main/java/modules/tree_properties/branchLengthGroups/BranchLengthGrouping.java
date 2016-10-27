@@ -54,7 +54,15 @@ import models.Dot2TreeNodes;
  * 
  */
 
+import base.workbench.ModuleRunner;
+
 public class BranchLengthGrouping extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(BranchLengthGrouping.class, args);
+	}
+
 	// Enumerators:
 	
 	private enum DotTags {

@@ -29,7 +29,15 @@ import common.parallelization.CallbackReceiver;
  * @author Marcel Boeing
  *
  */
+import base.workbench.ModuleRunner;
+
 public class ASCIIGraph extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(ASCIIGraph.class, args);
+	}
+
 	
 	// Property keys
 	public static final String PROPERTYKEY_USEPARENTSYMBOL = "Biggest child uses parent symbol";

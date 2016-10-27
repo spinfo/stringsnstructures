@@ -31,7 +31,15 @@ import modules.OutputPort;
  * 
  * @author David Neugebauer
  */
+import base.workbench.ModuleRunner;
+
 public class BagsOfWordsModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(BagsOfWordsModule.class, args);
+	}
+
 
 	private final static Logger LOGGER = Logger.getLogger(BagsOfWordsModule.class.getName());
 

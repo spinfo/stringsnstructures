@@ -47,7 +47,15 @@ import models.Dot2TreeNodes;
  */
 
 
+import base.workbench.ModuleRunner;
+
 public class MotifDetectionController extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(MotifDetectionController.class, args);
+	}
+
 	
 	// Enumerators:	
 	private enum DotTags {
