@@ -16,7 +16,15 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.internal.LinkedTreeMap;
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class KwipBowMatrixModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(KwipBowMatrixModule.class, args);
+	}
+
 	
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_OMITZEROVALUES = "omit zero values";

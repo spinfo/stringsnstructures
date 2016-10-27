@@ -11,7 +11,15 @@ import java.util.Properties;
 //Gson import
 import com.google.gson.Gson;
 
+import base.workbench.ModuleRunner;
+
 public class ExampleGsonDeserialization extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(ExampleGsonDeserialization.class, args);
+	}
+
 	//Add property keys:
 	/* no property keys */
 			

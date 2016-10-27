@@ -27,7 +27,15 @@ import modules.OutputPort;
  * DISCLAIMER: This is still work in progress. TODO Remove disclaimer after it
  * isn't
  */
+import base.workbench.ModuleRunner;
+
 public class LFGroupBuildingModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(LFGroupBuildingModule.class, args);
+	}
+
 
 	private static final String INPUT_SUCCESSOR_MATRIX_ID = "Successor Matrix";
 	private static final String INPUT_PAIR_LIST_ID = "List of Pairs";

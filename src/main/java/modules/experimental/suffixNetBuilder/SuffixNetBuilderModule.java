@@ -15,7 +15,15 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
+import base.workbench.ModuleRunner;
+
 public class SuffixNetBuilderModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(SuffixNetBuilderModule.class, args);
+	}
+
 
 	public static final String NODECOUNTER_KEY = "nodeCounter";
 	// Property keys

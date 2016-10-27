@@ -20,7 +20,15 @@ import com.google.gson.GsonBuilder;
 
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class TreeBuilder extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(TreeBuilder.class, args);
+	}
+
 	
 	// Property keys
 	public static final String PROPERTYKEY_BUILDTRIE = "Build trie instead of tree";

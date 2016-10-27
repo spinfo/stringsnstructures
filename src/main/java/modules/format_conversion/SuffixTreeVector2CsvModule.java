@@ -13,7 +13,15 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
+import base.workbench.ModuleRunner;
+
 public class SuffixTreeVector2CsvModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(SuffixTreeVector2CsvModule.class, args);
+	}
+
 
 	public static final String PROPERTYKEY_CSVDELIMITER = "CSV delimiter";
 

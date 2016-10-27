@@ -14,7 +14,15 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
+import base.workbench.ModuleRunner;
+
 public class ExtensibleTreeNode2CSVModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(ExtensibleTreeNode2CSVModule.class, args);
+	}
+
 
 	public static final String PROPERTYKEY_CSVDELIMITER = "CSV delimiter";
 	public static final String PROPERTYKEY_CALCPROBABILITIES = "calculate probabilities";

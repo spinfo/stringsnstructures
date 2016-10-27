@@ -18,7 +18,15 @@ import modules.format_conversion.seqNewickExporter.SeqNewickNodeV2;
 import modules.tree_editing.seqSuffixTrie2SuffixTree.SeqReducedTrieNode;
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class TreeBuilder2OutputControllerV2 extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(TreeBuilder2OutputControllerV2.class, args);
+	}
+
 	// Define property keys (every setting has to have a unique key to associate it with)
 		/* no property keys */
 		

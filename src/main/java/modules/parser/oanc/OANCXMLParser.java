@@ -29,7 +29,15 @@ import com.google.gson.GsonBuilder;
 
 import common.parallelization.CallbackReceiver;
 
+import base.workbench.ModuleRunner;
+
 public class OANCXMLParser extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(OANCXMLParser.class, args);
+	}
+
 
 	public static final String STARTSYMBOL = "^";
 	public static final String TERMINIERSYMBOL="$";

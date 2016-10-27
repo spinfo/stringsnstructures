@@ -18,7 +18,15 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
+import base.workbench.ModuleRunner;
+
 public class VectorMedianCalculatorModule extends ModuleImpl {
+
+	// Main method for stand-alone execution
+	public static void main(String[] args) throws Exception {
+		ModuleRunner.runStandAlone(VectorMedianCalculatorModule.class, args);
+	}
+
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "csv";
