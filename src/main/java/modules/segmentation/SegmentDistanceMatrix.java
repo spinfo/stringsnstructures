@@ -28,14 +28,14 @@ public class SegmentDistanceMatrix {
 
 	// the initial number of segments this matrix will map
 	private int initialDimenstions;
-	
+
 	// a single char used to construct the keys for the field map
 	private static final char KEY_CONNECTOR = '|';
 
 	public SegmentDistanceMatrix() {
 		this(1000);
 	}
-	
+
 	public SegmentDistanceMatrix(int initialDimensions) {
 		this.initialDimenstions = initialDimensions;
 
@@ -66,12 +66,12 @@ public class SegmentDistanceMatrix {
 			}
 		}
 	}
-	
+
 	public List<Short> getDistances(String one, String two) {
 		List<Short> distances = fields.get(makeDistancesKey(one, two));
 		return Collections.unmodifiableList(distances);
 	}
-	
+
 	// add a segment and return it's position (row/col) in the indices. If the
 	// segment is already present this is a simple position lookup.
 	private int addSegment(String segment) {
@@ -81,14 +81,33 @@ public class SegmentDistanceMatrix {
 		if (index == null) {
 			segments.add(segment);
 			rows.add(new BitSet(initialDimenstions));
-			
+
 			index = segments.size() - 1;
-		
+
 			segmentsToIndices.put(segment, index);
 
 			consistencyCheck();
 		}
 		return index;
+	}
+
+	public boolean hasCombination(String one, String two) {
+		boolean result;
+
+		Integer idx1 = segmentsToIndices.get(one);
+		Integer idx2 = segmentsToIndices.get(two);
+
+		if (idx1 != null && idx2 != null) {
+			result = rows.get(idx1).get(idx2);
+			// TODO: Remove this paranoia check after testing
+			if (result != rows.get(idx2).get(idx1)) {
+				throw new IllegalStateException("AAAARG!");
+			}
+		} else {
+			result = false;
+		}
+
+		return result;
 	}
 
 	// mark a combination as present by setting the appropriate bit in the
@@ -122,7 +141,8 @@ public class SegmentDistanceMatrix {
 		// Check if all objects are consistent. This is meant for testing and
 		// may later be removed.
 		if ((segments.size() != rows.size()) || (segments.size() != segmentsToIndices.keySet().size())) {
-			throw new IllegalStateException("Inconsistent state. Segments: " + segments.size() + ", rows: " + rows.size() + ", segKeys: " + segmentsToIndices.keySet().size());
+			throw new IllegalStateException("Inconsistent state. Segments: " + segments.size() + ", rows: "
+					+ rows.size() + ", segKeys: " + segmentsToIndices.keySet().size());
 		}
 	}
 
@@ -131,7 +151,7 @@ public class SegmentDistanceMatrix {
 		sorted.sort(String::compareToIgnoreCase);
 
 		StringBuilder sb = new StringBuilder();
-		
+
 		// print header
 		sb.append(delim);
 		for (int i = 0; i < sorted.size(); i++) {
@@ -156,8 +176,7 @@ public class SegmentDistanceMatrix {
 				idx2 = segmentsToIndices.get(sorted.get(j));
 
 				if (row.get(idx2)) {
-					key = makeDistancesKey(segments.get(idx1), segments.get(idx2));
-					distances = fields.get(key);
+					distances = getDistances(segments.get(idx1), segments.get(idx2));
 					for (short distance : distances) {
 						sb.append(distance);
 						sb.append(',');
