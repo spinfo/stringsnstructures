@@ -76,6 +76,7 @@ import modules.kwip.KeyWordInPhraseModule;
 import modules.kwip.KwipBowMatrixModule;
 import modules.lfgroups.LFGroupBuildingModule;
 import modules.matrix.BowTypeMatrixModule;
+import modules.matrix.CosineDistanceModule;
 import modules.matrix.MatrixBitwiseOperationModule;
 import modules.matrix.MatrixColumnSumModule;
 import modules.matrix.MatrixEliminateOppositionalValuesModule;
@@ -144,6 +145,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		FileFinderModule fileFinderModule = new FileFinderModule(moduleNetwork, oancProperties);
 		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileFinderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		fileFinderModule.applyProperties();
+		
+		// Prepare CosineDistanceModule module
+		Properties cosineDistProperties = new Properties();
+		CosineDistanceModule cosineDistanceModule = new CosineDistanceModule(moduleNetwork, cosineDistProperties);
+		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, cosineDistanceModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		cosineDistanceModule.applyProperties();
 
 		// Prepare FileWriter module
 		Properties fileWriterProperties = new Properties();
@@ -680,6 +687,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		 */
 		
 		availableModules.put(contextsModule.getName(),contextsModule);
+		availableModules.put(cosineDistanceModule.getName(),cosineDistanceModule);
 		availableModules.put(multiFileReader.getName(),multiFileReader);
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
