@@ -105,7 +105,7 @@ public class CosineDistanceModule extends ModuleImpl {
 			
 			selection.retainAll(vectors.keySet());
 			
-			////calculate distances and build matrix
+			////calculate distances and build matrix 
 			//prepare header
 			StringBuilder sb = new StringBuilder();
 			sb.append(delimiter);
