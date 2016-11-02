@@ -2,7 +2,6 @@ package modules.matrix;
 
 import java.io.BufferedReader;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
