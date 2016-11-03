@@ -85,6 +85,7 @@ import modules.segmentation.SegmentCombinerModule;
 import modules.segmentation.SegmentDistanceMatrixModule;
 import modules.segmentation.SegmentJoinerModule;
 import modules.segmentation.SegmentMatrixModule;
+import modules.segmentation.SegmentationApplyModule;
 import modules.segmentation.SegmentationCheckModule;
 import modules.segmentation.SegmentsTransitionNetworkModule;
 import modules.segmentation.paradigmSegmenter.ParadigmSegmenterModule;
@@ -672,6 +673,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		SegmentCombinerModule segmentCombinerModule = new SegmentCombinerModule(moduleNetwork, segmentCombinerModuleProperties);
 		segmentCombinerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentCombinerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		segmentCombinerModule.applyProperties();
+
+		// SegmentationApplyModule
+		Properties segmentationApplyModuleProperties = new Properties();
+		SegmentationApplyModule segmentationApplyModule = new SegmentationApplyModule(moduleNetwork, segmentationApplyModuleProperties);
+		segmentationApplyModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentationApplyModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		segmentationApplyModule.applyProperties();
 				
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -759,6 +766,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(segmentsTransitionNetworkModule.getName(), segmentsTransitionNetworkModule);
 		availableModules.put(segmentDistanceMatrixModule.getName(), segmentDistanceMatrixModule);
 		availableModules.put(segmentCombinerModule.getName(), segmentCombinerModule);
+		availableModules.put(segmentationApplyModule.getName(), segmentationApplyModule);
 	}
 	
 	/**
