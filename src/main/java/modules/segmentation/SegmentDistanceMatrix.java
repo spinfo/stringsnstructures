@@ -162,7 +162,6 @@ public class SegmentDistanceMatrix {
 
 		// print all rows
 		BitSet row;
-		String key;
 		List<Short> distances;
 		int idx1, idx2;
 		for (int i = 0; i < sorted.size(); i++) {
