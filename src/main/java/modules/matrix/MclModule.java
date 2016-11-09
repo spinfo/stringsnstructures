@@ -2,6 +2,7 @@ package modules.matrix;
 
 import java.io.PipedReader;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import Jama.Matrix;
 import common.parallelization.CallbackReceiver;
@@ -20,6 +21,7 @@ public class MclModule extends ModuleImpl {
 		ModuleRunner.runStandAlone(MclModule.class, args);
 	}
 
+	private static final Logger LOGGER = Logger.getLogger(MclModule.class.getName());
 
 	// Define property keys (every setting has to have a unique key to associate
 	// it with)
@@ -61,7 +63,8 @@ public class MclModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_CSV_DELIMITER, ";");
 
 		// Define I/O
-		InputPort inputPort = new InputPort(ID_INPUT, "[text/csv] (Named Field) Matrix to cluster. NOTE: x and y dimensions of the matrix must agree.", this);
+		InputPort inputPort = new InputPort(ID_INPUT,
+				"[text/csv] (Named Field) Matrix to cluster. NOTE: x and y dimensions of the matrix must agree.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
 		OutputPort outputPort = new OutputPort(ID_OUTPUT, "[text/csv] Matrix clustered.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
@@ -87,10 +90,11 @@ public class MclModule extends ModuleImpl {
 			// The JAMA matrix is initialised from the named field matrix'
 			// values and will operate on them directly, avoiding some
 			// duplication of memory or copying of values.
-			// This is ok because the mcl algorithm changes field's values
+			// This is ok because the mcl algorithm changes fields' values
 			// but not their location, such that the mapping of array fields to
 			// column and row names in the named field matrix stays intact.
 			Matrix matrix = new Matrix(nfMatrix.getValues());
+			LOGGER.info("Input matrix read successfully, starting mcl.");
 
 			// run the algorithm as many times as specified by the user
 			for (int i = 0; i < this.iterations; i++) {
