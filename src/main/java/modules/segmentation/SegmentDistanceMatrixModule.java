@@ -1,9 +1,11 @@
 package modules.segmentation;
 
 import java.io.BufferedReader;
+import java.util.List;
 import java.util.Properties;
 
 import common.parallelization.CallbackReceiver;
+import models.NamedFieldMatrix;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
@@ -18,7 +20,6 @@ public class SegmentDistanceMatrixModule extends ModuleImpl {
 		ModuleRunner.runStandAlone(SegmentDistanceMatrixModule.class, args);
 	}
 
-
 	// Define property keys (every setting has to have a unique key to associate
 	// it with)
 	public static final String PROPERTYKEY_DELIMITER_INPUT_SEGMENT = "segment input delimiter regex";
@@ -26,7 +27,8 @@ public class SegmentDistanceMatrixModule extends ModuleImpl {
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "input";
-	private static final String ID_OUTPUT = "output";
+	private static final String ID_OUTPUT_DISTANCE_MATRIX = "output";
+	private static final String ID_OUTPUT_HAMMING_DISTANCES = "hamming distances";
 
 	// Local variables
 	private String inputdelimiterSegment;
@@ -56,12 +58,16 @@ public class SegmentDistanceMatrixModule extends ModuleImpl {
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "Segment list.", this);
 		inputPort.addSupportedPipe(CharPipe.class);
-		OutputPort outputPort = new OutputPort(ID_OUTPUT, "CSV output.", this);
+		OutputPort outputPort = new OutputPort(ID_OUTPUT_DISTANCE_MATRIX, "CSV output of the distance matrix.", this);
 		outputPort.addSupportedPipe(CharPipe.class);
+		OutputPort outputPort2 = new OutputPort(ID_OUTPUT_HAMMING_DISTANCES,
+				"CSV output of the hamming distances between rows of the distance matrix", this);
+		outputPort2.addSupportedPipe(CharPipe.class);
 
 		// Add I/O ports to instance (don't forget...)
 		super.addInputPort(inputPort);
 		super.addOutputPort(outputPort);
+		super.addOutputPort(outputPort2);
 	}
 
 	@Override
@@ -80,13 +86,53 @@ public class SegmentDistanceMatrixModule extends ModuleImpl {
 				matrix.addSegments(segments);
 			}
 
-			getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(matrix.print(outputdelimiter_csv));
+			OutputPort dmOut = getOutputPorts().get(ID_OUTPUT_DISTANCE_MATRIX);
+			OutputPort hdOut = getOutputPorts().get(ID_OUTPUT_HAMMING_DISTANCES);
 
+			if (dmOut.isConnected()) {
+				dmOut.outputToAllCharPipes(matrix.print(outputdelimiter_csv));
+			}
+			if (hdOut.isConnected()) {
+				NamedFieldMatrix hammingMatrix = buildHammingDistancesMatrix(matrix);
+				hdOut.outputToAllCharPipes(hammingMatrix.csvHeader());
+				for (int i = 0; i < hammingMatrix.getRowAmount(); i++) {
+					hdOut.outputToAllCharPipes(hammingMatrix.csvLine(i));
+				}
+			}
 		} catch (Exception e) {
 			result = false;
 			throw e;
 		} finally {
 			this.closeAllOutputs();
+		}
+
+		return result;
+	}
+
+	// transform the Matrix with lists of absolute distances into a list of
+	// hamming distances between rows
+	private NamedFieldMatrix buildHammingDistancesMatrix(SegmentDistanceMatrix input) {
+		NamedFieldMatrix result = new NamedFieldMatrix();
+
+		// Fill the new matrix with values
+		List<String> segments = input.getSegments();
+		String segOne;
+		String segTwo;
+		double distance;
+		for (int i = 0; i < segments.size(); i++) {
+			segOne = segments.get(i);
+
+			// note the setting of j. iterate from there because previous
+			// combinations have been checked before. (We could do j = i + 1,
+			// but for the moment that prevents the output matrix from being
+			// symmetrical in the first few fields)
+			for (int j = i; j < segments.size(); j++) {
+				segTwo = segments.get(j);
+
+				distance = (double) input.getRowsHammingDistance(segOne, segTwo);
+				result.setValue(segOne, segTwo, distance);
+				result.setValue(segTwo, segOne, distance);
+			}
 		}
 
 		return result;

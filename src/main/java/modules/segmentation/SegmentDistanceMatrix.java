@@ -45,6 +45,13 @@ public class SegmentDistanceMatrix {
 		this.fields = new HashMap<>();
 	}
 
+	/**
+	 * Add an array of segments to the matrix. The segments' distances will be
+	 * computed and added to the distances present in the matrix already.
+	 * 
+	 * @param segments
+	 *            The segments in order of succession.
+	 */
 	public void addSegments(String[] segments) {
 		// keep an array of indices to reduce lookups
 		int[] indices = new int[segments.length];
@@ -67,6 +74,16 @@ public class SegmentDistanceMatrix {
 		}
 	}
 
+	/**
+	 * Produce an unmodifiable copy of the distances that are mapped to the
+	 * segment combination.
+	 * 
+	 * @param one
+	 *            One segment of the combination
+	 * @param two
+	 *            The other segment of the combination
+	 * @return An unmmodifiable copy of the distances noted for the combination.
+	 */
 	public List<Short> getDistances(String one, String two) {
 		List<Short> distances = fields.get(makeDistancesKey(one, two));
 		return Collections.unmodifiableList(distances);
@@ -91,23 +108,46 @@ public class SegmentDistanceMatrix {
 		return index;
 	}
 
+	/**
+	 * Check if a combination is present in the matrix.
+	 * 
+	 * @param one
+	 *            One segment of the combination
+	 * @param two
+	 *            The other segment of the combination
+	 * @return Whether the combination identified by both strings is present in
+	 *         the matrix.
+	 */
 	public boolean hasCombination(String one, String two) {
-		boolean result;
+		boolean result = false;
 
 		Integer idx1 = segmentsToIndices.get(one);
 		Integer idx2 = segmentsToIndices.get(two);
 
 		if (idx1 != null && idx2 != null) {
 			result = rows.get(idx1).get(idx2);
-			// TODO: Remove this paranoia check after testing
-			if (result != rows.get(idx2).get(idx1)) {
-				throw new IllegalStateException("AAAARG!");
-			}
-		} else {
-			result = false;
 		}
 
 		return result;
+	}
+
+	/**
+	 * Get a list of segments currently in the matrix.
+	 * 
+	 * @return A List of String representing the segments noted in the matrix.
+	 */
+	public List<String> getSegments() {
+		return Collections.unmodifiableList(segments);
+	}
+
+	/**
+	 * The amount of segments noted for the matrix. (Equal to it's
+	 * x/y-dimenstions)
+	 * 
+	 * @return The size of segments noted for this matrix.
+	 */
+	public int getSegmentsAmount() {
+		return segments.size();
 	}
 
 	// mark a combination as present by setting the appropriate bit in the
@@ -146,6 +186,50 @@ public class SegmentDistanceMatrix {
 		}
 	}
 
+	// actually compute the hamming distance between two rows using the amount
+	// of bits set in an XOR of both rows
+	private int getRowsHammingDistance(int row1, int row2) {
+		if (row1 == row2)
+			return 0;
+		// one BitSet needs to be a clone because it's values will be changed by
+		// the XOR-operation
+		BitSet bitsRow1 = (BitSet) rows.get(row1).clone();
+		BitSet bitsRow2 = rows.get(row2);
+
+		// the Hamming distance is the number of bits set after the XOR
+		bitsRow1.xor(bitsRow2);
+		return bitsRow1.cardinality();
+	}
+
+	/**
+	 * Compute the Hamming distance between two rows (only regarding the fields
+	 * set in the rows not the actual fields' values)
+	 * 
+	 * @param row1
+	 *            idx of one row to check
+	 * @param row2
+	 *            idx of another row to check
+	 * @return The amount of fields set in one row but not the other
+	 */
+	public int getRowsHammingDistance(String row1, String row2) {
+		Integer idx1 = segmentsToIndices.get(row1);
+		Integer idx2 = segmentsToIndices.get(row2);
+
+		if (!(idx1 == null || idx2 == null)) {
+			return getRowsHammingDistance(idx1, idx2);
+		} else {
+			throw new IllegalArgumentException("One of these rows does not exist: " + row1 + ", " + row2);
+		}
+	}
+
+	/**
+	 * Print a matrix (csv) representation using the provided field delimiter.
+	 * This includes column and row headings
+	 * 
+	 * @param delim
+	 *            The delimiter to use to separate field
+	 * @return A String that is a csv representation of this matrix
+	 */
 	public String print(String delim) {
 		List<String> sorted = new ArrayList<String>(segments);
 		sorted.sort(String::compareToIgnoreCase);
