@@ -124,17 +124,20 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 		StringBuffer outputBuffer=null;
 
 		try {			
-
+			
+			System.out.println("XX vor TextReader1");
 			// actually build the trees
 			final BufferedReader textReader1 = new BufferedReader(
 					this.getInputPorts().get(INPUT_TEXT1_ID).getInputReader());
+			System.out.println("XX vor SuffixTree1");
 			final SuffixTree suffixTree1 = GST.buildGST(textReader1,null);
-			
+			System.out.println("XX vor TextReader2");
 			final BufferedReader textReader2 = new BufferedReader(
 					this.getInputPorts().get(INPUT_TEXT2_ID).getInputReader());
+			System.out.println("XX vor SuffixTree2");
 			final SuffixTree suffixTree2 = GST.buildGST(textReader2,null);
 			
-			System.out.println("SuffixTrees Built");
+			System.out.println("XXSuffixTrees Built");
 			
 			
 			// 
@@ -142,13 +145,15 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 					new ResultToMorphListListener(suffixTree1,false);
 			TreeWalker.walk(suffixTree1.getRoot(), suffixTree1, 
 			resultToMorphListListener1);
+			System.out.println("XX vor branchedStringElementList1");
 			ArrayList<BranchedStringBufferElement> branchedStringElementList1=
 			resultToMorphListListener1.results();
-			System.out.println();System.out.println();System.out.println();
+			//System.out.println();System.out.println();System.out.println();
 			ResultToMorphListListener resultToMorphListListener2=
 					new ResultToMorphListListener(suffixTree2,true);
 			TreeWalker.walk(suffixTree2.getRoot(), suffixTree2, 
 					resultToMorphListListener2);
+			System.out.println("XX vor branchedStringElementList2");
 			ArrayList<BranchedStringBufferElement> branchedStringElementList2=
 			resultToMorphListListener2.results();
 			// print resulted branchedStringLists
@@ -156,10 +161,12 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementList1);
 			System.out.print("branchedStringElementList2 ");
 			resultToMorphListListener2.printBranchedStringElementList(branchedStringElementList2);
+			System.out.print("branchedStringElementListOR ");
 			ArrayList<BranchedStringBufferElement> branchedStringElementListOr=
 				resultToMorphListListener1.logOp(branchedStringElementList1,
 				branchedStringElementList2,new LogOpOR());	
 			System.out.print("branchedStringElementListOr ");
+		
 			outputBuffer=
 			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementListOr);
 			

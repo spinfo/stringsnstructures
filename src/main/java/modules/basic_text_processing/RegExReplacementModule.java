@@ -21,6 +21,7 @@ public class RegExReplacementModule extends ModuleImpl {
 	}
 
 	
+	
 	// Define property keys (every setting has to have a unique key to associate it with)
 	public static final String PROPERTYKEY_REGEX = "regex";
 	public static final String PROPERTYKEY_REPLACEMENT = "replacement";

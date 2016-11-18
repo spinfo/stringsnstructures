@@ -63,8 +63,8 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			// except terminal nodes which don't branch but should be maintanined
 			this.nodesWholePhrases[nodeNr]=3;//terminal node
 			int anf, end, node;
-			if (this.inverted) System.out.println("exitAction inverted LeafNode: "+nodeNr);
-			else System.out.println("exitAction not inverted LeafNode: "+nodeNr);
+			//if (this.inverted) System.out.println("exitAction inverted LeafNode: "+nodeNr);
+			//else System.out.println("exitAction not inverted LeafNode: "+nodeNr);
 			
 			Word word=new Word();
 			word.morphInWordList=new ArrayList<Integer>();
@@ -82,14 +82,14 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 				
 					{ node=this.nodeNrs.get(i);
 					
-					  System.out.println("exitAction node: "+node);
+					  //System.out.println("exitAction node: "+node);
 					  anf=tree.getNode(node).getStart(0);
 					  end=tree.getNode(node).getEnd(0)-1;
 					 
-					  for(int pos=end;pos>=anf;pos--)
-						  if (this.tree.text[pos]!='$')
-						  System.out.print(this.tree.text[pos]);
-					  System.out.print(" ");
+					 // for(int pos=end;pos>=anf;pos--)
+					//	  if (this.tree.text[pos]!='$')
+					//	  System.out.print(this.tree.text[pos]);
+					//  System.out.print(" ");
 					}
 					
 				
@@ -103,9 +103,9 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 					
 					anf=tree.getNode(node).getStart(0);
 					end=tree.getNode(node).getEnd(0);
-					 for(int pos=anf;pos<end;pos++)
-						  System.out.print(this.tree.text[pos]);
-					  System.out.print(" ");
+					// for(int pos=anf;pos<end;pos++)
+					//	  System.out.print(this.tree.text[pos]);
+					//  System.out.print(" ");
 					
 				}
 				
@@ -120,9 +120,9 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 		// morphemes in contrast; mark mother if child is marked
 		if (this.nodesWholePhrases[nodeNr]>0 )
 			{
-				System.out.println("exitaction nodeNrs nodeNr: "+nodeNr);
+				//System.out.println("exitaction nodeNrs nodeNr: "+nodeNr);
 				if(!this.nodeNrs.empty())
-					{System.out.println("peek: "+this.nodeNrs.peek() );
+					{//System.out.println("peek: "+this.nodeNrs.peek() );
 					if (this.nodesWholePhrases[this.nodeNrs.peek()]==0) {
 					this.nodesWholePhrases[this.nodeNrs.peek()]=1;
 					}
@@ -142,8 +142,8 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			if (!node.isTerminal()) {
 				return false;
 			}
-			System.out.println("nodeIsLeafOfWholeInputText terminal node:"+nodeNr+
-					" pathLength: "+pathLength);
+			//System.out.println("nodeIsLeafOfWholeInputText terminal node:"+nodeNr+
+			//		" pathLength: "+pathLength);
 			for (NodePosition position : node.getPositions()) {
 				//System.out.println("nodeIsLeafOfWholeInputText position.getEnd: "+
 				//		position.getEnd() +" tree.getTextBegin "+tree.getTextBegin(position.getTextNr())+
@@ -169,7 +169,7 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 				Word word=this.words.get(i);
 				branchedStringElement=word.branchedString(this);
 				branchedStringElementList.add(branchedStringElement);
-				System.out.println();
+				//System.out.println();
 			}
 			Collections.sort(branchedStringElementList,new StringBufferElementComparator());
 			
@@ -181,7 +181,7 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			System.out.println("SortedList\n");
 			StringBuffer outputBuffer= new StringBuffer();
 			for(BranchedStringBufferElement b:branchedStringElementList){
-				System.out.println(b.stringBuffer);
+				//System.out.println(b.stringBuffer);
 				StringBuffer outSbElement=new StringBuffer(b.stringBuffer);
 				int nrInserts=0;
 				for (int i=0;i<b.bitSet.length();i++){

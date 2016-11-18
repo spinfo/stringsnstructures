@@ -51,12 +51,12 @@ public class GST {
 		
 		for (int i = 0; i < inText.length(); i++) {
 			//JR test 16-09-29
-			System.out.print(inText.charAt(i));
+			//System.out.print(inText.charAt(i));
 			st.addChar(inText.charAt(i), nrText);
 			// while loop as completely repeated texts are possible
 			while(inText.charAt(i) == '$') {
 				//JR test  16-09-29
-				System.out.println();
+				//System.out.println();
 				// set value for end in leaves
 				oo.val=i+1;
 				// generate new element for next text

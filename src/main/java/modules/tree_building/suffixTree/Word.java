@@ -25,36 +25,37 @@ public class Word {
 			start=r.tree.getNode(node).getStart(0);
 			end=r.tree.getNode(node).getEnd(0);
 			for(int pos=start;pos<end;pos++){
-				  System.out.print(r.tree.text[pos]);
+				  //System.out.print(r.tree.text[pos]);
 				  if(r.inverted) sb.insert(0, r.tree.text[pos]);
 				  else
 				  sb.append(r.tree.text[pos]);
 				  branchPosition++;
 			}
-			System.out.print(" ");
-			System.out.print(this.morphInWordList.get(i)+ " ");
+			//System.out.print(" ");
+			//System.out.print(this.morphInWordList.get(i)+ " ");
 			if (r.nodesWholePhrases[this.morphInWordList.get(i)]==2) 
 				if (branchPosition>0){
-					System.out.print("branch: "+branchPosition+" ");
+					//System.out.print("branch: "+branchPosition+" ");
 					branchPosList.add(branchPosition);
 				}
 				
 			else if (r.nodesWholePhrases[this.morphInWordList.get(i)]<2) 
-				System.out.print(" nobranch ");
+				//System.out.print(" nobranch ")
+				;
 			
 		}
 		if (r.inverted) {sb.deleteCharAt(0);sb.append('$');}
-		System.out.println();
-		System.out.println(sb);
+		//System.out.println();
+		//System.out.println(sb);
 		int pos=0;
-		System.out.println("BranchPositions");
+		//System.out.println("BranchPositions");
 		for (int j=0;j<branchPosList.size();j++){
 			if (r.inverted) pos=sb.length()-1-branchPosList.get(j);
 			else pos=branchPosList.get(j);
-			System.out.print(pos+" ");
+			//System.out.print(pos+" ");
 			bitSetBranches.set(pos, true);
 		}
-		System.out.println();
+		//System.out.println();
 		BranchedStringBufferElement bs=new BranchedStringBufferElement(sb,bitSetBranches);
 		return bs;
 	}
