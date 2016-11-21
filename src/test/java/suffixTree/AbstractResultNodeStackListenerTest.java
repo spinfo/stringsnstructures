@@ -2,6 +2,7 @@ package suffixTree;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashSet;
@@ -133,7 +134,7 @@ public class AbstractResultNodeStackListenerTest {
 
 		// just build the generalised suffix tree
 		try {
-			tree = GST.buildGST(new StringReader(input), null);
+			tree = GST.buildGST(new BufferedReader(new StringReader(input)), null);
 		} catch (Exception e) {
 			fail("Failed to build the generalised suffix tree.");
 		}

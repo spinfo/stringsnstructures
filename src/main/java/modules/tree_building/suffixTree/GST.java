@@ -19,15 +19,40 @@ public class GST {
 		return -1;
 	}
 
-	// cstr
-	public static SuffixTree buildGST(Reader inputReader, List<Integer> typeContextEndIndices) throws Exception {
+	// 
+	
+	public static SuffixTree buildGSTTEST(BufferedReader in, List<Integer> typeContextEndIndices) throws Exception {
 		//JR test 16-09-29
 		System.out.println("SuffixTree");
 		
 		int nrText = 0;
 		 
 		String line,inText="",nextinText;		
-	    BufferedReader in = new BufferedReader(inputReader);
+	    //BufferedReader in = new BufferedReader(inputReader);
+	   // inText=in.readLine();
+	    int i=0;
+	    while (i !=-1) {
+	    	i= in.read();
+	    	System.out.print((char) i);
+	    	
+	    }
+	    
+	   /* while ((line=in.readLine())!=null) {	    	
+	    	if(line.charAt(line.length()-1)=='$')inText=inText+line; else inText=inText+" "+line;
+	    }*/
+	    
+	    in.close();
+	    return null;
+	}
+	
+	public static SuffixTree buildGST(BufferedReader in, List<Integer> typeContextEndIndices) throws Exception {
+		//JR test 16-09-29
+		System.out.println("SuffixTree");
+		
+		int nrText = 0;
+		 
+		String line,inText="",nextinText;		
+	   // BufferedReader in = new BufferedReader(inputReader);
 	    inText=in.readLine();
 	    while ((line=in.readLine())!=null) {
 	    	
@@ -109,12 +134,12 @@ public class GST {
 
 	// Convenience method to build a GST for a String with the specified contexts. Multiple inputs should be separated by '$'. 
 	public static SuffixTree buildGST(String input, List<Integer> typeContextEndIndices) throws Exception {
-		return buildGST(new StringReader(input), typeContextEndIndices);
+		return buildGST(new BufferedReader(new StringReader(input)), typeContextEndIndices);
 	}
 	
 	// Convenience method to build a GST for a String. Multiple inputs should be separated by '$'. 
 	public static SuffixTree buildGST(String input) throws Exception {
-		return buildGST(new StringReader(input), null);
+		return buildGST(new BufferedReader(new StringReader(input)), null);
 	}
 	
 	private static void incrementTypeContexts(BaseSuffixTree st, List<Integer> typeContextEndIndices, int nrText) {
@@ -146,7 +171,7 @@ public class GST {
 	    final FileReader in = new FileReader(filename+".txt");
 	    final PrintWriter out = new PrintWriter(new FileWriter("st.dot"));
 	    
-		SuffixTree st = GST.buildGST(in, null);
+		SuffixTree st = GST.buildGST(new BufferedReader(in), null);
 		st.printTree(out);
 		
 		in.close();

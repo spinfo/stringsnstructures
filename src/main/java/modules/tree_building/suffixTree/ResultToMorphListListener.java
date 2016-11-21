@@ -184,16 +184,19 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 				//System.out.println(b.stringBuffer);
 				StringBuffer outSbElement=new StringBuffer(b.stringBuffer);
 				int nrInserts=0;
+				// pipe sign | as separator; if pipe sign is inserted in string,
+				// insert must be counted (by nrInserts) to put pipe in correct position
 				for (int i=0;i<b.bitSet.length();i++){
 					if(b.bitSet.get(i)) {
 						System.out.print('|');
 						outSbElement.insert(i+nrInserts,'|');
 						nrInserts++;
 						}
-						else System.out.print(' ');
+						//else 
+						System.out.print(' ');
 					
 				} //for int i=0;i<b.bitSet.length();i++)
-				System.out.println();System.out.println();
+				System.out.println();//System.out.println();
 				System.out.println(outSbElement);
 				outputBuffer.append(outSbElement.append(System.getProperty("line.separator")));
 			}
@@ -207,8 +210,12 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			// ??toDo throw eception if not??
 			ArrayList<BranchedStringBufferElement>resList=new ArrayList<BranchedStringBufferElement>();
 			for (int i=0;i<l1.size();i++){
-				// warning, to check: no new strinbuffer, newElement has common reference with
+				// warning, to check: no new string buffer, newElement has common reference with
 				// element from l1 List!!!
+				// HINT TODO??: might be useful to extend class BranchedStringBufferElement to
+				// a class BranchedStringBufferBitSourcesElement with two further bitsets, one from
+				// l1.get(i).bitSet and the second from l2.get(i).bitSet)
+				// with further information for Distance seq.
 				BranchedStringBufferElement newElement=new BranchedStringBufferElement(l1.get(i).stringBuffer,
 				il.logOperation(l1.get(i).bitSet,l2.get(i).bitSet));
 				resList.add(newElement);

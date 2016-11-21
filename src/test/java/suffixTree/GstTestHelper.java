@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,10 +51,12 @@ class GstTestHelper {
 	 *            for a type ends
 	 * @return A Generalised Suffix Tree over the specified input text
 	 */
+	
+	
 	protected static SuffixTree buildAndCheckTree(final String input, final List<Integer> typeContextNrs) {
 		SuffixTree result = null;
 		try {
-			result = GST.buildGST(new StringReader(input), typeContextNrs);
+			result = GST.buildGST(new BufferedReader(new StringReader(input)), typeContextNrs);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Building the tree failed with error: " + e.getMessage());

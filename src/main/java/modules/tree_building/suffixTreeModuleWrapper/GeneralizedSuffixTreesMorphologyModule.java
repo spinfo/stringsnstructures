@@ -127,15 +127,17 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 			
 			System.out.println("XX vor TextReader1");
 			// actually build the trees
-			final BufferedReader textReader1 = new BufferedReader(
+			final BufferedReader bufReader1 = new BufferedReader(
 					this.getInputPorts().get(INPUT_TEXT1_ID).getInputReader());
+			
+			
 			System.out.println("XX vor SuffixTree1");
-			final SuffixTree suffixTree1 = GST.buildGST(textReader1,null);
+			final SuffixTree suffixTree1 = GST.buildGST(bufReader1,null);
 			System.out.println("XX vor TextReader2");
-			final BufferedReader textReader2 = new BufferedReader(
+			final BufferedReader bufReader2 = new BufferedReader(
 					this.getInputPorts().get(INPUT_TEXT2_ID).getInputReader());
 			System.out.println("XX vor SuffixTree2");
-			final SuffixTree suffixTree2 = GST.buildGST(textReader2,null);
+			final SuffixTree suffixTree2 = GST.buildGST(bufReader2,null);
 			
 			System.out.println("XXSuffixTrees Built");
 			
