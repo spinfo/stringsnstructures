@@ -11,6 +11,7 @@ import modules.InputPort;
 import modules.OutputPort;
 import modules.ModuleImpl;
 import modules.tree_building.suffixTree.BranchedStringBufferElement;
+import modules.tree_building.suffixTree.ExtendedBranchedStringBufferElement;
 import modules.tree_building.suffixTree.GST;
 import common.logicBits.LogOpOR;
 import modules.tree_building.suffixTree.ResultToMorphListListener;
@@ -149,7 +150,7 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 			resultToMorphListListener1);
 			System.out.println("XX vor branchedStringElementList1");
 			ArrayList<BranchedStringBufferElement> branchedStringElementList1=
-			resultToMorphListListener1.results();
+			resultToMorphListListener1.generateSortedBranchedStringList();
 			//System.out.println();System.out.println();System.out.println();
 			ResultToMorphListListener resultToMorphListListener2=
 					new ResultToMorphListListener(suffixTree2,true);
@@ -157,20 +158,22 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 					resultToMorphListListener2);
 			System.out.println("XX vor branchedStringElementList2");
 			ArrayList<BranchedStringBufferElement> branchedStringElementList2=
-			resultToMorphListListener2.results();
+			resultToMorphListListener2.generateSortedBranchedStringList();
 			// print resulted branchedStringLists
-			System.out.print("branchedStringElementList1 ");
-			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementList1);
+			/*System.out.print("branchedStringElementList1 ");
+			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementList1,false);
 			System.out.print("branchedStringElementList2 ");
-			resultToMorphListListener2.printBranchedStringElementList(branchedStringElementList2);
+			resultToMorphListListener2.printBranchedStringElementList(branchedStringElementList2,false);
+			*/
+			// generate list of logical or
 			System.out.print("branchedStringElementListOR ");
-			ArrayList<BranchedStringBufferElement> branchedStringElementListOr=
+			ArrayList<ExtendedBranchedStringBufferElement> branchedStringElementListOr=
 				resultToMorphListListener1.logOp(branchedStringElementList1,
 				branchedStringElementList2,new LogOpOR());	
-			System.out.print("branchedStringElementListOr ");
+			//System.out.print("branchedStringElementListOr ");
 		
 			outputBuffer=
-			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementListOr);
+			resultToMorphListListener1.resultBranchedStringElementList(branchedStringElementListOr);
 			
 			String outputString = outputBuffer.toString();
 			System.out.println(" outputString:");

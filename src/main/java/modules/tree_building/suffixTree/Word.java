@@ -56,6 +56,7 @@ public class Word {
 			bitSetBranches.set(pos, true);
 		}
 		//System.out.println();
+		// 
 		BranchedStringBufferElement bs=new BranchedStringBufferElement(sb,bitSetBranches);
 		return bs;
 	}

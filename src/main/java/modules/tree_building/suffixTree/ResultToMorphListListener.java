@@ -7,6 +7,7 @@ package modules.tree_building.suffixTree;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Stack;
 
@@ -158,10 +159,11 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			return false;
 		}
 		
-		public ArrayList<BranchedStringBufferElement> results() {
+		
+		public ArrayList<BranchedStringBufferElement> generateSortedBranchedStringList() {
 			ArrayList <BranchedStringBufferElement>branchedStringElementList=new ArrayList <BranchedStringBufferElement>();
 			BranchedStringBufferElement branchedStringElement;
-			System.out.print("results ");
+			System.out.print("generateSortedBranchedStringList ");
 			if(this.inverted) System.out.println("inverted");
 			else System.out.println("normal");
 			System.out.println();
@@ -177,16 +179,43 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			return branchedStringElementList;
 		}
 		
-		public StringBuffer printBranchedStringElementList(ArrayList<BranchedStringBufferElement>branchedStringElementList){
-			System.out.println("SortedList\n");
+		
+		
+		public StringBuffer resultBranchedStringElementList(ArrayList<ExtendedBranchedStringBufferElement>branchedStringElementList)
+		{
+			System.out.println("resultBranchedStringElementList");
+			int nrInserts=0,nrInsertsLeftRight=0,nrInsertsRightLeft=0;
 			StringBuffer outputBuffer= new StringBuffer();
-			for(BranchedStringBufferElement b:branchedStringElementList){
+			char splitSign;
+			for(ExtendedBranchedStringBufferElement b:branchedStringElementList){
+				 nrInserts=0;
+				 //nrInsertsLeftRight=0;nrInsertsRightLeft=0;
 				//System.out.println(b.stringBuffer);
-				StringBuffer outSbElement=new StringBuffer(b.stringBuffer);
-				int nrInserts=0;
+				// result is string representation of logical operation ('and'  or 'or')
+				StringBuffer result=new StringBuffer(b.stringBuffer);
+				// leftRight is element derived from suffix tree with normal (left right) input text
+				//StringBuffer leftRight=new StringBuffer(b.stringBuffer);
+				// rightLeft is element derived from suffix tree with inverted (right left) input text
+				//StringBuffer rightLeft=new StringBuffer(b.stringBuffer);
+				
+				for (int i=0;i<b.bitSet.length();i++){
+					if( b.bitSet.get(i)) {
+						if (b.leftRightBitSet.get(i)) {
+							if (b.rightLeftBitSet.get(i)) splitSign='|';
+							else splitSign='>';
+						} else {splitSign='<';};
+						result.insert(i+nrInserts,splitSign);
+						nrInserts++;
+					}
+									
+				}
+				
+				
+				// int nrInserts=0;
 				// pipe sign | as separator; if pipe sign is inserted in string,
 				// insert must be counted (by nrInserts) to put pipe in correct position
-				for (int i=0;i<b.bitSet.length();i++){
+								
+				/*for (int i=0;i<b.bitSet.length();i++){
 					if(b.bitSet.get(i)) {
 						System.out.print('|');
 						outSbElement.insert(i+nrInserts,'|');
@@ -198,26 +227,31 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 				} //for int i=0;i<b.bitSet.length();i++)
 				System.out.println();//System.out.println();
 				System.out.println(outSbElement);
-				outputBuffer.append(outSbElement.append(System.getProperty("line.separator")));
+				*/
+				outputBuffer.append(result.append(System.getProperty("line.separator")));
 			}
 			 return outputBuffer;
 						
 		}
 		
-		public ArrayList<BranchedStringBufferElement>logOp(ArrayList<BranchedStringBufferElement>l1,
+		public ArrayList<ExtendedBranchedStringBufferElement>logOp(ArrayList<BranchedStringBufferElement>l1,
 				ArrayList<BranchedStringBufferElement>l2, ILogOp il ) {
 			// necessary precondition in1 and in2 contain identical strings
 			// ??toDo throw eception if not??
-			ArrayList<BranchedStringBufferElement>resList=new ArrayList<BranchedStringBufferElement>();
+			ArrayList<ExtendedBranchedStringBufferElement>resList=new ArrayList<ExtendedBranchedStringBufferElement>();
 			for (int i=0;i<l1.size();i++){
-				// warning, to check: no new string buffer, newElement has common reference with
+				// to check: new string buffer, newElement is clone of
 				// element from l1 List!!!
 				// HINT TODO??: might be useful to extend class BranchedStringBufferElement to
 				// a class BranchedStringBufferBitSourcesElement with two further bitsets, one from
 				// l1.get(i).bitSet and the second from l2.get(i).bitSet)
 				// with further information for Distance seq.
-				BranchedStringBufferElement newElement=new BranchedStringBufferElement(l1.get(i).stringBuffer,
-				il.logOperation(l1.get(i).bitSet,l2.get(i).bitSet));
+				BitSet resOp=il.logOperation(l1.get(i).bitSet,l2.get(i).bitSet);
+				ExtendedBranchedStringBufferElement newElement=
+				new ExtendedBranchedStringBufferElement(l1.get(i).stringBuffer,resOp,
+				l1.get(i).bitSet,l2.get(i).bitSet);
+				//newElement.firstBitSet=l1.get(i).bitSet;
+				//newElement.secondBitSet=l2.get(i).bitSet;
 				resList.add(newElement);
 				
 			}

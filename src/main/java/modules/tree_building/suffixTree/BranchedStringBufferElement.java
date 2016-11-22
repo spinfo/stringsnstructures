@@ -12,8 +12,9 @@ public class BranchedStringBufferElement extends StringBufferElement{
 	
 	BitSet bitSet;
 	public BranchedStringBufferElement(StringBuffer sb, BitSet bitSet){
-		this.stringBuffer=sb;
+		this.stringBuffer= new StringBuffer(sb);
 		this.bitSet=bitSet;
+		
 	}
 	
 	
