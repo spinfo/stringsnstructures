@@ -140,18 +140,6 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		super.addOutputPort(outputPort);
 	}
 	
-	// end constructors
-	
-	// setters:
-	
-	// end setters:
-	
-	// getters:
-	
-	// end getters
-	
-	// methods:
-	
 	// process()
 	@Override
 	public boolean process() throws Exception {
@@ -165,8 +153,6 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		}
 		
 		List<Type> kwipTypes = this.kwipStreamReader.read();
-//		for (Type type : kwipTypes)
-//			System.out.println(type);
 
 		Map<Integer, String> typeStrings = null;
 		try {
@@ -184,23 +170,9 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 			e.printStackTrace();
 		}
 		
-		/*
-		// print nodes for debugging
-		for (Node node : corpus.getNodes()) {
-			System.out.println(node);
-		}
-
-		for (Type type : corpus.getTypes()) {
-			System.out.println(type);
-		}
-
-		System.out.println("---------------------------");
-		*/
-		
 		// step 2: go through the list and search for each node its unit and
 		// remember the absolute value for each unit after tf/idf.
 		// afterwards save the results in the vector.
-		
 		switch (this.vecType) {
 		case "TF-IDF":
 			this.vectorType = FeatureType.TF_IDF;
@@ -218,15 +190,6 @@ public class SuffixTreeClusteringModuleWrapper extends ModuleImpl {
 		
 		for (Type doc : corpus.getTypes()) {
 				doc.calculateVector(corpus, vectorType);
-
-			/*
-			// for debugging
-			System.out.print("[");
-			for (Double val : doc.getVector().getValues()) {
-				System.out.print(val.doubleValue() + ", ");
-			}
-			System.out.println("]");
-			*/
 		}
 		
 		types = new ArrayList<Type>(corpus.getTypes());

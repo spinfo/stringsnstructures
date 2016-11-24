@@ -128,19 +128,6 @@ public class NeighborJoining {
 	public void start() {
 		logger.info("Start NJ...");
 
-		// System.out.print("Distance Matrix:\n-----------------\n\t");
-		// for (int i = 0; i < distanceMatrix[0].length; i++) {
-		// System.out.print("Type " + i + "\t\t\t");
-		// }
-		// System.out.println();
-		// for (int i = 0; i < distanceMatrix.length; i++) {
-		// System.out.print("Type " + i + "\t");
-		// for (int j = 0; j < distanceMatrix[i].length; j++) {
-		// System.out.print(distanceMatrix[i][j] + "\t");
-		// }
-		// System.out.println();
-		// }
-
 		while (true) {
 			findNextPair();
 			newBranchLengths();
@@ -275,12 +262,6 @@ public class NeighborJoining {
 		for (int i = 0; i < temp.length; i++) {
 			for (int j = 0; j < temp.length; j++) {
 				temp[i][j] = computeDistance(documents.get(i), documents.get(j));
-//				if (i != j && temp[i][j] == 0.0) {
-//					System.out.println(">>>debug");
-//					System.out.println(documents.get(i).getString());
-//					System.out.println(documents.get(j).getString());
-//					System.out.println();
-//				}
 			}
 		}
 		this.distanceMatrix = temp;
