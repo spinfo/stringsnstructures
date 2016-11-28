@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Stack;
 
 import common.logicBits.ILogOp;
@@ -160,23 +161,47 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 		}
 		
 		
-		public ArrayList<BranchedStringBufferElement> generateSortedBranchedStringList() {
-			ArrayList <BranchedStringBufferElement>branchedStringElementList=new ArrayList <BranchedStringBufferElement>();
+		//ArrayList<BranchedStringBufferElement> 
+		public SortedBranchedStringListsResult generateSortedBranchedStringList() {
+			SortedBranchedStringListsResult sortedBranchedStringListsResult=
+			new SortedBranchedStringListsResult();
+			ArrayList <BranchedStringBufferElement>firstBranchedStringElementList=
+			new ArrayList <BranchedStringBufferElement>();
+			ArrayList <BranchedStringBufferElement>secondBranchedStringElementList=
+					new ArrayList <BranchedStringBufferElement>();
 			BranchedStringBufferElement branchedStringElement;
+			ArrayList<BranchedStringBufferElement>branchedStringElementResultList=null;
 			System.out.print("generateSortedBranchedStringList ");
 			if(this.inverted) System.out.println("inverted");
 			else System.out.println("normal");
 			System.out.println();
+			/* for all words generate list of branched words */
 			for (int i=0;i<this.words.size();i++){
 				Word word=this.words.get(i);
-				branchedStringElement=word.branchedString(this);
-				branchedStringElementList.add(branchedStringElement);
+				//get a list with one (forward) or two (forward backward and bachward) elements
+				branchedStringElementResultList=word.branchedString(this);
+				branchedStringElement=branchedStringElementResultList.get(0);
+				//TODO
+				//xxxx;
+				// add first element to resulting branchwordslist
+				firstBranchedStringElementList.add(branchedStringElement);
 				//System.out.println();
+				// if second element add to second resulting branchwordslist
+				if (this.inverted) {
+					branchedStringElement=branchedStringElementResultList.get(1);
+					secondBranchedStringElementList.add(branchedStringElement);
+				}
 			}
-			Collections.sort(branchedStringElementList,new StringBufferElementComparator());
-			
+			Collections.sort(firstBranchedStringElementList,new StringBufferElementComparator());
+			sortedBranchedStringListsResult.firstBranchedStringBufferElementList=
+					firstBranchedStringElementList;	
+			if (this.inverted){
+				Collections.sort(secondBranchedStringElementList,new StringBufferElementComparator());
+				sortedBranchedStringListsResult.secondBranchedStringBufferElementList=
+						secondBranchedStringElementList;	
+			}
 			//printBranchedStringElementList(branchedStringElementList);
-			return branchedStringElementList;
+			return sortedBranchedStringListsResult;
 		}
 		
 		
@@ -197,16 +222,21 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 				//StringBuffer leftRight=new StringBuffer(b.stringBuffer);
 				// rightLeft is element derived from suffix tree with inverted (right left) input text
 				//StringBuffer rightLeft=new StringBuffer(b.stringBuffer);
-				
-				for (int i=0;i<b.bitSet.length();i++){
+				//int len=b.stringBuffer.length();
+				for (int i=0;i</*len */b.bitSet.length();i++){
 					if( b.bitSet.get(i)) {
 						if (b.leftRightBitSet.get(i)) {
 							if (b.rightLeftBitSet.get(i)) splitSign='|';
 							else splitSign='>';
 						} else {splitSign='<';};
+						if (i+nrInserts>result.length()) {
+							System.out.println("resultBranchedStringElementList: i: "+i+
+									" nrInserts: "+ nrInserts+ " result: "+result+ 
+								" b.stringBuffer: "+b.stringBuffer);
+						}
 						result.insert(i+nrInserts,splitSign);
 						nrInserts++;
-					}
+					};
 									
 				}
 				
@@ -237,7 +267,7 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 		public ArrayList<ExtendedBranchedStringBufferElement>logOp(ArrayList<BranchedStringBufferElement>l1,
 				ArrayList<BranchedStringBufferElement>l2, ILogOp il ) {
 			// necessary precondition in1 and in2 contain identical strings
-			// ??toDo throw eception if not??
+			// ??toDo throw exception if not??
 			ArrayList<ExtendedBranchedStringBufferElement>resList=new ArrayList<ExtendedBranchedStringBufferElement>();
 			for (int i=0;i<l1.size();i++){
 				// to check: new string buffer, newElement is clone of
@@ -263,6 +293,28 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 		}
 		
 	
+		public void prepareEvaluation(ArrayList<ExtendedBranchedStringBufferElement> in){
+			
+			String prefix, suffix;
+			for (Iterator<ExtendedBranchedStringBufferElement> iterator = in.iterator(); iterator.hasNext(); )
+			{
+				ExtendedBranchedStringBufferElement el=iterator.next();
+				System.out.println("prepareEvaluation "+el.stringBuffer);
+				
+				// TODO refine bitset (backward, forward, or, here or only
+				for (int splitPos=0;splitPos<el.bitSet.length();splitPos++)
+				{
+					if (el.bitSet.get(splitPos)){
+						prefix=el.stringBuffer.substring(0,splitPos);
+						suffix=el.stringBuffer.substring(splitPos,el.stringBuffer.length());
+						System.out.println("prepareEvaluation prefix: "+prefix+
+								" suffix: "+suffix);
+						
+					}
+				}
+			}
+
+		}
 		
 }
 	

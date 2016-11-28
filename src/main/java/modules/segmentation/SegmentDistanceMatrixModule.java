@@ -70,6 +70,7 @@ public class SegmentDistanceMatrixModule extends ModuleImpl {
 		super.addOutputPort(outputPort2);
 	}
 
+	
 	@Override
 	public boolean process() throws Exception {
 		boolean result = true;

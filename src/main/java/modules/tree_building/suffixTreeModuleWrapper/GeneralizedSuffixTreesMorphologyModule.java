@@ -15,7 +15,7 @@ import modules.tree_building.suffixTree.ExtendedBranchedStringBufferElement;
 import modules.tree_building.suffixTree.GST;
 import common.logicBits.LogOpOR;
 import modules.tree_building.suffixTree.ResultToMorphListListener;
-
+import modules.tree_building.suffixTree.SortedBranchedStringListsResult;
 import modules.tree_building.suffixTree.SuffixTree;
 import modules.tree_building.suffixTree.TreeWalker;
 
@@ -123,6 +123,8 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 
 		boolean result=true;
 		StringBuffer outputBuffer=null;
+		SortedBranchedStringListsResult sortedBranchedStringListsResultForward=null,
+				sortedBranchedStringListsResultBackward	=null;	
 
 		try {			
 			
@@ -149,16 +151,25 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 			TreeWalker.walk(suffixTree1.getRoot(), suffixTree1, 
 			resultToMorphListListener1);
 			System.out.println("XX vor branchedStringElementList1");
-			ArrayList<BranchedStringBufferElement> branchedStringElementList1=
+			//ArrayList<BranchedStringBufferElement> branchedStringElementList1=
+			
+			sortedBranchedStringListsResultForward=
 			resultToMorphListListener1.generateSortedBranchedStringList();
+			ArrayList<BranchedStringBufferElement> branchedStringElementListForward=
+			sortedBranchedStringListsResultForward.firstBranchedStringBufferElementList;
 			//System.out.println();System.out.println();System.out.println();
 			ResultToMorphListListener resultToMorphListListener2=
 					new ResultToMorphListListener(suffixTree2,true);
 			TreeWalker.walk(suffixTree2.getRoot(), suffixTree2, 
 					resultToMorphListListener2);
-			System.out.println("XX vor branchedStringElementList2");
-			ArrayList<BranchedStringBufferElement> branchedStringElementList2=
+			//System.out.println("XX vor branchedStringElementList2");
+			sortedBranchedStringListsResultBackward=
 			resultToMorphListListener2.generateSortedBranchedStringList();
+			//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+			ArrayList<BranchedStringBufferElement> branchedStringElementListBackwardForwarded=
+			sortedBranchedStringListsResultBackward.firstBranchedStringBufferElementList;
+			ArrayList<BranchedStringBufferElement> branchedStringElementListBackward=
+					sortedBranchedStringListsResultBackward.secondBranchedStringBufferElementList;		
 			// print resulted branchedStringLists
 			/*System.out.print("branchedStringElementList1 ");
 			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementList1,false);
@@ -168,8 +179,8 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 			// generate list of logical or
 			System.out.print("branchedStringElementListOR ");
 			ArrayList<ExtendedBranchedStringBufferElement> branchedStringElementListOr=
-				resultToMorphListListener1.logOp(branchedStringElementList1,
-				branchedStringElementList2,new LogOpOR());	
+				resultToMorphListListener1.logOp(branchedStringElementListForward,
+						branchedStringElementListBackwardForwarded,new LogOpOR());	
 			//System.out.print("branchedStringElementListOr ");
 		
 			outputBuffer=
@@ -178,6 +189,9 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 			String outputString = outputBuffer.toString();
 			System.out.println(" outputString:");
 			System.out.println(outputString);
+			
+			System.out.println("----------------------------------------------------------------");
+			resultToMorphListListener1.prepareEvaluation(branchedStringElementListOr);
 			// Write to outputs
 			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(outputString);
 			
