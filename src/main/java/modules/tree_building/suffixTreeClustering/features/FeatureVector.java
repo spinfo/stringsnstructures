@@ -28,6 +28,13 @@ public final class FeatureVector implements Serializable {
 	public FeatureVector(final Double[] values) {
 		this.features = values;
 	}
+	
+	public FeatureVector(final double[] values) {
+		this.features = new Double[values.length];
+		for (int i = 0; i < values.length; i++) {
+			this.features[i] = values[i];
+		}
+	}
 
 	public Double[] getValues() {
 		return features;
