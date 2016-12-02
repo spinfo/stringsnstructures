@@ -24,6 +24,11 @@ public final class Type implements Comparable<Type>, Serializable{
 	public Type() {
 		tokens = new ArrayList<>();
 	}
+	
+	public Type(FeatureVector vector) {
+		this();
+		this.vector = vector;
+	}
 
 	/**
 	 * Creates a new vector representation for this type. Return value indicates
