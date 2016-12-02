@@ -1,11 +1,12 @@
 package modules.basic_text_processing;
 
 import java.util.Properties;
-
+import java.util.regex.PatternSyntaxException;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
+
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -89,9 +90,18 @@ public class RegExReplacementModule extends ModuleImpl {
 			
 			// Convert char array to string
 			String inputChunk = new String(bufferInput).substring(0, readCharsInput);
-			
 			// Process data
-			String outputChunk = inputChunk.replaceAll(this.regex, this.replacement);
+			String outputChunk="";
+			try {
+			 outputChunk = inputChunk.replaceAll(this.regex, this.replacement);
+			}
+			catch(PatternSyntaxException p) {
+				System.out.println("error pattern:"+p.getMessage()+ " pattern: "+
+						p.getPattern());
+				p.printStackTrace();
+				System.exit(3);
+				
+			};
 			
 			// Write to output
 			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(outputChunk);

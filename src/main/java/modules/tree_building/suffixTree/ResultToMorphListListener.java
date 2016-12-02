@@ -215,7 +215,7 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			for(ExtendedBranchedStringBufferElement b:branchedStringElementList){
 				 nrInserts=0;
 				 //nrInsertsLeftRight=0;nrInsertsRightLeft=0;
-				//System.out.println(b.stringBuffer);
+				System.out.println("resultBranchedStringElementList: "+b.stringBuffer);
 				// result is string representation of logical operation ('and'  or 'or')
 				StringBuffer result=new StringBuffer(b.stringBuffer);
 				// leftRight is element derived from suffix tree with normal (left right) input text
@@ -269,22 +269,36 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			// necessary precondition in1 and in2 contain identical strings
 			// ??toDo throw exception if not??
 			ArrayList<ExtendedBranchedStringBufferElement>resList=new ArrayList<ExtendedBranchedStringBufferElement>();
-			for (int i=0;i<l1.size();i++){
-				// to check: new string buffer, newElement is clone of
-				// element from l1 List!!!
-				// HINT TODO??: might be useful to extend class BranchedStringBufferElement to
-				// a class BranchedStringBufferBitSourcesElement with two further bitsets, one from
-				// l1.get(i).bitSet and the second from l2.get(i).bitSet)
-				// with further information for Distance seq.
-				BitSet resOp=il.logOperation(l1.get(i).bitSet,l2.get(i).bitSet);
-				ExtendedBranchedStringBufferElement newElement=
-				new ExtendedBranchedStringBufferElement(l1.get(i).stringBuffer,resOp,
-				l1.get(i).bitSet,l2.get(i).bitSet);
-				//newElement.firstBitSet=l1.get(i).bitSet;
-				//newElement.secondBitSet=l2.get(i).bitSet;
-				resList.add(newElement);
+			try {
+				for (int i=0;i<l1.size();i++){
+					// to check: new string buffer, newElement is clone of
+					// element from l1 List!!!
+					// HINT TODO??: might be useful to extend class BranchedStringBufferElement to
+					// a class BranchedStringBufferBitSourcesElement with two further bitsets, one from
+					// l1.get(i).bitSet and the second from l2.get(i).bitSet)
+					// with further information for Distance seq.
+					if (!(l1.get(i).stringBuffer.toString().equals(l2.get(i).stringBuffer.toString())))
+					
+						{System.out.println("logOp ungleiche Zeichenketten: "+
+							l1.get(i).stringBuffer+ "  "+l2.get(i).stringBuffer);
+						throw new Exception(l1.get(i).stringBuffer+ "  "+l2.get(i).stringBuffer);
+						};
+					BitSet resOp=il.logOperation(l1.get(i).bitSet,l2.get(i).bitSet);
+					ExtendedBranchedStringBufferElement newElement=
+							new ExtendedBranchedStringBufferElement(l1.get(i).stringBuffer,resOp,
+									l1.get(i).bitSet,l2.get(i).bitSet);
+					//newElement.firstBitSet=l1.get(i).bitSet;
+					//newElement.secondBitSet=l2.get(i).bitSet;
+					resList.add(newElement);
+					}
+				}
+				catch (Exception e){System.out.println
+				(" error in ResultTpMorphListListener.logOp: strings not equal"+
+				e.getMessage());
 				
-			}
+				}
+				
+			
 			
 			
 			
@@ -299,7 +313,7 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 			for (Iterator<ExtendedBranchedStringBufferElement> iterator = in.iterator(); iterator.hasNext(); )
 			{
 				ExtendedBranchedStringBufferElement el=iterator.next();
-				System.out.println("prepareEvaluation "+el.stringBuffer);
+				//System.out.println("prepareEvaluation "+el.stringBuffer);
 				
 				// TODO refine bitset (backward, forward, or, here or only
 				for (int splitPos=0;splitPos<el.bitSet.length();splitPos++)
@@ -307,8 +321,8 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 					if (el.bitSet.get(splitPos)){
 						prefix=el.stringBuffer.substring(0,splitPos);
 						suffix=el.stringBuffer.substring(splitPos,el.stringBuffer.length());
-						System.out.println("prepareEvaluation prefix: "+prefix+
-								" suffix: "+suffix);
+						//System.out.println("prepareEvaluation prefix: "+prefix+
+						//		" suffix: "+suffix);
 						
 					}
 				}

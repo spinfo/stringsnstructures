@@ -55,11 +55,12 @@ public class GST {
 	   // BufferedReader in = new BufferedReader(inputReader);
 	    inText=in.readLine();
 	    while ((line=in.readLine())!=null) {
-	    	
+	    	System.out.println("buildGST: "+line);
 	    	if(line.charAt(line.length()-1)=='$')inText=inText+line; else inText=inText+" "+line;
 	    }
 	    in.close();
-		
+	    
+	   
 		SuffixTree st = new SuffixTree(inText.length());
 		NodePositionEnd oo = st.newEnd();// end value for leaves; is changed if final '$' is reached
 									  // generate new st.OO for next text
@@ -134,11 +135,13 @@ public class GST {
 
 	// Convenience method to build a GST for a String with the specified contexts. Multiple inputs should be separated by '$'. 
 	public static SuffixTree buildGST(String input, List<Integer> typeContextEndIndices) throws Exception {
+		System.out.println("SuffixTree buildGST 1");
 		return buildGST(new BufferedReader(new StringReader(input)), typeContextEndIndices);
 	}
 	
 	// Convenience method to build a GST for a String. Multiple inputs should be separated by '$'. 
 	public static SuffixTree buildGST(String input) throws Exception {
+		System.out.println("SuffixTree buildGST 2");
 		return buildGST(new BufferedReader(new StringReader(input)), null);
 	}
 	

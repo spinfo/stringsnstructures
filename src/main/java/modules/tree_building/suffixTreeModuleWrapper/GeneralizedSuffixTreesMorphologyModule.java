@@ -1,7 +1,7 @@
 package modules.tree_building.suffixTreeModuleWrapper;
 
 
-
+import common.parallelization.CallbackReceiver;
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -19,7 +19,7 @@ import modules.tree_building.suffixTree.SortedBranchedStringListsResult;
 import modules.tree_building.suffixTree.SuffixTree;
 import modules.tree_building.suffixTree.TreeWalker;
 
-import common.parallelization.CallbackReceiver;
+
 
 /**
  * 
@@ -48,8 +48,8 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 	
 	// Variables for the module
 	private static final String MODULE_NAME = "GeneralisedSuffixTreesMorphologyModule";
-	private static final String MODULE_DESCRIPTION = "Module reads two inputs, one reversed into suffix trees."
-			;
+	private static final String MODULE_DESCRIPTION = 	
+	"Module reads two inputs, one reversed into suffix trees.";
 
 	// Variables describing I/O
 	private static final String INPUT_TEXT1_ID = "plain";
@@ -94,18 +94,20 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 		in1.addSupportedPipe(CharPipe.class);
 		this.addInputPort(in1);
 
+		
 		InputPort in2 = new InputPort(INPUT_TEXT2_ID, "Reversed character input.", this);
 		in2.addSupportedPipe(CharPipe.class);
 		this.addInputPort(in2);
 		
+		
 		OutputPort out = new OutputPort(OUTPUTID,OUTPUTID_DESC,this);
 		out.addSupportedPipe(CharPipe.class);
-		//this.addOutputPort(out);
+		this.addOutputPort(out);
 		
 		
 		//this.setupOutputPorts();
 		
-		super.addOutputPort(out);
+		//super.addOutputPort(out);
 		
 		
 	}
@@ -117,88 +119,103 @@ public class GeneralizedSuffixTreesMorphologyModule extends ModuleImpl {
 	 */
 	@Override
 	public boolean process() throws Exception {
+		/*--------------------TEST
+		boolean b=true;
+		if(b) throw new Exception("TEST");
+        ______________________END TEST_____________ */
 		
-
 		//ResultToMorphListListener test=new ResultToMorphListListener(null,false);
 
 		boolean result=true;
 		StringBuffer outputBuffer=null;
 		SortedBranchedStringListsResult sortedBranchedStringListsResultForward=null,
 				sortedBranchedStringListsResultBackward	=null;	
-
+		
+		InputPort in1 = this.getInputPorts().get(INPUT_TEXT1_ID);
+		InputPort in2 = this.getInputPorts().get(INPUT_TEXT2_ID);
+		
+		BufferedReader bufReader1, bufReader2=null;
+		
+		
 		try {			
 			
 			System.out.println("XX vor TextReader1");
+			
 			// actually build the trees
-			final BufferedReader bufReader1 = new BufferedReader(
-					this.getInputPorts().get(INPUT_TEXT1_ID).getInputReader());
+			if (in1.isConnected()) {
+				bufReader1 = new BufferedReader(in1.getInputReader());
 			
 			
-			System.out.println("XX vor SuffixTree1");
-			final SuffixTree suffixTree1 = GST.buildGST(bufReader1,null);
-			System.out.println("XX vor TextReader2");
-			final BufferedReader bufReader2 = new BufferedReader(
-					this.getInputPorts().get(INPUT_TEXT2_ID).getInputReader());
-			System.out.println("XX vor SuffixTree2");
-			final SuffixTree suffixTree2 = GST.buildGST(bufReader2,null);
+				
 			
-			System.out.println("XXSuffixTrees Built");
+				System.out.println("vor SuffixTree1");			
+				final SuffixTree suffixTree1 = GST.buildGST(bufReader1,null);
+				System.out.println("vor SuffixTree2");
+			
+				if (in2.isConnected()) {
+					
+					bufReader2 = new BufferedReader(
+					in2.getInputReader());
+					final SuffixTree suffixTree2 = GST.buildGST(bufReader2,null);
+			
+					System.out.println("XXSuffixTrees Built");
 			
 			
-			// 
-			ResultToMorphListListener resultToMorphListListener1=
-					new ResultToMorphListListener(suffixTree1,false);
-			TreeWalker.walk(suffixTree1.getRoot(), suffixTree1, 
-			resultToMorphListListener1);
-			System.out.println("XX vor branchedStringElementList1");
-			//ArrayList<BranchedStringBufferElement> branchedStringElementList1=
+				
+					ResultToMorphListListener resultToMorphListListener1=
+							new ResultToMorphListListener(suffixTree1,false);
+					TreeWalker.walk(suffixTree1.getRoot(), suffixTree1, 
+						resultToMorphListListener1);
+					System.out.println("XX vor branchedStringElementList1");
+					//ArrayList<BranchedStringBufferElement> branchedStringElementList1=
 			
-			sortedBranchedStringListsResultForward=
-			resultToMorphListListener1.generateSortedBranchedStringList();
-			ArrayList<BranchedStringBufferElement> branchedStringElementListForward=
-			sortedBranchedStringListsResultForward.firstBranchedStringBufferElementList;
-			//System.out.println();System.out.println();System.out.println();
-			ResultToMorphListListener resultToMorphListListener2=
-					new ResultToMorphListListener(suffixTree2,true);
-			TreeWalker.walk(suffixTree2.getRoot(), suffixTree2, 
+					sortedBranchedStringListsResultForward=
+						resultToMorphListListener1.generateSortedBranchedStringList();
+					ArrayList<BranchedStringBufferElement> branchedStringElementListForward=
+						sortedBranchedStringListsResultForward.firstBranchedStringBufferElementList;
+					//System.out.println();System.out.println();System.out.println();
+					ResultToMorphListListener resultToMorphListListener2=
+							new ResultToMorphListListener(suffixTree2,true);
+					TreeWalker.walk(suffixTree2.getRoot(), suffixTree2, 
 					resultToMorphListListener2);
-			//System.out.println("XX vor branchedStringElementList2");
-			sortedBranchedStringListsResultBackward=
-			resultToMorphListListener2.generateSortedBranchedStringList();
-			//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-			ArrayList<BranchedStringBufferElement> branchedStringElementListBackwardForwarded=
-			sortedBranchedStringListsResultBackward.firstBranchedStringBufferElementList;
-			ArrayList<BranchedStringBufferElement> branchedStringElementListBackward=
+					//System.out.println("XX vor branchedStringElementList2");
+					sortedBranchedStringListsResultBackward=
+						resultToMorphListListener2.generateSortedBranchedStringList();
+					//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+					ArrayList<BranchedStringBufferElement> branchedStringElementListBackwardForwarded=
+						sortedBranchedStringListsResultBackward.firstBranchedStringBufferElementList;
+					ArrayList<BranchedStringBufferElement> branchedStringElementListBackward=
 					sortedBranchedStringListsResultBackward.secondBranchedStringBufferElementList;		
-			// print resulted branchedStringLists
-			/*System.out.print("branchedStringElementList1 ");
-			resultToMorphListListener1.printBranchedStringElementList(branchedStringElementList1,false);
-			System.out.print("branchedStringElementList2 ");
-			resultToMorphListListener2.printBranchedStringElementList(branchedStringElementList2,false);
-			*/
-			// generate list of logical or
-			System.out.print("branchedStringElementListOR ");
-			ArrayList<ExtendedBranchedStringBufferElement> branchedStringElementListOr=
-				resultToMorphListListener1.logOp(branchedStringElementListForward,
+					// print resulted branchedStringLists
+					//System.out.print("branchedStringElementList1 ");
+					//resultToMorphListListener1.printBranchedStringElementList(branchedStringElementList1,false);
+					//System.out.print("branchedStringElementList2 ");
+					//resultToMorphListListener2.printBranchedStringElementList(branchedStringElementList2,false);
+					 //
+					// generate list of logical or
+					System.out.println("branchedStringElementListOR ");
+					ArrayList<ExtendedBranchedStringBufferElement> branchedStringElementListOr=
+							resultToMorphListListener1.logOp(branchedStringElementListForward,
 						branchedStringElementListBackwardForwarded,new LogOpOR());	
-			//System.out.print("branchedStringElementListOr ");
+					System.out.print("branchedStringElementListOr ");
 		
-			outputBuffer=
-			resultToMorphListListener1.resultBranchedStringElementList(branchedStringElementListOr);
+					outputBuffer=
+						resultToMorphListListener1.resultBranchedStringElementList(branchedStringElementListOr);
 			
-			String outputString = outputBuffer.toString();
-			System.out.println(" outputString:");
-			System.out.println(outputString);
+					String outputString = outputBuffer.toString();
+					System.out.println(" outputString:");
+					System.out.println(outputString);
 			
-			System.out.println("----------------------------------------------------------------");
-			resultToMorphListListener1.prepareEvaluation(branchedStringElementListOr);
-			// Write to outputs
-			this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(outputString);
+					System.out.println("----------------------------------------------------------------");
+					resultToMorphListListener1.prepareEvaluation(branchedStringElementListOr);
+					// Write to outputs
+					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(outputString);
+					
+					// Close outputs (important!)
+					//this.closeAllOutputs();
+				} else throw new Exception("in2 not connected");
 			
-			// Close outputs (important!)
-			this.closeAllOutputs();
-			
-			
+			} else throw new Exception("in1 not connected");
 		} catch (Exception e) {
 			result = false;
 			throw e;
