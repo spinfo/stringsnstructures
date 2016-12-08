@@ -75,6 +75,7 @@ import modules.input_output.SmbFileWriterModule;
 import modules.kwip.KeyWordInPhraseModule;
 import modules.kwip.KwipBowMatrixModule;
 import modules.lfgroups.LFGroupBuildingModule;
+import modules.matrix.AngAnalysisModule;
 import modules.matrix.BowTypeMatrixModule;
 import modules.matrix.CosineDistanceModule;
 import modules.matrix.MatrixBitwiseOperationModule;
@@ -140,16 +141,22 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		 * INSTANTIATE MODULES BELOW
 		 */
 		
+		// Prepare AngAnalysisModule module
+		Properties angAnalysisModuleProperties = new Properties();
+		AngAnalysisModule angAnalysisModule = new AngAnalysisModule(moduleNetwork, angAnalysisModuleProperties);
+		angAnalysisModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, angAnalysisModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		angAnalysisModule.applyProperties();
+		
 		// Prepare FileFinderModule module
-		Properties oancProperties = new Properties();
-		FileFinderModule fileFinderModule = new FileFinderModule(moduleNetwork, oancProperties);
-		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileFinderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		Properties fileFinderProperties = new Properties();
+		FileFinderModule fileFinderModule = new FileFinderModule(moduleNetwork, fileFinderProperties);
+		fileFinderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileFinderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		fileFinderModule.applyProperties();
 		
 		// Prepare CosineDistanceModule module
 		Properties cosineDistProperties = new Properties();
 		CosineDistanceModule cosineDistanceModule = new CosineDistanceModule(moduleNetwork, cosineDistProperties);
-		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, cosineDistanceModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		cosineDistProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, cosineDistanceModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		cosineDistanceModule.applyProperties();
 
 		// Prepare FileWriter module
@@ -686,6 +693,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
 		
+		availableModules.put(angAnalysisModule.getName(),angAnalysisModule);
 		availableModules.put(contextsModule.getName(),contextsModule);
 		availableModules.put(cosineDistanceModule.getName(),cosineDistanceModule);
 		availableModules.put(multiFileReader.getName(),multiFileReader);
