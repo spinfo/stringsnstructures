@@ -86,6 +86,7 @@ public class CosineDistanceModule extends ModuleImpl {
 						selection = new TreeSet<String>(Arrays.asList(header.split(delimiter)));
 					}
 					processedHeader = true;
+					System.out.println(selection);
 					continue;
 				}
 				
@@ -98,8 +99,7 @@ public class CosineDistanceModule extends ModuleImpl {
 					currVector[i] = Double.valueOf(split[i]);
 				}
 				
-				if (selection != null && selection.contains(currTerm))
-					vectors.put(currTerm, currVector);
+				vectors.put(currTerm, currVector);
 			}
 			
 			selection.retainAll(vectors.keySet());
@@ -116,8 +116,8 @@ public class CosineDistanceModule extends ModuleImpl {
 			for (Entry<String, Double[]> e : vectors.entrySet()){
 				sb.append(e.getKey());
 				sb.append(delimiter);
-				for (Entry<String, Double[]> e2 : vectors.entrySet()){
-					sb.append(distance(e.getValue(), e2.getValue()));
+				for (String s : selection){
+					sb.append(distance(e.getValue(), vectors.get(s)));
 					sb.append(delimiter);
 				}
 				out.outputToAllCharPipes(sb.toString() + ModuleWorkbenchController.LINEBREAK);
@@ -140,8 +140,8 @@ public class CosineDistanceModule extends ModuleImpl {
 	
 	private double distance(Double[] vector1, Double[] vector2) {
         double sum = 0.0;
-        for(int i=0;i<vector1.length;i++)
-           sum = sum + Math.pow((vector1[i]-vector2[i]),2.0);
+        for(int i = 0; i < vector1.length; i++)
+           sum = sum + Math.pow((vector1[i] - vector2[i]), 2.0);
         return Math.sqrt(sum);
     }
 	
