@@ -79,7 +79,7 @@ public class SegmentJoinerModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT_STRING, ";");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT_GROUP, "\\n");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUT_ORIGINAL, "true");
-		this.getPropertyDefaultValues().put(PROPERTYKEY_REVERSE_SEGMENTING, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_REVERSE_SEGMENTING, "false");
 		
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "Plain text character input.", this);
@@ -191,7 +191,7 @@ public class SegmentJoinerModule extends ModuleImpl {
 		if (outputOriginal_string != null)
 			this.outputOriginal = Boolean.parseBoolean(outputOriginal_string);
 		String reverseSegmenting_string = this.getProperties().getProperty(PROPERTYKEY_REVERSE_SEGMENTING, this.getPropertyDefaultValues().get(PROPERTYKEY_REVERSE_SEGMENTING));
-		if (outputOriginal_string != null)
+		if (reverseSegmenting_string != null)
 			this.reverseSegmenting = Boolean.parseBoolean(reverseSegmenting_string);
 		
 		// Apply parent object's properties (just the name variable actually)

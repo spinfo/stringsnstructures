@@ -35,11 +35,14 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.BadLocationException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -54,13 +57,14 @@ import modules.NotFoundException;
 import modules.NotSupportedException;
 import modules.OccupiedException;
 import modules.OutputPort;
+import javax.swing.JTextField;
 
 /**
  * Provides a GUI to create/edit/run module trees.
  * @author Marcel Boeing
  *
  */
-public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, TreeSelectionListener, MouseListener {
+public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, TreeSelectionListener, MouseListener, DocumentListener {
 	
 	// Keywords used to identify actions
 	protected static final String ACTION_CLEARMODULENETWORK = "ACTION_CLEARMODULENETWORK";
@@ -72,6 +76,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	protected static final String ACTION_LOADNETWORK = "ACTION_LOADNETWORK";
 	protected static final String ACTION_SAVENETWORK = "ACTION_SAVENETWORK";
 	protected static final String ACTION_ACTIVATEPORT = "ACTION_ACTIVATEPORT";
+	protected static final String ACTION_CLEARSEARCH = "ACTION_CLEARSEARCH";
 
 	// Icons
 	public static final ImageIcon ICON_APP = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/app.png"));
@@ -83,6 +88,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	public static final ImageIcon ICON_EDIT_MODULE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/configure.png"));
 	public static final ImageIcon ICON_SAVE = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/save.png"));
 	public static final ImageIcon ICON_LOAD = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/open.png"));
+	public static final ImageIcon ICON_CLEARLEFT = new ImageIcon(ModuleWorkbenchGui.class.getResource("/icons/clear_left.png"));
 	
 	// Standard text snippets
 	public static final String WINDOWTITLE = "Module Workbench - ";
@@ -103,6 +109,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	private ModuleNetworkGlasspane moduleConnectionGlasspane; // Glasspane to draw module port connections onto
 	private Map<Module,ModulePropertyEditor> modulePropertyEditors; // Map to associate each module with its property editor dialogue
 	private File lastChosenFile = null; // Used to keep track of where to store / load from within the file system
+	private JTextField txtSearchmodulesfield;
 
 	/**
 	 * Launch the application.
@@ -172,6 +179,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		DefaultMutableTreeNode moduleTemplateTreeRootNode = new DefaultMutableTreeNode("Modules");
 		DefaultTreeModel moduleTemplateTreeModel = new DefaultTreeModel(moduleTemplateTreeRootNode);
 		moduleTemplateTree = new JTree(moduleTemplateTreeModel);
+		moduleTemplateTree.setRowHeight(0);
 		moduleTemplateTree.setCellRenderer(new ModuleJTreeCellRenderer());
 		ToolTipManager.sharedInstance().registerComponent(moduleTemplateTree);
 		moduleTemplateTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -227,6 +235,23 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		availableModulesScrollPane.add(moduleTemplateTree);
 		availableModulesScrollPane.setViewportView(moduleTemplateTree);
 		availableModulesPanel.add(availableModulesScrollPane);
+		
+		JPanel panel_1 = new JPanel();
+		availableModulesPanel.add(panel_1, BorderLayout.SOUTH);
+		
+		// Search field
+		txtSearchmodulesfield = new JTextField();
+		txtSearchmodulesfield.getDocument().addDocumentListener(this);
+		panel_1.add(txtSearchmodulesfield);
+		txtSearchmodulesfield.setColumns(10);
+		
+		// Clear search field button
+		JButton btnClearsearchbutton = new JButton();
+		btnClearsearchbutton.setActionCommand(ACTION_CLEARSEARCH);
+		btnClearsearchbutton.addActionListener(this);
+		btnClearsearchbutton.setToolTipText("clears the search field, resetting the module list");
+		btnClearsearchbutton.setIcon(ICON_CLEARLEFT);
+		panel_1.add(btnClearsearchbutton);
 		
 		// Panel for the module network editor
 		JPanel moduleNetworkPanel = new JPanel();
@@ -443,6 +468,9 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 		} else if (e.getActionCommand().equals(ACTION_ADDMODULETONETWORK)){
 			this.actionAddModule();
+			
+		} else if (e.getActionCommand().equals(ACTION_CLEARSEARCH)){
+			this.txtSearchmodulesfield.setText("");
 			
 		} else if (e.getActionCommand().equals(ACTION_DELETEMODULEFROMNETWORK)){
 			
@@ -954,5 +982,60 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			this.selectedModuleTemplate = (Module) selectedNode.getUserObject();
 		else
 			this.selectedModuleTemplate = null;
+	}
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {
+		// Check whether the event originates from the module list search field
+		if (e.getDocument().equals(txtSearchmodulesfield.getDocument())) {
+			try {
+				this.filterModuleList(e.getDocument().getText(0, e.getDocument().getLength()));
+				this.moduleTemplateTree.revalidate();
+				this.moduleTemplateTree.repaint();
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void removeUpdate(DocumentEvent e) {
+		// Check whether the event originates from the module list search field
+		if (e.getDocument().equals(txtSearchmodulesfield.getDocument())) {
+			try {
+				this.filterModuleList(e.getDocument().getText(0, e.getDocument().getLength()));
+				this.moduleTemplateTree.revalidate();
+				this.moduleTemplateTree.repaint();
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
+	}
+	
+	/**
+	 * Filters the list of available modules according to the specified search string (nonmatching entries will be hidden).
+	 * @param filterString String to filter by
+	 */
+	private void filterModuleList(String filterString) {
+
+		// Check length of search string
+		if (filterString == null || filterString.length() == 0) {
+			// If the search string is empty, we will reset the module list
+			// to display all available modules
+			ModuleJTreeCellRenderer renderer = (ModuleJTreeCellRenderer) moduleTemplateTree.getCellRenderer();
+			renderer.setFilterString(filterString);
+			
+
+		} else if (filterString.length() > 2) {
+			// If the search string consists of at least three characters,
+			// we will update the module list accordingly
+			ModuleJTreeCellRenderer renderer = (ModuleJTreeCellRenderer) moduleTemplateTree.getCellRenderer();
+			renderer.setFilterString(filterString);
+		}
+
 	}
 }
