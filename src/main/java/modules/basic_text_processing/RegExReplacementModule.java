@@ -1,5 +1,7 @@
 package modules.basic_text_processing;
 
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 import java.util.Properties;
 import java.util.regex.PatternSyntaxException;
 import modules.CharPipe;
@@ -90,6 +92,10 @@ public class RegExReplacementModule extends ModuleImpl {
 			
 			// Convert char array to string
 			String inputChunk = new String(bufferInput).substring(0, readCharsInput);
+			
+			//Normalize to NFC
+			inputChunk = Normalizer.normalize(inputChunk, Form.NFC);
+			
 			// Process data
 			String outputChunk="";
 			try {

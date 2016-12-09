@@ -109,10 +109,12 @@ public class SegmentJoinerModule extends ModuleImpl {
 				this.closeAllOutputs();
 				throw new InterruptedException("Thread has been interrupted.");
 			}
-
-			// Split next string into segments
-			String[] segments = stringInputScanner.next().split(this.inputdelimiter_segment);
 			
+			String str=stringInputScanner.next();
+			System.out.println("String for segmentation: "+str);
+			// Split next string into segments
+			//String[] segments = stringInputScanner.next().split(this.inputdelimiter_segment);
+			String[] segments = str.split(this.inputdelimiter_segment);
 			// Index variable for loop over different segmentation possibilities
 			int i=0;
 			
@@ -121,26 +123,39 @@ public class SegmentJoinerModule extends ModuleImpl {
 				i=-1;
 			
 			// Loop over different segmentation possibilities
+			
+			// JR control only prefix, suffix:
+			String prefix="";
 			for (; i<segments.length-1; i++){
-				
+				prefix=prefix+segments[i];
+			    System.out.print(prefix);	
 				// Loop over segments
+			    
+			    String suffix="";
 				for (int j=0; j<segments.length; j++){
+					
+					if (j>i)suffix=suffix+segments[j];
 					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(segments[j]);
-
+					
 					// Conditionally omit delimiter
 					if (this.reverseSegmenting){
 						if (i==j && (j+1)<segments.length)
 							this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_segment);
 					} else {
-						if (i!=j && (j+1)<segments.length)
+						if (i!=j && (j+1)<segments.length){
 							this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_segment);
+							//suffix=suffix+segments[j];
+						}
 					}
 				}
+				if (suffix.length()>0)	
+				System.out.println("|"+suffix);
+				else System.out.println();
 				// Omit delimiter if this is the last segment
 				if ((i+1)<segments.length-1)
 					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_string);
 			}
-			
+			System.out.println();
 			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter_group);
 		}
 

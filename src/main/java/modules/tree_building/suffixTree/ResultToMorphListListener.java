@@ -265,7 +265,7 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 		}
 		
 		public ArrayList<ExtendedBranchedStringBufferElement>logOp(ArrayList<BranchedStringBufferElement>l1,
-				ArrayList<BranchedStringBufferElement>l2, ILogOp il ) {
+				ArrayList<BranchedStringBufferElement>l2, ILogOp il ) throws Exception{
 			// necessary precondition in1 and in2 contain identical strings
 			// ??toDo throw exception if not??
 			ArrayList<ExtendedBranchedStringBufferElement>resList=new ArrayList<ExtendedBranchedStringBufferElement>();
@@ -281,6 +281,9 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 					
 						{System.out.println("logOp ungleiche Zeichenketten: "+
 							l1.get(i).stringBuffer+ "  "+l2.get(i).stringBuffer);
+						for (int j=0;j<l1.size();j++){
+							System.out.println(l1.get(j).stringBuffer+ "  "+l2.get(j).stringBuffer);
+						};
 						throw new Exception(l1.get(i).stringBuffer+ "  "+l2.get(i).stringBuffer);
 						};
 					BitSet resOp=il.logOperation(l1.get(i).bitSet,l2.get(i).bitSet);
@@ -295,7 +298,7 @@ public class ResultToMorphListListener  implements ITreeWalkerListener{
 				catch (Exception e){System.out.println
 				(" error in ResultTpMorphListListener.logOp: strings not equal"+
 				e.getMessage());
-				
+				throw e;
 				}
 				
 			
