@@ -132,7 +132,7 @@ public class NamedFieldMatrixTest {
 			threwException = true;
 		}
 		assertTrue(threwException);
-		
+
 		// setting an array with too few cols should fail
 		double[][] valuesFewCols = { { 10.1, 10.2, 10.3 }, { 20.1, 20.2 } };
 		threwException = false;
@@ -142,6 +142,39 @@ public class NamedFieldMatrixTest {
 			threwException = true;
 		}
 		assertTrue(threwException);
+	}
+
+	@Test
+	public void testHammingDistances() {
+		NamedFieldMatrix matrix = makeTestMatrix();
+
+		// initially all values are different and the distance should be 3
+		// (amounts of cols in test matrix) or 2 (amount of rows in test matrix)
+		assertTrue(matrix.getHammingDistanceForRows(0, 1) == 3);
+		assertTrue(matrix.getHammingDistanceForRows(1, 0) == 3);
+		assertTrue(matrix.getHammingDistanceForColumns(0, 1) == 2);
+		assertTrue(matrix.getHammingDistanceForColumns(0, 2) == 2);
+		assertTrue(matrix.getHammingDistanceForColumns(1, 0) == 2);
+		assertTrue(matrix.getHammingDistanceForColumns(1, 2) == 2);
+		assertTrue(matrix.getHammingDistanceForColumns(2, 0) == 2);
+		assertTrue(matrix.getHammingDistanceForColumns(2, 1) == 2);
+
+		// but the distance between same rows should always be zero
+		assertTrue(matrix.getHammingDistanceForRows(0, 0) == 0);
+		assertTrue(matrix.getHammingDistanceForRows(1, 1) == 0);
+		assertTrue(matrix.getHammingDistanceForColumns(0, 0) == 0);
+		assertTrue(matrix.getHammingDistanceForColumns(1, 1) == 0);
+		assertTrue(matrix.getHammingDistanceForColumns(2, 2) == 0);
+
+		// setting a value at the same row position should change the distance
+		// (previous value minus 1)
+		matrix.setValue("set2", "data1", matrix.getValue("set1", "data1"));
+		assertTrue(matrix.getHammingDistanceForRows(0, 1) == 2);
+
+		// setting a value at the same col position should change the distance
+		// (previous value minus 1)
+		matrix.setValue("set2", "data1", matrix.getValue("set2", "data2"));
+		assertTrue(matrix.getHammingDistanceForColumns(0, 1) == 1);
 	}
 
 	private NamedFieldMatrix makeTestMatrix() {

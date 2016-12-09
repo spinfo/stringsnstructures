@@ -148,7 +148,8 @@ public class NamedFieldMatrix {
 	 * @param values
 	 *            The new values to use.
 	 * @throws IllegalArgumentException
-	 *             If the provided array does not match the previous matrix' column and row dimensions.
+	 *             If the provided array does not match the previous matrix'
+	 *             column and row dimensions.
 	 */
 	public void setValues(double[][] values) {
 		// check rows array
@@ -322,6 +323,102 @@ public class NamedFieldMatrix {
 	 */
 	public String getRowName(int rowNo) {
 		return rowsToRowNames.get(rowNo);
+	}
+
+	/**
+	 * Returns the hamming distance (no. of differing values) between two rows.
+	 * 
+	 * @param row1
+	 *            First row to compare.
+	 * @param row2
+	 *            Second row to compare.
+	 * @return The amount of differing values in both rows.
+	 */
+	public int getHammingDistanceForRows(int row1, int row2) {
+		if (row1 >= rowAmount)
+			throw new IllegalArgumentException("Row not set: " + row1);
+		if (row2 >= rowAmount)
+			throw new IllegalArgumentException("Row not set: " + row2);
+
+		int distance = 0;
+
+		for (int i = 0; i < colAmount; i++) {
+			if (Double.compare(values[row1][i], values[row2][i]) != 0) {
+				distance += 1;
+			}
+		}
+
+		return distance;
+	}
+
+	/**
+	 * Returns the hamming distance (no. of differing values) between two rows.
+	 * 
+	 * @param row1
+	 *            Name of first row to compare.
+	 * @param row2
+	 *            Name of second row to compare.
+	 * @return The amount of differing values in both rows.
+	 */
+	public int getHammingDistanceForRows(String row1, String row2) {
+		Integer rowNo1 = getRowNo(row1);
+		if (rowNo1 == null)
+			throw new IllegalArgumentException("No row for name: " + row1);
+
+		Integer rowNo2 = getRowNo(row2);
+		if (rowNo2 == null)
+			throw new IllegalArgumentException("No row for name: " + row2);
+
+		return getHammingDistanceForRows(rowNo1, rowNo2);
+	}
+
+	/**
+	 * Returns the hamming distance (no. of differing values) between two
+	 * columns.
+	 * 
+	 * @param row1
+	 *            First column to compare.
+	 * @param row2
+	 *            Second column to compare.
+	 * @return The amount of differing values in both columns.
+	 */
+	public int getHammingDistanceForColumns(int col1, int col2) {
+		if (col1 >= colAmount)
+			throw new IllegalArgumentException("Column not set: " + col1);
+		if (col2 >= colAmount)
+			throw new IllegalArgumentException("Column not set: " + col2);
+
+		int distance = 0;
+
+		for (int i = 0; i < rowAmount; i++) {
+			if (Double.compare(values[i][col1], values[i][col2]) != 0) {
+				distance += 1;
+			}
+		}
+
+		return distance;
+	}
+	
+	/**
+	 * Returns the hamming distance (no. of differing values) between two
+	 * columns.
+	 * 
+	 * @param row1
+	 *            Name of first column to compare.
+	 * @param row2
+	 *            Name of second column to compare.
+	 * @return The amount of differing values in both columns.
+	 */
+	public int getHammingDistanceForColumns(String col1, String col2) {
+		Integer colNo1 = getColumnNo(col1);
+		if (colNo1 == null)
+			throw new IllegalArgumentException("No col for name: " + col1);
+
+		Integer colNo2 = getColumnNo(col2);
+		if (colNo2 == null)
+			throw new IllegalArgumentException("No col for name: " + col2);
+
+		return getHammingDistanceForColumns(colNo1, colNo2);
 	}
 
 	/**
