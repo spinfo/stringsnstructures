@@ -127,7 +127,8 @@ public class SegmentMatrixModule extends ModuleImpl {
 					coOccurrenceMatrix.get(segments[i]).add(segments[i+1]);
 				}
 				
-				// TODO Right now, the matrix will contain only the information, whether a segment-type follows another. This might be extended in the future if need arises.
+				// TODO Right now, the matrix will contain only the information, whether a segment-type follows another. 
+				// This might be extended in the future if need arises.
 			}
 		}
 

@@ -141,6 +141,18 @@ public class SegmentMatrixAnalyzeModule extends ModuleImpl {
 
 		return NamedFieldMatrix.parseCSV(matrixReader, this.inputCsvDelim);
 	}
+	
+	// TO DO get row name
+	private void hammingDistance(NamedFieldMatrix matrix) {
+		for (int i = 0; i < matrix.getRowAmount(); i++) {
+			double[] row = matrix.getRow(i);
+			
+			for (int j = 0; j < matrix.getRowAmount(); j++) {
+				double[] row2 = matrix.getRow(j);
+				
+			}
+		}
+	}
 
 	@Override
 	public void applyProperties() throws Exception {
