@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
@@ -22,6 +24,7 @@ public class FileReaderModule extends ModuleImpl {
 	public static final String PROPERTYKEY_USEGZIP = "Use GZIP";
 	public static final String PROPERTYKEY_ENCODING = "Encoding";
 	public static final String PROPERTYKEY_BUFFERLENGTH = "Buffer length";
+	public static final String PROPERTYKEY_NORMALIZE = "Normalize Unicode";
 
 	// Local variables
 	private final String OUTPUTID = "output";
@@ -29,6 +32,7 @@ public class FileReaderModule extends ModuleImpl {
 	private boolean useGzip = false;
 	private String encoding;
 	private int bufferLength = 8192;
+	private boolean normalizeUtf = true;
 
 	public FileReaderModule(CallbackReceiver callbackReceiver,
 			Properties properties) throws Exception {
@@ -55,6 +59,8 @@ public class FileReaderModule extends ModuleImpl {
 						"The text encoding of the input file (if applicable, else set to empty string)");
 		this.getPropertyDescriptions().put(PROPERTYKEY_BUFFERLENGTH,
 				"Length of the I/O buffer");
+		this.getPropertyDescriptions().put(PROPERTYKEY_NORMALIZE,
+				"Normalize Unicode input text to composed form (see http://unicode.org/reports/tr15/). Only valid for char pipe output. [true|false]");
 
 		// Add default values
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME,
@@ -64,6 +70,7 @@ public class FileReaderModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_USEGZIP, "false");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ENCODING, "UTF-8");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_BUFFERLENGTH, "8192");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_NORMALIZE, "true");
 
 		// Add module description
 		this.setDescription("Reads contents from a file. Can handle GZIP compression.");
@@ -145,7 +152,17 @@ public class FileReaderModule extends ModuleImpl {
 						throw new InterruptedException(
 								"Thread has been interrupted.");
 					}
-					this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(buffer, 0, readChars);
+					
+					// Check if we need to normalize the input's UTF encoding
+					if (this.normalizeUtf){
+						String normalized = Normalizer.normalize(String.valueOf(buffer, 0, readChars), Form.NFC);
+						// Output normalized string
+						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(normalized);
+					} else
+						// Output the char buffer unchanged
+						this.getOutputPorts().get(OUTPUTID).outputToAllCharPipes(buffer, 0, readChars);
+					
+					// Read next batch of characters
 					readChars = fileReader.read(buffer);
 				}
 
@@ -187,6 +204,9 @@ public class FileReaderModule extends ModuleImpl {
 		if (this.getProperties().containsKey(PROPERTYKEY_BUFFERLENGTH))
 			this.bufferLength = Integer.parseInt(this.getProperties()
 					.getProperty(PROPERTYKEY_BUFFERLENGTH));
+		if (this.getProperties().containsKey(PROPERTYKEY_NORMALIZE))
+			this.normalizeUtf = Boolean.parseBoolean(this.getProperties()
+					.getProperty(PROPERTYKEY_NORMALIZE));
 		super.applyProperties();
 	}
 
