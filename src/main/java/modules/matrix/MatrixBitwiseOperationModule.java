@@ -27,6 +27,18 @@ import modules.OutputPort;
  */
 import base.workbench.ModuleRunner;
 
+
+final class ExtMap {
+	Map<String,BitSet> map=null;
+	String [] headers=null;
+	ExtMap(Map <String,BitSet>bitsets,String[]h){
+		this.map=bitsets;
+		this.headers=h;
+	}
+	
+}
+
+
 public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	// Main method for stand-alone execution
@@ -34,6 +46,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		ModuleRunner.runStandAlone(MatrixBitwiseOperationModule.class, args);
 	}
 
+	
 
 	private static final String MODULE_DESC = "Module interprets either rows or columns of an input matrix as binary bitsets"
 			+ " and performs symmetrical operations (AND, OR, XOR) on these bitsets. Output"
@@ -55,7 +68,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	private static enum Operation {
 		AND, OR, XOR
 	};
-
+	
+	
 	private static final String PROPERTYKEY_OPERATION = "operation";
 
 	// A boolean deciding whether to operate on columns or rows of a table and a
@@ -68,9 +82,14 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	// Properties for controlling which rows/columns are compared
 	private static final String PROPERTYKEY_OPERATE_REFLEXIVE = "Reflexive";
+	
+	
 
 	public MatrixBitwiseOperationModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
+		
+		
+
 
 		// set module name and description
 		this.setName("Matrix Bitwise Operation Module");
@@ -114,9 +133,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		boolean result = true;
 		//-------------
 		String best1Str="";String best2Str="";int maxNrBits=-1;
-		final Map<String, BitSet> bitsets;
-		//jr
-		final Map<String, BitSet> bitsetsX;
+		final ExtMap extBitsets;
+		Map<String,BitSet> bitsets=null;
+		
 		NamedFieldMatrix outMatrix=null;
 		BitSet resBitSet=null;
 		//-------------
@@ -136,10 +155,12 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			// read the input
 			// s. above, by JR final Map<String, BitSet> bitsets;
 			if (useRows) {
-				bitsets = readInputRows(inputReader, inputSeparator);
-				bitsetsX=readInputCols(inputReader, inputSeparator);
+				extBitsets = readInputRows(inputReader, inputSeparator);
+				bitsets=extBitsets.map;
+				
 			} else {
-				bitsets = readInputCols(inputReader, inputSeparator);
+				extBitsets = readInputCols(inputReader, inputSeparator);
+				bitsets=extBitsets.map;
 			}
 			inputReader.close();
 
@@ -157,7 +178,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 			int productVal=0;
 			
-			for (String name1 : bitsets.keySet()) {
+			for (String name1 : extBitsets.map.keySet()) {
 				System.out.println("MatrixBitwiseOperationModule: "+name1+
 						";");
 				operand1 = bitsets.get(name1);
@@ -225,7 +246,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		
 		for (int colNo=0;colNo<resBitSet.length();colNo++){
 			if (resBitSet.get(colNo)) {
-			String colHeader=outMatrix.getColumnName(colNo);
+			String colHeader= //outMatrix.getRowName(colNo);
+					extBitsets.headers[colNo+1];
 			System.out.println(colNo+ "  "+colHeader);
 			}
 		}
@@ -236,13 +258,20 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	// convert each row of the input table to a BitSet mapped to it's row
 	// heading
-	private static Map<String, BitSet> readInputRows(BufferedReader reader, String inputSeparator) throws Exception {
-		Map<String, BitSet> result = new TreeMap<String, BitSet>();
+	private static ExtMap readInputRows(BufferedReader reader, String inputSeparator) throws Exception {
+		
 
 		// first parse the header row and discard it, only saving the amount of
 		// splits noticed to check for consistency
-		final int colAmount = reader.readLine().split(inputSeparator, -1).length;
-
+		
+		//-------------------------jr
+		String[]headers=reader.readLine().split(inputSeparator, -1);
+		Map <String,BitSet>bitsets=new TreeMap<String,BitSet>();
+		ExtMap result= new ExtMap(bitsets,headers);
+		//		Map<String, BitSet> result = new TreeMap<String, BitSet>();
+		
+		//final int colAmount = reader.readLine().split(inputSeparator, -1).length;
+		final int colAmount = headers.length;
 		// keep count of the row currently read for error messages
 		int i = 1;
 
@@ -266,7 +295,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				}
 			}
 			// commit the result
-			result.put(rowName, bitset);
+			result.map.put(rowName, bitset);
 		}
 
 		return result;
@@ -274,11 +303,17 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	// convert each column of the input table to a BitSet mapped to it's column
 	// heading
-	private static Map<String, BitSet> readInputCols(BufferedReader reader, String inputSeparator) throws Exception {
-		Map<String, BitSet> result = new TreeMap<String, BitSet>();
+	private static ExtMap readInputCols(BufferedReader reader, String inputSeparator) throws Exception {
+		
+		String[]headers=reader.readLine().split(inputSeparator, -1);
+		Map <String,BitSet>bitsets=new TreeMap<String,BitSet>();
+		ExtMap result= new ExtMap(bitsets,headers);
+		
+		//Map<String, BitSet> result = new TreeMap<String, BitSet>();
 
 		// get a list of column names from the table header
-		final String[] colNames = reader.readLine().split(inputSeparator, -1);
+		// final String[] colNames = reader.readLine().split(inputSeparator, -1);
+		final String[] colNames=headers;
 
 		String line = null;
 		String[] fields = null;
@@ -294,12 +329,12 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			// row name not needed, so j = 1
 			for (int j = 1; j < fields.length; j++) {
 				colName = colNames[j];
-				bitset = result.getOrDefault(colName, new BitSet());
+				bitset = result.map.getOrDefault(colName, new BitSet());
 				if (parseField(fields[j])) {
 					bitset.set(i - 1);
 				}
 				// commit result
-				result.put(colName, bitset);
+				result.map.put(colName, bitset);
 			}
 			i++;
 		}
