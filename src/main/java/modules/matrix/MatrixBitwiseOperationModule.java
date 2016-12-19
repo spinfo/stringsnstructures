@@ -112,6 +112,14 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	public boolean process() throws Exception {
 		boolean result = true;
+		//-------------
+		String best1Str="";String best2Str="";int maxNrBits=-1;
+		final Map<String, BitSet> bitsets;
+		//jr
+		final Map<String, BitSet> bitsetsX;
+		NamedFieldMatrix outMatrix=null;
+		BitSet resBitSet=null;
+		//-------------
 
 		// a reader to read input line by line
 		BufferedReader inputReader = new BufferedReader(getInputPorts().get(INPUT_ID).getInputReader());
@@ -126,9 +134,10 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			final String outputSeparator = this.getProperties().getProperty(PROPERTYKEY_OUTPUT_SEPARATOR);
 
 			// read the input
-			final Map<String, BitSet> bitsets;
+			// s. above, by JR final Map<String, BitSet> bitsets;
 			if (useRows) {
 				bitsets = readInputRows(inputReader, inputSeparator);
+				bitsetsX=readInputCols(inputReader, inputSeparator);
 			} else {
 				bitsets = readInputCols(inputReader, inputSeparator);
 			}
@@ -136,11 +145,18 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 			// build a matrix containing the result of applying the operation to
 			// each pair of BitSets
-			NamedFieldMatrix outMatrix = new NamedFieldMatrix();
+			// JR s. above (needed as result s.u.NamedFieldMatrix 
+			outMatrix = new NamedFieldMatrix();
 			BitSet operand1 = null;
 			BitSet operand2 = null;
 			BitSet product = null;
 			Double value = null;
+			
+			int difference=0;
+			
+			
+			int productVal=0;
+			
 			for (String name1 : bitsets.keySet()) {
 				System.out.println("MatrixBitwiseOperationModule: "+name1+
 						";");
@@ -164,7 +180,22 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 					operand2 = bitsets.get(name2);
 					product = performOperation(operand1, operand2, operation);
-					outMatrix.setValue(name1, name2, (double) countBitsSet(product));
+					productVal=countBitsSet(product);
+					outMatrix.setValue(name1, name2, (double) productVal);
+					if (productVal==difference) {
+						// how many bits are set in operand
+						BitSet helpBitSet= new BitSet();
+						BitSet bitsSetInOperand=
+								performOperation(operand1, helpBitSet, operation);
+						int res=countBitsSet(bitsSetInOperand);
+						if(res>maxNrBits){
+							 maxNrBits=res;
+							 best1Str= name1;
+							 best2Str=name2;
+							 resBitSet=operand1;
+						}
+						
+					}
 				}
 			}
 
@@ -188,7 +219,18 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			}
 			this.closeAllOutputs();
 		}
-
+		System.out.println("Best similarity: "+ best1Str+ "  "+best2Str+ " maxNrBits: "+
+		maxNrBits);
+		
+		
+		for (int colNo=0;colNo<resBitSet.length();colNo++){
+			if (resBitSet.get(colNo)) {
+			String colHeader=outMatrix.getColumnName(colNo);
+			System.out.println(colNo+ "  "+colHeader);
+			}
+		}
+		
+		
 		return result;
 	}
 
