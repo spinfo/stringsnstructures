@@ -142,6 +142,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			BitSet product = null;
 			Double value = null;
 			for (String name1 : bitsets.keySet()) {
+				System.out.println("MatrixBitwiseOperationModule: "+name1+
+						";");
 				operand1 = bitsets.get(name1);
 				for (String name2 : bitsets.keySet()) {
 					// If this combination was already calculated in a
