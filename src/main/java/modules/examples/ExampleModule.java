@@ -46,13 +46,16 @@ public class ExampleModule extends ModuleImpl {
 		// You can override the automatic category selection (for example if a module is to be shown in "deprecated")
 		//this.setCategory("Examples");
 
+		// the module's name is defined as a property
+		// Property key for module name is defined in parent class
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Example Module");
+
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_A, "Regular expression to use as segmentation delimiter for input A");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_B, "Regular expression to use as segmentation delimiter for input B");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER_OUTPUT, "String to insert as segmentation delimiter into the output");
 		
 		// Add property defaults (_should_ be provided for every property)
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Example Module"); // Property key for module name is defined in parent class
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_A, "[\\s]+");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_B, "[\\s]+");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_OUTPUT, "\t");
