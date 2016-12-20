@@ -136,660 +136,122 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		// Add jlist handler to logger
 		this.listLoggingHandler = new ListLoggingHandler();
 		Logger.getLogger("").addHandler(this.listLoggingHandler);
-		
-		// Define available modules TODO Load at runtime
-		
+
 		/*
 		 * INSTANTIATE MODULES BELOW
 		 */
+		createAndRegisterModule(FileFinderModule.class);
+		createAndRegisterModule(FileWriterModule.class);
+		createAndRegisterModule(SmbFileWriterModule.class);
+		createAndRegisterModule(OANCXMLParser.class);
+		createAndRegisterModule(FileReaderModule.class);
+		createAndRegisterModule(SmbFileReaderModule.class);
+		createAndRegisterModule(ConsoleWriterModule.class);
+		createAndRegisterModule(ConsoleReaderModule.class);
+		createAndRegisterModule(ExampleModule.class);
+		createAndRegisterModule(TreeBuilder.class);
+		createAndRegisterModule(AtomicRangeSuffixTrieBuilder.class);
+		createAndRegisterModule(SuffixNetBuilderModule.class);
+		createAndRegisterModule(ColourGraph.class);
+		createAndRegisterModule(ASCIIGraph.class);
+		createAndRegisterModule(ParadigmSegmenterModule.class);
+		createAndRegisterModule(CreateArtificialSeqs.class);
+		createAndRegisterModule(CreateArtificialSeqsContent.class);
+		createAndRegisterModule(SeqMemory.class);
+		createAndRegisterModule(SeqTreePropController.class);
+		createAndRegisterModule(SeqSuffixTrie2SuffixTreeController.class);
+		createAndRegisterModule(SeqNewickExporterController.class);
+		createAndRegisterModule(SeqNewickExporterControllerV2.class);
+		createAndRegisterModule(HalAdvancedModule.class);
+		createAndRegisterModule(RegExReplacementModule.class);
+		createAndRegisterModule(RegExLineFilterModule.class);
+		createAndRegisterModule(BagsOfWordsModule.class);
+		createAndRegisterModule(FilterModule.class);
+		createAndRegisterModule(KeyWordInPhraseModule.class);
+		createAndRegisterModule(PlainText2TreeBuilderConverter.class);
+		createAndRegisterModule(TreeBuilder2OutputController.class);
+		createAndRegisterModule(TreeBuilder2OutputControllerV2.class);
+		createAndRegisterModule(GeneralisedSuffixTreeModule.class);
+		createAndRegisterModule(BufferModule.class);
+		createAndRegisterModule(SuffixTreeClusteringModuleWrapper.class);
+		createAndRegisterModule(BagsOfWordsDistancesModule.class);
+		createAndRegisterModule(ReverserModule.class);
+		createAndRegisterModule(ExternalCommandModule.class);
+		createAndRegisterModule(TreeBuilderV2Module.class);
+		createAndRegisterModule(TreeBuilderV3Module.class);
+		createAndRegisterModule(ExampleRandString.class);
+		createAndRegisterModule(ExampleGsonSerialization.class);
+		createAndRegisterModule(ExampleGsonDeserialization.class);
+		createAndRegisterModule(ExtensibleTreeNode2GEXFModule.class);
+		createAndRegisterModule(SuffixTreeVectorizationWrapperController.class);
+		createAndRegisterModule(SuffixTreeClusteringWrapperV2.class);
+		createAndRegisterModule(LabelDataMergeModule.class);
+		createAndRegisterModule(TreeSimilarityClusteringModule.class);
+		createAndRegisterModule(SeqQueryController.class);
+		createAndRegisterModule(VectorAberrationCalculatorModule.class);
+		createAndRegisterModule(MinkowskiDistanceMatrixModule.class);
+		createAndRegisterModule(VectorMedianCalculatorModule.class);
+		createAndRegisterModule(GexfFilterModule.class);
+		createAndRegisterModule(SegmentJoinerModule.class);
+		createAndRegisterModule(SegmentMatrixModule.class);
+		createAndRegisterModule(ComparisonModule.class);
+		createAndRegisterModule(CaseChangerModule.class);
+		createAndRegisterModule(KwipBowMatrixModule.class);
+		createAndRegisterModule(SegmentationCheckModule.class);
+		createAndRegisterModule(MatrixColumnSumModule.class);
+		createAndRegisterModule(MatrixBitwiseOperationModule.class);
+		createAndRegisterModule(Dot2TreeController.class);
+		createAndRegisterModule(TreeIndexController.class);
+		createAndRegisterModule(MatrixEliminateOppositionalValuesModule .class);
+		createAndRegisterModule(MatrixRowColPairExtractorModule.class);
+		createAndRegisterModule(JoinModule.class);
+		createAndRegisterModule(BowTypeMatrixModule.class);
+		createAndRegisterModule(BurrowsWheelerTransformationModule.class);
+		createAndRegisterModule(MclModule.class);
+		createAndRegisterModule(CSV2GEXFModule.class);
+		createAndRegisterModule(TextSorterModule.class);
+		createAndRegisterModule(LFGroupBuildingModule.class);
+		createAndRegisterModule(BranchLengthGrouping.class);
+		createAndRegisterModule(MatrixFilterModule.class);
+		createAndRegisterModule(ExtensibleTreeNode2CSVModule.class);
+		createAndRegisterModule(MotifDetectionController.class);
+		createAndRegisterModule(SuffixTreeVector2CsvModule.class);
+		createAndRegisterModule(TextReducerModule.class);
+		createAndRegisterModule(GeneralizedSuffixTreesMorphologyModule.class);
+		createAndRegisterModule(SegmentsTransitionNetworkModule.class);
+		createAndRegisterModule(SegmentDistanceMatrixModule.class);
+		createAndRegisterModule(SegmentCombinerModule.class);
+		createAndRegisterModule(SegmentationApplyModule.class);
+		createAndRegisterModule(SegmentMatrixAnalyzeModule.class);
+		createAndRegisterModule(MorphologyCheckModule.class);
+		createAndRegisterModule(MatrixValuesExpressionApplyModule.class);
+	}
+	
+	/**
+	 * Instantiates a new module of the desired class along with a Properties object and makes
+	 * it available to the workbench.
+	 * @param clazz
+	 * 		A class of the desired type extending ModuleImpl and having a Constructor with
+	 * 		signature (CallbackReceiver, Properties)
+	 */
+	private void createAndRegisterModule(Class<? extends ModuleImpl> clazz) throws Exception {
+		// initiate a new Properties object for the module
+		Properties properties = new Properties();
 		
-		// Prepare FileFinderModule module
-		Properties oancProperties = new Properties();
-		FileFinderModule fileFinderModule = new FileFinderModule(moduleNetwork, oancProperties);
-		oancProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileFinderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		fileFinderModule.applyProperties();
-
-		// Prepare FileWriter module
-		Properties fileWriterProperties = new Properties();
-		FileWriterModule fileWriter = new FileWriterModule(moduleNetwork,
-				fileWriterProperties);
-		fileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		fileWriter.applyProperties();
-
-		// Prepare SmbFileWriter module
-		Properties smbFileWriterProperties = new Properties();
-		SmbFileWriterModule smbFileWriter = new SmbFileWriterModule(moduleNetwork,
-				smbFileWriterProperties);
-		smbFileWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, smbFileWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		smbFileWriter.applyProperties();
-
-		// Prepare FileFinderModule parser module
-		Properties oancParserProperties = new Properties();
-		OANCXMLParser oancParser = new OANCXMLParser(moduleNetwork,
-				oancParserProperties);
-		oancParserProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, oancParser.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		oancParser.applyProperties();
-
-		// Prepare FileReader module
-		Properties fileReaderProperties = new Properties();
-		FileReaderModule fileReader = new FileReaderModule(moduleNetwork,
-				fileReaderProperties);
-		fileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, fileReader.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		fileReader.applyProperties();
-
-		// Prepare SmbFileReader module
-		Properties smbFileReaderProperties = new Properties();
-		SmbFileReaderModule smbFileReader = new SmbFileReaderModule(moduleNetwork,
-				smbFileReaderProperties);
-		smbFileReaderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, smbFileReader.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		smbFileReader.applyProperties();
-
-		// Prepare ConsoleWriter module
-		Properties consoleWriterProperties = new Properties();
-		ConsoleWriterModule consoleWriter = new ConsoleWriterModule(moduleNetwork,
-				consoleWriterProperties);
-		consoleWriterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, consoleWriter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		consoleWriter.applyProperties();
-
-		// Prepare ExampleModule module
-		Properties exampleModuleProperties = new Properties();
-		ExampleModule exampleModule = new ExampleModule(moduleNetwork,
-				exampleModuleProperties);
-		exampleModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		exampleModule.applyProperties();
-
-		// Prepare TreeBuilder module
-		Properties treeBuilderModuleProperties = new Properties();
-		TreeBuilder treeBuilder = new TreeBuilder(moduleNetwork,
-				treeBuilderModuleProperties);
-		treeBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		treeBuilder.applyProperties();
-
-		// Prepare AtomicRangeSuffixTrieBuilder module
-		Properties atomicRangeSuffixTrieBuilderProperties = new Properties();
-		AtomicRangeSuffixTrieBuilder atomicRangeSuffixTrieBuilder = new AtomicRangeSuffixTrieBuilder(moduleNetwork,
-				atomicRangeSuffixTrieBuilderProperties);
-		atomicRangeSuffixTrieBuilderProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, atomicRangeSuffixTrieBuilder.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		atomicRangeSuffixTrieBuilder.applyProperties();
-
-		// Prepare SuffixNetBuilderModule module
-		Properties suffixNetBuilderModuleProperties = new Properties();
-		SuffixNetBuilderModule suffixNetBuilderModule = new SuffixNetBuilderModule(moduleNetwork,
-				suffixNetBuilderModuleProperties);
-		suffixNetBuilderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixNetBuilderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		suffixNetBuilderModule.applyProperties();
-
-		// Prepare ColourGraph module
-		Properties colourGraphModuleProperties = new Properties();
-		ColourGraph colourGraphModule = new ColourGraph(moduleNetwork,
-				colourGraphModuleProperties);
-		colourGraphModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, colourGraphModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		colourGraphModule.applyProperties();
-
-		// Prepare ASCIIGraph module
-		Properties asciiGraphModuleProperties = new Properties();
-		ASCIIGraph asciiGraphModule = new ASCIIGraph(moduleNetwork,
-				asciiGraphModuleProperties);
-		asciiGraphModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, asciiGraphModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		asciiGraphModule.applyProperties();
-
-		// Prepare ParadigmSegmenterModule module
-		Properties paradigmenErmittlerModulProperties = new Properties();
-		ParadigmSegmenterModule paradigmenErmittlerModul = new ParadigmSegmenterModule(moduleNetwork,
-				paradigmenErmittlerModulProperties);
-		paradigmenErmittlerModulProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, paradigmenErmittlerModul.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		paradigmenErmittlerModul.applyProperties();
+		// get the correct constructor of the module class
+		Constructor<? extends ModuleImpl> constructor = clazz.getDeclaredConstructor(CallbackReceiver.class, Properties.class);
 		
-		// Prepare CreateArtificialSeqs module
-		Properties createArtificialSeqsProperties = new Properties();
-		CreateArtificialSeqs createArtificialSeqs = new CreateArtificialSeqs(moduleNetwork,
-				createArtificialSeqsProperties);
-		createArtificialSeqsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, createArtificialSeqs.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		createArtificialSeqs.applyProperties();
+		// instantiate the new module of the given class clazz
+		ModuleImpl module = constructor.newInstance(moduleNetwork, properties);
 		
-		// Prepare CreateArtificialSeqsContent module
-		Properties createArtificialSeqsContentProperties = new Properties();
-		CreateArtificialSeqsContent createArtificialSeqsContent = new CreateArtificialSeqsContent(moduleNetwork,
-				createArtificialSeqsContentProperties);
-		createArtificialSeqsContentProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, createArtificialSeqsContent.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		createArtificialSeqsContent.applyProperties();
+		// set the name value of the new module in it's properties
+		properties.setProperty(ModuleImpl.PROPERTYKEY_NAME, module.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		
-		// Prepare SeqMemory module
-		Properties SeqMemoryProperties = new Properties();
-		SeqMemory seqMemory = new SeqMemory(moduleNetwork,
-				SeqMemoryProperties);
-		SeqMemoryProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqMemory.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		seqMemory.applyProperties();
-
-		// Prepare SeqTreePropController module
-		Properties SeqTreePropControllerProperties = new Properties();
-		SeqTreePropController seqTreePropController = new SeqTreePropController(moduleNetwork,
-				SeqTreePropControllerProperties);
-		SeqTreePropControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqTreePropController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		seqTreePropController.applyProperties();
+		// apply Properties of the specific module
+		module.applyProperties();
 		
-		// Prepare modules.seqSuffixTrie2SuffixTree module
-		Properties seqSuffixTrie2SuffixTreeControllerProperties = new Properties();
-		SeqSuffixTrie2SuffixTreeController seqSuffixTrie2SuffixTreeController = new SeqSuffixTrie2SuffixTreeController(moduleNetwork,
-				seqSuffixTrie2SuffixTreeControllerProperties);
-		seqSuffixTrie2SuffixTreeControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqSuffixTrie2SuffixTreeController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		seqSuffixTrie2SuffixTreeController.applyProperties();
-			
-		// Prepare seqNewickExporter module
-		Properties seqNewickExporterControllerProperties = new Properties();
-		SeqNewickExporterController seqNewickExporterController = new SeqNewickExporterController(moduleNetwork,
-				seqNewickExporterControllerProperties);
-		seqNewickExporterControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExporterController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		seqNewickExporterController.applyProperties();
-		
-		// Prepare seqNewickExporter version 2 module
-		Properties seqNewickExporterControllerV2Properties = new Properties();
-		SeqNewickExporterControllerV2 seqNewickExporterControllerV2 = new SeqNewickExporterControllerV2(moduleNetwork,
-				seqNewickExporterControllerV2Properties);
-		seqNewickExporterControllerV2Properties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqNewickExporterControllerV2.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		seqNewickExporterControllerV2.applyProperties();
-		
-		// Prepare HAL advanced module
-		Properties halAdvancedModuleProperties = new Properties();
-		HalAdvancedModule halAdvancedModule = new HalAdvancedModule(moduleNetwork,
-				halAdvancedModuleProperties);
-		halAdvancedModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, halAdvancedModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		halAdvancedModule.applyProperties();
-		
-		// Prepare regex replacement module
-		Properties regExReplacementModuleProperties = new Properties();
-		RegExReplacementModule regExReplacementModule = new RegExReplacementModule(moduleNetwork,
-				regExReplacementModuleProperties);
-		regExReplacementModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, regExReplacementModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		regExReplacementModule.applyProperties();
-
-		// Prepare regex line filter module
-		Properties regExLineFilterModuleProperties = new Properties();
-		RegExLineFilterModule regExLineFilterModule = new RegExLineFilterModule(moduleNetwork,
-				regExLineFilterModuleProperties);
-		regExLineFilterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, regExLineFilterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		regExLineFilterModule.applyProperties();
-		
-		// Prepare Bag Of Words module
-		Properties bagOfWordsProperties = new Properties();
-		BagsOfWordsModule bagOfWordsModule = new BagsOfWordsModule(moduleNetwork,
-				bagOfWordsProperties);
-		bagOfWordsProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagOfWordsModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		bagOfWordsModule.applyProperties();
-		
-		// Prepare filter module
-		Properties filterProperties = new Properties();
-		FilterModule filterModule = new FilterModule(moduleNetwork,
-				filterProperties);
-		filterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, filterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		filterModule.applyProperties();
-		
-		// Prepare KWIP module
-		Properties kwipProperties = new Properties();
-		KeyWordInPhraseModule kwipModule = new KeyWordInPhraseModule(moduleNetwork,
-				kwipProperties);
-		kwipProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, kwipModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		kwipModule.applyProperties();
-		
-		// Prepare PlainText2TreeBuilderConverter module
-		Properties PlainText2TreeBuilderConverterProperties = new Properties();
-		PlainText2TreeBuilderConverter plainText2TreeBuilderConverter = new PlainText2TreeBuilderConverter (moduleNetwork,
-				PlainText2TreeBuilderConverterProperties);
-		PlainText2TreeBuilderConverterProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, plainText2TreeBuilderConverter.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		plainText2TreeBuilderConverter.applyProperties();
-		
-		// Prepare treeBuilder2Output module
-		Properties treeBuilder2OutputControllerProperties = new Properties();
-		TreeBuilder2OutputController treeBuilder2OutputController = new TreeBuilder2OutputController (moduleNetwork,
-				treeBuilder2OutputControllerProperties);
-		treeBuilder2OutputControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder2OutputController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		treeBuilder2OutputController.applyProperties();
-		
-		// Prepare treeBuilder2OutputV2 module
-		Properties treeBuilder2OutputV2ControllerProperties = new Properties();
-		TreeBuilder2OutputControllerV2 treeBuilder2OutputControllerV2 = new TreeBuilder2OutputControllerV2 (moduleNetwork,
-				treeBuilder2OutputV2ControllerProperties);
-		treeBuilder2OutputV2ControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilder2OutputControllerV2.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		treeBuilder2OutputControllerV2.applyProperties();
-				
-		// Prepare GeneralisedSuffixTree module
-		Properties generalisedSuffixTreeProperties = new Properties();
-		GeneralisedSuffixTreeModule generalisedSuffixTreeModule = new GeneralisedSuffixTreeModule(moduleNetwork,
-				generalisedSuffixTreeProperties);
-		generalisedSuffixTreeProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, generalisedSuffixTreeModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		generalisedSuffixTreeModule.applyProperties();
-		
-		// Prepare BufferModule
-		Properties bufferModuleProperties = new Properties();
-		BufferModule bufferModule = new BufferModule(moduleNetwork,
-				bufferModuleProperties);
-		bufferModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bufferModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		bufferModule.applyProperties();
-		
-		// Prepare SuffixTreeClusteringModuleWrapper module
-		Properties suffixTreeClusteringModuleWrapperProperties = new Properties();
-		SuffixTreeClusteringModuleWrapper suffixTreeClusteringModuleWrapper = new SuffixTreeClusteringModuleWrapper (moduleNetwork,
-				suffixTreeClusteringModuleWrapperProperties);
-		suffixTreeClusteringModuleWrapperProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeClusteringModuleWrapper.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		suffixTreeClusteringModuleWrapper.applyProperties();
-		
-		// Bag of Words module
-		Properties bagsOfWordsDistancesModuleProperties = new Properties();
-		BagsOfWordsDistancesModule bagsOfWordsDistancesModule  = new BagsOfWordsDistancesModule(moduleNetwork, 
-				bagsOfWordsDistancesModuleProperties);
-		bagsOfWordsDistancesModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bagsOfWordsDistancesModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		bagsOfWordsDistancesModule.applyProperties();
-		
-		// Reverser module
-		Properties reverserModuleProperties = new Properties();
-		ReverserModule reverserModule  = new ReverserModule(moduleNetwork, 
-				reverserModuleProperties);
-		reverserModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, reverserModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		reverserModule.applyProperties();
-		
-		// ExternalCommandModule
-		Properties externalCommandModuleProperties = new Properties();
-		ExternalCommandModule externalCommandModule  = new ExternalCommandModule(moduleNetwork, 
-				externalCommandModuleProperties);
-		externalCommandModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, externalCommandModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		externalCommandModule.applyProperties();
-		
-		// TreeBuilderV2Module
-		Properties treeBuilderV2ModuleProperties = new Properties();
-		TreeBuilderV2Module treeBuilderV2Module  = new TreeBuilderV2Module(moduleNetwork, 
-				treeBuilderV2ModuleProperties);
-		treeBuilderV2ModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilderV2Module.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		treeBuilderV2Module.applyProperties();
-		
-		// TreeBuilderV2GSTModule
-		Properties treeBuilderV2GSTModuleProperties = new Properties();
-		TreeBuilderV3Module treeBuilderV2GSTModule  = new TreeBuilderV3Module(moduleNetwork, 
-				treeBuilderV2GSTModuleProperties);
-		treeBuilderV2GSTModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeBuilderV2GSTModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		treeBuilderV2GSTModule.applyProperties();
-		
-		// ExampleRandString
-		Properties exampleRandStringProperties = new Properties();
-		ExampleRandString exampleRandString  = new ExampleRandString(moduleNetwork, 
-				exampleRandStringProperties);
-		exampleRandStringProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleRandString.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		exampleRandString.applyProperties();
-		
-		// ExampleGsonSerialization
-		Properties exampleGsonSerializationProperties = new Properties();
-		ExampleGsonSerialization exampleGsonSerialization  = new ExampleGsonSerialization(moduleNetwork, 
-				exampleGsonSerializationProperties);
-		exampleGsonSerializationProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleGsonSerialization.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		exampleGsonSerialization.applyProperties();
-		
-		// ExampleGsonDeserialization
-		Properties exampleGsonDeserializationProperties = new Properties();
-		ExampleGsonDeserialization exampleGsonDeserialization  = new ExampleGsonDeserialization(moduleNetwork, 
-				exampleGsonDeserializationProperties);
-		exampleGsonDeserializationProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, exampleGsonDeserialization.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		exampleGsonDeserialization.applyProperties();
-		
-		// ExtensibleTreeNode2GEXFModule
-		Properties extensibleTreeNode2GEXFModuleProperties = new Properties();
-		ExtensibleTreeNode2GEXFModule extensibleTreeNode2GEXFModule  = new ExtensibleTreeNode2GEXFModule(moduleNetwork, 
-				extensibleTreeNode2GEXFModuleProperties);
-		extensibleTreeNode2GEXFModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, extensibleTreeNode2GEXFModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		extensibleTreeNode2GEXFModule.applyProperties();
-		
-		// SuffixTreeVectorizationWrapperController
-		Properties suffixTreeVectorizationWrapperControllerProperties = new Properties();
-		SuffixTreeVectorizationWrapperController suffixTreeVectorizationWrapperController  = new SuffixTreeVectorizationWrapperController(moduleNetwork, 
-				suffixTreeVectorizationWrapperControllerProperties);
-		suffixTreeVectorizationWrapperControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeVectorizationWrapperController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		suffixTreeVectorizationWrapperController.applyProperties();
-		
-		// SuffixTreeClusteringWrapperV2
-		Properties suffixTreeClusteringWrapperV2Properties = new Properties();
-		SuffixTreeClusteringWrapperV2 suffixTreeClusteringWrapperV2  = new SuffixTreeClusteringWrapperV2(moduleNetwork, 
-				suffixTreeClusteringWrapperV2Properties);
-		suffixTreeClusteringWrapperV2Properties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeClusteringWrapperV2.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		suffixTreeClusteringWrapperV2.applyProperties();
-
-		// LabelDataMergeModule
-		Properties labelDataMergeModuleProperties = new Properties();
-		LabelDataMergeModule labelDataMergeModule = new LabelDataMergeModule(moduleNetwork, labelDataMergeModuleProperties);
-		labelDataMergeModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, labelDataMergeModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		labelDataMergeModule.applyProperties();	
-
-		// TreeSimilarityClusteringModule
-		Properties treeSimilarityClusteringModuleProperties = new Properties();
-		TreeSimilarityClusteringModule treeSimilarityClusteringModule = new TreeSimilarityClusteringModule(moduleNetwork, treeSimilarityClusteringModuleProperties);
-		treeSimilarityClusteringModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeSimilarityClusteringModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		treeSimilarityClusteringModule.applyProperties();	
-		
-		// SeqQueryController
-		Properties seqQueryControllerProperties = new Properties();
-		SeqQueryController seqQueryController = new SeqQueryController(moduleNetwork, seqQueryControllerProperties);
-		seqQueryControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, seqQueryController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		seqQueryController.applyProperties();	
-		
-		// VectorAberrationCalculatorModule
-		Properties vectorAnalysisModuleProperties = new Properties();
-		VectorAberrationCalculatorModule vectorAnalysisModule = new VectorAberrationCalculatorModule(moduleNetwork, vectorAnalysisModuleProperties);
-		vectorAnalysisModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, vectorAnalysisModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		vectorAnalysisModule.applyProperties();
-		
-		// MinkowskiDistanceMatrixModule
-		Properties minkowskiDistanceMatrixModuleProperties = new Properties();
-		MinkowskiDistanceMatrixModule minkowskiDistanceMatrixModule = new MinkowskiDistanceMatrixModule(moduleNetwork, minkowskiDistanceMatrixModuleProperties);
-		minkowskiDistanceMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, minkowskiDistanceMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		minkowskiDistanceMatrixModule.applyProperties();
-		
-		// VectorMedianCalculatorModule
-		Properties vectorMedianCalculatorModuleProperties = new Properties();
-		VectorMedianCalculatorModule vectorMedianCalculatorModule = new VectorMedianCalculatorModule(moduleNetwork, vectorMedianCalculatorModuleProperties);
-		vectorMedianCalculatorModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, vectorMedianCalculatorModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		vectorMedianCalculatorModule.applyProperties();
-		
-		// GexfFilterModule
-		Properties gexfFilterModuleProperties = new Properties();
-		GexfFilterModule gexfFilterModule = new GexfFilterModule(moduleNetwork, gexfFilterModuleProperties);
-		gexfFilterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, gexfFilterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		gexfFilterModule.applyProperties();
-		
-		// Segment neighbor joiner
-		Properties segmentJoinerModuleProperties = new Properties();
-		SegmentJoinerModule segmentJoinerModule = new SegmentJoinerModule(moduleNetwork, segmentJoinerModuleProperties);
-		segmentJoinerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentJoinerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		segmentJoinerModule.applyProperties();
-		
-		// Segment matrix
-		Properties segmentMatrixModuleProperties = new Properties();
-		SegmentMatrixModule segmentMatrixModule = new SegmentMatrixModule(moduleNetwork, segmentMatrixModuleProperties);
-		segmentMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		segmentMatrixModule.applyProperties();
-		
-		// Comparison module
-		Properties comparisonModuleProperties = new Properties();
-		ComparisonModule comparisonModule = new ComparisonModule(moduleNetwork, comparisonModuleProperties);
-		comparisonModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, comparisonModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		comparisonModule.applyProperties();
-		
-		// Comparison module
-		Properties caseChangerModuleProperties = new Properties();
-		CaseChangerModule caseChangerModule = new CaseChangerModule(moduleNetwork, caseChangerModuleProperties);
-		caseChangerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, caseChangerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		caseChangerModule.applyProperties();
-		
-		// KwipBowMatrixModule
-		Properties kwipBowMatrixModuleProperties = new Properties();
-		KwipBowMatrixModule kwipBowMatrixModule = new KwipBowMatrixModule(moduleNetwork, kwipBowMatrixModuleProperties);
-		kwipBowMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, kwipBowMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		kwipBowMatrixModule.applyProperties();
-		
-		// Segmentation Check Module
-		Properties segmentationCheckModuleProperties = new Properties();
-		SegmentationCheckModule segmentationCheckModule = new SegmentationCheckModule(moduleNetwork, segmentationCheckModuleProperties);
-		segmentationCheckModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentationCheckModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		segmentationCheckModule.applyProperties();
-		
-		Properties matrixColumnSumModuleProperties = new Properties();
-		MatrixColumnSumModule matrixColumnSumModule = new MatrixColumnSumModule(moduleNetwork, matrixColumnSumModuleProperties);
-		matrixColumnSumModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixColumnSumModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		matrixColumnSumModule.applyProperties();
-
-		// Matrix Bitwise Transformation Module
-		Properties matrixBitwiseModuleProperties = new Properties();
-		MatrixBitwiseOperationModule matrixBitwiseModule = new MatrixBitwiseOperationModule(moduleNetwork, matrixBitwiseModuleProperties);
-		matrixBitwiseModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixBitwiseModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		matrixBitwiseModule.applyProperties();
-		
-		// Dot to Tree conversion module.
-		Properties dot2TreeControllerProperties = new Properties();
-		Dot2TreeController dot2TreeController = new Dot2TreeController(moduleNetwork, dot2TreeControllerProperties);
-		dot2TreeControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, dot2TreeController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		dot2TreeController.applyProperties();
-		
-		
-		// GST analysis tool "Tree Index Properties". TreeIndexController
-		Properties treeIndexControllerProperties = new Properties();
-		TreeIndexController treeIndexController = new TreeIndexController(moduleNetwork, treeIndexControllerProperties);
-		treeIndexControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, treeIndexController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		treeIndexController.applyProperties();
-		
-		// MatrixEliminateOppositionalValuesModule
-		Properties matrixEliminateOppositionalValuesModuleProperties = new Properties();
-		MatrixEliminateOppositionalValuesModule matrixEliminateOppositionalValuesModule = new MatrixEliminateOppositionalValuesModule(moduleNetwork, matrixEliminateOppositionalValuesModuleProperties);
-		matrixEliminateOppositionalValuesModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixEliminateOppositionalValuesModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		matrixEliminateOppositionalValuesModule.applyProperties();
-		
-		// MatrixRowColPairExtractorModule
-		Properties matrixRowColPairExtractorModuleProperties = new Properties();
-		MatrixRowColPairExtractorModule matrixRowColPairExtractorModule = new MatrixRowColPairExtractorModule(moduleNetwork, matrixRowColPairExtractorModuleProperties);
-		matrixRowColPairExtractorModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixRowColPairExtractorModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		matrixRowColPairExtractorModule.applyProperties();
-
-		// Join Module
-		Properties joinModuleProperties = new Properties();
-		JoinModule joinModule = new JoinModule(moduleNetwork, joinModuleProperties);
-		joinModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, joinModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		joinModule.applyProperties();
-
-		// BowTypeMatrixModule
-		Properties bowTypeMatrixModuleProperties = new Properties();
-		BowTypeMatrixModule bowTypeMatrixModule = new BowTypeMatrixModule(moduleNetwork, bowTypeMatrixModuleProperties);
-		bowTypeMatrixModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, bowTypeMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		bowTypeMatrixModule.applyProperties();
-
-		// BurrowsWheelerTransformationModule
-		Properties burrowsWheelerTransformationModuleProperties = new Properties();
-		BurrowsWheelerTransformationModule burrowsWheelerTransformationModule = new BurrowsWheelerTransformationModule(moduleNetwork, burrowsWheelerTransformationModuleProperties);
-		burrowsWheelerTransformationModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, burrowsWheelerTransformationModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		burrowsWheelerTransformationModule.applyProperties();
-
-		// Markov Clustering Module
-		Properties mclProperties = new Properties();
-		MclModule mclModule = new MclModule(moduleNetwork, mclProperties);
-		mclProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, mclModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		mclModule.applyProperties();
-
-		// CSV2GEXF Module
-		Properties csv2GEXFModuleProperties = new Properties();
-		CSV2GEXFModule csv2GEXFModule = new CSV2GEXFModule(moduleNetwork, csv2GEXFModuleProperties);
-		csv2GEXFModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, csv2GEXFModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		csv2GEXFModule.applyProperties();
-
-		// textSorterModule
-		Properties textSorterModuleProperties = new Properties();
-		TextSorterModule textSorterModule = new TextSorterModule(moduleNetwork, textSorterModuleProperties);
-		textSorterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, textSorterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		textSorterModule.applyProperties();
-		
-		// LFGroupBuilding Module
-		Properties lfgroupBuildingModuleProperties = new Properties();
-		LFGroupBuildingModule lfgroupBuildingModule = new LFGroupBuildingModule(moduleNetwork, lfgroupBuildingModuleProperties);
-		lfgroupBuildingModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, lfgroupBuildingModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		lfgroupBuildingModule.applyProperties();
-		
-		// BranchLengthGrouping
-		Properties branchLengthGroupingProperties = new Properties();
-		BranchLengthGrouping branchLengthGrouping = new BranchLengthGrouping(moduleNetwork, branchLengthGroupingProperties);
-		branchLengthGroupingProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, branchLengthGrouping.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		branchLengthGrouping.applyProperties();
-		
-		// MatrixFilterModule
-		Properties matrixFilterModuleProperties = new Properties();
-		MatrixFilterModule matrixFilterModule = new MatrixFilterModule(moduleNetwork, matrixFilterModuleProperties);
-		matrixFilterModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixFilterModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		matrixFilterModule.applyProperties();
-		
-		// ExtensibleTreeNode2CSVModule
-		Properties extensibleTreeNode2CSVModuleProperties = new Properties();
-		ExtensibleTreeNode2CSVModule extensibleTreeNode2CSVModule = new ExtensibleTreeNode2CSVModule(moduleNetwork, extensibleTreeNode2CSVModuleProperties);
-		extensibleTreeNode2CSVModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, extensibleTreeNode2CSVModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		extensibleTreeNode2CSVModule.applyProperties();
-		
-		// Motif Detection Module
-		Properties motifDetectionControllerProperties = new Properties();
-		MotifDetectionController motifDetectionController = new MotifDetectionController(moduleNetwork, motifDetectionControllerProperties);
-		motifDetectionControllerProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, motifDetectionController.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		motifDetectionController.applyProperties();
-		
-		// SuffixTreeVector2CsvModule
-		Properties suffixTreeVector2CsvModuleProperties = new Properties();
-		SuffixTreeVector2CsvModule suffixTreeVector2CsvModule = new SuffixTreeVector2CsvModule(moduleNetwork, suffixTreeVector2CsvModuleProperties);
-		suffixTreeVector2CsvModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, suffixTreeVector2CsvModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		suffixTreeVector2CsvModule.applyProperties();
-		
-		// TextReducerModule
-		Properties textReducerModuleProperties = new Properties();
-		TextReducerModule textReducerModule = new TextReducerModule(moduleNetwork, textReducerModuleProperties);
-		textReducerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, textReducerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		textReducerModule.applyProperties();
-		
-
-		// MorphologyModule
-		Properties resultToGeneralizedSuffixTreesMorphologyModuleProperties = new Properties();
-		GeneralizedSuffixTreesMorphologyModule resultToGeneralizedSuffixTreesMorphologyModule = 
-		new GeneralizedSuffixTreesMorphologyModule(moduleNetwork, resultToGeneralizedSuffixTreesMorphologyModuleProperties);
-		resultToGeneralizedSuffixTreesMorphologyModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, 
-		resultToGeneralizedSuffixTreesMorphologyModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		resultToGeneralizedSuffixTreesMorphologyModule.applyProperties();
-				
-		
-
-		// ConsoleReaderModule
-		Properties consoleReaderModuleProperties = new Properties();
-		ConsoleReaderModule consoleReaderModule = new ConsoleReaderModule(moduleNetwork, consoleReaderModuleProperties);
-		consoleReaderModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, consoleReaderModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		consoleReaderModule.applyProperties();
-
-		// SegmentsTransitionNetworkModule
-		Properties segmentsTransitionNetworkModuleProperties = new Properties();
-		SegmentsTransitionNetworkModule segmentsTransitionNetworkModule = new SegmentsTransitionNetworkModule(moduleNetwork, segmentsTransitionNetworkModuleProperties);
-		segmentsTransitionNetworkModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentsTransitionNetworkModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		segmentsTransitionNetworkModule.applyProperties();
-
-		// SegmentDistanceMatrixModule
-		Properties segmentDistanceMatrixProperties = new Properties();
-		SegmentDistanceMatrixModule segmentDistanceMatrixModule = new SegmentDistanceMatrixModule(moduleNetwork, segmentDistanceMatrixProperties);
-		segmentDistanceMatrixProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentDistanceMatrixModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		segmentDistanceMatrixModule.applyProperties();
-		
-		// SegmentCombinerModule
-		Properties segmentCombinerModuleProperties = new Properties();
-		SegmentCombinerModule segmentCombinerModule = new SegmentCombinerModule(moduleNetwork, segmentCombinerModuleProperties);
-		segmentCombinerModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentCombinerModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		segmentCombinerModule.applyProperties();
-
-		// SegmentationApplyModule
-		Properties segmentationApplyModuleProperties = new Properties();
-		SegmentationApplyModule segmentationApplyModule = new SegmentationApplyModule(moduleNetwork, segmentationApplyModuleProperties);
-		segmentationApplyModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentationApplyModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		segmentationApplyModule.applyProperties();
-		
-		// SegmentMatrixAnalyzeModule
-		Properties segmentMatrixAnalyzeModuleProperties = new Properties();
-		SegmentMatrixAnalyzeModule segmentMatrixAnalyzeModule = new SegmentMatrixAnalyzeModule(moduleNetwork, segmentMatrixAnalyzeModuleProperties);
-		segmentMatrixAnalyzeModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentMatrixAnalyzeModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		segmentMatrixAnalyzeModule.applyProperties();
-
-		// MorphologyCheckModule
-		Properties morphologyCheckModuleProperties = new Properties();
-		MorphologyCheckModule morphologyCheckModule = new MorphologyCheckModule(moduleNetwork, morphologyCheckModuleProperties);
-		morphologyCheckModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, morphologyCheckModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		morphologyCheckModule.applyProperties();
-
-		// MatrixValuesExpressionApplyModule
-		Properties matrixValuesExpressionApplyModuleProperties = new Properties();
-		MatrixValuesExpressionApplyModule matrixValuesExpressionApplyModule = new MatrixValuesExpressionApplyModule(moduleNetwork, matrixValuesExpressionApplyModuleProperties);
-		matrixValuesExpressionApplyModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixValuesExpressionApplyModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
-		matrixValuesExpressionApplyModule.applyProperties();
-
-		/*
-		 * ADD MODULE INSTANCES TO LIST BELOW
-		 */
-		availableModules.put(consoleWriter.getName(),consoleWriter);
-		availableModules.put(exampleModule.getName(),exampleModule);
-		availableModules.put(fileReader.getName(),fileReader);
-		availableModules.put(smbFileReader.getName(),smbFileReader);
-		availableModules.put(fileWriter.getName(),fileWriter);
-		availableModules.put(smbFileWriter.getName(),smbFileWriter);
-		availableModules.put(fileFinderModule.getName(),fileFinderModule);
-		availableModules.put(oancParser.getName(),oancParser);
-		availableModules.put(treeBuilder.getName(),treeBuilder);
-		availableModules.put(atomicRangeSuffixTrieBuilder.getName(),atomicRangeSuffixTrieBuilder);
-		availableModules.put(suffixNetBuilderModule.getName(),suffixNetBuilderModule);
-		availableModules.put(colourGraphModule.getName(),colourGraphModule);
-		availableModules.put(asciiGraphModule.getName(),asciiGraphModule);
-		availableModules.put(paradigmenErmittlerModul.getName(),paradigmenErmittlerModul);
-		availableModules.put(createArtificialSeqs.getName(),createArtificialSeqs);
-		availableModules.put(createArtificialSeqsContent.getName(),createArtificialSeqsContent);
-		availableModules.put(seqMemory.getName(),seqMemory);
-		availableModules.put(seqTreePropController.getName(),seqTreePropController);
-		availableModules.put(seqSuffixTrie2SuffixTreeController.getName(),seqSuffixTrie2SuffixTreeController);
-		availableModules.put(seqNewickExporterController.getName(),seqNewickExporterController);
-		availableModules.put(seqNewickExporterControllerV2.getName(),seqNewickExporterControllerV2);
-		availableModules.put(halAdvancedModule.getName(),halAdvancedModule);
-		availableModules.put(regExReplacementModule.getName(),regExReplacementModule);
-		availableModules.put(regExLineFilterModule.getName(), regExLineFilterModule);
-		availableModules.put(bagOfWordsModule.getName(), bagOfWordsModule);
-		availableModules.put(filterModule.getName(), filterModule);
-		availableModules.put(kwipModule.getName(), kwipModule);
-		availableModules.put(plainText2TreeBuilderConverter.getName(), plainText2TreeBuilderConverter);
-		availableModules.put(treeBuilder2OutputController.getName(), treeBuilder2OutputController);
-		availableModules.put(treeBuilder2OutputControllerV2.getName(), treeBuilder2OutputControllerV2);
-		availableModules.put(generalisedSuffixTreeModule.getName(), generalisedSuffixTreeModule);
-		
-		availableModules.put(bufferModule.getName(), bufferModule);
-		availableModules.put(suffixTreeClusteringModuleWrapper.getName(), suffixTreeClusteringModuleWrapper);
-		availableModules.put(bagsOfWordsDistancesModule.getName(), bagsOfWordsDistancesModule);
-		availableModules.put(reverserModule.getName(), reverserModule);
-		availableModules.put(externalCommandModule.getName(), externalCommandModule);
-		availableModules.put(treeBuilderV2Module.getName(), treeBuilderV2Module);
-		availableModules.put(treeBuilderV2GSTModule.getName(), treeBuilderV2GSTModule);
-		availableModules.put(exampleRandString.getName(), exampleRandString);
-		availableModules.put(exampleGsonSerialization.getName(), exampleGsonSerialization);
-		availableModules.put(exampleGsonDeserialization.getName(), exampleGsonDeserialization);
-		availableModules.put(extensibleTreeNode2GEXFModule.getName(), extensibleTreeNode2GEXFModule);
-		availableModules.put(suffixTreeVectorizationWrapperController.getName(), suffixTreeVectorizationWrapperController);
-		availableModules.put(suffixTreeClusteringWrapperV2.getName(), suffixTreeClusteringWrapperV2);
-		availableModules.put(labelDataMergeModule.getName(), labelDataMergeModule);
-		availableModules.put(treeSimilarityClusteringModule.getName(), treeSimilarityClusteringModule);
-		availableModules.put(seqQueryController.getName(), seqQueryController);
-		availableModules.put(vectorAnalysisModule.getName(), vectorAnalysisModule);
-		availableModules.put(minkowskiDistanceMatrixModule.getName(), minkowskiDistanceMatrixModule);
-		availableModules.put(vectorMedianCalculatorModule.getName(), vectorMedianCalculatorModule);
-		availableModules.put(gexfFilterModule.getName(), gexfFilterModule);
-		availableModules.put(segmentJoinerModule.getName(), segmentJoinerModule);
-		availableModules.put(segmentMatrixModule.getName(), segmentMatrixModule);
-		availableModules.put(comparisonModule.getName(), comparisonModule);
-		availableModules.put(caseChangerModule.getName(), caseChangerModule);
-		availableModules.put(kwipBowMatrixModule.getName(), kwipBowMatrixModule);
-		availableModules.put(segmentationCheckModule.getName(), segmentationCheckModule);
-		availableModules.put(matrixColumnSumModule.getName(), matrixColumnSumModule);
-		availableModules.put(matrixBitwiseModule.getName(), matrixBitwiseModule);
-		availableModules.put(dot2TreeController.getName(), dot2TreeController);
-		availableModules.put(matrixEliminateOppositionalValuesModule.getName(), matrixEliminateOppositionalValuesModule);
-		availableModules.put(matrixRowColPairExtractorModule.getName(), matrixRowColPairExtractorModule);
-		availableModules.put(treeIndexController.getName(), treeIndexController);
-		availableModules.put(joinModule.getName(), joinModule);
-		availableModules.put(bowTypeMatrixModule.getName(), bowTypeMatrixModule);
-		availableModules.put(burrowsWheelerTransformationModule.getName(), burrowsWheelerTransformationModule);
-		availableModules.put(mclModule.getName(), mclModule);
-		availableModules.put(csv2GEXFModule.getName(), csv2GEXFModule);
-		availableModules.put(textSorterModule.getName(), textSorterModule);
-		availableModules.put(lfgroupBuildingModule.getName(), lfgroupBuildingModule);
-		availableModules.put(branchLengthGrouping.getName(), branchLengthGrouping);
-		availableModules.put(matrixFilterModule.getName(), matrixFilterModule);
-		availableModules.put(extensibleTreeNode2CSVModule.getName(), extensibleTreeNode2CSVModule);
-		availableModules.put(motifDetectionController.getName(), motifDetectionController);
-		availableModules.put(suffixTreeVector2CsvModule.getName(), suffixTreeVector2CsvModule);
-		availableModules.put(textReducerModule.getName(), textReducerModule);
-		availableModules.put(resultToGeneralizedSuffixTreesMorphologyModule.getName(), resultToGeneralizedSuffixTreesMorphologyModule);
-		availableModules.put(consoleReaderModule.getName(), consoleReaderModule);
-		availableModules.put(segmentsTransitionNetworkModule.getName(), segmentsTransitionNetworkModule);
-		availableModules.put(segmentDistanceMatrixModule.getName(), segmentDistanceMatrixModule);
-		availableModules.put(segmentCombinerModule.getName(), segmentCombinerModule);
-		availableModules.put(segmentationApplyModule.getName(), segmentationApplyModule);
-		availableModules.put(segmentMatrixAnalyzeModule.getName(), segmentMatrixAnalyzeModule);
-		availableModules.put(morphologyCheckModule.getName(), morphologyCheckModule);
-		availableModules.put(matrixValuesExpressionApplyModule.getName(), matrixValuesExpressionApplyModule);
+		// make the module available in the workbench
+		availableModules.put(module.getName(), module);
 	}
 	
 	/**
