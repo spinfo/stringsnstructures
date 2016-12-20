@@ -79,6 +79,7 @@ import modules.matrix.MatrixColumnSumModule;
 import modules.matrix.MatrixEliminateOppositionalValuesModule;
 import modules.matrix.MatrixFilterModule;
 import modules.matrix.MatrixRowColPairExtractorModule;
+import modules.matrix.MatrixValuesExpressionApplyModule;
 import modules.matrix.MclModule;
 import modules.matrix.SegmentMatrixAnalyzeModule;
 import modules.morphology.MorphologyCheckModule;
@@ -693,11 +694,16 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		MorphologyCheckModule morphologyCheckModule = new MorphologyCheckModule(moduleNetwork, morphologyCheckModuleProperties);
 		morphologyCheckModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, morphologyCheckModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		morphologyCheckModule.applyProperties();
-				
+
+		// MatrixValuesExpressionApplyModule
+		Properties matrixValuesExpressionApplyModuleProperties = new Properties();
+		MatrixValuesExpressionApplyModule matrixValuesExpressionApplyModule = new MatrixValuesExpressionApplyModule(moduleNetwork, matrixValuesExpressionApplyModuleProperties);
+		matrixValuesExpressionApplyModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, matrixValuesExpressionApplyModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		matrixValuesExpressionApplyModule.applyProperties();
+
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
 		 */
-		
 		availableModules.put(consoleWriter.getName(),consoleWriter);
 		availableModules.put(exampleModule.getName(),exampleModule);
 		availableModules.put(fileReader.getName(),fileReader);
@@ -783,6 +789,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(segmentationApplyModule.getName(), segmentationApplyModule);
 		availableModules.put(segmentMatrixAnalyzeModule.getName(), segmentMatrixAnalyzeModule);
 		availableModules.put(morphologyCheckModule.getName(), morphologyCheckModule);
+		availableModules.put(matrixValuesExpressionApplyModule.getName(), matrixValuesExpressionApplyModule);
 	}
 	
 	/**

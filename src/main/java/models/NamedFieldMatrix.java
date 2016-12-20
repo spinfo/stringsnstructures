@@ -92,6 +92,31 @@ public class NamedFieldMatrix {
 	}
 
 	/**
+	 * Set the value of the field designated by rowNo and colNo. Complain if
+	 * that combination does not exist.
+	 *
+	 * @param rowNo
+	 *            The index of the field's row
+	 * @param columnNo
+	 *            The index of the field's column
+	 * @param value
+	 *            The value to set
+	 * @return The previous value of the field
+	 * @throws IllegalArgumentException
+	 *             If the rowNo/colNo combination was not previously set.
+	 */
+	public double setValue(int rowNo, int colNo, double value) {
+		if (rowNo < 0 || colNo < 0 || rowNo >= rowAmount || colNo >= colAmount) {
+			throw new IllegalArgumentException("Row/Column index does not exist: " + rowNo + "/" + colNo);
+		}
+
+		double previousValue = values[rowNo][colNo];
+		values[rowNo][colNo] = value;
+
+		return previousValue;
+	}
+
+	/**
 	 * Return the value of the field designated by rowName and column name.
 	 * 
 	 * @param rowName
@@ -398,7 +423,7 @@ public class NamedFieldMatrix {
 
 		return distance;
 	}
-	
+
 	/**
 	 * Returns the hamming distance (no. of differing values) between two
 	 * columns.
