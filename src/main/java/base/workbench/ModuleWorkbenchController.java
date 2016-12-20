@@ -81,6 +81,7 @@ import modules.matrix.MatrixFilterModule;
 import modules.matrix.MatrixRowColPairExtractorModule;
 import modules.matrix.MclModule;
 import modules.matrix.SegmentMatrixAnalyzeModule;
+import modules.morphology.MorphologyCheckModule;
 import modules.parser.oanc.OANCXMLParser;
 import modules.segmentation.SegmentCombinerModule;
 import modules.segmentation.SegmentDistanceMatrixModule;
@@ -686,6 +687,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		SegmentMatrixAnalyzeModule segmentMatrixAnalyzeModule = new SegmentMatrixAnalyzeModule(moduleNetwork, segmentMatrixAnalyzeModuleProperties);
 		segmentMatrixAnalyzeModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, segmentMatrixAnalyzeModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
 		segmentMatrixAnalyzeModule.applyProperties();
+
+		// MorphologyCheckModule
+		Properties morphologyCheckModuleProperties = new Properties();
+		MorphologyCheckModule morphologyCheckModule = new MorphologyCheckModule(moduleNetwork, morphologyCheckModuleProperties);
+		morphologyCheckModuleProperties.setProperty(ModuleImpl.PROPERTYKEY_NAME, morphologyCheckModule.getPropertyDefaultValues().get(ModuleImpl.PROPERTYKEY_NAME));
+		morphologyCheckModule.applyProperties();
 				
 		/*
 		 * ADD MODULE INSTANCES TO LIST BELOW
@@ -775,6 +782,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		availableModules.put(segmentCombinerModule.getName(), segmentCombinerModule);
 		availableModules.put(segmentationApplyModule.getName(), segmentationApplyModule);
 		availableModules.put(segmentMatrixAnalyzeModule.getName(), segmentMatrixAnalyzeModule);
+		availableModules.put(morphologyCheckModule.getName(), morphologyCheckModule);
 	}
 	
 	/**
