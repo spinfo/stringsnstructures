@@ -4,13 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
-
-import org.apache.commons.lang3.StringUtils;
 
 import common.parallelization.CallbackReceiver;
 import models.NamedFieldMatrix;
@@ -27,26 +27,12 @@ import modules.OutputPort;
  */
 import base.workbench.ModuleRunner;
 
-
-final class ExtMap {
-	Map<String,BitSet> map=null;
-	String [] headers=null;
-	ExtMap(Map <String,BitSet>bitsets,String[]h){
-		this.map=bitsets;
-		this.headers=h;
-	}
-	
-}
-
-
 public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	// Main method for stand-alone execution
 	public static void main(String[] args) throws Exception {
 		ModuleRunner.runStandAlone(MatrixBitwiseOperationModule.class, args);
 	}
-
-	
 
 	private static final String MODULE_DESC = "Module interprets either rows or columns of an input matrix as binary bitsets"
 			+ " and performs symmetrical operations (AND, OR, XOR) on these bitsets. Output"
@@ -63,39 +49,46 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	private final static String OUTPUT_LIST_DESC = "[text/plain] A list of row/column mappings with the amount of bits set after the operation was applied, sorted by that count.";
 
 	// An enum, and property to specify the operation to apply
-	// Note: For these operation the order of operation is unimportant, adding
+	// Note: For these operations the order of operands is unimportant, adding
 	// an asymmetrical operation would require some changes in the processing
 	private static enum Operation {
 		AND, OR, XOR
 	};
-	
-	
+
 	private static final String PROPERTYKEY_OPERATION = "operation";
+	private Operation operation;
 
 	// A boolean deciding whether to operate on columns or rows of a table and a
 	// property for the user to choose that
 	private static final String PROPERTYKEY_USE_ROWS = "Operate on rows";
+	private boolean useRows;
 
 	// Properties for the input and output separator
 	private static final String PROPERTYKEY_INPUT_SEPARATOR = "Input separator";
 	private static final String PROPERTYKEY_OUTPUT_SEPARATOR = "Output separator";
+	private String inputSeparator;
+	private String outputSeparator;
 
 	// Properties for controlling which rows/columns are compared
 	private static final String PROPERTYKEY_OPERATE_REFLEXIVE = "Reflexive";
-	
-	
+	private boolean reflexive;
+
+	// The value zero as a double
+	private static final Double ZERO_D = new Double(0.0);
+
+	// Bitsets are initialised lazily and kept in this map
+	private Map<String, BitSet> bitsets;
+
+	// The input matrix may be accessed from some private methods
+	NamedFieldMatrix inMatrix;
 
 	public MatrixBitwiseOperationModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
-		
-		
-
 
 		// set module name and description
 		this.setName("Matrix Bitwise Operation Module");
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, this.getName());
 		this.setDescription(MODULE_DESC);
-
 
 		// setup i/o
 		InputPort input = new InputPort(INPUT_ID, INPUT_DESC, this);
@@ -131,58 +124,37 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	public boolean process() throws Exception {
 		boolean result = true;
-		//-------------
-		String best1Str="";String best2Str="";int maxNrBits=-1;
-		final ExtMap extBitsets;
-		Map<String,BitSet> bitsets=null;
-		
-		NamedFieldMatrix outMatrix=null;
-		BitSet resBitSet=null;
-		//-------------
 
 		// a reader to read input line by line
 		BufferedReader inputReader = new BufferedReader(getInputPorts().get(INPUT_ID).getInputReader());
 
-		try {
-			// determine all necessary flags from properties
-			final boolean useRows = Boolean.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_USE_ROWS));
-			final boolean reflexive = Boolean
-					.parseBoolean(this.getProperties().getProperty(PROPERTYKEY_OPERATE_REFLEXIVE));
-			final Operation operation = Operation.valueOf((this.getProperties().getProperty(PROPERTYKEY_OPERATION)));
-			final String inputSeparator = this.getProperties().getProperty(PROPERTYKEY_INPUT_SEPARATOR);
-			final String outputSeparator = this.getProperties().getProperty(PROPERTYKEY_OUTPUT_SEPARATOR);
+		// set the bitsets member which will be used to store bitsets when
+		// created
+		bitsets = new HashMap<>();
 
-			// read the input
-			// s. above, by JR final Map<String, BitSet> bitsets;
+		try {
+			// read the input matrix to operate on and determine whether row or
+			// column names will be operated on
+			inMatrix = NamedFieldMatrix.parseCSV(inputReader, inputSeparator);
+			Set<String> names;
 			if (useRows) {
-				extBitsets = readInputRows(inputReader, inputSeparator);
-				bitsets=extBitsets.map;
-				
+				names = inMatrix.getRowNames();
 			} else {
-				extBitsets = readInputCols(inputReader, inputSeparator);
-				bitsets=extBitsets.map;
+				names = inMatrix.getColumnNames();
 			}
-			inputReader.close();
 
 			// build a matrix containing the result of applying the operation to
 			// each pair of BitSets
-			// JR s. above (needed as result s.u.NamedFieldMatrix 
-			outMatrix = new NamedFieldMatrix();
+			NamedFieldMatrix outMatrix = new NamedFieldMatrix();
 			BitSet operand1 = null;
 			BitSet operand2 = null;
 			BitSet product = null;
 			Double value = null;
-			
-			int difference=0;
-			
-			
-			int productVal=0;
-			
-			for (String name1 : extBitsets.map.keySet()) {
-				System.out.println("MatrixBitwiseOperationModule: "+name1+
-						";");
-				operand1 = bitsets.get(name1);
-				for (String name2 : bitsets.keySet()) {
+			for (String name1 : names) {
+
+				operand1 = getOrCreateBitSet(name1);
+
+				for (String name2 : names) {
 					// If this combination was already calculated in a
 					// previous iteration, just copy the value
 					// this works as long as all possible operations are
@@ -199,28 +171,20 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 						continue;
 					}
 
-					operand2 = bitsets.get(name2);
+					// actually compare the two bitsets and save the amount of
+					// bits set in the result to the output matrix
+					operand2 = getOrCreateBitSet(name2);
 					product = performOperation(operand1, operand2, operation);
-					productVal=countBitsSet(product);
-					outMatrix.setValue(name1, name2, (double) productVal);
-					if (productVal==difference) {
-						// how many bits are set in operand
-						BitSet helpBitSet= new BitSet();
-						BitSet bitsSetInOperand=
-								performOperation(operand1, helpBitSet, operation);
-						int res=countBitsSet(bitsSetInOperand);
-						if(res>maxNrBits){
-							 maxNrBits=res;
-							 best1Str= name1;
-							 best2Str=name2;
-							 resBitSet=operand1;
-						}
-						
-					}
+					outMatrix.setValue(name1, name2, (double) product.cardinality());
 				}
 			}
+			
+			// these data structures might have gotten big and may be
+			// harvested directly after processing finished.
+			inMatrix = null;
+			bitsets = null;
 
-			// actually write the output
+			// write the output
 			OutputPort matrixOut = this.getOutputPorts().get(OUTPUT_MATRIX_ID);
 			if (matrixOut.isConnected()) {
 				writeMatrixOutput(outMatrix, matrixOut, outputSeparator);
@@ -240,125 +204,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			}
 			this.closeAllOutputs();
 		}
-		System.out.println("Best similarity: "+ best1Str+ "  "+best2Str+ " maxNrBits: "+
-		maxNrBits);
-		
-		
-		for (int colNo=0;colNo<resBitSet.length();colNo++){
-			if (resBitSet.get(colNo)) {
-			String colHeader= //outMatrix.getRowName(colNo);
-					extBitsets.headers[colNo+1];
-			System.out.println(colNo+ "  "+colHeader);
-			}
-		}
-		
-		
-		return result;
-	}
 
-	// convert each row of the input table to a BitSet mapped to it's row
-	// heading
-	private static ExtMap readInputRows(BufferedReader reader, String inputSeparator) throws Exception {
-		
-
-		// first parse the header row and discard it, only saving the amount of
-		// splits noticed to check for consistency
-		
-		//-------------------------jr
-		String[]headers=reader.readLine().split(inputSeparator, -1);
-		Map <String,BitSet>bitsets=new TreeMap<String,BitSet>();
-		ExtMap result= new ExtMap(bitsets,headers);
-		//		Map<String, BitSet> result = new TreeMap<String, BitSet>();
-		
-		//final int colAmount = reader.readLine().split(inputSeparator, -1).length;
-		final int colAmount = headers.length;
-		// keep count of the row currently read for error messages
-		int i = 1;
-
-		// each line is a row of fields which will be converted to a BitSet
-		String line = "";
-		String[] fields = null;
-		BitSet bitset = null;
-		String rowName = null;
-		while ((line = reader.readLine()) != null) {
-			fields = line.split(inputSeparator, -1);
-			if (fields.length != colAmount) {
-				throw new Exception("Bad input at line " + i + ": amount of fields is " + fields.length + " but "
-						+ colAmount + " columns were read." + " ~ " + line);
-			}
-			bitset = new BitSet(colAmount);
-			rowName = fields[0];
-			// iterate and convert fields
-			for (int j = 1; j < fields.length; j++) {
-				if (parseField(fields[j])) {
-					bitset.set(j - 1);
-				}
-			}
-			// commit the result
-			result.map.put(rowName, bitset);
-		}
-
-		return result;
-	}
-
-	// convert each column of the input table to a BitSet mapped to it's column
-	// heading
-	private static ExtMap readInputCols(BufferedReader reader, String inputSeparator) throws Exception {
-		
-		String[]headers=reader.readLine().split(inputSeparator, -1);
-		Map <String,BitSet>bitsets=new TreeMap<String,BitSet>();
-		ExtMap result= new ExtMap(bitsets,headers);
-		
-		//Map<String, BitSet> result = new TreeMap<String, BitSet>();
-
-		// get a list of column names from the table header
-		// final String[] colNames = reader.readLine().split(inputSeparator, -1);
-		final String[] colNames=headers;
-
-		String line = null;
-		String[] fields = null;
-		String colName = null;
-		BitSet bitset;
-		int i = 1;
-		while ((line = reader.readLine()) != null) {
-			fields = line.split(inputSeparator, -1);
-			if (fields.length != colNames.length) {
-				throw new Exception("Bad input at line " + i + ": amount of fields is " + fields.length + " but "
-						+ colNames.length + " columns were read." + " ~ " + line);
-			}
-			// row name not needed, so j = 1
-			for (int j = 1; j < fields.length; j++) {
-				colName = colNames[j];
-				bitset = result.map.getOrDefault(colName, new BitSet());
-				if (parseField(fields[j])) {
-					bitset.set(i - 1);
-				}
-				// commit result
-				result.map.put(colName, bitset);
-			}
-			i++;
-		}
-
-		return result;
-	}
-
-	// parse a numerical input field, return true if it contains a numerical
-	// value > 0, and false if it is empty
-	private static boolean parseField(String field) {
-		if (!StringUtils.isBlank(field) && (Double.parseDouble(field) > 0.0)) {
-			return true;
-		}
-		return false;
-	}
-
-	// return the amount of bits, that are set in the given BitSet
-	private static int countBitsSet(BitSet bitset) {
-		int result = 0;
-		for (int i = 0; i < bitset.length(); i++) {
-			if (bitset.get(i)) {
-				result += 1;
-			}
-		}
 		return result;
 	}
 
@@ -380,6 +226,38 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			break;
 		default:
 			throw new IllegalStateException("Unknown bitwise operation: " + op);
+		}
+
+		return result;
+	}
+
+	// get the BitSet associated with the given row or column name. If it
+	// doesn't exist already create it from the given matrix
+	private BitSet getOrCreateBitSet(String name) {
+		// try to find the BitSet in those already created
+		BitSet result = bitsets.get(name);
+
+		// if it doesn't exist, create it
+		if (result == null) {
+			double[] values;
+
+			// decide on whether to use rows or columns
+			if (useRows) {
+				values = inMatrix.getRow(name);
+			} else {
+				values = inMatrix.getColumn(name);
+			}
+
+			// create the BitSet from the matrix' values
+			result = new BitSet(values.length);
+			for (int i = 0; i < values.length; i++) {
+				if (!ZERO_D.equals(values[i])) {
+					result.set(i);
+				}
+			}
+
+			// save the new BitSet
+			bitsets.put(name, result);
 		}
 
 		return result;
@@ -427,6 +305,39 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				out.outputToAllCharPipes("\n");
 			}
 		}
+	}
+
+	@Override
+	public void applyProperties() throws Exception {
+
+		// Set defaults for properties not yet set
+		super.setDefaultsIfMissing();
+
+		// A string for testing user inputs on
+		String value;
+
+		// set own properties
+		value = this.getProperties().getProperty(PROPERTYKEY_USE_ROWS,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_USE_ROWS));
+		useRows = Boolean.parseBoolean(value);
+
+		value = this.getProperties().getProperty(PROPERTYKEY_OPERATE_REFLEXIVE,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_OPERATE_REFLEXIVE));
+		reflexive = Boolean.parseBoolean(value);
+
+		value = this.getProperties().getProperty(PROPERTYKEY_OPERATION,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_OPERATION));
+		if (!(value == null) && !value.isEmpty()) {
+			operation = Operation.valueOf(value);
+		}
+
+		inputSeparator = this.getProperties().getProperty(PROPERTYKEY_INPUT_SEPARATOR,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_INPUT_SEPARATOR));
+		outputSeparator = this.getProperties().getProperty(PROPERTYKEY_OUTPUT_SEPARATOR,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_OUTPUT_SEPARATOR));
+
+		// Apply parent object's properties (just the name variable actually)
+		super.applyProperties();
 	}
 
 }

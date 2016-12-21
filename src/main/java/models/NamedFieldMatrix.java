@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -282,6 +284,24 @@ public class NamedFieldMatrix {
 	 */
 	public int getColumnsAmount() {
 		return colAmount;
+	}
+
+	/**
+	 * Gets a view on the matrix' row names currently set.
+	 * 
+	 * @return a view on the matrix' row names currently set.
+	 */
+	public Set<String> getRowNames() {
+		return Collections.unmodifiableSet(rowNamesToRows.keySet());
+	}
+
+	/**
+	 * Gets a view on the matrix' column names currently set.
+	 * 
+	 * @return a view on the matrix' column names currently set.
+	 */
+	public Set<String> getColumnNames() {
+		return Collections.unmodifiableSet(colNamesToCols.keySet());
 	}
 
 	/**
