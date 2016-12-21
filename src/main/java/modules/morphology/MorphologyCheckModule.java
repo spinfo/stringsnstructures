@@ -107,6 +107,7 @@ public class MorphologyCheckModule extends ModuleImpl {
 			}
 
 			// parse candidate groups and output some statistics for each
+			String[] candidates;
 			inputLine = null;
 			labels = null;
 			Map<String, Integer> labelCounts = new HashMap<>();
@@ -117,17 +118,23 @@ public class MorphologyCheckModule extends ModuleImpl {
 				for (String l : allLabels) {
 					labelCounts.put(l, 0);
 				}
+				
+				// get candidates and ignore groups with only one candidate
+				candidates = inputLine.split(GROUPS_DELIM);
+				if (candidates.length <= 1) {
+					continue;
+				}
 
 				// loop over groups and count
-				for (String token : inputLine.split(GROUPS_DELIM)) {
-					token = token.trim();
+				for (String candidate : candidates) {
+					candidate = candidate.trim();
 
-					if (token.isEmpty()) {
+					if (candidate.isEmpty()) {
 						continue;
 					}
 
 					count += 1;
-					labels = correctMorphemes.get(token);
+					labels = correctMorphemes.get(candidate);
 					if (labels != null) {
 						hits += 1;
 						for (String l : labels) {
@@ -136,7 +143,7 @@ public class MorphologyCheckModule extends ModuleImpl {
 					}
 				}
 				
-				// output stuff
+				// output the evaluation
 				StringBuilder outStr = new StringBuilder();
 				outStr.append(String.format("%.8f, (", (hits / (float) count)));
 				for (String l : labelCounts.keySet()) {
@@ -144,8 +151,8 @@ public class MorphologyCheckModule extends ModuleImpl {
 				}
 				outStr.setLength(outStr.length() - 2);
 				outStr.append(") - [");
-				outStr.append(inputLine.substring(0, 13));
-				outStr.append("...]\n");
+				outStr.append(inputLine);
+				outStr.append("]\n");
 				out.outputToAllCharPipes(outStr.toString());
 				outStr.setLength(0);
 			}

@@ -3,6 +3,7 @@ package modules.segmentation;
 import java.io.BufferedReader;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import common.parallelization.CallbackReceiver;
 import models.NamedFieldMatrix;
@@ -14,6 +15,8 @@ import modules.OutputPort;
 import base.workbench.ModuleRunner;
 
 public class SegmentDistanceMatrixModule extends ModuleImpl {
+	
+	private static Logger LOGGER = Logger.getLogger(SegmentDistanceMatrixModule.class.getName());
 
 	// Main method for stand-alone execution
 	public static void main(String[] args) throws Exception {
@@ -81,11 +84,15 @@ public class SegmentDistanceMatrixModule extends ModuleImpl {
 			String line;
 			String[] segments;
 			SegmentDistanceMatrix matrix = new SegmentDistanceMatrix();
+			
+			LOGGER.info("Before: INPUT");
 
 			while ((line = reader.readLine()) != null) {
 				segments = line.split(inputdelimiterSegment);
 				matrix.addSegments(segments);
 			}
+			
+			LOGGER.info("Before: OUTPUT");
 
 			OutputPort dmOut = getOutputPorts().get(ID_OUTPUT_DISTANCE_MATRIX);
 			OutputPort hdOut = getOutputPorts().get(ID_OUTPUT_HAMMING_DISTANCES);
