@@ -2,6 +2,7 @@ package modules.matrix;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,12 +28,67 @@ import modules.OutputPort;
  */
 import base.workbench.ModuleRunner;
 
+
+
+
 public class MatrixBitwiseOperationModule extends ModuleImpl {
+	
+	//-----test for Check JR-------------------------------------------------------------------------
+	
+	private static String best_n1, best_n2;
+	private static BitSet best_BitSet=null;
+	private static int best_nr=0;
+	private static int difference=0;
+	
+	//------test for Check JR End-------------------------------------------------------------------------
 
 	// Main method for stand-alone execution
 	public static void main(String[] args) throws Exception {
 		ModuleRunner.runStandAlone(MatrixBitwiseOperationModule.class, args);
 	}
+	
+	
+	// test for Check JR
+	private class Best {
+		void selectBest(BitSet product, BitSet nrBits,String name1,String name2) {
+			if (product.cardinality()==difference) {
+				int nr=nrBits.cardinality();
+				if (nr>best_nr) {
+					best_nr=nr;
+					best_n1=name1;
+					best_n2=name2;
+					best_BitSet=nrBits;
+				}
+			}
+		}// selectBest
+		
+		void printBest(NamedFieldMatrix matrix) {
+			System.out.println("Best: "+best_n1+ "  " +best_n2+" "+best_BitSet.cardinality());
+			for (int i=0;i<best_BitSet.length();i++){
+				if(best_BitSet.get(i)){
+					String colName=matrix.getColumnName(i);
+					System.out.println(colName);
+				}
+			}
+		}
+		
+		
+	}//Best
+	
+	private class evalMatrixProposals {
+		int concurrent;// concurrency
+		int result;
+		String concurrentString;
+		
+		evalMatrixProposals(String str,int conc){
+			concurrent=conc; // concurrency
+			result=0;
+			concurrentString=str;
+			System.out.print("evalMatrixProp: "+str+ " conc: "+conc+" ");
+		}
+	}
+	
+	
 
 	private static final String MODULE_DESC = "Module interprets either rows or columns of an input matrix as binary bitsets"
 			+ " and performs symmetrical operations (AND, OR, XOR) on these bitsets. Output"
@@ -42,6 +98,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	private final static String INPUT_ID = "Input Matrix";
 	private final static String INPUT_DESC = "[text/csv] An input csv table. Header row and first column are expected to contain Strings as labels. All other fields are assumed to be blank or contain numerical values.";
 
+	private final static String INPUTConcurrent_ID="Input Concurrent";
+	private final static String INPUTConcurrent_DESC="Concurrent entries \';\' separated";
+	
 	private final static String OUTPUT_MATRIX_ID = "Output Matrix";
 	private final static String OUTPUT_MATRIX_DESC = "[text/csv] A symmetrical csv table mapping row/column headings to each other and containing the amounts of bits sets after the the operation specified was applied.";
 
@@ -81,6 +140,37 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	// The input matrix may be accessed from some private methods
 	NamedFieldMatrix inMatrix;
+	
+	private HashMap<String,evalMatrixProposals> readEvalHashMap(BufferedReader r) throws Exception{
+		
+		HashMap<String,evalMatrixProposals> concurrHashMap=new HashMap<String,evalMatrixProposals>();
+		String line;
+		while((line=r.readLine())!=null){
+			if (line.length()>0){
+				String[] concurrStr= line.split("\\$;?");
+				int nrDollar=concurrStr.length;
+				System.out.print("redEvalMatrixProposals: "+line+" nrDollars: "+nrDollar+" ");
+				nrDollar--;
+				//int nrConcurr=-1;// no concurrency
+				int nrConcurr=0;int noConcurrency=0;// negative value, s.u.
+				if (nrDollar==0)noConcurrency=1;
+				while(nrDollar>=0) {
+					String[] firstOfConcurr=concurrStr[nrConcurr].split("\\|");
+					evalMatrixProposals c=
+					new evalMatrixProposals(firstOfConcurr[0],nrConcurr-noConcurrency);
+					// enter only once
+					if(!concurrHashMap.containsValue(firstOfConcurr[0]))
+						concurrHashMap.put(firstOfConcurr[0],c);
+					nrDollar--;
+					nrConcurr++;
+				}
+				System.out.println();
+			}
+			
+		}
+		
+		return concurrHashMap;
+	}
 
 	public MatrixBitwiseOperationModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
@@ -94,6 +184,10 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		InputPort input = new InputPort(INPUT_ID, INPUT_DESC, this);
 		input.addSupportedPipe(CharPipe.class);
 		super.addInputPort(input);
+		
+		InputPort inputConcurrent = new InputPort(INPUTConcurrent_ID, INPUTConcurrent_DESC, this);
+		inputConcurrent.addSupportedPipe(CharPipe.class);
+		super.addInputPort(inputConcurrent);
 
 		OutputPort matrixOutput = new OutputPort(OUTPUT_MATRIX_ID, OUTPUT_MATRIX_DESC, this);
 		matrixOutput.addSupportedPipe(CharPipe.class);
@@ -124,7 +218,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	public boolean process() throws Exception {
 		boolean result = true;
-
+		//--------------JR----------
+		Best best=new Best();
+		//--------------End JR------
 		// a reader to read input line by line
 		BufferedReader inputReader = new BufferedReader(getInputPorts().get(INPUT_ID).getInputReader());
 
@@ -142,6 +238,12 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			} else {
 				names = inMatrix.getColumnNames();
 			}
+			
+			HashMap<String,evalMatrixProposals> evalHashMap=null;
+			if (getInputPorts().get(INPUTConcurrent_ID)!=null)
+			 evalHashMap= 
+			 this.readEvalHashMap(new BufferedReader(getInputPorts().get(INPUTConcurrent_ID).getInputReader()));
+		    
 
 			// build a matrix containing the result of applying the operation to
 			// each pair of BitSets
@@ -150,10 +252,20 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			BitSet operand2 = null;
 			BitSet product = null;
 			Double value = null;
+			
+		    
+			evalMatrixProposals eval=null;
 			for (String name1 : names) {
-
+				System.out.print("Name: "+name1);
+				eval=evalHashMap.get(name1);    //get(index);
+				if(eval !=null) {
+					
+					System.out.print("\t "+" evalHashMap: "+eval.concurrent);
+				}
+				System.out.println();
+				
 				operand1 = getOrCreateBitSet(name1);
-
+			
 				for (String name2 : names) {
 					// If this combination was already calculated in a
 					// previous iteration, just copy the value
@@ -176,9 +288,17 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					operand2 = getOrCreateBitSet(name2);
 					product = performOperation(operand1, operand2, operation);
 					outMatrix.setValue(name1, name2, (double) product.cardinality());
-				}
-			}
+					
+					//---------------JR--------------------------
+					best.selectBest(product,operand1,name1,name2);
+					//---------------JR--------------------------
+					
+				}//for (String name2 : names) 
+			}//for (String name1 : names)
 			
+			//test jr------------
+			 best.printBest(inMatrix);
+			//----------End test
 			// these data structures might have gotten big and may be
 			// harvested directly after processing finished.
 			inMatrix = null;
