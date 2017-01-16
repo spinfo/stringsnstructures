@@ -154,7 +154,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			}
 			
 			return false;
-		}
+		}//checkConcurrency
 	}// class Concurrency
 	
 	private class Occurrencies {
@@ -216,12 +216,12 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			}// for int row
 			
 			
-		}
+		}// rowSum
 		
 		private double calcVal(int colVal,int rowVal){
 			// TODO
 			return (double) colVal+rowVal;
-		}
+		}//calcVal
 		
 		void calculatemorphVectorMatrix(NamedFieldMatrix namedFieldMatrix) {
 			final Double ZERO_D = new Double(0.0);
@@ -238,8 +238,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					}
 				}
 			
-		}
-	}
+		}//calculatemorphVectorMatrix
+	}// class MorphResult
 //---------End jr---------------------------------------------------------------------------
 	
 	private static final String MODULE_DESC = "Module interprets either rows or columns of an input matrix as binary bitsets"
