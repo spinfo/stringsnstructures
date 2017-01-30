@@ -16,7 +16,7 @@ public class NeighborJoining {
 	private double[][] distanceMatrix;
 	private int numCluster;
 	private Map<Integer, String> aliasNames;
-	private int[] alias; // merkt sich die ursprünglichen Indizes aus der
+	private int[] alias; // merkt sich die urspruenglichen Indizes aus der
 	// Distanzmatrix
 	private double[] r; // Netto-Divergenzen
 	private int newIndex;
@@ -70,6 +70,7 @@ public class NeighborJoining {
 		r = new double[numCluster];
 	}
 
+	
 	private boolean isAdditive(double[][] matrix) {
 		boolean holds = false;
 		for (int i = 0; i < matrix.length; i++) {

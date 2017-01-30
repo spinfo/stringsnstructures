@@ -172,11 +172,13 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	
 	private class MorphResult {
 		
-		ArrayList<Integer> columnSum;
-		ArrayList<Integer> rowSum;
-		NamedFieldMatrix resultMatrix;
+		private ArrayList<Integer> columnSum;
+		private ArrayList<Integer> rowSum;
+		private ArrayList <Double>resultList=null;
+		//NamedFieldMatrix resultMatrix;
+		private int nrBitsInRow=0;
 		
-		void columnSum(NamedFieldMatrix namedFieldMatrix){
+		private void columnSum(NamedFieldMatrix namedFieldMatrix){
 		// the sum of all bits set in a column, for all columns
 			columnSum= new ArrayList<Integer>();
 			int columnsAmount=namedFieldMatrix.getColumnsAmount();
@@ -196,7 +198,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 		}// columnSum();
 		
-		void rowSum(NamedFieldMatrix namedFieldMatrix){
+		private void rowSum(NamedFieldMatrix namedFieldMatrix){
 			rowSum= new ArrayList<Integer>();
 			// the sum of all bits set in a row, for all rows
 			
@@ -211,34 +213,74 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					}
 					
 				}// for int i
-				int nrBitsInRow=result.cardinality();
+				nrBitsInRow=result.cardinality();
 				rowSum.add(nrBitsInRow);
 			}// for int row
 			
 			
 		}// rowSum
 		
-		private double calcVal(int colVal,int rowVal){
+		/*private double calcVal(int colVal,int rowVal){
 			// TODO
-			return (double) colVal+rowVal;
+			return (double) colVal+rowVal/nrBitsInRow;
 		}//calcVal
+		*/
 		
-		void calculatemorphVectorMatrix(NamedFieldMatrix namedFieldMatrix) {
+		private void calculatemorphVectorMatrix(NamedFieldMatrix namedFieldMatrix) {
 			final Double ZERO_D = new Double(0.0);
-			resultMatrix=new NamedFieldMatrix();
+			resultList=new ArrayList<Double>();
 			int rowsAmount=namedFieldMatrix.getRowAmount();
 			int columnsAmount=namedFieldMatrix.getColumnsAmount();
-			double resVal=0;
-			for (int row=0;row<rowsAmount;row++)
+			double resVal;
+			for (int row=0;row<rowsAmount;row++){
+				resVal=0;
 				for (int col=0;col<columnsAmount;col++){
+					// get non zero values of namedFieldMatrix
 					double val=namedFieldMatrix.getValue(row, col);
 					if(val!=ZERO_D){
-						resVal=calcVal(this.columnSum.get(col),this.rowSum.get(row));
-						resultMatrix.setValue(row, col, resVal);
+						resVal=resVal+this.columnSum.get(col);//=calcVal(this.columnSum.get(col),this.rowSum.get(row))+resVal;
+						//resultMatrix.setValue(row, col, resVal);
+					}
+					
+				}
+				
+				resultList.add(resVal);
+			}
+		}//calculatemorphVectorMatrix
+		
+		void morphProcess(NamedFieldMatrix namedFieldMatrix,Set<String> names) {
+			//columnSum(namedFieldMatrix);
+			//rowSum(namedFieldMatrix);
+			//calculatemorphVectorMatrix(namedFieldMatrix);
+			Operation operation=Operation.valueOf("AND");
+			
+			for (String name1:names){
+				
+				int val=0;
+				int res=0;
+				BitSet operand1 = getOrCreateBitSet(name1);
+				int cardName1=operand1.cardinality();
+				for (String name2:names){
+					if (name1 != name2) {
+						BitSet operand2 = getOrCreateBitSet(name2);
+						BitSet product = 
+						performOperation(operand1, operand2, operation);
+						val=(int)(Math.pow(product.cardinality(),3) * 
+								Math.pow(cardName1,3));
+						res=res+val*name2.length();
 					}
 				}
+				System.out.println("morphProcess "+name1+" \t "+ res);
+			}
 			
-		}//calculatemorphVectorMatrix
+			// output, test
+			/*for (String name:names){
+				System.out.println(name+"  "+ this.resultList.get(row) *
+						this.rowSum.get(name));
+			}*/
+			
+		}//morphProcess
+		
 	}// class MorphResult
 //---------End jr---------------------------------------------------------------------------
 	
@@ -431,6 +473,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 			//test jr------------
 			 best.printBest(inMatrix);
+			 MorphResult morphResult=new MorphResult();
+			 morphResult.morphProcess(inMatrix,names);
+			 
 			//----------End test
 			// these data structures might have gotten big and may be
 			// harvested directly after processing finished.
