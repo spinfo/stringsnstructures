@@ -283,6 +283,78 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 		}//morphProcess
 		
+		HashMap<String,Integer> classBuilding(NamedFieldMatrix outMatrix,Set<String> names,
+			int maxSimilarity){
+			
+			HashMap<String,Integer> classes = new HashMap<String,Integer>();
+			int classNr=0;
+			int minSimilarity=maxSimilarity/4;
+			// init HashMap classes: value 0, i.e. no class at begin
+			for (String name:names){
+				classes.put(name, classNr/*0*/);
+			}
+			
+			for (int sim=maxSimilarity;sim<=minSimilarity;sim--) {
+				for (String name1:names){
+					for (String name2:names){
+						if(outMatrix.getValue(name1, name2)==sim){
+							if(classes.get(name1)==0){
+								if (classes.get(name2)==0){
+									// new class, new classNr
+									classNr++;
+									classes.put(name1,classNr);
+									classes.put(name2,classNr);
+								} else {
+									// classNr of name2 is given to name1
+									classes.put(name1,classes.get(name2));
+								}									
+									
+							} else if (classes.get(name2)==0){
+								// classNr of name1 is given to name2
+								classes.put(name2,classes.get(name1));
+								
+							} else {
+								// set all classNrs from name2 to name1
+								int nrName1=classes.get(name1);
+								int nrName2=classes.get(name2);
+								// get all name2 and change to nrName1
+								for (String name:names){
+									if(classes.get(name)==nrName2) {
+										classes.put(name2,nrName2);
+									}
+								}
+							}
+								
+						}
+					}
+					
+				}
+			}
+			
+			
+			return classes;
+		}
+		
+		void result(HashMap <String,Integer> resultMap, int classes,Set<String> names){
+			
+			// classes found
+			for (int classNr=1;classNr<=classes;classNr++){
+				for (String name:names){
+					if(resultMap.get(name)==classNr) {
+						// TODO write name, classNr 
+					}
+				}
+				
+			}
+			
+			// no classification
+			for (String name:names){
+				if(resultMap.get(name)==0) {
+					// TODO write name, no class 
+				}
+			}
+		}
+		
 	}// class MorphResult
 //---------End jr---------------------------------------------------------------------------
 	
