@@ -47,6 +47,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	}
 	
 	
+	
+	
 	//---------- JR-----xtensions---------------------------------------------------------
 	private class Best {
 		void selectBest(BitSet product, BitSet nrBits,String name1,String name2) {
@@ -454,6 +456,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					// actually compare the two bitsets and save the amount of
 					// bits set in the result to the output matrix
 					operand2 = getOrCreateBitSet(name2);
+					// to do operation should be AND
 					product = performOperation(operand1, operand2, operation);
 					outMatrix.setValue(name1, name2, (double) product.cardinality());
 					
@@ -473,8 +476,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 			//test jr------------
 			 best.printBest(inMatrix);
-			 MorphResult morphResult=new MorphResult();
-			 morphResult.morphProcess(inMatrix,names);
+			// MorphResult morphResult=new MorphResult();
+			// morphResult.morphProcess(inMatrix,names);
 			 
 			//----------End test
 			// these data structures might have gotten big and may be
