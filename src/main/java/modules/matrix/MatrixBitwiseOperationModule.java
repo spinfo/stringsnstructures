@@ -52,18 +52,21 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	//---------- JR-----xtensions---------------------------------------------------------
 	private class Best {
 		void selectBest(BitSet product, BitSet nrBits,String name1,String name2) {
-			if (product.cardinality()==difference) {
-				int nr=nrBits.cardinality();
+			//if (product.cardinality()==difference) {
+				//int nr=nrBits.cardinality();
+				int nr=product.cardinality();
 				if (nr>best_nr) {
 					best_nr=nr;
 					best_n1=name1;
 					best_n2=name2;
-					best_BitSet=nrBits;
+					//best_BitSet=nrBits;
+					best_BitSet=product;
 				}
-			}
+			//}
 		}// selectBest
 		
 		void printBest(NamedFieldMatrix matrix) {
+			System.out.println();
 			System.out.println("Best: "+best_n1+ "  " +best_n2+" "+best_BitSet.cardinality());
 			for (int i=0;i<best_BitSet.length();i++){
 				if(best_BitSet.get(i)){
@@ -118,7 +121,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		boolean checkConcurrency(String name1,String name2) throws Exception{
 			
 			if(name2.startsWith(name1)) {
-				System.out.print("name1 "+name1 +" is prefix of "+name2+"  ");
+				//System.out.print("name1 "+name1 +" is prefix of "+name2+"  ");
 				Occurrencies occ1= concurrHashMap.get(name1);
 				/*if (occ1!=null ){
 					for (int index=0;index<occ1.lineNrs.size();index++){
@@ -140,8 +143,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					for (int index1=0;index1<occ1.lineNrs.size();index1++){
 						for (int index2=0;index2<occ2.lineNrs.size();index2++){									
 							if (occ1.lineNrs.get(index1).equals(occ2.lineNrs.get(index2))){
-								System.out.println(" concurrency "+
-								occ1.lineNrs.get(index1)+"  "+occ2.lineNrs.get(index2));
+								//System.out.println(" concurrency "+
+								//occ1.lineNrs.get(index1)+"  "+occ2.lineNrs.get(index2));
 										
 							}
 						}
@@ -150,7 +153,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				
 			}
 			else if (name1.startsWith(name2)){
-				System.out.println("name2 "+name2 +" is prefix of "+name1);
+				//System.out.println("name2 "+name2 +" is prefix of "+name1);
 				Exception e= new Exception();
 				throw e;
 			}
@@ -166,7 +169,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		Occurrencies(int lineNr){
 			lineNrs=new ArrayList<Integer>();
 			lineNrs.add(lineNr);
-			System.out.print("Occurrencies lineNr: "+lineNr+" ");
+			//System.out.print("Occurrencies lineNr: "+lineNr+" ");
 		}
 	}
 	
@@ -179,6 +182,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		private ArrayList <Double>resultList=null;
 		//NamedFieldMatrix resultMatrix;
 		private int nrBitsInRow=0;
+		private int classNr=0;
 		
 		private void columnSum(NamedFieldMatrix namedFieldMatrix){
 		// the sum of all bits set in a column, for all columns
@@ -287,21 +291,24 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			int maxSimilarity){
 			
 			HashMap<String,Integer> classes = new HashMap<String,Integer>();
-			int classNr=0;
-			int minSimilarity=maxSimilarity/4;
+			
+			int minSimilarity=maxSimilarity/2;
 			// init HashMap classes: value 0, i.e. no class at begin
 			for (String name:names){
 				classes.put(name, classNr/*0*/);
 			}
 			
-			for (int sim=maxSimilarity;sim<=minSimilarity;sim--) {
+			for (int sim=maxSimilarity;sim>=minSimilarity;sim--) {
+				
 				for (String name1:names){
 					for (String name2:names){
+						
 						if(outMatrix.getValue(name1, name2)==sim){
-							if(classes.get(name1)==0){
+							if((Integer)classes.get(name1) ==0){
 								if (classes.get(name2)==0){
 									// new class, new classNr
 									classNr++;
+									System.out.println(classNr);
 									classes.put(name1,classNr);
 									classes.put(name2,classNr);
 								} else {
@@ -325,35 +332,38 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 								}
 							}
 								
-						}
-					}
-					
-				}
-			}
+						}//if(outMatrix.getValue(name1, name2)==sim){
+					}//for (String name1:names){				
+				}//for (String name2:names){
+			}//for (int sim=maxSimilarity;sim<=minSimilarity;sim--)
 			
 			
 			return classes;
-		}
+		}//classBuilding
 		
-		void result(HashMap <String,Integer> resultMap, int classes,Set<String> names){
-			
+		void result(HashMap <String,Integer> resultMap,Set<String> names){
+			System.out.println();
+			System.out.println("result classNr: "+classNr);
+			System.out.println();
 			// classes found
-			for (int classNr=1;classNr<=classes;classNr++){
+			for (int classIndex=1;classIndex<=classNr;classIndex++){
 				for (String name:names){
-					if(resultMap.get(name)==classNr) {
-						// TODO write name, classNr 
+					if(resultMap.get(name)==classIndex) {
+						// write name, classNr 
+						System.out.println(name+" classIndex: "+classIndex);
 					}
-				}
-				
-			}
-			
+				}//for (String name:names){				
+			}//for (int classIndex=1;classndex<=classes;classIndex++){
+			System.out.println();
+			System.out.println(" no Class found");
 			// no classification
 			for (String name:names){
 				if(resultMap.get(name)==0) {
-					// TODO write name, no class 
+					// write name, no class 
+					System.out.println(name);
 				}
-			}
-		}
+			}//for (String name:names){
+		}// result
 		
 	}// class MorphResult
 //---------End jr---------------------------------------------------------------------------
@@ -457,6 +467,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	public boolean process() throws Exception {
 		boolean result = true;
+		
+		// jr
+		Operation operation=Operation.valueOf("AND");
 		//--------------JR----------
 		Best best=new Best();
 		//--------------End JR------
@@ -498,13 +511,13 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		    
 			//evalMatrixProposals eval=null;
 			for (String name1 : names) {
-				System.out.print("Name: "+name1);
+				//System.out.print("Name: "+name1);
 				//eval=evalHashMap.get(name1);    //get(index);
 				//if(eval !=null) {
 				//	
 				//	System.out.print("\t "+" evalHashMap: "+eval.concurrent);
 				//}
-				System.out.println();
+				//System.out.println();
 				
 				operand1 = getOrCreateBitSet(name1);
 			
@@ -531,7 +544,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					// to do operation should be AND
 					product = performOperation(operand1, operand2, operation);
 					outMatrix.setValue(name1, name2, (double) product.cardinality());
-					
+					if(product.cardinality()>0){
+						System.out.println(name1+" "+name2+" "+ product.cardinality());
+					}
 					//---------------JR--------------------------
 					best.selectBest(product,operand1,name1,name2);
 					//---------------JR--------------------------
@@ -539,7 +554,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					//----test jr
 					if (concurrency!=null)
 						if (concurrency.checkConcurrency(name1, name2)) {
-							System.out.println("name1 "+name1 +" is concurrent to "+name2+"  ");
+							//System.out.println("name1 "+name1 +" is concurrent to "+name2+"  ");
 						}
 					
 					
@@ -548,9 +563,12 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 			//test jr------------
 			 best.printBest(inMatrix);
-			// MorphResult morphResult=new MorphResult();
-			// morphResult.morphProcess(inMatrix,names);
-			 
+			//-----------------------------------------------
+			MorphResult morphResult=new MorphResult();
+			
+			HashMap<String,Integer>resultMap=
+			morphResult.classBuilding(outMatrix,names,best_nr);
+			morphResult.result(resultMap, names); 
 			//----------End test
 			// these data structures might have gotten big and may be
 			// harvested directly after processing finished.
@@ -589,13 +607,13 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 		switch (op) {
 		case AND:
-			result.and(op2);
+			result.and(op2);	//System.out.print("AND ");
 			break;
 		case OR:
-			result.or(op2);
+			result.or(op2); //System.out.print("OR ");
 			break;
 		case XOR:
-			result.xor(op2);
+			result.xor(op2);//System.out.print("XOR  ");
 			break;
 		default:
 			throw new IllegalStateException("Unknown bitwise operation: " + op);
