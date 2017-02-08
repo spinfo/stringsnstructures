@@ -51,7 +51,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	
 	//---------- JR-----xtensions---------------------------------------------------------
 	private class Best {
-		void selectBest(BitSet product, BitSet nrBits,String name1,String name2) {
+		void selectBest(BitSet product, /*BitSet nrBits,*/ String name1,String name2) {
 			//if (product.cardinality()==difference) {
 				//int nr=nrBits.cardinality();
 				int nr=product.cardinality();
@@ -287,7 +287,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 		}//morphProcess
 		
-		HashMap<String,Integer> classBuilding(NamedFieldMatrix outMatrix,Set<String> names,
+	
+		HashMap<String,Integer> classBuilding(NamedFieldMatrix distanceMatrix,Set<String> names,
 			int maxSimilarity){
 			
 			HashMap<String,Integer> classes = new HashMap<String,Integer>();
@@ -296,6 +297,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			// init HashMap classes: value 0, i.e. no class at begin
 			for (String name:names){
 				classes.put(name, classNr/*0*/);
+			
+			
 			}
 			
 			for (int sim=maxSimilarity;sim>=minSimilarity;sim--) {
@@ -303,7 +306,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				for (String name1:names){
 					for (String name2:names){
 						
-						if(outMatrix.getValue(name1, name2)==sim){
+						if(distanceMatrix.getValue(name1, name2)==sim){
 							if((Integer)classes.get(name1) ==0){
 								if (classes.get(name2)==0){
 									// new class, new classNr
@@ -332,7 +335,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 								}
 							}
 								
-						}//if(outMatrix.getValue(name1, name2)==sim){
+						}//if(distanceMatrix.getValue(name1, name2)==sim){
 					}//for (String name1:names){				
 				}//for (String name2:names){
 			}//for (int sim=maxSimilarity;sim<=minSimilarity;sim--)
@@ -347,10 +350,25 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			System.out.println();
 			// classes found
 			for (int classIndex=1;classIndex<=classNr;classIndex++){
+				boolean notWritten=true;
 				for (String name:names){
 					if(resultMap.get(name)==classIndex) {
-						// write name, classNr 
-						System.out.println(name+" classIndex: "+classIndex);
+						if(notWritten){System.out.print("-----classIndex "+
+								classIndex+"-----morphfollowing ");
+							notWritten=false;
+						// morphemes following: Caveat:ALL morph, not only the subset of common
+						// morphmes
+							double[]row=inMatrix.getRow(name);
+							for (int i=0;i<row.length;i++){
+								if(row[i]!=0){
+									String colName=inMatrix.getColumnName(i);
+									System.out.print(colName+" ");
+								}//if
+							}//for
+							System.out.println();
+						}
+						// write name 
+						System.out.println(name);
 					}
 				}//for (String name:names){				
 			}//for (int classIndex=1;classndex<=classes;classIndex++){
@@ -548,7 +566,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 						System.out.println(name1+" "+name2+" "+ product.cardinality());
 					}
 					//---------------JR--------------------------
-					best.selectBest(product,operand1,name1,name2);
+					best.selectBest(product,/*operand1,*/name1,name2);
 					//---------------JR--------------------------
 					
 					//----test jr
