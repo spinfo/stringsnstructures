@@ -45,7 +45,7 @@ public class MatrixOperations extends ModuleImpl {
 	private NamedFieldMatrix matrix;
 	
 	// Save the calculated distance matrix as two dimensional double array.
-	private double[][] hamMatrix;
+	private int[][] hamMatrix;
 	
 	// Save the column names as string array.
 	private String[] colNames;
@@ -106,9 +106,6 @@ public class MatrixOperations extends ModuleImpl {
 	
 	@Override
 	public boolean process() throws Exception {
-
-		// Initialize matrix.
-		this.matrix = new NamedFieldMatrix();
 		
 		try {
 			BufferedReader reader = new BufferedReader(getInputPorts().get(ID_INPUT).getInputReader());
@@ -117,43 +114,68 @@ public class MatrixOperations extends ModuleImpl {
 			
 			LOGGER.info("Starting to fill the matrix.");
 			
+			int lineCounter = 1;
+			
+			String wholeCsv = "";
+			
 			// Read csv information line wise.
 			while ((line = reader.readLine()) != null) {
-				
-				// Save the information in the matrix and extend it.
-				NamedFieldMatrix.parseCSV(line, this.delimiter);
+								
+				wholeCsv += line + "\n";
 				
 			}
+
+			this.matrix = NamedFieldMatrix.parseCSV(wholeCsv, this.delimiter);
 			
 			LOGGER.info("Matrix filled.");
+			
+			// Initialize the matrix holding the hamming distance values.
+			this.hamMatrix = new int [this.matrix.getRowAmount()][this.matrix.getColumnsAmount()];
 
 			
 			LOGGER.info("Starting to calculate Hamming distances.");
 			// Calculate the Hamming distances line-wise and save the result in form of 
 			// a distance matrix.
 			// Attention we start with the second row, since the first is the header line.
-			for (int i = 1; i < matrix.getRowAmount() - 1 ; i ++) {
+			for (int i = 0; i < this.matrix.getRowAmount() - 1 ; i ++) {
 				for (int j = i + 1; j < this.matrix.getRowAmount(); j ++) {
 					if (! (i == j) ) {
 						this.hamMatrix[i][j] = this.matrix.getHammingDistanceForRows(i, j);
+						// Mirror the matrix.
+						this.hamMatrix[j][i] = this.hamMatrix[i][j];
 					} else {
-						this.hamMatrix[i][j] = 0d;
+						this.hamMatrix[i][j] = 0;
 					}
 				}
 			}
 			
 			LOGGER.info("Hamming distances calculated.");
 			
-			// Save the header line for the hamming distance matrix.
-			this.colNames = (String[]) this.matrix.getColumnNames().toArray();
+			// Save the header line for the Hamming distance matrix.
+			this.colNames = new String[this.matrix.getColumnsAmount()];
+			Object[] ob = new Object[this.matrix.getColumnsAmount()];
+			ob = this.matrix.getColumnNames().toArray();
 			
-			// Save the rowNames for the hamming distance matrix.
-			this.rowNames = (String[]) this.matrix.getRowNames().toArray();
+			for (int i = 0; i < this.colNames.length; i ++) {
+				this.colNames[i] = ob[i].toString();
+			}
+						
+			// Save the rowNames for the Hamming distance matrix.
+			this.rowNames = new String[this.matrix.getRowAmount()];
+			ob = new Object[this.matrix.getRowAmount()];
+			ob = this.matrix.getRowNames().toArray();
+			
+			for (int i = 0; i < this.rowNames.length; i ++) {
+				this.rowNames[i] = ob[i].toString();
+			}
 			
 			OutputPort hamOut = getOutputPorts().get(ID_OUTPUT);
 
 			if (hamOut.isConnected()) {
-								
+				for (int i = 0; i < this.matrix.getRowAmount(); i ++)
+					hamOut.outputToAllCharPipes(this.colNames+";");
+				
+				hamOut.outputToAllCharPipes("\n");
 				for (int i = 0; i < this.matrix.getRowAmount(); i ++)
 					hamOut.outputToAllCharPipes(toCsvLine(i));
 			}
@@ -170,18 +192,12 @@ public class MatrixOperations extends ModuleImpl {
 	
 	private String toCsvLine(int row) {
 		
-		if (row == 0) {
-			String out = this.colNames[0];
-			for (int i = 1; i < this.matrix.getColumnsAmount(); i++)
-				out += this.colNames.toString() + ";" ;
-			return out;
-		} else {
-			String out = this.rowNames[row];
-			for (int i = 1; i < this.matrix.getColumnsAmount(); i ++) {
-				out += this.hamMatrix[row][i] + ";" ;
-			}
-			return out;
+		String out = this.rowNames[row]+";";
+		for (int i = 1; i < this.matrix.getColumnsAmount(); i ++) {
+			out += this.hamMatrix[row][i] + ";" ;
 		}
+		out += "\n";
+		return out;
 		
 	}
 	
