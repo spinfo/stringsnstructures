@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * A dynamically resizing two-dimensional Array whose fields can be adressed by
+ * A dynamically resizing two-dimensional Array whose fields can be addressed by
  * pairs of Strings as well as pairs of numbers.
  * 
  * Supports output to a csv-Table and can be read from a csv-Table.
