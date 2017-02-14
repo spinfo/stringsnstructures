@@ -172,8 +172,13 @@ public class MatrixOperations extends ModuleImpl {
 			OutputPort hamOut = getOutputPorts().get(ID_OUTPUT);
 
 			if (hamOut.isConnected()) {
-				for (int i = 0; i < this.matrix.getRowAmount(); i ++)
-					hamOut.outputToAllCharPipes(this.colNames+";");
+				for (int i = 0; i < this.matrix.getRowAmount(); i ++) {
+					if (i < this.matrix.getRowAmount() - 1)
+						hamOut.outputToAllCharPipes(this.colNames[i]+";");
+					else
+						// Avoid printing the last ";".
+						hamOut.outputToAllCharPipes(this.colNames[i]);
+				}
 				
 				hamOut.outputToAllCharPipes("\n");
 				for (int i = 0; i < this.matrix.getRowAmount(); i ++)
@@ -194,7 +199,11 @@ public class MatrixOperations extends ModuleImpl {
 		
 		String out = this.rowNames[row]+";";
 		for (int i = 1; i < this.matrix.getColumnsAmount(); i ++) {
-			out += this.hamMatrix[row][i] + ";" ;
+			// Avoid printing ";" as last character before new line.
+			if (i < this.matrix.getColumnsAmount() - 1 )
+				out += this.hamMatrix[row][i] + ";" ;
+			else 
+				out += this.hamMatrix[row][i];
 		}
 		out += "\n";
 		return out;
