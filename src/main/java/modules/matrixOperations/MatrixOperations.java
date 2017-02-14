@@ -127,6 +127,9 @@ public class MatrixOperations extends ModuleImpl {
 
 			this.matrix = NamedFieldMatrix.parseCSV(wholeCsv, this.delimiter);
 			
+			// After the matrix is filled the String wholeCsv is obsolete.
+			wholeCsv = null;
+			
 			LOGGER.info("Matrix filled.");
 			
 			// Initialize the matrix holding the hamming distance values.
@@ -153,25 +156,23 @@ public class MatrixOperations extends ModuleImpl {
 			
 			// Save the header line for the Hamming distance matrix.
 			this.colNames = new String[this.matrix.getColumnsAmount()];
-			Object[] ob = new Object[this.matrix.getColumnsAmount()];
-			ob = this.matrix.getColumnNames().toArray();
 			
 			for (int i = 0; i < this.colNames.length; i ++) {
-				this.colNames[i] = ob[i].toString();
+				this.colNames[i] = this.matrix.getColumnName(i);
 			}
 						
 			// Save the rowNames for the Hamming distance matrix.
 			this.rowNames = new String[this.matrix.getRowAmount()];
-			ob = new Object[this.matrix.getRowAmount()];
-			ob = this.matrix.getRowNames().toArray();
 			
 			for (int i = 0; i < this.rowNames.length; i ++) {
-				this.rowNames[i] = ob[i].toString();
+				this.rowNames[i] = this.matrix.getRowName(i);
 			}
 			
 			OutputPort hamOut = getOutputPorts().get(ID_OUTPUT);
 
 			if (hamOut.isConnected()) {
+				// Write an initial empty field.
+				hamOut.outputToAllCharPipes(";");
 				for (int i = 0; i < this.matrix.getRowAmount(); i ++) {
 					if (i < this.matrix.getRowAmount() - 1)
 						hamOut.outputToAllCharPipes(this.colNames[i]+";");
