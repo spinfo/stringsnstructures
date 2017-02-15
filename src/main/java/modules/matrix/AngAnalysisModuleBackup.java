@@ -22,7 +22,7 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
 
-public class AngAnalysisModule extends ModuleImpl {
+public class AngAnalysisModuleBackup extends ModuleImpl {
 
 	// Identifiers for the term to find contexts of
 	public static final String PROPERTYKEY_CONTEXT_WINDOW = "context window";
@@ -40,7 +40,7 @@ public class AngAnalysisModule extends ModuleImpl {
 	private String delimiter;
 	private int nMostFreq;
 
-	public AngAnalysisModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
+	public AngAnalysisModuleBackup(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 		super(callbackReceiver, properties);
 
 		// the module's name, description and category
@@ -106,7 +106,6 @@ public class AngAnalysisModule extends ModuleImpl {
 		////read and process corpus
 		reader = new BufferedReader(super.getInputPorts().get(INPUT_ID_CORPUS).getInputReader());
 		Map<String, Integer> countContexts = new HashMap<String, Integer>();
-		//LinkedHashMap<String, CoOccList> coOccMap = new LinkedHashMap<String, CoOccList>();
 		LinkedHashMap<String, LinkedHashMap<String, Integer>> coOccMap = new LinkedHashMap<String, LinkedHashMap<String, Integer>>();
 		for (String t : terms) countContexts.put(t, 0);
 		

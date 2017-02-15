@@ -35,7 +35,7 @@ public class ANCXmlReader {
 
 		NodeList nList = doc.getElementsByTagName("struct");
 
-		List<String> extracted = new ArrayList<>();
+		List<String> extracted = new ArrayList<String>();
 		String possibleVerb;
 
 		for (int temp = 0; temp < nList.getLength(); temp++) {

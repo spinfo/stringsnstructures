@@ -111,7 +111,7 @@ public class MultiFileReaderModule extends ModuleImpl {
 							throw new InterruptedException(
 									"Thread has been interrupted.");
 						}
-						sb.append(buffer);
+						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(new String(buffer));
 						readChars = fileReader.read(buffer);
 					}
 					

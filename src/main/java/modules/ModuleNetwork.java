@@ -343,7 +343,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * @param module Module to run
 	 * @throws Exception
 	 */
-	private void runModule(Module module) throws Exception {
+	private void runModule(final Module module) throws Exception {
 
 		// Initialize thread
 		final Thread moduleThread = new Thread(module);

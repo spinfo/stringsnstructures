@@ -66,7 +66,7 @@ public class EqualityHashcodeTest {
 	@Test
 	public void testCollection() {
 
-		Set<Type> set1 = new HashSet<>();
+		Set<Type> set1 = new HashSet<Type>();
 		Assert.assertTrue(set1.add(test1_0_1));
 		Assert.assertFalse(set1.add(test1_0_2)); // already contained
 		Assert.assertTrue(set1.add(test1_1_1));
@@ -84,7 +84,7 @@ public class EqualityHashcodeTest {
 
 	@Test
 	public void testMap() {
-		Map<Type, Integer> map = new HashMap<>();
+		Map<Type, Integer> map = new HashMap<Type, Integer>();
 		Assert.assertEquals(null, map.put(test1_0_1, 0));
 		Assert.assertEquals(0, (int) map.put(test1_0_2, 1));
 		Assert.assertEquals(null, map.put(test1_1_1, 2));
