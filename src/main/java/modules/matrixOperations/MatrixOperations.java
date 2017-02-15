@@ -26,7 +26,7 @@ public class MatrixOperations extends ModuleImpl {
 	
 	private static final String PROPERTYKEY_DELIMITER = "Delimiter character"; 
 	private static final String PROPETYKEY_QUOTES = "Quote character";
-	//private static final String PROPERTYKEY_HEADER = "First row as headers";
+	private static final String PROPERTYKEY_OUT_DELIMITER = "Delimiter used for the output";
 	
 	// I/O ports.
 	
@@ -38,7 +38,7 @@ public class MatrixOperations extends ModuleImpl {
 	// Save the properties in these private variables.
 	private String delimiter;
 	private String quotes;
-	//private boolean isHeader;
+	private String outputDelimiter;
 	
 	// Save the input matrix named field matrix.
 	
@@ -61,24 +61,25 @@ public class MatrixOperations extends ModuleImpl {
 		super(callbackReceiver, properties);
 		
 		// Add module description
-		this.setDescription("<p>Segments two inputs and entwines them.</p><p>Among other things, you can use it<br/><ul><li>as a template to base your own modules on,</li><li>to review basic practices, like I/O,</li><li>and to get an overview of the standard implementations needed.</li></ul></p>");
+		this.setDescription("<h1>Named Field Matrix Hamming distance</h1><p>This module reads a plain Named Field Matrix (csv, tsv etc.)"
+				+ "and calculates the Hamming distance row wise.</p>");
 		
 		// You can override the automatic category selection (for example if a module is to be shown in "deprecated")
-		this.setCategory("experimental");
+		this.setCategory("matrix");
 
 		// the module's name is defined as a property
 		// Property key for module name is defined in parent class
-		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Named Field Matrix Operations");
+		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "Named Field Matrix Hamming distance");
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER, "ASCII character used to delimit each column.");
 		this.getPropertyDescriptions().put(PROPETYKEY_QUOTES, "ASCII character used to signal usage of quotations.");
-		//this.getPropertyDescriptions().put(PROPERTYKEY_HEADER, "Signal whether the first row is a header line (true) or not (false).");
+		this.getPropertyDescriptions().put(PROPERTYKEY_OUT_DELIMITER, "<p>Specifies the delimiter used in the CSV<br />table for the output file.</p>");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER, ",");
 		this.getPropertyDefaultValues().put(PROPETYKEY_QUOTES, "\"");
-		//this.getPropertyDefaultValues().put(PROPERTYKEY_HEADER, "true");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_OUT_DELIMITER, ";");
 		
 		// Define I/O
 		/*
@@ -113,9 +114,7 @@ public class MatrixOperations extends ModuleImpl {
 			String line;
 			
 			LOGGER.info("Starting to fill the matrix.");
-			
-			int lineCounter = 1;
-			
+						
 			String wholeCsv = "";
 			
 			// Read csv information line wise.
@@ -172,10 +171,11 @@ public class MatrixOperations extends ModuleImpl {
 
 			if (hamOut.isConnected()) {
 				// Write an initial empty field.
-				hamOut.outputToAllCharPipes(";");
+				hamOut.outputToAllCharPipes(this.outputDelimiter);
+				
 				for (int i = 0; i < this.matrix.getRowAmount(); i ++) {
 					if (i < this.matrix.getRowAmount() - 1)
-						hamOut.outputToAllCharPipes(this.colNames[i]+";");
+						hamOut.outputToAllCharPipes(this.colNames[i] + this.outputDelimiter);
 					else
 						// Avoid printing the last ";".
 						hamOut.outputToAllCharPipes(this.colNames[i]);
@@ -198,11 +198,11 @@ public class MatrixOperations extends ModuleImpl {
 	
 	private String toCsvLine(int row) {
 		
-		String out = this.rowNames[row]+";";
-		for (int i = 1; i < this.matrix.getColumnsAmount(); i ++) {
+		String out = this.rowNames[row] + this.outputDelimiter;
+		for (int i = 0; i < this.matrix.getColumnsAmount(); i ++) {
 			// Avoid printing ";" as last character before new line.
 			if (i < this.matrix.getColumnsAmount() - 1 )
-				out += this.hamMatrix[row][i] + ";" ;
+				out += this.hamMatrix[row][i] + this.outputDelimiter ;
 			else 
 				out += this.hamMatrix[row][i];
 		}
@@ -220,7 +220,7 @@ public class MatrixOperations extends ModuleImpl {
 		// Apply own properties.
 		this.delimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER));
 		this.quotes = this.getProperties().getProperty(PROPETYKEY_QUOTES, this.getPropertyDefaultValues().get(PROPETYKEY_QUOTES));
-		//this.isHeader = this.getProperties().getProperty(PROPERTYKEY_HEADER, this.getPropertyDefaultValues().get(PROPERTYKEY_HEADER)); 
+		this.outputDelimiter = this.getProperties().getProperty(PROPERTYKEY_OUT_DELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_OUT_DELIMITER)); 
 		
 		// Apply parent object's properties.
 		super.applyProperties();
