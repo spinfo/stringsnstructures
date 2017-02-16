@@ -3,19 +3,22 @@ package modules.matrixOperations;
 // Project specific imports.
 import models.NamedFieldMatrix;
 import common.parallelization.CallbackReceiver;
-import models.NamedFieldMatrix;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import base.workbench.ModuleRunner;
 
 // Java imports.
 import java.io.BufferedReader;
 import java.util.Properties;
 import java.util.logging.Logger;
-import java.util.ArrayList;
 
+/**
+ * This module uses any symmetric matrix and compares its content row wise.
+ * Distances in form of Hamming distance are to be calculated.
+ * @author christopher
+ *
+ */
 
 public class MatrixOperations extends ModuleImpl {
 	
@@ -25,7 +28,7 @@ public class MatrixOperations extends ModuleImpl {
 	// Property keys.
 	
 	private static final String PROPERTYKEY_DELIMITER = "Delimiter character"; 
-	private static final String PROPETYKEY_QUOTES = "Quote character";
+	//private static final String PROPETYKEY_QUOTES = "Quote character";
 	private static final String PROPERTYKEY_OUT_DELIMITER = "Delimiter used for the output";
 	
 	// I/O ports.
@@ -37,7 +40,7 @@ public class MatrixOperations extends ModuleImpl {
 	
 	// Save the properties in these private variables.
 	private String delimiter;
-	private String quotes;
+	// private String quotes;
 	private String outputDelimiter;
 	
 	// Save the input matrix named field matrix.
@@ -73,12 +76,12 @@ public class MatrixOperations extends ModuleImpl {
 
 		// Add property descriptions (obligatory for every property!)
 		this.getPropertyDescriptions().put(PROPERTYKEY_DELIMITER, "ASCII character used to delimit each column.");
-		this.getPropertyDescriptions().put(PROPETYKEY_QUOTES, "ASCII character used to signal usage of quotations.");
+		//this.getPropertyDescriptions().put(PROPETYKEY_QUOTES, "ASCII character used to signal usage of quotations.");
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUT_DELIMITER, "<p>Specifies the delimiter used in the CSV<br />table for the output file.</p>");
 		
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER, ",");
-		this.getPropertyDefaultValues().put(PROPETYKEY_QUOTES, "\"");
+		//this.getPropertyDefaultValues().put(PROPETYKEY_QUOTES, "\"");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUT_DELIMITER, ";");
 		
 		// Define I/O
@@ -219,7 +222,7 @@ public class MatrixOperations extends ModuleImpl {
 		
 		// Apply own properties.
 		this.delimiter = this.getProperties().getProperty(PROPERTYKEY_DELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_DELIMITER));
-		this.quotes = this.getProperties().getProperty(PROPETYKEY_QUOTES, this.getPropertyDefaultValues().get(PROPETYKEY_QUOTES));
+		// this.quotes = this.getProperties().getProperty(PROPETYKEY_QUOTES, this.getPropertyDefaultValues().get(PROPETYKEY_QUOTES));
 		this.outputDelimiter = this.getProperties().getProperty(PROPERTYKEY_OUT_DELIMITER, this.getPropertyDefaultValues().get(PROPERTYKEY_OUT_DELIMITER)); 
 		
 		// Apply parent object's properties.
