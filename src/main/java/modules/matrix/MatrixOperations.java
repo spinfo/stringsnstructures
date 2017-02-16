@@ -1,4 +1,4 @@
-package modules.matrixOperations;
+package modules.matrix;
 
 // Project specific imports.
 import models.NamedFieldMatrix;
