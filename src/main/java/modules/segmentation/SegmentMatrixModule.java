@@ -202,6 +202,7 @@ public class SegmentMatrixModule extends ModuleImpl {
 		this.closeAllOutputs();
 		
 		// Done
+		
 		return true;
 	}
 	

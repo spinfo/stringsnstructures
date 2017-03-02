@@ -293,7 +293,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 			HashMap<String,Integer> classes = new HashMap<String,Integer>();
 			
-			int minSimilarity=maxSimilarity/2;
+			int minSimilarity=maxSimilarity/3;
 			// init HashMap classes: value 0, i.e. no class at begin
 			for (String name:names){
 				classes.put(name, classNr/*0*/);
@@ -529,7 +529,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		    
 			//evalMatrixProposals eval=null;
 			for (String name1 : names) {
-				//System.out.print("Name: "+name1);
+				System.out.println("Name: "+name1);
 				//eval=evalHashMap.get(name1);    //get(index);
 				//if(eval !=null) {
 				//	
@@ -563,7 +563,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					product = performOperation(operand1, operand2, operation);
 					outMatrix.setValue(name1, name2, (double) product.cardinality());
 					if(product.cardinality()>0){
-						System.out.println(name1+" "+name2+" "+ product.cardinality());
+						//System.out.println(name1+" "+name2+" "+ product.cardinality());
 					}
 					//---------------JR--------------------------
 					best.selectBest(product,/*operand1,*/name1,name2);
@@ -572,7 +572,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					//----test jr
 					if (concurrency!=null)
 						if (concurrency.checkConcurrency(name1, name2)) {
-							//System.out.println("name1 "+name1 +" is concurrent to "+name2+"  ");
+							System.out.println("name1 "+name1 +" is concurrent to "+name2+"  ");
 						}
 					
 					
