@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import common.parallelization.CallbackReceiver;
 import models.NamedFieldMatrix;
@@ -183,6 +184,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		//NamedFieldMatrix resultMatrix;
 		private int nrBitsInRow=0;
 		private int classNr=0;
+		HashMap<String,Integer> classes=null;
 		
 		private void columnSum(NamedFieldMatrix namedFieldMatrix){
 		// the sum of all bits set in a column, for all columns
@@ -287,11 +289,42 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 		}//morphProcess
 		
+		
+		private boolean checkDifferenceElementToClass(Set<String> names, String name2check, NamedFieldMatrix distanceMatrix, int classNr, int maxDif) {
+			// if an element name2check is found which is similar to an element of class classNr then name2check must not be more 
+			// different from the other members of class classNr than defined by maxDif
+			// By this a certain similarity of all class members is maintained
+			
+			//search all elements of class classNr
+			for (String name:names){
+				if((Integer)classes.get(name) ==classNr){
+					// detect difference of name and name2check
+					if (distanceMatrix.getValue(name,name2check)>maxDif) return false;					
+				}
+				
+			}
+			
+			return true;
+		}
+		
+		private boolean checkDifferenceClass1Class2(Set<String> names, NamedFieldMatrix distanceMatrix, int classNr1,
+				int classNr2, int maxDif){
+			
+			for (String name:names){
+				if((Integer)classes.get(name) == classNr1){
+					if(!checkDifferenceElementToClass(names,name,distanceMatrix,classNr2,maxDif)) return false;
+				}
+			
+			}
+			return true;
+		}
+
+		
 	
 		HashMap<String,Integer> classBuilding(NamedFieldMatrix distanceMatrix,Set<String> names,
 			int maxSimilarity){
 			
-			HashMap<String,Integer> classes = new HashMap<String,Integer>();
+			classes = new HashMap<String,Integer>();
 			
 			int minSimilarity=maxSimilarity/3;
 			// init HashMap classes: value 0, i.e. no class at begin
@@ -307,7 +340,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					for (String name2:names){
 						
 						if(distanceMatrix.getValue(name1, name2)==sim){
+							// no class for name1
 							if((Integer)classes.get(name1) ==0){
+								// no class for name2
 								if (classes.get(name2)==0){
 									// new class, new classNr
 									classNr++;
@@ -315,17 +350,17 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 									classes.put(name1,classNr);
 									classes.put(name2,classNr);
 								} else {
-									// classNr of name2 is given to name1
+									// class found for name2, classNr of name2 is given to name1
 									classes.put(name1,classes.get(name2));
 								}									
 									
 							} else if (classes.get(name2)==0){
-								// classNr of name1 is given to name2
+								// // class found for name1, classNr of name1 is given to name2
 								classes.put(name2,classes.get(name1));
 								
 							} else {
 								// set all classNrs from name2 to name1
-								int nrName1=classes.get(name1);
+								//int nrName1=classes.get(name1);
 								int nrName2=classes.get(name2);
 								// get all name2 and change to nrName1
 								for (String name:names){
@@ -350,27 +385,39 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			System.out.println();
 			// classes found
 			for (int classIndex=1;classIndex<=classNr;classIndex++){
-				boolean notWritten=true;
+				Set<String> antecedent= new TreeSet<String>();
+				Set<String> postcedent= new TreeSet<String>();
+				//boolean notWritten=true;
 				for (String name:names){
+					// select elements of class
 					if(resultMap.get(name)==classIndex) {
-						if(notWritten){System.out.print("-----classIndex "+
-								classIndex+"-----morphfollowing ");
-							notWritten=false;
-						// morphemes following: Caveat:ALL morph, not only the subset of common
-						// morphmes
+						antecedent.add(name);
+						//if(notWritten){System.out.print("-----classIndex "+
+						//		classIndex+"-----morphfollowing ");
+						//	notWritten=false;
+							// morphemes following: Caveat:ALL morph, not only the subset of common
+							// morphemes
 							double[]row=inMatrix.getRow(name);
 							for (int i=0;i<row.length;i++){
 								if(row[i]!=0){
 									String colName=inMatrix.getColumnName(i);
-									System.out.print(colName+" ");
+									//System.out.print(colName+" ");
+									postcedent.add(colName);
 								}//if
 							}//for
-							System.out.println();
-						}
+							//System.out.println();
+						//}// notWritten
 						// write name 
-						System.out.println(name);
+						//System.out.println(name);
 					}
-				}//for (String name:names){				
+				}//for (String name:names)
+				if(!antecedent.isEmpty() && !postcedent.isEmpty()){
+					System.out.print("-----classIndex "+ classIndex+"-----morphfollowing ");
+					for(String post:postcedent)System.out.print(post+" ");
+					System.out.println();
+					for(String ante:antecedent)System.out.println(ante);
+					antecedent=null;postcedent=null;
+				}
 			}//for (int classIndex=1;classndex<=classes;classIndex++){
 			System.out.println();
 			System.out.println(" no Class found");
@@ -671,7 +718,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 		return result;
 	}
-
+	
+	
+	
 	private static void writeMatrixOutput(NamedFieldMatrix matrix, OutputPort out, String separator)
 			throws IOException {
 		matrix.setDelimiter(separator);
