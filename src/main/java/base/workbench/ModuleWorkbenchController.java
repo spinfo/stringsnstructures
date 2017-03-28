@@ -78,6 +78,7 @@ import modules.matrix.MatrixBitwiseOperationModule;
 import modules.matrix.MatrixColumnSumModule;
 import modules.matrix.MatrixEliminateOppositionalValuesModule;
 import modules.matrix.MatrixFilterModule;
+import modules.matrix.MatrixOperations;
 import modules.matrix.MatrixRowColPairExtractorModule;
 import modules.matrix.MatrixValuesExpressionApplyModule;
 import modules.matrix.MclModule;
@@ -111,7 +112,6 @@ import modules.vectorization.VectorMedianCalculatorModule;
 import modules.vectorization.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.visualization.ASCIIGraph;
 import modules.visualization.ColourGraph;
-import modules.matrixOperations.MatrixOperations;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
