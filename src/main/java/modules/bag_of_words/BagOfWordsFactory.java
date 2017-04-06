@@ -38,6 +38,7 @@ class BagOfWordsFactory {
 
 		int wordCount = 0;
 		for (String word : words) {
+			System.out.println("BagOfWordsFactory build word: "+word);
 			if (word.length() > 0) {
 				wordCount = bagOfWords.getOrDefault(word, 0);
 				wordCount += 1;
@@ -84,6 +85,7 @@ class BagOfWordsFactory {
 		final HashMap<Integer, TreeMap<String, Integer>> bagsOfWords = new HashMap<Integer, TreeMap<String, Integer>>();
 		// traverse sentences and build a list of words
 		for (String label : labels) {
+			System.out.println("BagOfWordsFactory label: "+label);
 			final TreeMap<String, Integer> bag = BagOfWordsFactory.build(label);
 			// add the produced bag to the result if not empty
 			if (bag.size() > 0) {

@@ -345,7 +345,7 @@ public class KeyWordInPhraseModule extends ModuleImpl {
 					.append("</contextStart>\n");
 			xmlBuf.append("\t\t\t<position>")
 					.append(currentPos + tokenPosition).append("</position>\n");
-			resultBuf.append(context);// d.get("Context"));
+			resultBuf.append(context+System.getProperty("line.separator"));// d.get("Context"));
 			currentPos += context.length();
 			xmlBuf.append("\t\t\t<contextEnd>").append(currentPos)
 					.append("</contextEnd>\n");

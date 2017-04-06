@@ -121,11 +121,17 @@ public class BagsOfWordsModule extends ModuleImpl {
 				bagsOfWords = BagOfWordsFactory.build(treeRepresentation);
 			} else if (simplePort.isConnected()) {
 				text = this.readStringFromInputPort(simplePort);
+				System.out.println(text);
 				final String[] sentences = Pattern.compile("\r\n|\n|\r").split(text);
+				System.out.println("sentences");
+				System.out.println(sentences);
 				bagsOfWords = BagOfWordsFactory.build(sentences);
 			} else if (simpleText.isConnected()) {
 				text = this.readStringFromInputPort(simpleText);
+				System.out.println(text);
 				final String[] labels = Pattern.compile("\r\n|\n|\r").split(text);
+				System.out.println("labels");
+				for (int i=0;i<labels.length;i++) System.out.println(labels[i]);
 				bagsOfWords = BagOfWordsFactory.build(labels);
 			} 
 			

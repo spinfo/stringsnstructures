@@ -101,8 +101,11 @@ public class KwipBowMatrixModule extends ModuleImpl {
 		// Map index
 		Integer mapIndex = 0;
 		
+		
 		// Input read loop
 		while (true){
+			
+			// mapIndex = 0;
 			
 			// Check for interrupt signal
 			if (Thread.interrupted()) {
@@ -117,30 +120,41 @@ public class KwipBowMatrixModule extends ModuleImpl {
 				break;
 			}
 			
+			
 			// Read next segments
 			Integer unit = Integer.parseInt(kwipUnitScanner.next());
+			System.out.println(" while true unit: "+unit);
 			String type = kwipTypeScanner.next();
-			
+			System.out.println(" while true type: "+type);
 			// Read map at index
+			
 			LinkedTreeMap<String,Double> typeMap = bowMap.get(mapIndex.toString());
 			
 			// Add following maps that belong to the current unit
+			 
 			while((++mapIndex)<unit){
+				System.out.println(" mapIndex: "+mapIndex); 
 				// Read map at index
+				
 				LinkedTreeMap<String,Double> nextTypeMap = bowMap.get(mapIndex.toString());
+				if(nextTypeMap==null)System.out.println(" nextTypeMap==null"); 
+				else if (nextTypeMap.keySet()==null)System.out.println(" nextTypeMap.keyset==null"); 
 				// Add maps
 				Iterator<String> keys = nextTypeMap.keySet().iterator();
+				if (keys==null)System.out.println(" keys==null"); 
 				while(keys.hasNext()){
 					String key = keys.next();
+					System.out.println(" key: "+key); 
 					Double value = nextTypeMap.get(key);
 					if (typeMap.containsKey(key))
 						value += typeMap.get(key);
 					typeMap.put(key, value);
-				}
-			}
+				}//while(keys.hasNext()
+			}//while((++mapIndex)<unit)
 			
 			// Add to matrix
 			matrix.put(type, typeMap);
+			
 			
 		}
 
