@@ -1,3 +1,4 @@
+
 package modules.matrix;
 
 import java.io.BufferedReader;
@@ -6,6 +7,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +40,15 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	
 	private static String best_n1, best_n2;
 	private static BitSet best_BitSet=null;
-	private static int best_nr=0;
+	private static int best_nr=0;// greatest nr of following (adjacent) strings
 	private static int difference=0;
-	
+	static HashMap<String, Integer> competitionHashMap;
+	// list of classes generated
+	static ArrayList<MatrixBitwiseOperationHelpClassElement> classList=
+			new ArrayList<MatrixBitwiseOperationHelpClassElement>();
+	//
+	static ArrayList<MatrixBitwiseOperationHelpCompetionElement> competitionList=
+			new ArrayList<MatrixBitwiseOperationHelpCompetionElement>();
 	
 	// Main method for stand-alone execution
 	public static void main(String[] args) throws Exception {
@@ -66,6 +74,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			//}
 		}// selectBest
 		
+		// for test only; prints out best (following (adjacent)) string(s)
 		void printBest(NamedFieldMatrix matrix) {
 			System.out.println();
 			System.out.println("Best: "+best_n1+ "  " +best_n2+" "+best_BitSet.cardinality());
@@ -81,99 +90,61 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	}//Best
 	
 	
-	private class Concurrency {
-		HashMap<String,Occurrencies> concurrHashMap;
+	private class Competition {
+		
 		
 		void readEvalHashMap(BufferedReader r) throws Exception{
-			
-			concurrHashMap=new HashMap<String,Occurrencies>();
+		// produces a map which consists of a prefix string and which 
+		// notes following strings with alternate splits that start with the prefix
+			competitionHashMap=new HashMap<String,Integer>();
 			String line;
-			int lineNr=0;
+			// competitions are identified by competitionIdent; competition elements
+			// elements have equal competitionIdent
+			int competitionIdent=0;
+			MatrixBitwiseOperationHelpCompetionElement competitionElement;
 			while((line=r.readLine())!=null){
+				// skip empty lines (i.e. lines which don't contain pipes("|" or dollars ("$")
 				if (line.length()>0){
-					String[] concurrStr= line.split("\\$;?");
-					int nrDollar=concurrStr.length;
-					System.out.print("redEvalMatrixProposals: "+line+" nrDollars: "+nrDollar+" ");
-					nrDollar--;
+					String[] competionStr= line.split("\\$;?");
+					int nrCompetitions=competionStr.length;
+					if(nrCompetitions>1){
+						System.out.println
+						("readEvalHashMap: "+line+" nrCompetitions>1: "+nrCompetitions+" ");
+						competitionIdent++;
+						competitionElement=new MatrixBitwiseOperationHelpCompetionElement();
+						for (int i=0;i<nrCompetitions;i++){
+							String prefix[]=competionStr[i].split("\\|");
+							System.out.println
+							("readEvalHashMap prefix: "+prefix[0]);
+							competitionHashMap.put(prefix[0], new Integer(competitionIdent));
+							competitionElement.add(prefix[0]);
+						}
+						competitionList.add(competitionElement);
+					}					
 					
-					int nrConcurr=0;
-					while(nrDollar>=0) {
-						String[] partOfConcurr=concurrStr[nrConcurr].split("\\|");
-						Occurrencies occ= 
-						concurrHashMap.get(partOfConcurr[0]);
-						if (occ==null) {
-							concurrHashMap.put(partOfConcurr[0], new Occurrencies(lineNr));
-						}
-						else {occ.lineNrs.add(lineNr);
-							
-						}
-						
-						nrDollar--;
-						nrConcurr++;
-					}
-					lineNr++;
-					System.out.println();
 				}
 				
 			}			
 			
 		}// readEvalHashMap
 		
-		boolean checkConcurrency(String name1,String name2) throws Exception{
-			
-			if(name2.startsWith(name1)) {
-				//System.out.print("name1 "+name1 +" is prefix of "+name2+"  ");
-				Occurrencies occ1= concurrHashMap.get(name1);
-				/*if (occ1!=null ){
-					for (int index=0;index<occ1.lineNrs.size();index++){
-						System.out.print(occ1.lineNrs.get(index)+ "  ");
-					}
-				}
-				System.out.print(" : ");
-				*/
-				Occurrencies occ2= concurrHashMap.get(name2);
-				/*if (occ2!=null ){
-					for (int index=0;index<occ2.lineNrs.size();index++){
-						System.out.print(occ2.lineNrs.get(index)+ "  ");
-					}
-				}
-				System.out.println();
-				*/
-				
-				if ((occ1!=null) && (occ2!=null)){					
-					for (int index1=0;index1<occ1.lineNrs.size();index1++){
-						for (int index2=0;index2<occ2.lineNrs.size();index2++){									
-							if (occ1.lineNrs.get(index1).equals(occ2.lineNrs.get(index2))){
-								//System.out.println(" concurrency "+
-								//occ1.lineNrs.get(index1)+"  "+occ2.lineNrs.get(index2));
-										
-							}
-						}
-					}
-				}
-				
-			}
-			else if (name1.startsWith(name2)){
-				//System.out.println("name2 "+name2 +" is prefix of "+name1);
-				Exception e= new Exception();
-				throw e;
-			}
-			
-			return false;
-		}//checkConcurrency
-	}// class Concurrency
-	
-	private class Occurrencies {
 		
-		ArrayList<Integer> lineNrs;
-		
-		Occurrencies(int lineNr){
-			lineNrs=new ArrayList<Integer>();
-			lineNrs.add(lineNr);
-			//System.out.print("Occurrencies lineNr: "+lineNr+" ");
-		}
-	}
+		boolean checkcompetition(String name1,String name2) throws Exception
+		{
+			
+			if ((competitionHashMap.get(name1)!=null) &&
+					(competitionHashMap.get(name1).equals(competitionHashMap.get(name2))))
+				{
+					System.out.println("checkcompetition competition name1: "+name1+ " name2: "+name2);
+					return true;
+				}
+				else return false;	
+				
+		}//checkcompetition
+	}// class competition
 	
+	
+		
 	
 	
 	private class MorphResult {
@@ -322,76 +293,87 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		
 	
 		HashMap<String,Integer> classBuilding(NamedFieldMatrix distanceMatrix,Set<String> names,
-			int maxSimilarity){
+			int maxSimilarity/* maxSimilarity is greatest nmber of following (adjacent)strings;
+			it is best_nr in calling method */
+			)
+		
+			{			
+				classes = new HashMap<String,Integer>();
 			
-			classes = new HashMap<String,Integer>();
+				int minSimilarity=maxSimilarity/3;
+				// init HashMap classes: value 0, i.e. no class at begin
+				for (String name:names){
+					classes.put(name, classNr/*0*/);			
+				}
 			
-			int minSimilarity=maxSimilarity/3;
-			// init HashMap classes: value 0, i.e. no class at begin
-			for (String name:names){
-				classes.put(name, classNr/*0*/);
-			
-			
-			}
-			
-			for (int sim=maxSimilarity;sim>=minSimilarity;sim--) {
-				
-				for (String name1:names){
-					for (String name2:names){
-						
-						if(distanceMatrix.getValue(name1, name2)==sim){
-							// no class for name1
-							if((Integer)classes.get(name1) ==0){
-								// no class for name2
-								if (classes.get(name2)==0){
+				for (int sim=maxSimilarity;sim>=minSimilarity;sim--) {				
+					for (String name1:names){
+						for (String name2:names){
+							if(distanceMatrix.getValue(name1, name2)==sim){
+								// no class for name1
+								if((Integer)classes.get(name1) ==0){
+									// no class for name2
+									if (classes.get(name2)==0){
 									// new class, new classNr
-									classNr++;
-									System.out.println(classNr);
-									classes.put(name1,classNr);
-									classes.put(name2,classNr);
-								} else {
-									// class found for name2, classNr of name2 is given to name1
-									classes.put(name1,classes.get(name2));
-								}									
+										classNr++;
+										//System.out.println("classBuilding: "+classNr);
+										classes.put(name1,classNr);
+										classes.put(name2,classNr);
+									} else {
+										// class found for name2, classNr of name2 is given to name1
+										classes.put(name1,classes.get(name2));
+									}									
 									
-							} else if (classes.get(name2)==0){
-								// // class found for name1, classNr of name1 is given to name2
-								classes.put(name2,classes.get(name1));
+								} else if (classes.get(name2)==0){
+									// class found for name1, classNr of name1 is given to name2
+									classes.put(name2,classes.get(name1));
 								
-							} else {
-								// set all classNrs from name2 to name1
-								//int nrName1=classes.get(name1);
-								int nrName2=classes.get(name2);
-								// get all name2 and change to nrName1
-								for (String name:names){
-									if(classes.get(name)==nrName2) {
+								} else {
+									// set all classNrs from name2 to name1
+									//int nrName1=classes.get(name1);
+									int nrName2=classes.get(name2);
+									// get all name2 and change to nrName1
+									for (String name:names){
+										if(classes.get(name)==nrName2) {
 										classes.put(name2,nrName2);
+										}
 									}
 								}
-							}
 								
-						}//if(distanceMatrix.getValue(name1, name2)==sim){
-					}//for (String name1:names){				
-				}//for (String name2:names){
-			}//for (int sim=maxSimilarity;sim<=minSimilarity;sim--)
+							}//if(distanceMatrix.getValue(name1, name2)==sim){
+						}//for (String name1:names){				
+					}//for (String name2:names){
+				}//for (int sim=maxSimilarity;sim<=minSimilarity;sim--)
 			
 			
 			return classes;
 		}//classBuilding
+		
+		private void competition(){
+			Iterator<MatrixBitwiseOperationHelpClassElement> classIterator = 
+			classList.iterator();
+			while (classIterator.hasNext()) {
+				MatrixBitwiseOperationHelpClassElement element=classIterator.next();
+				element.competition(classList,competitionList,competitionHashMap);
+			}
+		}
+		
 		
 		void result(HashMap <String,Integer> resultMap,Set<String> names){
 			System.out.println();
 			System.out.println("result classNr: "+classNr);
 			System.out.println();
 			// classes found
+			classList=new ArrayList<MatrixBitwiseOperationHelpClassElement>();
+			
 			for (int classIndex=1;classIndex<=classNr;classIndex++){
-				Set<String> antecedent= new TreeSet<String>();
-				Set<String> postcedent= new TreeSet<String>();
+				MatrixBitwiseOperationHelpClassElement classElement=
+						new MatrixBitwiseOperationHelpClassElement(classIndex);
 				//boolean notWritten=true;
 				for (String name:names){
 					// select elements of class
 					if(resultMap.get(name)==classIndex) {
-						antecedent.add(name);
+						classElement.members.add(name);
 						//if(notWritten){System.out.print("-----classIndex "+
 						//		classIndex+"-----morphfollowing ");
 						//	notWritten=false;
@@ -402,7 +384,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 								if(row[i]!=0){
 									String colName=inMatrix.getColumnName(i);
 									//System.out.print(colName+" ");
-									postcedent.add(colName);
+									classElement.adjacentMembers.add(colName);
 								}//if
 							}//for
 							//System.out.println();
@@ -411,14 +393,12 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 						//System.out.println(name);
 					}
 				}//for (String name:names)
-				if(!antecedent.isEmpty() && !postcedent.isEmpty()){
-					System.out.print("-----classIndex "+ classIndex+"-----morphfollowing ");
-					for(String post:postcedent)System.out.print(post+" ");
-					System.out.println();
-					for(String ante:antecedent)System.out.println(ante);
-					antecedent=null;postcedent=null;
-				}
-			}//for (int classIndex=1;classndex<=classes;classIndex++){
+				classElement.writeClass();
+				classList.add(classElement);
+			}//for (int classIndex=1;classndex<=classes;classIndex++)
+			
+			competition();
+			
 			System.out.println();
 			System.out.println(" no Class found");
 			// no classification
@@ -441,8 +421,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	private final static String INPUT_ID = "Input Matrix";
 	private final static String INPUT_DESC = "[text/csv] An input csv table. Header row and first column are expected to contain Strings as labels. All other fields are assumed to be blank or contain numerical values.";
 
-	private final static String INPUTConcurrent_ID="Input Concurrent";
-	private final static String INPUTConcurrent_DESC="Concurrent entries \';\' separated";
+	private final static String INPUTCompetition_ID="Input Competition";
+	private final static String INPUTCompetition_DESC="Competition entries \';\' separated";
 	
 	private final static String OUTPUT_MATRIX_ID = "Output Matrix";
 	private final static String OUTPUT_MATRIX_DESC = "[text/csv] A symmetrical csv table mapping row/column headings to each other and containing the amounts of bits sets after the the operation specified was applied.";
@@ -499,9 +479,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		input.addSupportedPipe(CharPipe.class);
 		super.addInputPort(input);
 		
-		InputPort inputConcurrent = new InputPort(INPUTConcurrent_ID, INPUTConcurrent_DESC, this);
-		inputConcurrent.addSupportedPipe(CharPipe.class);
-		super.addInputPort(inputConcurrent);
+		InputPort inputCompetition = new InputPort(INPUTCompetition_ID, INPUTCompetition_DESC, this);
+		inputCompetition.addSupportedPipe(CharPipe.class);
+		super.addInputPort(inputCompetition);
 
 		OutputPort matrixOutput = new OutputPort(OUTPUT_MATRIX_ID, OUTPUT_MATRIX_DESC, this);
 		matrixOutput.addSupportedPipe(CharPipe.class);
@@ -556,14 +536,14 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				names = inMatrix.getColumnNames();
 			}
 			
-			//JR  test concurrency
-			Concurrency concurrency=null;
-			if (getInputPorts().get(INPUTConcurrent_ID)!=null){			
-				concurrency= new Concurrency();
-				concurrency.readEvalHashMap(
-				new BufferedReader(getInputPorts().get(INPUTConcurrent_ID).getInputReader()));
+			//JR  test competition
+			Competition competition=null;
+			if (getInputPorts().get(INPUTCompetition_ID)!=null){			
+				competition= new Competition();
+				competition.readEvalHashMap(
+				new BufferedReader(getInputPorts().get(INPUTCompetition_ID).getInputReader()));
 			}
-			//JR End Concurrency
+			//JR End competition
 			
 			// build a matrix containing the result of applying the operation to
 			// each pair of BitSets
@@ -572,15 +552,20 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			BitSet operand2 = null;
 			BitSet product = null;
 			Double value = null;
-			
+			// 2 nestested loops (for (String name1 : names), for (String name2 : names) 
+			// in order to find best adjacent pair (name1, name2)
+			// comparision is done by selectBest
 		    
 			//evalMatrixProposals eval=null;
+			// write competition; write name1 (outer for loop) only once,
+			// so name1ForConcurency notes that name1 was already written
+			String name1ForConcurency="";
 			for (String name1 : names) {
 				System.out.println("Name: "+name1);
 				//eval=evalHashMap.get(name1);    //get(index);
 				//if(eval !=null) {
 				//	
-				//	System.out.print("\t "+" evalHashMap: "+eval.concurrent);
+				//	System.out.print("\t "+" evalHashMap: "+eval.competition);
 				//}
 				//System.out.println();
 				
@@ -612,19 +597,32 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					if(product.cardinality()>0){
 						//System.out.println(name1+" "+name2+" "+ product.cardinality());
 					}
+					
+					
 					//---------------JR--------------------------
 					best.selectBest(product,/*operand1,*/name1,name2);
 					//---------------JR--------------------------
 					
 					//----test jr
-					if (concurrency!=null)
-						if (concurrency.checkConcurrency(name1, name2)) {
-							System.out.println("name1 "+name1 +" is concurrent to "+name2+"  ");
-						}
+					if (competition!=null)
+						//System.out.println("competition !=null");
+						
+						if (competition.checkcompetition(name1, name2)) {
+							if(!name1ForConcurency.equals(name1)) {
+								
+								name1ForConcurency=name1;
+								System.out.print("competition competition:"+name1+"  ");
+							}
+							System.out.print(name2+" ");
+						};
+						
 					
 					
 				}//for (String name2 : names) 
+				if(name1ForConcurency.equals(name1))System.out.println();
 			}//for (String name1 : names)
+			
+			
 			
 			//test jr------------
 			 best.printBest(inMatrix);
@@ -650,7 +648,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			if (listOut.isConnected()) {
 				writeListOutput(outMatrix, listOut);
 			}
-
+			
 		} catch (Exception e) {
 			result = false;
 			throw e;
