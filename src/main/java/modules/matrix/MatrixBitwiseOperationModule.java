@@ -42,6 +42,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	private static BitSet best_BitSet=null;
 	private static int best_nr=0;// greatest nr of following (adjacent) strings
 	private static int difference=0;
+	static HashMap<String,Integer> classesHashMap;
 	static HashMap<String, Integer> competitionHashMap;
 	// list of classes generated
 	static ArrayList<MatrixBitwiseOperationHelpClassElement> classList=
@@ -155,7 +156,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		//NamedFieldMatrix resultMatrix;
 		private int nrBitsInRow=0;
 		private int classNr=0;
-		HashMap<String,Integer> classes=null;
+		
 		
 		private void columnSum(NamedFieldMatrix namedFieldMatrix){
 		// the sum of all bits set in a column, for all columns
@@ -268,7 +269,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 			//search all elements of class classNr
 			for (String name:names){
-				if((Integer)classes.get(name) ==classNr){
+				if((Integer)classesHashMap.get(name) ==classNr){
 					// detect difference of name and name2check
 					if (distanceMatrix.getValue(name,name2check)>maxDif) return false;					
 				}
@@ -282,7 +283,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				int classNr2, int maxDif){
 			
 			for (String name:names){
-				if((Integer)classes.get(name) == classNr1){
+				if((Integer)classesHashMap.get(name) == classNr1){
 					if(!checkDifferenceElementToClass(names,name,distanceMatrix,classNr2,maxDif)) return false;
 				}
 			
@@ -292,18 +293,18 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 		
 	
-		HashMap<String,Integer> classBuilding(NamedFieldMatrix distanceMatrix,Set<String> names,
+		void classBuilding(NamedFieldMatrix distanceMatrix,Set<String> names,
 			int maxSimilarity/* maxSimilarity is greatest nmber of following (adjacent)strings;
 			it is best_nr in calling method */
 			)
 		
 			{			
-				classes = new HashMap<String,Integer>();
+			classesHashMap = new HashMap<String,Integer>();
 			
 				int minSimilarity=maxSimilarity/3;
 				// init HashMap classes: value 0, i.e. no class at begin
 				for (String name:names){
-					classes.put(name, classNr/*0*/);			
+					classesHashMap.put(name, classNr/*0*/);			
 				}
 			
 				for (int sim=maxSimilarity;sim>=minSimilarity;sim--) {				
@@ -311,31 +312,31 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 						for (String name2:names){
 							if(distanceMatrix.getValue(name1, name2)==sim){
 								// no class for name1
-								if((Integer)classes.get(name1) ==0){
+								if((Integer)classesHashMap.get(name1) ==0){
 									// no class for name2
-									if (classes.get(name2)==0){
+									if (classesHashMap.get(name2)==0){
 									// new class, new classNr
 										classNr++;
 										//System.out.println("classBuilding: "+classNr);
-										classes.put(name1,classNr);
-										classes.put(name2,classNr);
+										classesHashMap.put(name1,classNr);
+										classesHashMap.put(name2,classNr);
 									} else {
 										// class found for name2, classNr of name2 is given to name1
-										classes.put(name1,classes.get(name2));
+										classesHashMap.put(name1,classesHashMap.get(name2));
 									}									
 									
-								} else if (classes.get(name2)==0){
+								} else if (classesHashMap.get(name2)==0){
 									// class found for name1, classNr of name1 is given to name2
-									classes.put(name2,classes.get(name1));
+									classesHashMap.put(name2,classesHashMap.get(name1));
 								
 								} else {
 									// set all classNrs from name2 to name1
 									//int nrName1=classes.get(name1);
-									int nrName2=classes.get(name2);
+									int nrName2=classesHashMap.get(name2);
 									// get all name2 and change to nrName1
 									for (String name:names){
-										if(classes.get(name)==nrName2) {
-										classes.put(name2,nrName2);
+										if(classesHashMap.get(name)==nrName2) {
+											classesHashMap.put(name2,nrName2);
 										}
 									}
 								}
@@ -346,15 +347,16 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				}//for (int sim=maxSimilarity;sim<=minSimilarity;sim--)
 			
 			
-			return classes;
+			
 		}//classBuilding
 		
 		private void competition(){
 			Iterator<MatrixBitwiseOperationHelpClassElement> classIterator = 
 			classList.iterator();
 			while (classIterator.hasNext()) {
-				MatrixBitwiseOperationHelpClassElement element=classIterator.next();
-				element.competition(classList,competitionList,competitionHashMap);
+				MatrixBitwiseOperationHelpClassElement classElement=classIterator.next();
+				classElement.competition(classList,competitionList,
+				classesHashMap,competitionHashMap);
 			}
 		}
 		
@@ -629,9 +631,9 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			//-----------------------------------------------
 			MorphResult morphResult=new MorphResult();
 			
-			HashMap<String,Integer>resultMap=
+			//HashMap<String,Integer>resultMap=
 			morphResult.classBuilding(outMatrix,names,best_nr);
-			morphResult.result(resultMap, names); 
+			morphResult.result(classesHashMap, names); 
 			//----------End test
 			// these data structures might have gotten big and may be
 			// harvested directly after processing finished.

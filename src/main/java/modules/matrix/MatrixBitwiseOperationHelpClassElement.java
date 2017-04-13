@@ -29,8 +29,13 @@ public class MatrixBitwiseOperationHelpClassElement extends MatrixBitwiseOperati
 		}
 	}
 	
+	private void evaluate(MatrixBitwiseOperationHelpClassElement comp){
+		System.out.println("MatrixBitwiseOperationHelpClassElement evaluate");
+	}
+	
 	public void competition(ArrayList<MatrixBitwiseOperationHelpClassElement>classList,
 			 ArrayList<MatrixBitwiseOperationHelpCompetionElement>competitionList,
+			 HashMap<String, Integer>classesHashMap,
 			 HashMap<String, Integer>competitionHashMap) {
 		
 		// get members of element
@@ -38,30 +43,39 @@ public class MatrixBitwiseOperationHelpClassElement extends MatrixBitwiseOperati
 				while (memberIterator.hasNext()) {
 					String name=memberIterator.next();
 					// check whether name is competing
-					Integer index=competitionHashMap.get(name);
-					if(index!=null) {System.out.println
-						("MatrixBitwiseOperationHelpClassElement competition: "
-								+ name+ " competitionIdent: "+index);
-						// the index identifies competitionElement in
+					Integer competitionIndex=competitionHashMap.get(name);
+					if(competitionIndex!=null) {System.out.print
+						("competition name: "
+								+ name+ " "+competitionIndex);
+						// the competitionIndex identifies competitionElement in
 						// competitionList; get competition element;
-						// value of index is position in list +1, therefore index-1
+						// value of competitionIndex is position in list +1, 
+						// therefore competitionIndex-1
 						MatrixBitwiseOperationHelpCompetionElement competitionElement=
-							competitionList.get(index-1);	
+							competitionList.get(competitionIndex-1);	
 							for (int i=0;i<competitionElement.members.size();i++){
 								String competitionName=competitionElement.members.get(i);
 								if (!name.equals(competitionName)){
 									System.out.println
-								("MatrixBitwiseOperationHelpClassElement competition: "
-								+ competitionName);
-									// get competition class 
+									(" competitionname: "
+											+ competitionName);
+									// get competition class in classesHashMap
+									Integer classIndex=classesHashMap.get(competitionName);
+									System.out.println(" classIndex: "+ classIndex);
+									if (classIndex!=null){
+										// get classelement
+										MatrixBitwiseOperationHelpClassElement competClassElement=
+											classList.get((int)classIndex);
+									
+										// evaluate and remove less evaluated
+										evaluate(/*this*/competClassElement);
+									}
+									
+								
 								}
-							}
-						
-						
-					
+							}//for (int i=0;i<competitionElement.members.size();i++)
+							System.out.println();					
 		
-					
-		// evaluate and remove less evaluated
 					}
 					
 				}
