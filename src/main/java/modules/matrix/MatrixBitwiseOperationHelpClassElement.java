@@ -62,10 +62,10 @@ public class MatrixBitwiseOperationHelpClassElement extends MatrixBitwiseOperati
 									// get competition class in classesHashMap
 									Integer classIndex=classesHashMap.get(competitionName);
 									System.out.println(" classIndex: "+ classIndex);
-									if (classIndex!=null){
-										// get classelement
+									if (!classIndex.equals(0)){
+										// get classelement (-1, as first classNr is 1, not 0)
 										MatrixBitwiseOperationHelpClassElement competClassElement=
-											classList.get((int)classIndex);
+											classList.get((int)classIndex-1);
 									
 										// evaluate and remove less evaluated
 										evaluate(/*this*/competClassElement);
