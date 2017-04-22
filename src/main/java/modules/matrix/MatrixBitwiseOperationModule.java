@@ -3,6 +3,7 @@ package modules.matrix;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -14,7 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
+//import java.util.TreeSet;
 
 import common.parallelization.CallbackReceiver;
 import models.NamedFieldMatrix;
@@ -45,11 +46,12 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	static HashMap<String,Integer> classesHashMap;
 	static HashMap<String, Integer> competitionHashMap;
 	// list of classes generated
-	static ArrayList<MatrixBitwiseOperationHelpClassElement> classList=
-			new ArrayList<MatrixBitwiseOperationHelpClassElement>();
+	static ArrayList<MatrixBitwiseOperationClassSelection> listOfClasses=
+			new ArrayList<MatrixBitwiseOperationClassSelection>();
 	//
-	static ArrayList<MatrixBitwiseOperationHelpCompetionElement> competitionList=
-			new ArrayList<MatrixBitwiseOperationHelpCompetionElement>();
+	static ArrayList<MatrixBitwiseOperationHelpCompetingElementGroup> competitionList=
+			new ArrayList<MatrixBitwiseOperationHelpCompetingElementGroup>();
+	
 	
 	// Main method for stand-alone execution
 	public static void main(String[] args) throws Exception {
@@ -99,10 +101,10 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		// notes following strings with alternate splits that start with the prefix
 			competitionHashMap=new HashMap<String,Integer>();
 			String line;
-			// competitions are identified by competitionIdent; competition elements
-			// elements have equal competitionIdent
+			// competitions are identified by competitionIdent; competing elements
+			// elements have equal competitionIdent, e.g. ama+re, amar+e
 			int competitionIdent=0;
-			MatrixBitwiseOperationHelpCompetionElement competitionElement;
+			MatrixBitwiseOperationHelpCompetingElementGroup competitionElement;
 			while((line=r.readLine())!=null){
 				// skip empty lines (i.e. lines which don't contain pipes("|" or dollars ("$")
 				if (line.length()>0){
@@ -112,11 +114,11 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 						System.out.println
 						("readEvalHashMap: "+line+" nrCompetitions>1: "+nrCompetitions+" ");
 						competitionIdent++;
-						competitionElement=new MatrixBitwiseOperationHelpCompetionElement();
+						competitionElement=new MatrixBitwiseOperationHelpCompetingElementGroup();
 						for (int i=0;i<nrCompetitions;i++){
 							String prefix[]=competionStr[i].split("\\|");
-							System.out.println
-							("readEvalHashMap prefix: "+prefix[0]);
+							//System.out.println
+							//("readEvalHashMap prefix: "+prefix[0]);
 							competitionHashMap.put(prefix[0], new Integer(competitionIdent));
 							competitionElement.add(prefix[0]);
 						}
@@ -155,7 +157,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		private ArrayList <Double>resultList=null;
 		//NamedFieldMatrix resultMatrix;
 		private int nrBitsInRow=0;
-		private int classNr=0;
+		private int numberOfClasses=0;
 		
 		
 		private void columnSum(NamedFieldMatrix namedFieldMatrix){
@@ -262,14 +264,14 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		}//morphProcess
 		
 		
-		private boolean checkDifferenceElementToClass(Set<String> names, String name2check, NamedFieldMatrix distanceMatrix, int classNr, int maxDif) {
+		private boolean checkDifferenceElementToClass(Set<String> names, String name2check, NamedFieldMatrix distanceMatrix, int numberOfClasses, int maxDif) {
 			// if an element name2check is found which is similar to an element of class classNr then name2check must not be more 
 			// different from the other members of class classNr than defined by maxDif
 			// By this a certain similarity of all class members is maintained
 			
 			//search all elements of class classNr
 			for (String name:names){
-				if((Integer)classesHashMap.get(name) ==classNr){
+				if((Integer)classesHashMap.get(name) ==numberOfClasses){
 					// detect difference of name and name2check
 					if (distanceMatrix.getValue(name,name2check)>maxDif) return false;					
 				}
@@ -304,7 +306,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				int minSimilarity=maxSimilarity/3;
 				// init HashMap classes: value 0, i.e. no class at begin
 				for (String name:names){
-					classesHashMap.put(name, classNr/*0*/);			
+					classesHashMap.put(name, numberOfClasses/*0*/);			
 				}
 			
 				for (int sim=maxSimilarity;sim>=minSimilarity;sim--) {				
@@ -315,22 +317,22 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 								if((Integer)classesHashMap.get(name1) ==0){
 									// no class for name2
 									if (classesHashMap.get(name2)==0){
-									// new class, new classNr
-										classNr++;
-										//System.out.println("classBuilding: "+classNr);
-										classesHashMap.put(name1,classNr);
-										classesHashMap.put(name2,classNr);
+									// new class, new numberOfClasses
+										numberOfClasses++;
+										//System.out.println("classBuilding: "+numberOfClasses);
+										classesHashMap.put(name1,numberOfClasses);
+										classesHashMap.put(name2,numberOfClasses);
 									} else {
-										// class found for name2, classNr of name2 is given to name1
+										// class found for name2, numberOfClasses of name2 is given to name1
 										classesHashMap.put(name1,classesHashMap.get(name2));
 									}									
 									
 								} else if (classesHashMap.get(name2)==0){
-									// class found for name1, classNr of name1 is given to name2
+									// class found for name1, numberOfClasses of name1 is given to name2
 									classesHashMap.put(name2,classesHashMap.get(name1));
 								
 								} else {
-									// set all classNrs from name2 to name1
+									// set all numberOfClassess from name2 to name1
 									//int nrName1=classes.get(name1);
 									int nrName2=classesHashMap.get(name2);
 									// get all name2 and change to nrName1
@@ -350,31 +352,42 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 		}//classBuilding
 		
-		private void competition(){
-			Iterator<MatrixBitwiseOperationHelpClassElement> classIterator = 
-			classList.iterator();
+		private void selectionOfClasses(PrintWriter writer){
+			Iterator<MatrixBitwiseOperationClassSelection> classIterator = 
+			listOfClasses.iterator();
 			while (classIterator.hasNext()) {
-				MatrixBitwiseOperationHelpClassElement classElement=classIterator.next();
-				classElement.competition(classList,competitionList,
-				classesHashMap,competitionHashMap);
+				MatrixBitwiseOperationClassSelection clss=classIterator.next();
+				clss.competition(listOfClasses,competitionList,
+				classesHashMap/*<String,Integer>*/,
+				// s.above: String is prefix, Integer identifies different prefixes which are
+				// competing
+				competitionHashMap/*<String, Integer>*/,
+				writer);
 			}
 		}
 		
 		
 		void result(HashMap <String,Integer> resultMap,Set<String> names){
+			 PrintWriter writer=null;
+			try{
+			    writer = new PrintWriter("C:\\Users\\rols\\Help.txt", "UTF-8");
+			   
+			} catch (IOException e) {
+			   // do something
+			}
 			System.out.println();
-			System.out.println("result classNr: "+classNr);
+			System.out.println("result numberOfClasses: "+numberOfClasses);
 			System.out.println();
 			// classes found
-			classList=new ArrayList<MatrixBitwiseOperationHelpClassElement>();
+			listOfClasses=new ArrayList<MatrixBitwiseOperationClassSelection>();
 			
-			for (int classIndex=1;classIndex<=classNr;classIndex++){
-				MatrixBitwiseOperationHelpClassElement classElement=
-						new MatrixBitwiseOperationHelpClassElement(classIndex);
+			for (int classNr=1;classNr<=numberOfClasses;classNr++){
+				MatrixBitwiseOperationClassSelection classElement=
+						new MatrixBitwiseOperationClassSelection(classNr);
 				//boolean notWritten=true;
 				for (String name:names){
 					// select elements of class
-					if(resultMap.get(name)==classIndex) {
+					if(resultMap.get(name)==classNr) {
 						classElement.members.add(name);
 						//if(notWritten){System.out.print("-----classIndex "+
 						//		classIndex+"-----morphfollowing ");
@@ -395,12 +408,12 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 						//System.out.println(name);
 					}
 				}//for (String name:names)
-				classElement.writeClass();
-				classList.add(classElement);
+				classElement.writeClass(writer,"result");
+				listOfClasses.add(classElement);
 			}//for (int classIndex=1;classndex<=classes;classIndex++)
 			
-			competition();
-			
+			selectionOfClasses(writer);			
+			writer.close();
 			System.out.println();
 			System.out.println(" no Class found");
 			// no classification
@@ -563,7 +576,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			// so name1ForConcurency notes that name1 was already written
 			String name1ForConcurency="";
 			for (String name1 : names) {
-				System.out.println("Name: "+name1);
+				System.out.print("Name: "+name1+ " ");
 				//eval=evalHashMap.get(name1);    //get(index);
 				//if(eval !=null) {
 				//	
