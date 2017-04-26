@@ -2,12 +2,14 @@
 package modules.matrix;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -158,7 +160,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		//NamedFieldMatrix resultMatrix;
 		private int nrBitsInRow=0;
 		private int numberOfClasses=0;
-		
+		Set<String> morphemes;
 		
 		private void columnSum(NamedFieldMatrix namedFieldMatrix){
 		// the sum of all bits set in a column, for all columns
@@ -373,7 +375,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			    writer = new PrintWriter("C:\\Users\\rols\\Help.txt", "UTF-8");
 			   
 			} catch (IOException e) {
-			   // do something
+			   e.printStackTrace();
 			}
 			System.out.println();
 			System.out.println("result numberOfClasses: "+numberOfClasses);
@@ -423,9 +425,37 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					System.out.println(name);
 				}
 			}//for (String name:names){
+			makeLex();
 		}// result
 		
+		// makeLex reads a dictionary of morphemes (e.g. LateinLexikonList) as HashSet
+		// it may be used to evaluate results of morphologic analysis
+		void makeLex(){
+			System.out.println("makeLex");
+			String pathFile="c:/users/rols/workspace/LateinLexikonList.txt";
+			String line="";
+			this.morphemes = new HashSet<String>();
+			try {
+				BufferedReader in= new BufferedReader(new FileReader(pathFile));
+				while ((line=in.readLine()) !=null)/*&&(i<100)) */ {
+					//i++;
+					String parts[]=line.split("\\+");
+					System.out.println("line "+line+ " parts: "+parts[0]);
+					this.morphemes.add(parts[0]);
+					
+					
+					
+				}
+				in.close();	   
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (morphemes.contains("abac"))System.out.println("abac ok");
+		}//matchLex
+		
 	}// class MorphResult
+	
 //---------End jr---------------------------------------------------------------------------
 	
 	private static final String MODULE_DESC = "Module interprets either rows or columns of an input matrix as binary bitsets"
