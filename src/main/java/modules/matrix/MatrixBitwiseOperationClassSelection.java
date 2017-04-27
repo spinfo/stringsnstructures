@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
 
 //
 // element of list of classes, contains members of class
@@ -15,27 +16,59 @@ public class MatrixBitwiseOperationClassSelection extends MatrixBitwiseOperation
 	
 	ArrayList<String> adjacentMembers;
 	private int classNr;
+	private int number;// nr of elements in class
+	private int nrAdjacentMembers; // nr of adjacent elements for elements of class
+	private int lengthMembers;
+	private int lengthAdjacentMembers;
+	private double ratio; // correctness of class, for match with lex
 	public MatrixBitwiseOperationClassSelection(int classNr){
 		this.classNr=classNr;
 		this.adjacentMembers=new ArrayList<String>();
 	}
 	
 	
-	public void writeClass(PrintWriter writer,String message){
+	
+	public void countWriteClass(PrintWriter writer,String message,Set<String> morphemes,
+			boolean count){
+		this.number=0;// nr of elements in class
+		this.nrAdjacentMembers=0; // nr of adjacent elements for elements of class
+		int occurrence=0; // counts how many items are correct
+		this.ratio=0;//correctness after match with lex
 		if(!members.isEmpty() && !adjacentMembers.isEmpty()){
 			writer.print(message+"-----classNr "+ this.classNr+"-----adjacent ");
-			for(String adjacent:adjacentMembers)writer.print(adjacent+" ");
+			for(String adjacent:adjacentMembers) {
+				writer.print(adjacent+" ");
+				if (count) this.nrAdjacentMembers++;
+			}
 			writer.println();
-			for(String member:members)writer.println(member+" ");			
+			if (count) writer.println(" nrAdjacentMembers: "+this.nrAdjacentMembers);
+			for(String member:members) {
+				writer.println(member+" ");	
+				this.number++;
+				// without <>|
+				String comparison=member.replaceAll("\\<|\\>|\\|", "");
+				writer.println("in Lex: "+comparison);
+				if (morphemes.contains(comparison)) {
+					writer.println("in Lex compare: "+comparison);
+					if (count) occurrence++;
+				}
+				
+			}// for (string member
+			if (count) { 
+				writer.println(" nr elements of class: "+this.nrAdjacentMembers);
+				ratio=(occurrence*100)/number;
+				writer.println(" Correctness: "+ratio);
+			}
 		}
-	}
+	}//countWriteClass
 	
-	private void evaluate(MatrixBitwiseOperationClassSelection competingClass,PrintWriter writer){
+	private void evaluate(MatrixBitwiseOperationClassSelection competingClass,PrintWriter writer,
+			Set<String>morphemes){
 		writer.println("MatrixBitwiseOperationClassSelection evaluate class competingClass");
 		// 1. class and adjacent
-		this.writeClass(writer,"evaluate class");		
+		this.countWriteClass(writer,"evaluate class",morphemes,false);		
 		// 2. competingClass and competingClass.adjacent
-		competingClass.writeClass(writer,"evaluate competingClass");	
+		competingClass.countWriteClass(writer,"evaluate competingClass",morphemes,false);	
 		// criteria of evaluation: nr, frequency, summation of length, ...
 		
 	}
@@ -44,7 +77,7 @@ public class MatrixBitwiseOperationClassSelection extends MatrixBitwiseOperation
 			 ArrayList<MatrixBitwiseOperationHelpCompetingElementGroup>competitionList,
 			 HashMap<String, Integer>classesHashMap,
 			 HashMap<String, Integer>competitionHashMap,
-			 PrintWriter writer) {
+			 PrintWriter writer,Set<String>morphemes) {
 		String outString="";boolean out;
 		// get member of (morphological) class (this)
 		Iterator<String> classIterator = this.members.iterator();
@@ -77,7 +110,7 @@ public class MatrixBitwiseOperationClassSelection extends MatrixBitwiseOperation
 											classList.get((int)classNr-1);
 									
 										// evaluate and remove less evaluated
-										evaluate(/*this*/otherCompetingClass,writer);
+										evaluate(/*this*/otherCompetingClass,writer,morphemes);
 										out=true;
 									}
 									

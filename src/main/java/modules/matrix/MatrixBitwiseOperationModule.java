@@ -80,13 +80,13 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		}// selectBest
 		
 		// for test only; prints out best (following (adjacent)) string(s)
-		void printBest(NamedFieldMatrix matrix) {
-			System.out.println();
-			System.out.println("Best: "+best_n1+ "  " +best_n2+" "+best_BitSet.cardinality());
+		void printBest(NamedFieldMatrix matrix,PrintWriter writer) {
+			writer.println();
+			writer.println("Best: "+best_n1+ "  " +best_n2+" "+best_BitSet.cardinality());
 			for (int i=0;i<best_BitSet.length();i++){
 				if(best_BitSet.get(i)){
 					String colName=matrix.getColumnName(i);
-					System.out.println(colName);
+					writer.println(colName);
 				}
 			}
 		}
@@ -98,7 +98,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 	private class Competition {
 		
 		
-		void readEvalHashMap(BufferedReader r) throws Exception{
+		void readEvalHashMap(BufferedReader r,PrintWriter writer) throws Exception{
 		// produces a map which consists of a prefix string and which 
 		// notes following strings with alternate splits that start with the prefix
 			competitionHashMap=new HashMap<String,Integer>();
@@ -113,7 +113,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					String[] competionStr= line.split("\\$;?");
 					int nrCompetitions=competionStr.length;
 					if(nrCompetitions>1){
-						System.out.println
+						writer.println
 						("readEvalHashMap: "+line+" nrCompetitions>1: "+nrCompetitions+" ");
 						competitionIdent++;
 						competitionElement=new MatrixBitwiseOperationHelpCompetingElementGroup();
@@ -134,13 +134,13 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		}// readEvalHashMap
 		
 		
-		boolean checkcompetition(String name1,String name2) throws Exception
+		boolean checkcompetition(String name1,String name2,PrintWriter writer) throws Exception
 		{
 			
 			if ((competitionHashMap.get(name1)!=null) &&
 					(competitionHashMap.get(name1).equals(competitionHashMap.get(name2))))
 				{
-					System.out.println("checkcompetition competition name1: "+name1+ " name2: "+name2);
+					writer.println("checkcompetition competition name1: "+name1+ " name2: "+name2);
 					return true;
 				}
 				else return false;	
@@ -232,7 +232,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			}
 		}//calculatemorphVectorMatrix
 		
-		void morphProcess(NamedFieldMatrix namedFieldMatrix,Set<String> names) {
+		void morphProcess(NamedFieldMatrix namedFieldMatrix,Set<String> names,
+				PrintWriter writer) {
 			//columnSum(namedFieldMatrix);
 			//rowSum(namedFieldMatrix);
 			//calculatemorphVectorMatrix(namedFieldMatrix);
@@ -254,7 +255,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 						res=res+val*name2.length();
 					}
 				}
-				System.out.println("morphProcess "+name1+" \t "+ res);
+				writer.println("morphProcess "+name1+" \t "+ res);
 			}
 			
 			// output, test
@@ -364,22 +365,17 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				// s.above: String is prefix, Integer identifies different prefixes which are
 				// competing
 				competitionHashMap/*<String, Integer>*/,
-				writer);
+				writer,this.morphemes);
 			}
 		}
 		
 		
-		void result(HashMap <String,Integer> resultMap,Set<String> names){
-			 PrintWriter writer=null;
-			try{
-			    writer = new PrintWriter("C:\\Users\\rols\\Help.txt", "UTF-8");
-			   
-			} catch (IOException e) {
-			   e.printStackTrace();
-			}
-			System.out.println();
-			System.out.println("result numberOfClasses: "+numberOfClasses);
-			System.out.println();
+		void result(HashMap <String,Integer> resultMap,Set<String> names,
+				PrintWriter writer){
+			
+			writer.println();
+			writer.println("result numberOfClasses: "+numberOfClasses);
+			writer.println();
 			// classes found
 			listOfClasses=new ArrayList<MatrixBitwiseOperationClassSelection>();
 			
@@ -410,28 +406,28 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 						//System.out.println(name);
 					}
 				}//for (String name:names)
-				classElement.writeClass(writer,"result");
+				classElement.countWriteClass(writer,"result",this.morphemes,true);
 				listOfClasses.add(classElement);
 			}//for (int classIndex=1;classndex<=classes;classIndex++)
 			
 			selectionOfClasses(writer);			
-			writer.close();
-			System.out.println();
-			System.out.println(" no Class found");
+		
+			writer.println();
+			writer.println(" no Class found");
 			// no classification
 			for (String name:names){
 				if(resultMap.get(name)==0) {
 					// write name, no class 
-					System.out.println(name);
+					writer.println(name);
 				}
 			}//for (String name:names){
-			makeLex();
+			
 		}// result
 		
 		// makeLex reads a dictionary of morphemes (e.g. LateinLexikonList) as HashSet
 		// it may be used to evaluate results of morphologic analysis
-		void makeLex(){
-			System.out.println("makeLex");
+		void makeLex(PrintWriter writer){
+			writer.println("makeLex");
 			String pathFile="c:/users/rols/workspace/LateinLexikonList.txt";
 			String line="";
 			this.morphemes = new HashSet<String>();
@@ -440,10 +436,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				while ((line=in.readLine()) !=null)/*&&(i<100)) */ {
 					//i++;
 					String parts[]=line.split("\\+");
-					System.out.println("line "+line+ " parts: "+parts[0]);
-					this.morphemes.add(parts[0]);
-					
-					
+					writer.println("line "+line+ " parts: "+parts[0]);
+					this.morphemes.add(parts[0]);					
 					
 				}
 				in.close();	   
@@ -557,6 +551,14 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 
 	public boolean process() throws Exception {
 		boolean result = true;
+		PrintWriter writer=null;
+		try{
+		    writer = new PrintWriter("C:\\Users\\rols\\Help.txt", "UTF-8");
+			   
+		} catch (IOException e) {
+			   e.printStackTrace();
+		}
+		
 		
 		// jr
 		Operation operation=Operation.valueOf("AND");
@@ -569,7 +571,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		// set the bitsets member which will be used to store bitsets when
 		// created
 		bitsets = new HashMap<>();
-
+		
 		try {
 			// read the input matrix to operate on and determine whether row or
 			// column names will be operated on
@@ -586,7 +588,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			if (getInputPorts().get(INPUTCompetition_ID)!=null){			
 				competition= new Competition();
 				competition.readEvalHashMap(
-				new BufferedReader(getInputPorts().get(INPUTCompetition_ID).getInputReader()));
+				new BufferedReader(getInputPorts().get(INPUTCompetition_ID).getInputReader()),
+				writer);
 			}
 			//JR End competition
 			
@@ -603,10 +606,10 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		    
 			//evalMatrixProposals eval=null;
 			// write competition; write name1 (outer for loop) only once,
-			// so name1ForConcurency notes that name1 was already written
-			String name1ForConcurency="";
+			// so name1ForCompetition notes that name1 was already written
+			String name1ForCompetition="";
 			for (String name1 : names) {
-				System.out.print("Name: "+name1+ " ");
+				writer.print("Name: "+name1+ " ");
 				//eval=evalHashMap.get(name1);    //get(index);
 				//if(eval !=null) {
 				//	
@@ -652,31 +655,31 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					if (competition!=null)
 						//System.out.println("competition !=null");
 						
-						if (competition.checkcompetition(name1, name2)) {
-							if(!name1ForConcurency.equals(name1)) {
+						if (competition.checkcompetition(name1, name2,writer)) {
+							if(!name1ForCompetition.equals(name1)) {
 								
-								name1ForConcurency=name1;
-								System.out.print("competition competition:"+name1+"  ");
+								name1ForCompetition=name1;
+								writer.print("competition competition:"+name1+"  ");
 							}
-							System.out.print(name2+" ");
+							writer.print(name2+" ");
 						};
 						
 					
 					
 				}//for (String name2 : names) 
-				if(name1ForConcurency.equals(name1))System.out.println();
+				if(name1ForCompetition.equals(name1))writer.println();
 			}//for (String name1 : names)
 			
 			
 			
 			//test jr------------
-			 best.printBest(inMatrix);
+			 best.printBest(inMatrix,writer);
 			//-----------------------------------------------
 			MorphResult morphResult=new MorphResult();
-			
+			morphResult.makeLex(writer);
 			//HashMap<String,Integer>resultMap=
 			morphResult.classBuilding(outMatrix,names,best_nr);
-			morphResult.result(classesHashMap, names); 
+			morphResult.result(classesHashMap, names,writer); 
 			//----------End test
 			// these data structures might have gotten big and may be
 			// harvested directly after processing finished.
@@ -703,7 +706,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			}
 			this.closeAllOutputs();
 		}
-
+		writer.close();
 		return result;
 	}
 
