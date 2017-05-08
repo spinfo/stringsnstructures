@@ -2,7 +2,7 @@ package modules.tree_building.suffixTreeClustering.clustering.neighborjoin;
 
 public class DistanceMatrix {
 
-	private String[] names; // wird später ausgetauscht gegen Type[]
+	private String[] names; // wird spaeter ausgetauscht gegen Type[]
 	private double[][] distances;
 	private int[] alias;
 	private int numElements;

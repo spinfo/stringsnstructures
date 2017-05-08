@@ -325,7 +325,7 @@ public class BaseSuffixTree {
 	 * 
 	 * @return The type context number.
 	 */
-	public int incrementTypeContext() {
+	int incrementTypeContext() {
 		if(currentTypeContext == NO_TYPE_CONTEXT) {
 			currentTypeContext = 0;
 		} else {

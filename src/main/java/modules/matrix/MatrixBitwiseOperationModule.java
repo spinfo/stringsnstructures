@@ -395,7 +395,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 							double[]row=inMatrix.getRow(name);
 							for (int i=0;i<row.length;i++){
 								if(row[i]!=0){
-									String colName=inMatrix.getColumnName(i);
+									String colName=
+									inMatrix.getColumnName(i).replaceAll("\\<|\\>|\\|", "");
 									//System.out.print(colName+" ");
 									classElement.adjacentMembers.add(colName);
 								}//if

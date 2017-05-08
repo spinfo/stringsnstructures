@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
 //
 // element of list of classes, contains members of class
@@ -14,7 +15,7 @@ import java.util.Set;
 public class MatrixBitwiseOperationClassSelection extends MatrixBitwiseOperationHelpBaseElement{
 	
 	
-	ArrayList<String> adjacentMembers;
+	Set<String> adjacentMembers;
 	private int classNr;
 	private int number;// nr of elements in class
 	private int nrAdjacentMembers; // nr of adjacent elements for elements of class
@@ -23,7 +24,7 @@ public class MatrixBitwiseOperationClassSelection extends MatrixBitwiseOperation
 	private double ratio; // correctness of class, for match with lex
 	public MatrixBitwiseOperationClassSelection(int classNr){
 		this.classNr=classNr;
-		this.adjacentMembers=new ArrayList<String>();
+		this.adjacentMembers=new TreeSet<String>();
 	}
 	
 	
@@ -55,7 +56,7 @@ public class MatrixBitwiseOperationClassSelection extends MatrixBitwiseOperation
 				
 			}// for (string member
 			if (count) { 
-				writer.println(" nr elements of class: "+this.nrAdjacentMembers);
+				writer.println(" nr elements of class: "+this.number);
 				ratio=(occurrence*100)/number;
 				writer.println(" Correctness: "+ratio);
 			}
