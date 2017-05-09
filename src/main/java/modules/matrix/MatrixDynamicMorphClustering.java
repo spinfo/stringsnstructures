@@ -108,7 +108,7 @@ public class MatrixDynamicMorphClustering {
 	// adjectival or nominal
 	// generateSpecificContextEntries proposes different forms of polyfunctional entries
 	// 
-	public void generateSpecificContextEntries
+	private void generateSpecificContextEntries
 	(ArrayList<MatrixDynamicMorphClusteringEntryBitValue> contextBitSetList){
 		
 		// contextBitSetList is sorted after descending number of contexts
@@ -212,6 +212,49 @@ public class MatrixDynamicMorphClustering {
 			variation=variation + (Math.abs(stack.get(i).value-medium));
 		}
 		return variation;
+	}
+	
+	private void extendNamedFieldMatrix(NamedFieldMatrix namedFieldMatrix, 
+			Stack<MatrixDynamicMorphClusteringEntryBitValue>stack,
+			MatrixDynamicMorphClusteringEntryBitValue selectedElement){
+		
+		// copy values from namedFieldmatrix from elment.i to new row(s)
+		// number of new rows in namedFieldMatrix
+		String rowName= namedFieldMatrix.getRowName(selectedElement.rowIndex);
+		for (int i=0;i<stack.size();i++){
+			//columns
+			// generate new row to add to namedFieldmatrix
+			for (int j=0;j<stack.get(i).bitSet.size();j++){
+				// bit is set, get value
+				if (stack.get(i).bitSet.get(j)){
+					double value= namedFieldMatrix.getValue(selectedElement.rowIndex,j);
+					//????löschen row ???
+					String columnName=
+					namedFieldMatrix.getColumnName(j);
+					namedFieldMatrix.addValue(rowName+"-"+String.valueOf(i), columnName, value);
+				}
+			}
+			
+		}		
+		
+	}
+	
+	
+	// TO DO stacks to be constructed (actual, best)
+	// TO DO define central method restruct from which all is called here internally
+	// TO DO documentation
+	// TO check
+	// 		after: distance matrix
+	// 		clustering
+	
+	public NamedFieldMatrix restruct(NamedFieldMatrix namedFieldMatrix){
+		
+		// generateSorted
+		
+		// generateSpecificContextEntries
+		
+		// extendNamedFieldMatrix
+		return null;
 	}
 	
 }
