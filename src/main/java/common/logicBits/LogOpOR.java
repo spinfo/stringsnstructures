@@ -9,4 +9,6 @@ public class LogOpOR implements ILogOp{
 		BitSet res=new BitSet();res.or(in1);res.or(in2);
 		return res;
 	}
+	
+
 }

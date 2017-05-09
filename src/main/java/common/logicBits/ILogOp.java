@@ -1,5 +1,6 @@
 package common.logicBits;
 
+
 import java.util.BitSet;
 
 public interface ILogOp {

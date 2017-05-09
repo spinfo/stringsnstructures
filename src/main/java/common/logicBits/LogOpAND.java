@@ -9,4 +9,6 @@ public class LogOpAND implements ILogOp{
 		BitSet res=new BitSet();res=in1;res.and(in2);
 		return res;
 	}
+	
+
 }
