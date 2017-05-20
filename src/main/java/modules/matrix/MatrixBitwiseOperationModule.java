@@ -599,7 +599,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			NamedFieldMatrix outMatrix = new NamedFieldMatrix();
 			BitSet operand1 = null;
 			BitSet operand2 = null;
-			BitSet product = null;
+			BitSet resultBitSet = null;
 			Double value = null;
 			// 2 nestested loops (for (String name1 : names), for (String name2 : names) 
 			// in order to find best adjacent pair (name1, name2)
@@ -641,15 +641,15 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					// bits set in the result to the output matrix
 					operand2 = getOrCreateBitSet(name2);
 					// to do operation should be AND
-					product = performOperation(operand1, operand2, operation);
-					outMatrix.setValue(name1, name2, (double) product.cardinality());
-					if(product.cardinality()>0){
-						//System.out.println(name1+" "+name2+" "+ product.cardinality());
+					resultBitSet = performOperation(operand1, operand2, operation);
+					outMatrix.setValue(name1, name2, (double) resultBitSet.cardinality());
+					if(resultBitSet.cardinality()>0){
+						//System.out.println(name1+" "+name2+" "+ resultBitSet.cardinality());
 					}
 					
 					
 					//---------------JR--------------------------
-					best.selectBest(product,/*operand1,*/name1,name2);
+					best.selectBest(resultBitSet,/*operand1,*/name1,name2);
 					//---------------JR--------------------------
 					
 					//----test jr
@@ -676,6 +676,13 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			//test jr------------
 			 best.printBest(inMatrix,writer);
 			//-----------------------------------------------
+			 MatrixDynamicMorphClustering matrixDynamicMorphClustering =
+					 new MatrixDynamicMorphClustering();
+			 NamedFieldMatrix restructMatrix=
+			 matrixDynamicMorphClustering.restruct(inMatrix,writer);
+			//
+			
+			/*
 			MorphResult morphResult=new MorphResult();
 			morphResult.makeLex(writer);
 			//HashMap<String,Integer>resultMap=
@@ -698,6 +705,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 				writeListOutput(outMatrix, listOut);
 			}
 			
+			*/
+			 
 		} catch (Exception e) {
 			result = false;
 			throw e;
