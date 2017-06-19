@@ -58,7 +58,7 @@ public class DistanceMatrixModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DELIMITER_INPUT, ";");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_DISTANCE, "ED");
 		this.getPropertyDescriptions().put(PROPERTYKEY_DISTANCE,
-				"Two possible distance types: \"ED\" " + "(Euclidean distance), \"CS\" (Cosine similarity)");
+				"Two possible distance types: \"ED\" " + "(Euclidean distance), \"CD\" (Cosine Distance) \"CS\" (Cosine similarity)");
 
 		// Define I/O
 		InputPort matrixInputPort = new InputPort(INPUT_MATRIX_ID,
@@ -92,17 +92,17 @@ public class DistanceMatrixModule extends ModuleImpl {
 			case "CS":
 				distanceMatrix = generateDistanceMatrix(matrix, "CS");
 				break;
+			case "CD":
+				distanceMatrix = generateDistanceMatrix(matrix, "CD");
+				break;
 			default:
 				distanceMatrix = generateDistanceMatrix(matrix, "ED");
 				break;
 			}
 
-			if (distanceMatrix.getColumnNames().equals(distanceMatrix.getRowNames())) {
-				System.out.println("distanceMatrix seems to be symmetric");
-			}
 			this.getOutputPorts().get(SV_OUTPUT).outputToAllCharPipes(distanceMatrix.csvHeader());
 			for (int i = 0; i < distanceMatrix.getRowNames().size(); i++) {
-				this.getOutputPorts().get(SV_OUTPUT).outputToAllCharPipes(distanceMatrix.csvLine(i));
+				this.getOutputPorts().get(SV_OUTPUT).outputToAllCharPipes(distanceMatrix.csvLine(i).replaceAll(";;", ";" + new Double(0.0) + ";"));
 			}
 			
 		}
@@ -114,7 +114,7 @@ public class DistanceMatrixModule extends ModuleImpl {
 	private NamedFieldMatrix generateDistanceMatrix(NamedFieldMatrix nmfin, String distanceType) throws IOException {
 		System.out.println("generating Distance");
 		NamedFieldMatrix nmf = new NamedFieldMatrix();
-
+		
 		nmf.setDelimiter(outputdelimiter);
 
 		for (String row : nmfin.getRowNames()) {
@@ -126,10 +126,12 @@ public class DistanceMatrixModule extends ModuleImpl {
 				if (distanceType.equals("ED")) {
 					currentDouble = VectorMath.euclidianDistance(nmfin.getRow(row), nmfin.getRow(key));
 				}
+				if (distanceType.equals("CD")) {
+					currentDouble = VectorMath.cosineDistance(nmfin.getRow(row), nmfin.getRow(key));
+				}
 				nmf.setValue(row, key, currentDouble);
 			}
 		}
-
 		return nmf;
 	}
 

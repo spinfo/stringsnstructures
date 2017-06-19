@@ -1,5 +1,4 @@
 package modules.matrix.distanceModule;
-import java.util.List;
 
 public class VectorMath {
 	
@@ -15,6 +14,9 @@ public class VectorMath {
 	    double dotProduct = 0.0;
 	    double normA = 0.0;
 	    double normB = 0.0;
+	    if(vectorA.equals(vectorB)){
+	    	return 0.0;
+	    }
 	    for (int i = 0; i < vectorA.length; i++) {
 	        dotProduct += vectorA[i] * vectorB[i];
 	        normA += Math.pow(vectorA[i], 2);
@@ -22,5 +24,8 @@ public class VectorMath {
 	    }   
 	    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 	}
-
+	
+	public static double cosineDistance(double[] vectorA, double[] vectorB){
+		return 1 - cosineSimilarity(vectorA, vectorB);
+	}
 }
