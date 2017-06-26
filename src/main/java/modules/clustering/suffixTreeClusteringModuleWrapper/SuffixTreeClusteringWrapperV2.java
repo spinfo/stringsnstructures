@@ -31,6 +31,8 @@ import modules.vectorization.suffixTreeVectorizationWrapper.SuffixTreeInfoSer;
 //google gson imports
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 /**
  * This is a wrapper to modularize the vectorization process. 
@@ -82,7 +84,7 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 	private String clustResult;
 
 	// flat cluster kmeans result
-	List<FlatCluster> kmeansRes;
+	Object clusterJsonRes;
 
 	// definitions of I/O variables
 	private final String INPUT_ST_ID = "byteInput";
@@ -210,8 +212,8 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 		Iterator<Pipe> jsonPipes = this.getOutputPorts().get(OUTPUTJSONID).getPipes(CharPipe.class).iterator();
 
 		while (jsonPipes.hasNext()) {
-			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			gson.toJson(this.kmeansRes, ((CharPipe) jsonPipes.next()).getOutput());
+			Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+			gson.toJson(this.clusterJsonRes, ((CharPipe) jsonPipes.next()).getOutput());
 		}
 
 		// put the results of each clustering into an appropriate JSON format.
@@ -251,7 +253,7 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 		FlatClusterer f_analysis = new FlatClusterer(types);
 
 		List<FlatCluster> fClusters = f_analysis.analyse(3, 10);
-		this.kmeansRes = fClusters;
+		this.clusterJsonRes = fClusters;
 		for (FlatCluster cluster : fClusters) {
 			System.out.println(cluster.getMedoid().getString());
 		}
@@ -266,7 +268,7 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 		// Types");
 		h_analysis.analyze();
 		List<HierarchicalCluster> hClusters = h_analysis.getClusters();
-
+		this.clusterJsonRes = hClusters;
 		if (hClusters.size() == 1) {
 			this.clustResult = h_analysis.toDot();
 
@@ -281,6 +283,7 @@ public class SuffixTreeClusteringWrapperV2 extends ModuleImpl {
 		// Types");
 		nj.start();
 		this.clustResult = nj.getTree();
+		this.clusterJsonRes = nj.getJSONTree();
 	}
 
 	// end methods
