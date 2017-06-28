@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
+import modules.tree_building.suffixTree.TreeWalker;
 import modules.tree_building.suffixTreeClustering.data.Type;
 
 public class NeighborJoining {
@@ -70,19 +74,15 @@ public class NeighborJoining {
 		r = new double[numCluster];
 	}
 
-	
 	private boolean isAdditive(double[][] matrix) {
 		boolean holds = false;
 		for (int i = 0; i < matrix.length; i++) {
 			for (int j = 0; j < matrix.length; j++) {
 				for (int k = 0; k < matrix.length; k++) {
 					for (int l = 0; l < matrix.length; l++) {
-						if (i != j && i != k && i != l && j != k && j != l
-								&& k != l) {
-							holds = isSame(matrix[i][k] + matrix[j][l], 
-									matrix[i][l] + matrix[j][k]) 
-									&& isGreaterOrEqual(matrix[i][k] + matrix[j][l], 
-											matrix[i][j] + matrix[k][l]);
+						if (i != j && i != k && i != l && j != k && j != l && k != l) {
+							holds = isSame(matrix[i][k] + matrix[j][l], matrix[i][l] + matrix[j][k])
+									&& isGreaterOrEqual(matrix[i][k] + matrix[j][l], matrix[i][j] + matrix[k][l]);
 							if (!holds)
 								return false;
 						}
@@ -109,15 +109,12 @@ public class NeighborJoining {
 			for (int i = 0; i < matrix.length; i++) {
 				for (int j = 0; j < matrix[i].length; j++) {
 					if (!(matrix[i][j] == (matrix[j][i]))) {
-						System.out
-								.printf("Values of matrix[%s][%s]=%s and matrix[%s][%s]=%s are not the same",
-										i, j, matrix[i][j], j, i, matrix[j][i]);
+						System.out.printf("Values of matrix[%s][%s]=%s and matrix[%s][%s]=%s are not the same", i, j,
+								matrix[i][j], j, i, matrix[j][i]);
 						return false;
 					}
 					if (i == j && !(matrix[i][j] == (new Double(0.0)))) {
-						System.out.printf(
-								"Value of matrix[%s][%s]=%s is not 0", i, j,
-								matrix[i][j]);
+						System.out.printf("Value of matrix[%s][%s]=%s is not 0", i, j, matrix[i][j]);
 						return false;
 					}
 				}
@@ -165,13 +162,13 @@ public class NeighborJoining {
 				if (M_ij < min) {
 					// if there are multiple smallest values, the first pair
 					// will be stored...
+
 					min = M_ij;
 					best_i = i;
 					best_j = j;
 				}
 			}
 		}
-
 		aliasBesti = alias[best_i];
 	}
 
@@ -183,7 +180,6 @@ public class NeighborJoining {
 		// nodes to be joined
 		NJNode child1 = root.getChildByName(aliasNames.get(alias[best_i]));
 		NJNode child2 = root.getChildByName(aliasNames.get(alias[best_j]));
-
 		// new branch lengths
 		double dij = getDistance(best_i, best_j);
 		// L_iu = (D_ij/2) + ((r_i - r_j) / 2)
@@ -199,8 +195,7 @@ public class NeighborJoining {
 		for (int k = 0; k < numCluster; k++) {
 			if (k != best_i && k != best_j) {
 				int ak = alias[k];
-				distanceMatrix[ak][aliasBesti] = distanceMatrix[aliasBesti][ak] = updatedDistance(
-						best_i, best_j, k);
+				distanceMatrix[ak][aliasBesti] = distanceMatrix[aliasBesti][ak] = updatedDistance(best_i, best_j, k);
 			}
 		}
 		distanceMatrix[aliasBesti][aliasBesti] = 0.0;
@@ -228,7 +223,7 @@ public class NeighborJoining {
 		// nodes to be joined
 		NJNode child1 = root.getChildByName(aliasNames.get(alias[best_i]));
 		NJNode child2 = root.getChildByName(aliasNames.get(alias[best_j]));
-
+		System.out.println("joining " + aliasNames.get(alias[best_i]) + " and " + aliasNames.get(alias[best_j]) + "\n");
 		// reset structure
 		newNode.addChild(child1);
 		newNode.addChild(child2);
@@ -251,8 +246,7 @@ public class NeighborJoining {
 	}
 
 	private void finish() {
-		getRoot().getChild(best_j).setBranchLength(
-				updatedDistance(best_i, best_j, 2));
+		getRoot().getChild(best_j).setBranchLength(updatedDistance(best_i, best_j, 2));
 
 		distanceMatrix = null;
 	}
@@ -289,29 +283,80 @@ public class NeighborJoining {
 		}
 		System.out.println("}");
 	}
-	
+
+	StringBuilder njResult;
+
 	public String getTree() {
-		String njResult = "";
-		njResult += "graph NJTree {";
+		njResult = new StringBuilder();
+		njResult.append("graphNJTree {\n");
+
 		if (root.getChildren().isEmpty()) {
-			njResult += root.getLabel() + ";";
+			njResult.append(root.getLabel() + ";");
 		} else {
+			njResult.append(root.getLabel() + "{\n");
 			for (NJNode child : root.getChildren()) {
-				njResult += root.getLabel() + " -- ";
 				printSubTree(child);
 			}
+			njResult.append("}");
 		}
-		njResult +="}";
-		return njResult;
+
+		njResult.append("\n}");
+		return njResult.toString();
 	}
 
 	private void printSubTree(NJNode node) {
-		System.out.println(node.getLabel() + "[label = "
-				+ node.getBranchLength() + "];");
-		for (NJNode child : node.getChildren()) {
-			System.out.print(node.getLabel() + " -- ");
-			printSubTree(child);
-			System.out.println();
+		njResult.append(node.getLabel() + "[label = " + node.getBranchLength() + "];\n");
+		System.out.println(node.getLabel() + "[label = " + node.getBranchLength() + "];\n");
+		if (node.getChildren().size() > 0) {
+			njResult.append("{\n");
+			System.out.println("{");
+			for (NJNode child : node.getChildren()) {
+				// njResult += node.getLabel() + " -- ";
+				printSubTree(child);
+			}
+			System.out.println("}");
+			njResult.append("\n}");
 		}
 	}
+
+	StringBuilder jsonStringBuilder = new StringBuilder();
+	
+	public JsonElement getJSONTree() {
+		jsonStringBuilder = new StringBuilder();
+		jsonStringBuilder.append("{ 'graph NJTree' : {");
+		if (root.getChildren().isEmpty()) {
+			jsonStringBuilder.append("'" + root.getLabel() + "' : { 'label' : " + root.getBranchLength() + "}");
+		} else {
+			jsonStringBuilder.append("'" + root.getLabel() + "' : {");
+			List<NJNode> rootChilds = root.getChildren();
+			for (NJNode child : rootChilds) {
+				printJSONSubTree(child);
+				if (rootChilds.indexOf(child) < rootChilds.size() - 1) {
+					jsonStringBuilder.append(",");
+				}
+			}
+			jsonStringBuilder.append("}");
+		}
+		jsonStringBuilder.append("}}");
+		
+		JsonParser jp = new JsonParser();
+		JsonElement el = jp.parse(jsonStringBuilder.toString());
+		return el;
+	}
+
+	private void printJSONSubTree(NJNode node) {
+		jsonStringBuilder.append("'" + node.getLabel() + "' : { 'label' : " + node.getBranchLength());
+		if (node.getChildren().size() > 0) {
+			jsonStringBuilder.append(",");
+			List<NJNode> nodeChilds = node.getChildren();
+			for (NJNode child : nodeChilds) {
+				printJSONSubTree(child);
+				if (nodeChilds.indexOf(child) < nodeChilds.size() - 1) {
+					jsonStringBuilder.append(",");
+				}
+			}
+		}
+		jsonStringBuilder.append("}");
+	}
+
 }

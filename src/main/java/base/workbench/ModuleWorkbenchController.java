@@ -83,6 +83,7 @@ import modules.matrix.MatrixRowColPairExtractorModule;
 import modules.matrix.MatrixValuesExpressionApplyModule;
 import modules.matrix.MclModule;
 import modules.matrix.SegmentMatrixAnalyzeModule;
+import modules.matrix.distanceModule.DistanceMatrixModule;
 import modules.morphology.MorphologyCheckModule;
 import modules.parser.oanc.OANCXMLParser;
 import modules.segmentation.SegmentCombinerModule;
@@ -227,6 +228,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		createAndRegisterModule(MorphologyCheckModule.class);
 		createAndRegisterModule(MatrixValuesExpressionApplyModule.class);
 		createAndRegisterModule(MatrixOperations.class);
+		createAndRegisterModule(DistanceMatrixModule.class);
 	}
 	
 	/**
