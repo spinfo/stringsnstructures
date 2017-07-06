@@ -81,6 +81,7 @@ import modules.matrix.MatrixFilterModule;
 import modules.matrix.MatrixOperations;
 import modules.matrix.MatrixRowColPairExtractorModule;
 import modules.matrix.MatrixValuesExpressionApplyModule;
+import modules.matrix.MatrixVectorSortModule;
 import modules.matrix.MclModule;
 import modules.matrix.SegmentMatrixAnalyzeModule;
 import modules.matrix.distanceModule.DistanceMatrixModule;
@@ -229,6 +230,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		createAndRegisterModule(MatrixValuesExpressionApplyModule.class);
 		createAndRegisterModule(MatrixOperations.class);
 		createAndRegisterModule(DistanceMatrixModule.class);
+		createAndRegisterModule(MatrixVectorSortModule.class);
 	}
 	
 	/**
