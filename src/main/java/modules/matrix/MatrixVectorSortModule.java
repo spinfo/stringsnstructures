@@ -25,6 +25,8 @@ import base.workbench.ModuleRunner;
 
 public class MatrixVectorSortModule extends ModuleImpl {
 
+	//TODO: Make possible to delete all zeros
+	
 	// Main method for stand-alone execution
 	public static void main(String[] args) throws Exception {
 		ModuleRunner.runStandAlone(MatrixVectorSortModule.class, args);
