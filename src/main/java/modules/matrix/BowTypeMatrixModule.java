@@ -141,14 +141,37 @@ public class BowTypeMatrixModule extends ModuleImpl {
 					// Determine next token
 					String token2 = tokens2.next();
 					// ... and its value
+
 					Double value = bow.get(token2);
+
+					if (token.equals(token2) && value == 0) {
+						matrixLine.put(token2, value);
+						continue;
+					}
+
+					if (token.equals(token2) && value == 1) {
+						// Apply TF-iDF
+						if (this.applyTfidf) {
+							value = inverseDocumentFrequencies.get(token2);
+						} else {
+							value = matrixLine.getOrDefault(token2, 0d);
+						}
+		
+						// Add value to matrix line
+						matrixLine.put(token2, value);				
+						continue;
+					}
+					
+					if (token.equals(token2) && value > 1) {
+						value--;
+					}
+
+					// Add value to existing one
+					value += matrixLine.getOrDefault(token2, 0d);
 
 					// Apply TF-iDF
 					if (this.applyTfidf)
 						value = value * inverseDocumentFrequencies.get(token2);
-
-					// Add value to existing one
-					value += matrixLine.getOrDefault(token2, 0d);
 
 					// Add value to matrix line
 					matrixLine.put(token2, value);
@@ -183,7 +206,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 				// rows should not end with delimiter
 				// subsequent modules recognize that as new (empty) column
 				if (types.hasNext()) {
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type+this.outputdelimiter);
+					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type + this.outputdelimiter);
 				} else {
 					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type);
 				}
@@ -195,7 +218,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 								.outputToAllCharPipes(matrix.get(type).get(type2).toString());
 					else
 						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.emptyFieldValue);
-					
+
 					if (types2.hasNext()) {
 						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
 					}
