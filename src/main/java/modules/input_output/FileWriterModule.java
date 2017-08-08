@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -16,6 +17,7 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.NotSupportedException;
 import common.parallelization.CallbackReceiver;
+import base.workbench.ModuleWorkbenchController;
 
 /**
  * Writes any input to file
@@ -80,9 +82,23 @@ public class FileWriterModule extends ModuleImpl {
 		// Add module category
 
 	}
+	
+
+
+	private String getFileNameWithoutExtension(String fileName) {
+		
+		try {
+			return fileName.substring(0,fileName.lastIndexOf(".") + 1);
+		} catch (Exception e) {
+			return "";
+		}
+	}
+
+
 
 	@Override
 	public boolean process() throws Exception {
+		
 
 		// Determine input port
 		InputPort inputPort = this.getInputPorts().get(INPUTID);
@@ -155,6 +171,9 @@ public class FileWriterModule extends ModuleImpl {
 				// Instantiate a new file writer
 				Writer fileWriter = new OutputStreamWriter(fileOutputStream,
 						this.encoding);
+				String testFromExperiment=ModuleWorkbenchController.moduleNetWorkName;
+				System.out.println("FileWriterModule testFromExperiment "+testFromExperiment);
+				
 
 				// Define input buffer
 				char[] buffer = new char[this.bufferLength];
@@ -184,8 +203,14 @@ public class FileWriterModule extends ModuleImpl {
 						.log(Level.INFO,
 								"Wrote character input to " + this.filePath);
 				
+				
 				// Keep track of whether an input has been successfully read
 				successfullyReadInput = true;
+				String pathFileName=getFileNameWithoutExtension(this.filePath)+"prd";//produced
+						PrintWriter pw =new PrintWriter(pathFileName);
+						pw.write(testFromExperiment);
+						pw.close();
+				
 			}
 		} catch (NotSupportedException e) {
 
