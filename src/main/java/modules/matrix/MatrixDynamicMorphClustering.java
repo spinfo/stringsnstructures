@@ -3,11 +3,12 @@ package modules.matrix;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+//import java.util.Collections;
+//import java.util.Comparator;
+//import java.util.Map;
+//import java.util.Set;
+//import java.util.Stack;
+import java.util.HashMap;
 
 import models.NamedFieldMatrix;
 import common.logicBits.LogOp;
@@ -15,7 +16,17 @@ import common.logicBits.LogOp;
 
 public class MatrixDynamicMorphClustering {
 	
-	/*
+	/* the basic idea of this class is: 
+	 * 	1. sort elements by (falling) number of contexts
+	 *  2. look whether context (element set) consists of (more than one) other context element sets
+	 *  (example: port+us, port+um, port+os, port+o, port+as has context element set consiting of
+	 *  us, um, os, o, as.
+	 *  us, um, os are found in the context (of a nominal form like) hort+us, hort+um, hort+os (and hort+o).
+	 *  as
+	 *  o and as are found in (verbal forms like) am+o, am+as (nota bene is found in both of them).
+	 *  Thus, port+ ... should be splitted in two forms.
+	 *  But note, these two forms might be splitted further on.
+	 *  
 	 * (there are three main data structures:
 	 * 1. a dynamic (i.e. extensible) property matrix; the properties are
 	 * vectors representing adjacency.
@@ -24,34 +35,19 @@ public class MatrixDynamicMorphClustering {
 	 * in comparison.
 	 * 2. a dynamic distance matrix which represents results of above
 	 * vector comparison
-	 * 3. an agglomerative (bottom up builded) neighbor hood tree
+	 * 3. an agglomerative (bottom up built) neighbor hood tree
 	 * )
-	 * 
-1. sortiere fallend nach Zahl Kontextelemente
-2. Schleife: seligiere top down element a
-3. Schleife bottom up:
-	suche zwei Elemente b und c, deren Summe Kontextelemente >=
-	Kontextelemente top-down
-
-4: Evaluiere bitMatch:
-	evaluiere results: (a AND b) OR(a AND c)  == a
-	Evaluationskriterium: Ausgewogenheit, d.h. bestes b und c, dann wenn Differenz (Zahl gesetzte bits) |b| und |c|  möglichst nahe 0
-
-
-5. Füge gesplittete Elemente in Liste ein
-6. Füge ein auch in fallend sortierte Liste
-7. Iteriere Verfahren (auch) für neueingefügte Elemente (das Vorgehen ist binär aufteilend).
-
 	 * 
 	 */
 
 	private PrintWriter writer;
 	private NamedFieldMatrix namedFieldMatrix;
-	private ArrayList<MatrixDynamicMorphClusteringEntryBitValue> contextBitSetList;
+	private HashMap<String, Integer> competitionHashMap=null;
+	//private ArrayList<MatrixDynamicMorphClusteringEntryBitValue> cardinorderedEntryContextList;
 	// The value zero as a double
 	private static final Double ZERO_D = new Double(0.0);
 	
-	private static Stack<MatrixDynamicMorphClusteringEntryBitValue> best,actual;
+	//private static Stack<MatrixDynamicMorphClusteringEntryBitValue> best,actual;
 	
 	private BitSet generateBitVector(int row) {
 		double[] values;
@@ -68,449 +64,256 @@ public class MatrixDynamicMorphClustering {
 		return result;
 		}//generateBitVector
 	
-	// generates a list of context bits set in falling order
-	private ArrayList<MatrixDynamicMorphClusteringEntryBitValue> generateSortedBitsMarked()
-		{
-		ArrayList<MatrixDynamicMorphClusteringEntryBitValue> list=
-				new ArrayList<MatrixDynamicMorphClusteringEntryBitValue>();
-		System.out.println("MatrixDynamicMorphClustering generateSortedBitsMarked Entry");
-		for (int i=0;i<namedFieldMatrix.getRowAmount();i++){
-			
-			
-			BitSet bitSet = this.generateBitVector(i);
-			//TODO save list of bits
-			
-			list.add(new MatrixDynamicMorphClusteringEntryBitValue(
-					i,bitSet.cardinality(),bitSet));
+	
+	
+	// generate list from namedFieldmatrix 
+	// elements of list are (terminal) nodes of neighbor tree which is built below 
+	private ArrayList<MatrixBitWiseOperationTreeNodeElement> generateMatrixBitWiseOperationTreeNodeElementList() 
+	{	ArrayList<MatrixBitWiseOperationTreeNodeElement> list= 
+		new ArrayList<MatrixBitWiseOperationTreeNodeElement>();
+	
+	this.writer.println("MatrixDynamicMorphClustering generateMatrixBitWiseOperationTreeNodeElementList Entry");
+	
+	for (int row=0;row<namedFieldMatrix.getRowAmount();row++){		
+		writer.println("generate...TreeNodeElementList row: "+row + " name: "+
+				namedFieldMatrix.getRowName(row));
+		BitSet bitSet = this.generateBitVector(row);
+		//save list of bits		
+		list.add(new MatrixBitWiseOperationTreeNodeElement(bitSet,row,null,null//no children here
+				));
 		}
-		
-		// sort
-		Collections.sort(list, 
-				new Comparator <MatrixDynamicMorphClusteringEntryBitValue>(){
-				 @Override
-				    public int compare(MatrixDynamicMorphClusteringEntryBitValue a,
-				    		MatrixDynamicMorphClusteringEntryBitValue b) {
-					 		if (a.value < b.value)return 1;
-					 		else if (a.value == b.value) return 0;
-					 		else return-1;				        
-				    }// compare
-		});//sort
-		
-		// print for test
-		System.out.println("MatrixDynamicMorphClustering generateSortedBitsMarked List");
-		for (int i=0;i<list.size();i++){
-			System.out.println(namedFieldMatrix.getRowName(list.get(i).rowIndex)+
-					"  "+list.get(i).rowIndex+ "  "+
-					list.get(i).value);
-		}
-		System.out.println("MatrixDynamicMorphClustering generateSortedBitsMarked Exit");
 		return list;
 	}
 	
-	// contextBitSetList contains entries which belong to differenung
-	// morphological classes, e.g. regiere, regierst, regierbar, regierung
-	// or porto, porta, porti, portiamo
-	// these entries match with contexts of other entries which are clearly verbal,
-	// adjectival or nominal
-	// generateSpecificContextEntries proposes different forms of polyfunctional entries
-	// 
 	
-	private void generateSpecificContextEntries(){
-		writer.println("MatrixDynamicMorphClustering generateSpecificContextEntries Entry");	
-	
-		// contextBitSetList is sorted after descending number of contexts
-		// it is checked whether there are different elements with context contained
-		// in selected element
-		for (int i=0;i<contextBitSetList.size();i++){
-			MatrixDynamicMorphClusteringEntryBitValue selectedElement=
-			contextBitSetList.get(i);
-			System.out.println
-			("generateSpecificContextEntries selectedElement "
-			+ namedFieldMatrix.getRowName(selectedElement.rowIndex)+
-			" cardinality: "+selectedElement.bitSet.cardinality()+ " ForLoopIndex i: "+i);
-			writer.println
-			("generateSpecificContextEntries selectedElement "
-			+ namedFieldMatrix.getRowName(selectedElement.rowIndex)+
-			" cardinality: "+selectedElement.bitSet.cardinality()+" ForLoopIndex i: "+i);
-			check(selectedElement,i,contextBitSetList.size()-1);
-			if (!this.actual.empty()){
-				MatrixDynamicMorphClusteringEntryBitValue top= this.actual.peek();
-				if (top != null) 
-					writer.println("generateSpecificContextEntries stack best val:"+top.bitSet.cardinality());
-					else writer.println("generateSpecificContextEntries stack empty");
-					this.actual.clear();
-			};
-			this.actual.clear();
-			this.best.clear();
-		}
-		// enter in contextBitSetList
-		writer.println("MatrixDynamicMorphClustering generateSpecificContextEntries Exit");
-	}
-	
-	//recursive traverse of contextBitSetList;	
-	private void check(MatrixDynamicMorphClusteringEntryBitValue selectedElement,
-			int i/*value of outer calling loop s.above*/,int posInContextBitSetList){
-			
-		for (int j=posInContextBitSetList;j>i;j--){
-				
-				/*System.out.println
-				("check selectedElement "
-					+ namedFieldMatrix.getRowName(selectedElement.rowIndex)+
-					" cardinality: "+selectedElement.bitSet.cardinality()+
-					" posInContextBitSetList: "+j);
-			
-				writer.println
-				("MatrixDynamicMorphClustering check entry j: "+j);
-				*/
-				//	BitSet selectedElementBitSet=getBitSet(selectedElement);
-				// select element (named localElement) out of contextBitSetList (in reversed order (from size() to j!))
-				// which may be contained (bitwise) in selected element.
+
+	private void checkConflictingElements(ArrayList<MatrixBitWiseOperationTreeNodeElement>list,int listSize, 
+	MatrixBitWiseOperationCompetition competition,MatrixBitWiseOperationTreeNodeElement partialroot1,
+	MatrixBitWiseOperationTreeNodeElement partialroot2){
 		
-				
-			
-				MatrixDynamicMorphClusteringEntryBitValue localElement=
-					this.contextBitSetList.get(j);
-				/*System.out.println
-				("MatrixDynamicMorphClustering generateSpecificContextEntries localElement "
-						+ namedFieldMatrix.getRowName(localElement.rowIndex)+
-						" cardinality: "+localElement.bitSet.cardinality());
-				*/
-				// no elements which are marked to be without sharing bits
-				if (localElement.exclude!=i)
-					bitVectorCompare(selectedElement,localElement,i,j);
-				//else i= 10/0;
-				;			
-			
-			};
-			checkNewBetter();
-			
-		
-	}
-	
-	
-	// -1 not contained
-	// 0  contained, but not completely contained, recursion
-	// 1 completely contained, ok
-	private void bitVectorCompare(MatrixDynamicMorphClusteringEntryBitValue selectedElement,
-			MatrixDynamicMorphClusteringEntryBitValue localElement,int i,
-			int posInContextBitSetList) {
-		
-		// writer.println("bitVectorCompare Entry");
-		// not contained
-		BitSet selectedElementANDLocalElement=LogOp.AND(selectedElement.bitSet,localElement.bitSet);
-		if (selectedElementANDLocalElement.isEmpty()) {
-			writer.println("bitVectorCompare isEmpty ");
-			//
-			localElement.exclude=i;
-		}
-		else if (!isDisjunct(localElement.bitSet)) {
-			writer.println("bitVectorCompare not disjunct ");
-		}
-		else {
-			int resVal= isContained(selectedElement,		
-			selectedElementANDLocalElement,i,posInContextBitSetList);
-			writer.println("bitVectorCompare resVal: "+resVal);
-			
-			
-		}			
-	}
-	
-	
-	private boolean isDisjunct(BitSet localBitSet){
-		
-			if (actual.empty()) {writer.println("isDisjunct empty stack true"); return true;}
-			else if (actual.peek().bitSet.cardinality()==
-			LogOp.OR(localBitSet,actual.peek().bitSet).cardinality()){
-				writer.println("isDisjunct false");return false;
-			}
-			else {writer.println("isDisjunct true");return true;}
-			
-		
-	}//isDisjunct
-	
-	
-	// is Contained checks whether new element contributes to context
-	// -1 if element does not contribute
-	// 0 if element contributes but not completely
-	// 1 if elements contributes completely
-	private int isContained(MatrixDynamicMorphClusteringEntryBitValue selectedElement,
-			BitSet selectedElementANDLocalElementBitSet,int i,int posInContextBitSetList){
-		
-		if (this.actual.empty()){
-			if (selectedElement.bitSet.cardinality()==
-					selectedElementANDLocalElementBitSet.cardinality())
-			{
-				writer.println("isContained completely identical");
-				return 2;
-			}
-				
-			writer.println("isContained first element continue");
-			this.actual.push
-			(new MatrixDynamicMorphClusteringEntryBitValue(posInContextBitSetList, 
-				selectedElementANDLocalElementBitSet.cardinality(), 
-				selectedElementANDLocalElementBitSet));
-				check(selectedElement,
-					i/*value of outer calling loop s.above*/,posInContextBitSetList-1);
-					
-				this.actual.pop();
-			return 0;
-		}
-		
-		else {
-			BitSet last= this.actual.peek().bitSet;
-			BitSet res= LogOp.OR(selectedElementANDLocalElementBitSet,last);
-			writer.println("last.cardinality: "+last.cardinality()+" res.cardinality: "+
-			res.cardinality());
-			// more contexts covered?
-			if (res.cardinality() > last.cardinality()) 
-				// all covered
-				if (res.cardinality()==selectedElement.bitSet.cardinality())
-					{ writer.println("isContained all covered");
-					checkNewBetter();
-					return 1;}
-				else {writer.println("isContained not all covered continue");
-					this.actual.push
-					(new MatrixDynamicMorphClusteringEntryBitValue(posInContextBitSetList, 
-						selectedElementANDLocalElementBitSet.cardinality(), res));
-					writer.println("Recursion depth after push : "+this.actual.size());
-					check(selectedElement,
-					i/*value of outer calling loop s.above*/,posInContextBitSetList-1);
-					writer.println("Recursion depth before pop : "+this.actual.size());
-					this.actual.pop();
-					return 0;}
-			else {writer.println("isContained element does not contribute"); return -1;
-			}
-		}		
-	}//isContained
-	
-	private void checkNewBetter(){
-		if (best==null) best= actual;
-		else {
-			// better more elements than less
-			if (actual.size()>best.size()) best=actual;
-			else if (actual.size()==best.size()){
-				if (harmony(actual)<harmony(best))best=actual;
-			}
-		}
-	}
-		
-	private double harmony(Stack<MatrixDynamicMorphClusteringEntryBitValue>stack){
-		int sum=0; double medium;double variation=100000000;
-		for (int i=0;i<stack.size();i++){
-			sum=sum+stack.get(i).value;
-		}
-		if (stack.size()>0)
-		{medium=sum/stack.size();
-			for (int i=0;i<stack.size();i++){
-				variation=variation + (Math.abs(stack.get(i).value-medium));
-			}
-		}
-		return variation;
-	}
-	
-	private void extendNamedFieldMatrix(Stack<MatrixDynamicMorphClusteringEntryBitValue>stack,
-			MatrixDynamicMorphClusteringEntryBitValue selectedElement){
-		
-		// copy values from namedFieldmatrix from elment.i to new row(s)
-		// number of new rows in namedFieldMatrix
-		String rowName= namedFieldMatrix.getRowName(selectedElement.rowIndex);
-		for (int i=0;i<stack.size();i++){
-			//columns
-			// generate new row to add to namedFieldmatrix
-			for (int j=0;j<stack.get(i).bitSet.size();j++){
-				// bit is set, get value
-				if (stack.get(i).bitSet.get(j)){
-					double value= namedFieldMatrix.getValue(selectedElement.rowIndex,j);
-					//????löschen row ???
-					String columnName=
-					namedFieldMatrix.getColumnName(j);
-					namedFieldMatrix.addValue(rowName+"-"+String.valueOf(i), columnName, value);
-				}
-			}
-			
-		}		
-		
-	}
-	
-	
-	// TO DO stacks to be constructed (actual, best)
-	// TO DO define central method restruct from which all is called here internally
-	// TO DO documentation
-	// TO check
-	// 		after: distance matrix
-	// 		clustering
-	
-	private ArrayList<MatrixDynamicMorphClusteringEntryBitValue>generateCommonContextList() {
-		
-		ArrayList <MatrixDynamicMorphClusteringEntryBitValue> commonContexts=
-				new ArrayList <MatrixDynamicMorphClusteringEntryBitValue>();
-				
-		for (int i=0;i<contextBitSetList.size()-1;i++){
-			MatrixDynamicMorphClusteringEntryBitValue selectedElement=
-			contextBitSetList.get(i);
-			writer.println
-			("generateCommonContextList selectedElement "
-			+ namedFieldMatrix.getRowName(selectedElement.rowIndex)+
-			" cardinality: "+selectedElement.bitSet.cardinality()+ " ForLoopIndex i: "+i);
-			if (selectedElement.bitSet.cardinality()<=1) break;
-			for (int j=i+1;j<contextBitSetList.size();j++){
-				//
-				MatrixDynamicMorphClusteringEntryBitValue localElement=
-				contextBitSetList.get(j);
-				if (localElement.bitSet.cardinality()<=1) break;
-				BitSet and=LogOp.AND(selectedElement.bitSet,localElement.bitSet);
-				int card=and.cardinality();
-				if(card>0){
-					writer.println(" not empty i: "+j+" card: "+card+ " "+
-							namedFieldMatrix.getRowName(localElement.rowIndex));
-					commonContexts.add(new MatrixDynamicMorphClusteringEntryBitValue(
-					localElement.rowIndex,and.cardinality(),and));
-				}
-			}
-		}
-		// sort
-		Collections.sort(commonContexts, 
-			new Comparator <MatrixDynamicMorphClusteringEntryBitValue>(){
-			 @Override
-		    public int compare(MatrixDynamicMorphClusteringEntryBitValue a,
-		   		MatrixDynamicMorphClusteringEntryBitValue b) {
-		 		if (a.value < b.value)return 1;
-		 		else if (a.value == b.value) return 0;
-		 		else return-1;				        
-			    }// compare
-			});//sort
-		return commonContexts;
-	}//generateCommonContextList
-	
-	
-	
-	private void maxDisjunctBAK(ArrayList <MatrixDynamicMorphClusteringEntryBitValue> commonContexts){
-		
-		MatrixDynamicMorphClusteringEntryBitValue element;
-		
-		// ?? check all possibilities ???
-		for (int p=0;p<commonContexts.size()-1;p++) {
-			int oldCardinality,newCardinality=0;BitSet oredGlobal=new BitSet();
-			writer.println("maxDisjunct p:"+p);
-			System.out.println("maxDisjunct p:"+p);
-			if (commonContexts.get(p).exclude==-1){
-				while (true) {
-					int maxDiff=0, maxI=0,maxJ=0;
-					oldCardinality=newCardinality;
-					BitSet oredLocal=new BitSet();
-					// look for best (max) diff pair which covers well bits set
-					// remind: each element of pair was ANDed with element in list
-					for (int i=p;i<commonContexts.size()-1;i++)
-						if (commonContexts.get(i).exclude==-1){
-							for (int j=i+1;j<commonContexts.size();j++){
-								int val=
-								LogOp.OR(commonContexts.get(i).bitSet,commonContexts.get(j).bitSet).cardinality()
-								-LogOp.AND(commonContexts.get(i).bitSet,commonContexts.get(j).bitSet).cardinality();
-								if(val>maxDiff){
-									maxDiff=val;maxI=i;maxJ=j;
-									oredLocal=LogOp.OR(commonContexts.get(i).bitSet,commonContexts.get(j).bitSet);
-								}
+		for (int i=0;i<listSize;i++){
+			MatrixBitWiseOperationTreeNodeElement element_i=list.get(i);
+			if(element_i.root==partialroot1){
+				//System.out.println("partailroot1 found");
+				for (int j=0;j<listSize;j++){
+					MatrixBitWiseOperationTreeNodeElement element_j=list.get(j);
+					if(element_j.root==partialroot2){
+						//System.out.println("partailroot2 found");
+						try {
+							if(competition.checkcompetition(
+								this.namedFieldMatrix.getRowName(element_i.fromNamedFieldMatrixRow),
+								this.namedFieldMatrix.getRowName(element_j.fromNamedFieldMatrixRow),
+								this.writer)) {
+								
+								//int x=10/0;
+							
 							}
 						}
-						// flag element
-						element=commonContexts.get(maxI);
-						element.exclude=1;
-						BitSet res=LogOp.OR(oredGlobal,oredLocal);
-						newCardinality=res.cardinality();
-						if(newCardinality>oldCardinality) {
-							oredGlobal=res;
-						}
-						else break;
-						writer.println("maxDisjunct max: "+maxDiff+ " maxI: "+maxI+ " maxJ: "+maxJ);
+							catch(Exception e){System.out.println(" error checkConflictingElements" );};
+					}
 				}
-			} 
+			}
+			
 		}
 		
+		
+	}//checkConflictingElements
+	
+	
+	private int evaluate(MatrixBitWiseOperationTreeNodeElement in1,MatrixBitWiseOperationTreeNodeElement in2){
+		BitSet common=LogOp.AND(in1.contextBitSet, in2.contextBitSet);
+		
+		// 17-07-31 inclusion is better here
+		BitSet dif1=LogOp.XOR(common,in1.contextBitSet);
+		BitSet dif2=LogOp.XOR(common,in2.contextBitSet);
+		int minor=Integer.min(dif1.cardinality(), dif2.cardinality());
+		//BitSet dif = LogOp.XOR(in1.contextBitSet, in2.contextBitSet);
+		// result is difference of sun of common and sum of different bits
+		
+		// inclusion welcome
+		// return common.cardinality()-dif.cardinality();
+		return common.cardinality()-minor;
 	}
 	
 	
-private ArrayList<Integer> disjunct(ArrayList <MatrixDynamicMorphClusteringEntryBitValue>commonContexts,
-		int start, BitSet origin, boolean fullCardinality){
-		
-		ArrayList<Integer> resultList=new ArrayList<Integer>();
-		MatrixDynamicMorphClusteringEntryBitValue element;
-		int oldCardinality,newCardinality=0;BitSet oredGlobal=new BitSet();
+	private boolean searchBestPairForTree_1(ArrayList<MatrixBitWiseOperationTreeNodeElement> list, 
+			int listSize,MatrixBitWiseOperationCompetition competition){
+			int bestVal=Integer.MAX_VALUE*-1;int best_i=0,best_j=0;
 			
-		while (true) {
-			int maxDiff=0, maxI=0,maxJ=0;
-			oldCardinality=newCardinality;
-			BitSet oredLocal=new BitSet();
-			// look for best (max) diff pair which covers well bits set
-			// remind: each element of pair was ANDed with element in list
-			for (int i=start;i<commonContexts.size()-1;i++)
-				if (commonContexts.get(i).exclude==-1){
-					for (int j=i+1;j<commonContexts.size();j++){
-						int val=
-						LogOp.OR(commonContexts.get(i).bitSet,commonContexts.get(j).bitSet).cardinality()
-						-LogOp.AND(commonContexts.get(i).bitSet,commonContexts.get(j).bitSet).cardinality();
-						if(val>maxDiff){
-							maxDiff=val;maxI=i;maxJ=j;
-							oredLocal=LogOp.OR(commonContexts.get(i).bitSet,commonContexts.get(j).bitSet);
+			for (int i=0;i<listSize-1;i++){
+				MatrixBitWiseOperationTreeNodeElement element_i=list.get(i);
+				// 
+				for (int j=i+1;j<listSize;j++){
+					MatrixBitWiseOperationTreeNodeElement element_j=list.get(j);
+					// different roots 
+					if (element_i.root != element_j.root) {
+						int val= evaluate(element_i,element_j);
+						if (val> bestVal){							
+							bestVal=val;best_i=i;best_j=j;
+							
+				
+								
 						}
+						
 					}
 				}
-				// flag element
-				element=commonContexts.get(maxI);
-				element.exclude=1;
-				BitSet res=LogOp.OR(oredGlobal,oredLocal);
-				newCardinality=res.cardinality();
-				if(newCardinality<=oldCardinality) {
-					// recursion; check whether selected elements may be divided
-					if((!fullCardinality) || (newCardinality==origin.cardinality())){
-						writer.println("before recursion");
-						for (int l=0;l<resultList.size();l++){
-							ArrayList<Integer> recursionList=
-							disjunct(commonContexts,resultList.get(l)+1,
-							commonContexts.get(resultList.get(l)).bitSet, true);
-							if ((recursionList==null)||(recursionList.isEmpty()))
-								writer.println("no list after recursion");
-							else writer.println("divided after recursion");
-						}	
-						writer.println("after recursion");
-					}
-					
-					break;
-				}
-				oredGlobal=res;
-				// two elements only if empty otherwise add maxJ
-				if(resultList.isEmpty()) resultList.add(new Integer(maxI));
-				resultList.add(new Integer(maxJ));
-				writer.println("maxDisjunct max: "+maxDiff+ " maxI: "+maxI+ " maxJ: "+maxJ);
+				
 			}
-		return resultList;
-		} 
-		
-		
+			// generate new mother element which is added to list, ORING , mother, children
+			if (bestVal>Integer.MAX_VALUE*-1){
+				MatrixBitWiseOperationTreeNodeElement bestChild1=list.get(best_i);
+				MatrixBitWiseOperationTreeNodeElement bestChild2=list.get(best_j);
+				MatrixBitWiseOperationTreeNodeElement partialroot1=bestChild1.root;
+				MatrixBitWiseOperationTreeNodeElement partialroot2=bestChild2.root;
+				int y=0;
+				if ((partialroot1==null)||(partialroot2==null))  y=10/0;
+				MatrixBitWiseOperationTreeNodeElement mother= 
+						new MatrixBitWiseOperationTreeNodeElement(LogOp.OR(bestChild1.contextBitSet, 
+							bestChild2.contextBitSet),0, // row TODO
+							partialroot1,partialroot2);
+							partialroot1.mother=mother;
+							partialroot2.mother=mother;
+							// difference in mother, may be used for defining cut for class building TODO
+				
+							
+							
+				checkConflictingElements(list,listSize,competition,partialroot1,partialroot2);			
+				// reset root in partial tree with root mother	
+				mother.walk(mother,mother);		
+				list.add(mother);//??
+				
+				
+				// 
+				this.writer.println("searchBestPairForTree_1 bestChild1: "+
+						this.namedFieldMatrix.getRowName(bestChild1.fromNamedFieldMatrixRow)+
+						" bestChild2: "+
+							this.namedFieldMatrix.getRowName(bestChild2.fromNamedFieldMatrixRow));
+				this.writer.println("val: "+ bestVal+ " i: "+best_i+ " j: "+best_j);
+				
+				return true;
+			}
+			else return false;
+		}// searchBestPairForTree_1
 	
+		
+	private boolean searchBestPairForTree_0(ArrayList<MatrixBitWiseOperationTreeNodeElement> list, 
+		int listSize){
+		int bestVal=Integer.MAX_VALUE*-1;int best_i=0,best_j=0;
+		
+		for (int i=0;i<listSize-1;i++){
+			MatrixBitWiseOperationTreeNodeElement element_i=list.get(i);
+			// not already in tree
+			if (element_i.mother==null) {
+				for (int j=i+1;j<listSize;j++){
+					MatrixBitWiseOperationTreeNodeElement element_j=list.get(j);
+					if (element_j.mother==null) {
+						int val= evaluate(element_i,element_j);
+						if (val> bestVal){							
+							bestVal=val;best_i=i;best_j=j;
+							
+							// note difference TODO
+							
+						}
+						
+					}
+				}
+			}
+		}
+		// generate new mother element which is added to list, ORING , mother, children
+		if (bestVal>Integer.MAX_VALUE*-1){
+			MatrixBitWiseOperationTreeNodeElement bestChild1=list.get(best_i);
+			MatrixBitWiseOperationTreeNodeElement bestChild2=list.get(best_j);
+			MatrixBitWiseOperationTreeNodeElement mother= 
+					new MatrixBitWiseOperationTreeNodeElement(LogOp.OR(bestChild1.contextBitSet, 
+						bestChild2.contextBitSet),0,bestChild1,bestChild2);
+						bestChild1.mother=mother;
+						bestChild2.mother=mother;
+						// difference in mother, may be used for defining cut for class building TODO
+			list.add(mother);
+			this.writer.println("searchBestPairForTree_0 bestChild1: "+
+					this.namedFieldMatrix.getRowName(bestChild1.fromNamedFieldMatrixRow)+
+					" bestChild2: "+
+						this.namedFieldMatrix.getRowName(bestChild2.fromNamedFieldMatrixRow));
+			this.writer.println("val: "+ bestVal+ " i: "+best_i+ " j: "+best_j);
+			
+			return true;
+		}
+		else return false;
+	}// searchBestPairForTree_0
+	
+	MatrixBitWiseOperationTreeNodeElement generateWeightedBinaryNeighborhoodTree
+	(ArrayList<MatrixBitWiseOperationTreeNodeElement> list){
+		this.writer.println(" generateWeightedBinaryNeighborhoodTree Entry");
+		
+		int listSize=list.size();
+		
+		while(true) {
+			boolean active=true;
+			while(active) {
+				active=searchBestPairForTree_0(list,listSize);
+			
+			}
+			if(listSize==list.size()) break;
+			else listSize=list.size();
+		}
+		// root of tree is last element added in list
+		this.writer.println(" generateWeightedBinaryNeighborhoodTree Exit");
+		return list.get(list.size()-1);//root, i.e last of list		
+	}//generateWeightedBinaryNeighborhoodTree
+	
+	
+	MatrixBitWiseOperationTreeNodeElement generateBinaryNeighborhoodTree
+	(ArrayList<MatrixBitWiseOperationTreeNodeElement> list,
+		MatrixBitWiseOperationCompetition competition){
+		this.writer.println(" generateBinaryNeighborhoodTree Entry");
+		int listSize=list.size();
+		boolean active=true;
+		while(active) {
+				active=searchBestPairForTree_1(list,listSize,competition);			
+		}
+		// root of tree is last element added in list
+		this.writer.println(" generateBinaryNeighborhoodTree Exit");
+		return list.get(list.size()-1);//root, i.e last of list		
+	}//generateBinaryNeighborhoodTree
 	
 	
 	
 	public NamedFieldMatrix restruct(NamedFieldMatrix nFieldMatrix,
-			PrintWriter pwriter){
+		MatrixBitWiseOperationCompetition competition,PrintWriter pwriter){
 		this.namedFieldMatrix=nFieldMatrix;
+		//this.competitionHashMap=compHashMap;
 		this.writer=pwriter;
-		this.actual=new Stack<MatrixDynamicMorphClusteringEntryBitValue>();
-		this.best=new Stack<MatrixDynamicMorphClusteringEntryBitValue>();
+		//this.actual=new Stack<MatrixDynamicMorphClusteringEntryBitValue>();
+		//this.best=new Stack<MatrixDynamicMorphClusteringEntryBitValue>();
 		
-		writer.println("MatrixDynamicMorphClustering restruct Entry");
+		writer.println("\n\n----------MatrixDynamicMorphClustering restruct Entry");
 		// generates a list of context bits set in falling order
-		this.contextBitSetList=this.generateSortedBitsMarked();
-		ArrayList <MatrixDynamicMorphClusteringEntryBitValue> commonContexts=
-		this.generateCommonContextList();
-		// check only
-		MatrixDynamicMorphClusteringEntryBitValue element=contextBitSetList.get(0);
-		this.disjunct(commonContexts,0,element.bitSet,false);
+		
+		//this.cardinorderedEntryContextList=this.generateLocalcardinorderedEntryContextList();
+		
+		/******************
+		ArrayList <MatrixDynamicMorphClusteringEntryBitValue> contextIntersectionList=
+		this.generateSortedContextIntersectionList();
+		
+		int entryIndex=0;// check only
+		MatrixDynamicMorphClusteringEntryBitValue entryElement=
+		cardinorderedEntryContextList.get(entryIndex);
+		this.complementary(contextIntersectionList,entryIndex,entryElement.bitSet,false);
 			
 		//this.generateSpecificContextEntries();
 		
 		// extendNamedFieldMatrix
+		********/
+		 ArrayList<MatrixBitWiseOperationTreeNodeElement> treeNodeList=
+		generateMatrixBitWiseOperationTreeNodeElementList(); 
+		//MatrixBitWiseOperationTreeNodeElement root=
+		//this.generateWeightedBinaryNeighborhoodTree(treeNodeList,competition);
+		 
+		// alternative----------------
+		MatrixBitWiseOperationTreeNodeElement root1=
+				this.generateBinaryNeighborhoodTree(treeNodeList,competition);
 		writer.println("MatrixDynamicMorphClustering restruct Exit");
-		
+		// end alternative--------
 		return this.namedFieldMatrix;
 	}
 	

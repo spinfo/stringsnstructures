@@ -119,6 +119,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	
 	public static final String LINEBREAKREGEX = "\\R+";
 	public static final String LINEBREAK = "\n";
+	public static String moduleNetWorkName="";
 	protected Map<String,Module> availableModules = new TreeMap<String,Module>(); // Key: module name
 	private ModuleNetwork moduleNetwork;
 	private ListLoggingHandler listLoggingHandler;
@@ -393,6 +394,7 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		
         // Write log message
         Logger.getLogger("").log(Level.INFO, "Successfully loaded the module network from the file "+file.getPath());
+        moduleNetWorkName=file.getPath();
         
         // Return the loaded network
 		return loadedModuleNetwork;
