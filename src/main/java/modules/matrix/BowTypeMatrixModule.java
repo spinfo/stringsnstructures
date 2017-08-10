@@ -122,7 +122,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 	}
 
 	private void generateResultMatrix() {
-		inputSetenceBOWMap.entrySet().stream().forEach((sentenceBowEntry) -> {
+		inputSetenceBOWMap.entrySet().parallelStream().forEach((sentenceBowEntry) -> {
 			sentenceBowEntry.getValue().forEach((token, freq) -> {
 				Map<String, Double> neighbours = getWordNeighboursInSentence(sentenceBowEntry.getValue(), token);
 				addToResultMatrix(neighbours, token);
