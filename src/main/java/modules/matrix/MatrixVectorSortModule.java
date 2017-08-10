@@ -3,14 +3,18 @@ package modules.matrix;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PipedReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -105,21 +109,25 @@ public class MatrixVectorSortModule extends ModuleImpl {
 	public boolean process() throws Exception {
 
 		// Map for result matrix
-		Map<String, List<Double>> matrix = new HashMap<String, List<Double>>();
+		Map<String, LinkedHashMap<String, Double>> matrix = new HashMap<String, LinkedHashMap<String, Double>>();
 
 		PipedReader inputReader = getInputPorts().get(ID_INPUT).getInputReader();
 		BufferedReader bufferedReader = new BufferedReader(inputReader);
 
 		// Dismiss first line (header)
-		bufferedReader.readLine();
+		String header = bufferedReader.readLine();
+		String[] headerArray = header.split(inputdelimiter);
 		/*
-		 * lines will be parallel processed. Each line contains a key and the values
-		 * delimited by inputDelimiter. The values will be sorted either in natural
-		 * order or reversed order. The result will be added to result matrix.
+		 * lines will be parallel processed. Each line contains a key and the
+		 * values delimited by inputDelimiter. The values will be sorted either
+		 * in natural order or reversed order. The result will be added to
+		 * result matrix.
 		 */
 		bufferedReader.lines().parallel().filter(line -> !line.isEmpty() || !line.equals("")).forEach(line -> {
 			String[] keyValues = line.split(inputdelimiter);
-			String[] onlyValues = Arrays.copyOfRange(keyValues, 1, keyValues.length);
+			HashMap<String, Double> onlyValues = mergeHeaderAndValuesToMap(
+					Arrays.copyOfRange(keyValues, 1, keyValues.length),
+					Arrays.copyOfRange(headerArray, 1, headerArray.length));
 			if (excludeZeros) {
 				matrix.put(keyValues[0], sortedExcludeZeroValue(onlyValues));
 			} else {
@@ -135,9 +143,9 @@ public class MatrixVectorSortModule extends ModuleImpl {
 			matrix.forEach((key, values) -> {
 				try {
 					getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(key + outputdelimiter);
-					Iterator<Double> iter = values.iterator();
+					Iterator<Entry<String, Double>> iter = values.entrySet().iterator();
 					while (iter.hasNext()) {
-						Double d = iter.next();
+						Entry<String, Double> d = iter.next();
 						getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(d.toString());
 						if (iter.hasNext()) {
 							getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(outputdelimiter);
@@ -161,37 +169,42 @@ public class MatrixVectorSortModule extends ModuleImpl {
 		return true;
 	}
 
-	/**
-	 * Sorts a String array with double numbers and returns a sorted double list.
-	 * Will exclude zero values
-	 * 
-	 * @param doubleStrings given double values as string array
-	 * @return sorted list 
-	 */
-	private List<Double> sortedExcludeZeroValue(String[] doubleStrings) {
-		return Arrays.stream(doubleStrings).map(value -> value.trim()).filter(value -> !isNull(value))
-				.mapToDouble(Double::parseDouble).boxed().sorted(matrixVectorComparator).collect(Collectors.toList());
+	public static HashMap<String, Double> mergeHeaderAndValuesToMap(String[] valuesArray, String[] keysArray) {
+		List<String> keys = Arrays.asList(keysArray);
+		List<Double> values = new ArrayList<>();
+		for (String value : valuesArray) {
+			values.add(Double.valueOf(value));
+		}
+		Iterator<String> keyIter = keys.iterator();
+		Iterator<Double> valIter = values.iterator();
+		return (HashMap<String, Double>) IntStream.range(0, keys.size()).boxed()
+				.collect(Collectors.toMap(_i -> keyIter.next(), _i -> valIter.next()));
 	}
 
 	/**
-	 * Sorts a String array with double numbers and returns a sorted double list.
+	 * Sorts a HashMap<String, Double> and returns a sorted Map. Will exclude
+	 * zero values
 	 * 
-	 * @param doubleStrings given double values as string array
-	 * @return
+	 * @param doubleStringFeature
+	 *            given each vector feature in a HashMap
+	 * @return sorted HashMap<String, Double> without entries containing zero
 	 */
-	private List<Double> sortedWithZeroValue(String[] doubleStrings) {
-		return Arrays.stream(doubleStrings).map(value -> value.trim()).mapToDouble(Double::parseDouble).boxed()
-				.sorted(matrixVectorComparator).collect(Collectors.toList());
+	private LinkedHashMap<String, Double> sortedExcludeZeroValue(HashMap<String, Double> doubleStringFeature) {
+		LinkedHashMap<String, Double> valueSortedMap = sortedWithZeroValue(doubleStringFeature);
+		valueSortedMap.values().removeIf(val -> val == 0.0);
+		return valueSortedMap;
 	}
 
 	/**
-	 * Checks if a given value is null
+	 * Sorts a HashMap<String, Double> and returns a sorted Map.
 	 * 
-	 * @param value
-	 * @return
+	 * @param doubleStringFeature
+	 *            given each vector feature in a HashMap
+	 * @return sorted HashMap<String, Double>
 	 */
-	private boolean isNull(String value) {
-		return value.equals("0.0") || value.equals("0") || value.equals("0d");
+	private LinkedHashMap<String, Double> sortedWithZeroValue(HashMap<String, Double> doubleStringFeature) {
+		return doubleStringFeature.entrySet().stream().sorted(Entry.comparingByValue(matrixVectorComparator))
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 	}
 
 	@Override
@@ -212,7 +225,7 @@ public class MatrixVectorSortModule extends ModuleImpl {
 				getPropertyDefaultValues().get(PROPERTYKEY_REVERSEORDER));
 		if (reverseValue != null && !reverseValue.isEmpty())
 			reverseOrder = Boolean.parseBoolean(reverseValue);
-		
+
 		String excludeValue = getProperties().getProperty(PROPERTYKEY_EXCLUDEZEROS,
 				getPropertyDefaultValues().get(PROPERTYKEY_EXCLUDEZEROS));
 		if (excludeValue != null && !excludeValue.isEmpty())
