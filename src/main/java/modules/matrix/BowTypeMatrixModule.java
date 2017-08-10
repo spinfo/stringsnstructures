@@ -1,18 +1,25 @@
 package modules.matrix;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 
+import common.TFIDFCalculator;
 import common.parallelization.CallbackReceiver;
 import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
+import modules.NotSupportedException;
 import modules.OutputPort;
 import modules.bag_of_words.BagOfWordsHelper;
 
@@ -36,11 +43,17 @@ public class BowTypeMatrixModule extends ModuleImpl {
 	private static final String ID_INPUT = "BoW";
 	private static final String ID_OUTPUT = "Type Matrix";
 
-	// Local variables
+	// Workbench parameter
 	private String outputdelimiter;
 	private String emptyFieldValue;
 	private String outputformat;
 	private boolean applyTfidf;
+
+	// Local variables
+	private Map<String, ConcurrentHashMap<String, Double>> resultMatrix;
+	private Map<Double, Map<String, Double>> inputSetenceBOWMap;
+	private TFIDFCalculator tfidfCalculator;
+	private Gson gsonParser;
 
 	public BowTypeMatrixModule(CallbackReceiver callbackReceiver, Properties properties) throws Exception {
 
@@ -86,132 +99,134 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		super.addOutputPort(outputPort);
 
 	}
-
+	
 	@SuppressWarnings("unchecked")
+	private void initLocalVariables() throws JsonSyntaxException, JsonIOException, NotSupportedException {
+		resultMatrix = new ConcurrentHashMap<String, ConcurrentHashMap<String, Double>>();
+		tfidfCalculator = new TFIDFCalculator();
+		gsonParser = new GsonBuilder().setPrettyPrinting().create();
+		inputSetenceBOWMap = new HashMap<Double, Map<String, Double>>();
+		inputSetenceBOWMap = gsonParser.fromJson(this.getInputPorts().get(ID_INPUT).getInputReader(),
+				inputSetenceBOWMap.getClass());
+	}
+	
+
 	@Override
 	public boolean process() throws Exception {
+		initLocalVariables();
+		generateResultMatrix();
+		generateOutput();
+		
+		this.closeAllOutputs();
+		return true;
+	}
 
-		// Map for result matrix
-		Map<String, Map<String, Double>> matrix = new TreeMap<String, Map<String, Double>>();
-
-		// JSON parser
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-		// Read and parse input
-		Map<Double, Map<String, Double>> bowMap = new HashMap<Double, Map<String, Double>>();
-		bowMap = gson.fromJson(this.getInputPorts().get(ID_INPUT).getInputReader(), bowMap.getClass());
-
-		// Prepare iDF map
-		Map<String, Double> inverseDocumentFrequencies = null;
-
-		// Calculate inverse document frequencies if TF-iDF is to be applied
-		if (this.applyTfidf) {
-
-			Map<String, Double> termFrequencies = new TreeMap<String, Double>();
-
-			// Iterate over input BoW's
-			Iterator<Map<String, Double>> bows = bowMap.values().iterator();
-			while (bows.hasNext()) {
-				BagOfWordsHelper.mergeDouble(termFrequencies, bows.next());
-			}
-
-			// Calculate inverse Document frequencies
-			inverseDocumentFrequencies = BagOfWordsHelper.inverseDocumentFrequenciesDouble(termFrequencies,
-					bowMap.size());
-		}
-
-		// Iterate over input BoW's
-		Iterator<Map<String, Double>> bows = bowMap.values().iterator();
-		while (bows.hasNext()) {
-			Map<String, Double> bow = bows.next();
-
-			// Iterate over tokens within current BoW
-			Iterator<String> tokens = bow.keySet().iterator();
-			while (tokens.hasNext()) {
-
-				// Determine next token
-				String token = tokens.next();
-
-				// Determine existing matrix line
-				Map<String, Double> matrixLine = matrix.getOrDefault(token, new TreeMap<String, Double>());
-
-				// Iterate over tokens a second time
-				Iterator<String> tokens2 = bow.keySet().iterator();
-				while (tokens2.hasNext()) {
-					// Determine next token
-					String token2 = tokens2.next();
-					// ... and its value
-					Double value = bow.get(token2);
-
-					// Apply TF-iDF
-					if (this.applyTfidf)
-						value = value * inverseDocumentFrequencies.get(token2);
-
-					// Add value to existing one
-					value += matrixLine.getOrDefault(token2, 0d);
-
-					// Add value to matrix line
-					matrixLine.put(token2, value);
+	private void generateResultMatrix() {
+		inputSetenceBOWMap.entrySet().parallelStream().forEach((sentenceBowEntry) -> {
+			sentenceBowEntry.getValue().forEach((token, freq) -> {
+				Map<String, Double> neighbours = getWordNeighboursInSentence(sentenceBowEntry.getValue(), token);
+				addToResultMatrix(neighbours, token);
+				if (applyTfidf) {
+					tfidfCalculator.addSentenceNeighboursToBase(neighbours, token);
 				}
-				// Add line to matrix
-				matrix.put(token, matrixLine);
+			});
+		});
+		if (applyTfidf) {
+			tfidfCalculator.calculateTfidf(resultMatrix);
+		}
+	}
+
+	private void addToResultMatrix(Map<String, Double> neighbours, String token) {
+		ConcurrentHashMap<String, Double> matrixEntry = resultMatrix.getOrDefault(token, new ConcurrentHashMap<>());
+		addNeighboursToEntry(neighbours, matrixEntry);
+		resultMatrix.put(token, matrixEntry);
+	}
+
+	private void addNeighboursToEntry(Map<String, Double> neighbours, ConcurrentHashMap<String, Double> matrixEntry) {
+		neighbours.forEach((word, freq) -> {
+			Double totalFreqValue = matrixEntry.getOrDefault(word, 0d);
+			totalFreqValue += freq;
+			matrixEntry.put(word, totalFreqValue);
+		});
+	}
+
+	private Map<String, Double> getWordNeighboursInSentence(Map<String, Double> sentence, String token) {
+		HashMap<String, Double> neighbours = new HashMap<String, Double>();
+		sentence.forEach((word, wordFrequency) -> {
+			if (word.equals(token)) {
+				// Don't take word itself as neighbour. Add only as neighbour if word occurred
+				// several times
+				if (wordFrequency > 1) {
+					wordFrequency--;
+					neighbours.put(token, wordFrequency);
+				}
+			} else {
+				neighbours.put(word, wordFrequency);
+			}
+		});
+		return neighbours;
+	}
+	
+	private void generateOutput() throws Exception {
+		switch(outputformat) {
+		case "csv":
+			generateCSV();
+			break;
+		case "json":
+			generateJSON();
+			break;
+		default:
+			throw new Exception("Specified output format is unknown.");
+		}
+	}
+
+	private void generateJSON() throws IOException {
+		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(gsonParser.toJson(resultMatrix));
+	}
+
+	private void generateCSV() throws IOException {
+		// Output CSV header
+		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
+		Iterator<String> types = resultMatrix.keySet().iterator();
+		while (types.hasNext()) {
+			String nextType = types.next();
+
+			// rows should not end with delimiter
+			// subsequent modules recognize that as new (empty) column
+			if (types.hasNext()) {
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(nextType + this.outputdelimiter);
+			} else {
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(nextType);
 			}
 		}
+		this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
 
-		if (this.outputformat.equals("csv")) {
-			// Output CSV header
-			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
-			Iterator<String> types = matrix.keySet().iterator();
-			while (types.hasNext()) {
-				String nextType = types.next();
+		// Output matrix
+		types = resultMatrix.keySet().iterator();
+		while (types.hasNext()) {
+			String type = types.next();
 
-				// rows should not end with delimiter
-				// subsequent modules recognize that as new (empty) column
-				if (types.hasNext()) {
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(nextType + this.outputdelimiter);
-				} else {
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(nextType);
+			// rows should not end with delimiter
+			// subsequent modules recognize that as new (empty) column
+
+			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type + this.outputdelimiter);
+
+			Iterator<String> types2 = resultMatrix.keySet().iterator();
+			while (types2.hasNext()) {
+				String type2 = types2.next();
+				if (resultMatrix.get(type).containsKey(type2))
+					this.getOutputPorts().get(ID_OUTPUT)
+							.outputToAllCharPipes(resultMatrix.get(type).get(type2).toString());
+				else
+					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.emptyFieldValue);
+
+				if (types2.hasNext()) {
+					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
 				}
 			}
 			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
-
-			// Output matrix
-			types = matrix.keySet().iterator();
-			while (types.hasNext()) {
-				String type = types.next();
-
-				// rows should not end with delimiter
-				// subsequent modules recognize that as new (empty) column
-				if (types.hasNext()) {
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type+this.outputdelimiter);
-				} else {
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type);
-				}
-				Iterator<String> types2 = matrix.keySet().iterator();
-				while (types2.hasNext()) {
-					String type2 = types2.next();
-					if (matrix.get(type).containsKey(type2))
-						this.getOutputPorts().get(ID_OUTPUT)
-								.outputToAllCharPipes(matrix.get(type).get(type2).toString());
-					else
-						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.emptyFieldValue);
-					
-					if (types2.hasNext()) {
-						this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(this.outputdelimiter);
-					}
-				}
-				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
-			}
-		} else if (this.outputformat.equals("json")) {
-			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(gson.toJson(matrix));
-		} else
-			throw new Exception("Specified output format is unknown.");
-
-		// Close outputs (important!)
-		this.closeAllOutputs();
-
-		// Done
-		return true;
+		}
+		
 	}
 
 	@Override

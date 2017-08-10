@@ -45,9 +45,20 @@ public class BagOfWordsHelper {
 		double wordCount = 0d;
 
 		for (String term : givingBag.keySet()) {
-			wordCount = receivingBag.getOrDefault(term, 0d);
-			wordCount += givingBag.getOrDefault(term, 0d);
-			receivingBag.put(term, wordCount);
+			wordCount = givingBag.getOrDefault(term, 0d);
+			System.out.println("works?!");
+			
+			if (wordCount == 0) {
+				receivingBag.put(term, wordCount);
+			}
+			
+			//don't count word itself
+			if(wordCount > 1) {
+				wordCount += receivingBag.getOrDefault(term, 0d);;
+				
+				//reduce bag of words to count only 
+				receivingBag.put(term, wordCount--);	
+			}
 		}
 	}
 
