@@ -11,6 +11,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 
 import models.NamedFieldMatrix;
+import modules.matrix.morph.Morphemize;
 import common.logicBits.LogOp;
 
 
@@ -306,6 +307,12 @@ public class MatrixDynamicMorphClustering {
 		********/
 		 ArrayList<MatrixBitWiseOperationTreeNodeElement> treeNodeList=
 		generateMatrixBitWiseOperationTreeNodeElementList(); 
+		 
+		 //----------------------------morphemize
+		 Morphemize m=new Morphemize();
+		 m.morphemize(treeNodeList, this.namedFieldMatrix, writer);
+		 
+		 //---------------------------------------------------
 		//MatrixBitWiseOperationTreeNodeElement root=
 		//this.generateWeightedBinaryNeighborhoodTree(treeNodeList,competition);
 		 

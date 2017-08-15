@@ -25,7 +25,7 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-
+import modules.matrix.morph.Morphemize;
 /**
  * Module interprets either rows or columns of an input matrix as binary bitsets
  * and performs symmetrical operations (AND, OR, XOR) on these bitsets. Output
@@ -275,6 +275,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 		}//morphProcess
 		
 		*/
+		
+		/*
 		private boolean checkDifferenceElementToClass(Set<String> names, String name2check, NamedFieldMatrix distanceMatrix, int numberOfClasses, int maxDif) {
 			// if an element name2check is found which is similar to an element of class classNr then name2check must not be more 
 			// different from the other members of class classNr than defined by maxDif
@@ -291,6 +293,8 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 			return true;
 		}
+		
+		*/
 		
 	/*	private boolean checkDifferenceClass1Class2(Set<String> names, NamedFieldMatrix distanceMatrix, int classNr1,
 				int classNr2, int maxDif){
@@ -364,20 +368,22 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 		}//classBuilding
 */		
+		
+/*
 		private void selectionOfClasses(PrintWriter writer){
 			Iterator<MatrixBitwiseOperationClassSelection> classIterator = 
 			listOfClasses.iterator();
 			while (classIterator.hasNext()) {
 				MatrixBitwiseOperationClassSelection clss=classIterator.next();
 				clss.competition(listOfClasses,competitionList,
-				classesHashMap/*<String,Integer>*/,
+				classesHashMap/ *<String,Integer>* /,
 				// s.above: String is prefix, Integer identifies different prefixes which are
 				// competing
-				competitionHashMap/*<String, Integer>*/,
+				competitionHashMap/ *<String, Integer>* /,
 				writer,this.morphemes);
 			}
 		}
-		
+*/		
 		
 /*		void result(HashMap <String,Integer> resultMap,Set<String> names,
 				PrintWriter writer){
@@ -690,11 +696,14 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			//test jr------------
 			 best.printBest(inMatrix,writer);
 			//-----------------------------------------------
+			 
+			
 			 MatrixDynamicMorphClustering matrixDynamicMorphClustering =
 					 new MatrixDynamicMorphClustering();
 			 NamedFieldMatrix restructMatrix=
 			 matrixDynamicMorphClustering.restruct(inMatrix,competition, writer);
 			//
+			 
 			
 			/*
 			MorphResult morphResult=new MorphResult();

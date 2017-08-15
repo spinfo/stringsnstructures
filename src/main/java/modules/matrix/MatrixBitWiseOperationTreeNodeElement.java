@@ -1,11 +1,15 @@
 package modules.matrix;
 
+import java.util.ArrayList;
 import java.util.BitSet;
+
+import modules.matrix.morph.ContainingElement;
 
 public class MatrixBitWiseOperationTreeNodeElement {
 	MatrixBitWiseOperationTreeNodeElement child1, child2,mother,root;
 	public BitSet contextBitSet;
-	int fromNamedFieldMatrixRow;
+	public int fromNamedFieldMatrixRow;
+	public ArrayList<ContainingElement> containingList;
 	
 	//cstr
 	public MatrixBitWiseOperationTreeNodeElement(BitSet context,int row,
@@ -21,6 +25,8 @@ public class MatrixBitWiseOperationTreeNodeElement {
 		// s. use in MatrixDynamicMorphClustering class
 		// first it is set to itself; thus there is no need to check whether root is null
 		// e.g. in MatrixDynamicMorphClustering.searchBestPairForTree_1.
+		this.containingList=null;//reference to list of (morphologically) contained
+								// classes
 	}// cstr
 	
 	

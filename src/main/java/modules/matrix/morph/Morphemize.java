@@ -1,22 +1,26 @@
 package modules.matrix.morph;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import common.logicBits.LogOp;
-
+import models.NamedFieldMatrix;
 import modules.matrix.MatrixBitWiseOperationTreeNodeElement;
 
 public class Morphemize {
+
+	PrintWriter printWriter;
 	
 /*
- * for all elements of list (TreeNodeElements) do in morphemize:
- * generate for each element list of contained (other) elements of treeNodeElementlist.
- * This means: it is looked for elements of partial distributin, e.g. regier+e, regier+st,
- * regier+ung. Partial distribution is found in telefonier+e, telefonier+st, but there is no
- *  *telefonier+ung. A futher, but disjunct distribution is found in zeit+ung.
+ *  for all elements of list (TreeNodeElements) do in morphemize:
+ *  generate for each element list of contained (other) elements of treeNodeElementlist.
+ *  This means: it is looked for elements of partial distributin, e.g. regier+e, regier+st,
+ *  regier+ung. Partial distribution is found in telefonier+e, telefonier+st, but there is no
+ *  *telefonier+ung. A further, but disjunct distribution is found in zeit+ung.
  *  Thus, regier is quite similar to two disjunct classes.
  *  First, in morphemize, all contained (but not necessarily disjunct) classes are found.
  *  As a side effect, the greatest contained class is identified (e.g. telefonier).
+ *  
  *  In a second step (in analyzeContainingList) the best but disjunct remaining classes are found
  *  and gathered (in the resulting containing list, by marking its elements by the undone flag).
  *  It should be remarked that a contained class itself may containing further contained classes.
@@ -38,21 +42,26 @@ public class Morphemize {
 				return new ContainingElement(el1,el2,res);
 			}
 		return null;
-	}
+	}//contains
 	
 	private ArrayList<ContainingElement> analyzeContainingList(ArrayList<ContainingElement> containingList,
-			BitSet bestSet, MatrixBitWiseOperationTreeNodeElement containingElement) {
+			BitSet bestSet, // bestSet is the greatest common set found in morphemize
+			MatrixBitWiseOperationTreeNodeElement containingElement,
+			NamedFieldMatrix namedFieldMatrix) {
 		
-		// all subclasses found?
+		// not all subclasses found? 
+		// bestSet is augmented by ORing with localbestSet (see below)
 		while (containingElement.contextBitSet.cardinality()> bestSet.cardinality()) {
-			int best =bestSet.cardinality();int best_i=-1;
+			int best =bestSet.cardinality();
+			int best_i=-1;
 			BitSet localBestSet=null;
 			// search best
 			for (int i=0;i<containingList.size();i++){
 				ContainingElement contained=containingList.get(i);
 				// only undone elements
 				if (contained.unDone){
-					// ORing of elements
+					// ORing of elements, in order to find all contained classes which
+					// cover the containing class
 					BitSet res=LogOp.OR(bestSet,contained.containedBitSet );
 					// does result grow? (i.e. does it cover new elements)
 					if(res.cardinality()>best){
@@ -64,7 +73,9 @@ public class Morphemize {
 				}
 			} //for (int =0...
 			// no further success
-			if (best_i==-1)return null; else {
+			if (best_i==-1)return null; else 
+			
+			{	// ORing, in order to get all covering contained
 				bestSet=LogOp.OR(bestSet, localBestSet);
 				// mark elements in list as worked
 				containingList.get(best_i).unDone=false;
@@ -72,7 +83,8 @@ public class Morphemize {
 			
 			
 		}// while
-		// reduce containingList to elements which are done; remove undone		
+		// reduce containingList to elements which are done; 
+		// remove undone; undone do not contribute to contained classes		
 		int i=0;
 		while(i<containingList.size()){
 			ContainingElement contained=containingList.get(i);
@@ -85,10 +97,22 @@ public class Morphemize {
 		// neighborhood tree building, by using (indirect)references 
 		// to entries in NamedFieldMatrix
 		//
+		this.printWriter.println("analyzeContainingList");
+		for (int j=0;j<containingList.size();j++){
+			int row=containingList.get(j).contained.fromNamedFieldMatrixRow;
+			this.printWriter.print(namedFieldMatrix.getRowName(row)+" ");
+			
+		}
+		this.printWriter.println();
 		return containingList;
-	}
+		
+	}//analyzeContainingList
 	
-	public void morphemize(ArrayList<MatrixBitWiseOperationTreeNodeElement> list){
+	public void morphemize(ArrayList<MatrixBitWiseOperationTreeNodeElement> list,
+			NamedFieldMatrix namedFieldMatrix,
+			PrintWriter p){
+		
+			this.printWriter =p;
 		
 			// check all elements for subclasses (outer for loop for containing)
 			for (int i=0;i<list.size();i++){
@@ -103,15 +127,15 @@ public class Morphemize {
 					if (i!=j){
 						MatrixBitWiseOperationTreeNodeElement element_j=list.get(j);
 						// create list of containing
-						ContainingElement contEl=contains(element_i,element_j);
-						if (contEl !=null ){
+						ContainingElement contElement=contains(element_i,element_j);
+						if (contElement !=null ){
 							// gather in list
-							containingList.add(contEl);
+							containingList.add(contElement);
 							// look for best containing (side effect of gathering,
 							// is used as base for analyzeContaining
-							if (contEl.containedBitSet.cardinality()>max) {
-								max=contEl.containedBitSet.cardinality();
-								indexOfBest=containingList.size()-1;;
+							if (contElement.containedBitSet.cardinality()>max) {
+								max=contElement.containedBitSet.cardinality();
+								indexOfBest=containingList.size()-1;
 							}
 						}// if (contEl..
 					}// if (i!=j)
@@ -119,13 +143,28 @@ public class Morphemize {
 				}// for(int j..
 				if (indexOfBest>=0)
 					{ 
+						ContainingElement containingElement=
+								containingList.get(indexOfBest);	
 						// save best set
-						BitSet bestSet=containingList.get(indexOfBest).containedBitSet;
+						BitSet bestSet=containingElement.containedBitSet;
 						// delete best element in list which is already known
-						containingList.get(indexOfBest).unDone=false;
-						// analyze rest  TODO save list
-						analyzeContainingList(containingList,bestSet,element_i);
-					
+						containingElement.unDone=false;
+						int rowContaining=
+						containingElement.containing.fromNamedFieldMatrixRow;
+						int rowContained=
+								containingElement.contained.fromNamedFieldMatrixRow;
+						this.printWriter.println("morphemize containing: "+
+						namedFieldMatrix.getRowName(rowContaining)						
+						+ " contained: "+
+						namedFieldMatrix.getRowName(rowContained)+ " cardinality: "
+						+bestSet.cardinality());
+												
+						// analyze remaining contained classes; save list
+						// is needed when generating neighborhood tree
+						element_i.containingList=
+						analyzeContainingList(containingList,bestSet,element_i,
+						namedFieldMatrix);
+						
 				}//if (maxIndex>=0)
 				
 				

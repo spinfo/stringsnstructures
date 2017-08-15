@@ -18,23 +18,24 @@ package models.piece;
  * 
  * Thus, all (typed) nodes in a tree are accessible.
  * 
- * TextPiece is used for (all) references to text, eg. in morphological components.
+ * TextPiece is used for (all) references to text, e.g. in morphological components.
  * (As its components pos and len are repeated in TerminalTreeNodePiece,
- * it may be more convenient to integrate an Interface for multiple inheritnace
- *  
+ * it may be more convenient to integrate an Interface for multiple inheritance.
+ * TypedTextPiece is an empty string type (len 0) which represents potential
+ * borders like '|', '>' and '<' as a result of (morphological) suffix trees
  * 
  *  
  * 
  * 						  Piece
- 							Piece prev;
- 							Piece next
+ 							Piece prev,next;
+ 							char[] text
  							|
  			---------------------------------------------------------
 			|							|							|
 		AltTerminalNodePiece	  TreeNodePiece					TextPiece
 TerminalTreeNodePiece 					TreeNodePiece mother		int pos,len		
-	terminalTreeNode					|
-										|
+	terminalTreeNode					|							|
+										|						TypedTextPiece
 							------------------------
 							|	 					|
 					
@@ -50,4 +51,5 @@ TerminalTreeNodePiece 					TreeNodePiece mother		int pos,len
 
 public abstract class Piece {
 	Piece prev, next;
+	char[] text;
 }
