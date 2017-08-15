@@ -23,8 +23,10 @@ public class LogOp {
 	}	
 	
 	public static boolean containes(BitSet container,BitSet contained){
-		BitSet res= OR(container,contained);
-		return res.cardinality()==container.cardinality();
+		BitSet result= OR(container,contained);
+		// container is superset of contained if equal cardinality 
+		// of result and container
+		return result.cardinality()==container.cardinality();
 	}
 
 }
