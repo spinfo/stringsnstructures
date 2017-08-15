@@ -21,5 +21,10 @@ public class LogOp {
 		BitSet res=new BitSet();res.or(in1);res.xor(in2);
 		return res;
 	}	
+	
+	public static boolean containes(BitSet container,BitSet contained){
+		BitSet res= OR(container,contained);
+		return res.cardinality()==container.cardinality();
+	}
 
 }

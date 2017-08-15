@@ -5,9 +5,11 @@ import java.util.BitSet;
 
 import modules.matrix.morph.ContainingElement;
 
+
 public class MatrixBitWiseOperationTreeNodeElement {
+	
 	MatrixBitWiseOperationTreeNodeElement child1, child2,mother,root;
-	public BitSet contextBitSet;
+	public BitSet contextBitSet,or,and;
 	public int fromNamedFieldMatrixRow;
 	public ArrayList<ContainingElement> containingList;
 	
@@ -17,7 +19,14 @@ public class MatrixBitWiseOperationTreeNodeElement {
 			MatrixBitWiseOperationTreeNodeElement child2){
 		
 		this.contextBitSet=context;
+		// or and and are needed in neighborhood tree, for to check similarity
+		// of contained nodes. Similarity is needed for cuts in tree.
+		// Similarity is a ratio of ORing and ANDing the contextbitsets of 
+		// joined nodes
+		this.or=null;
+		this.and=null;
 		this.fromNamedFieldMatrixRow=row;
+		
 		this.child1=child1;
 		this.child2=child2;	
 		this.mother=null;

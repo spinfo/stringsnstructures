@@ -88,7 +88,9 @@ public class MatrixDynamicMorphClustering {
 	}
 	
 	
-
+	// here are elements checked for which different types of segmentation
+	// were proposed 
+	//
 	private void checkConflictingElements(ArrayList<MatrixBitWiseOperationTreeNodeElement>list,int listSize, 
 	MatrixBitWiseOperationCompetition competition,MatrixBitWiseOperationTreeNodeElement partialroot1,
 	MatrixBitWiseOperationTreeNodeElement partialroot2){
@@ -145,9 +147,13 @@ public class MatrixDynamicMorphClustering {
 			// two loops, all elements of list are compared
 			for (int i=0;i<listSize-1;i++){
 				MatrixBitWiseOperationTreeNodeElement element_i=list.get(i);
+				
+				//TODO only not containing 
 				// 
 				for (int j=i+1;j<listSize;j++){
 					MatrixBitWiseOperationTreeNodeElement element_j=list.get(j);
+					//TODO only not containing 
+					
 					// different roots; no elements of identical tree 
 					if (element_i.root != element_j.root) {
 						int val= evaluate(element_i,element_j);
@@ -270,7 +276,15 @@ public class MatrixDynamicMorphClustering {
 	}//generateWeightedBinaryNeighborhoodTree
 	
 	*/
-	
+
+	/*
+	 * The neighborhood tree is based on elements which should NOT be containing,
+	 * i.e. which are morphologically unambiguous. The checkContaining
+	 * method substitutes ambiguous containing elements by new elements which
+	 * are not ambiguous (which correspond to contained unambiguous 
+	 * morphological classes). The new elemnts are added to list
+	 * 
+	 */
 	
 	private void checkContaining(MatrixBitWiseOperationTreeNodeElement origin,
 			MatrixBitWiseOperationTreeNodeElement element,
