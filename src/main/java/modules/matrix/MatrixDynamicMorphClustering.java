@@ -11,6 +11,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 
 import models.NamedFieldMatrix;
+import modules.matrix.morph.ContainingElement;
 import modules.matrix.morph.Morphemize;
 import common.logicBits.LogOp;
 
@@ -141,12 +142,13 @@ public class MatrixDynamicMorphClustering {
 			int listSize,MatrixBitWiseOperationCompetition competition){
 			int bestVal=Integer.MAX_VALUE*-1;int best_i=0,best_j=0;
 			
+			// two loops, all elements of list are compared
 			for (int i=0;i<listSize-1;i++){
 				MatrixBitWiseOperationTreeNodeElement element_i=list.get(i);
 				// 
 				for (int j=i+1;j<listSize;j++){
 					MatrixBitWiseOperationTreeNodeElement element_j=list.get(j);
-					// different roots 
+					// different roots; no elements of identical tree 
 					if (element_i.root != element_j.root) {
 						int val= evaluate(element_i,element_j);
 						if (val> bestVal){							
@@ -196,7 +198,8 @@ public class MatrixDynamicMorphClustering {
 			else return false;
 		}// searchBestPairForTree_1
 	
-		
+	
+	/*
 	private boolean searchBestPairForTree_0(ArrayList<MatrixBitWiseOperationTreeNodeElement> list, 
 		int listSize){
 		int bestVal=Integer.MAX_VALUE*-1;int best_i=0,best_j=0;
@@ -241,8 +244,12 @@ public class MatrixDynamicMorphClustering {
 		}
 		else return false;
 	}// searchBestPairForTree_0
+	*/
 	
-	MatrixBitWiseOperationTreeNodeElement generateWeightedBinaryNeighborhoodTree
+	
+	/*
+	 
+	private MatrixBitWiseOperationTreeNodeElement generateWeightedBinaryNeighborhoodTree
 	(ArrayList<MatrixBitWiseOperationTreeNodeElement> list){
 		this.writer.println(" generateWeightedBinaryNeighborhoodTree Entry");
 		
@@ -262,16 +269,72 @@ public class MatrixDynamicMorphClustering {
 		return list.get(list.size()-1);//root, i.e last of list		
 	}//generateWeightedBinaryNeighborhoodTree
 	
+	*/
 	
-	MatrixBitWiseOperationTreeNodeElement generateBinaryNeighborhoodTree
+	
+	private void checkContaining(MatrixBitWiseOperationTreeNodeElement origin,
+			MatrixBitWiseOperationTreeNodeElement element,
+			ArrayList<MatrixBitWiseOperationTreeNodeElement> list)	{
+		for (int i=0;i<element.containingList.size();i++){
+			ContainingElement local=
+					element.containingList.get(i);
+			// ?? check
+			MatrixBitWiseOperationTreeNodeElement contained=local.contained;
+			
+			// recursion: does contained contain further elements?
+			if (contained.containingList != null){
+				checkContaining(origin,contained,list);	
+			} else {
+				// contained which ist NOT containing;
+				// generate new element for given origin
+				MatrixBitWiseOperationTreeNodeElement newElement=
+				new	MatrixBitWiseOperationTreeNodeElement(contained.contextBitSet,
+				origin.fromNamedFieldMatrixRow,null,null);
+				list.add(newElement);
+				this.writer.println("checkContaining newElement for: "+
+				namedFieldMatrix.getRowName(origin.fromNamedFieldMatrixRow)+
+				" "+namedFieldMatrix.getRowName(contained.fromNamedFieldMatrixRow));
+			}
+		}
+	}
+	
+	private ArrayList<MatrixBitWiseOperationTreeNodeElement>
+	disambiguateMorphologically
+	(ArrayList<MatrixBitWiseOperationTreeNodeElement> list){
+		int last=list.size()-1;
+		for (int i=0;i<=last;i++){
+			MatrixBitWiseOperationTreeNodeElement element=list.get(i);
+			if (element.containingList!=null){
+				checkContaining(element /* origin, to be replaced*/,
+						element/*here identical with origin, will be changed
+						in recursive traverse */,
+						list/* to which new elements are added*/);
+			}
+		}
+		// return augmented list
+		return list;
+	}
+	
+	private MatrixBitWiseOperationTreeNodeElement generateBinaryNeighborhoodTree
 	(ArrayList<MatrixBitWiseOperationTreeNodeElement> list,
-		MatrixBitWiseOperationCompetition competition){
+		MatrixBitWiseOperationCompetition competition)
+	/*
+	 * neighborhood tree is built with elements of list; these elements are used (too) as nodes
+	 * of neighborhood tree. Neighborhood tree is built bottom up, by joining most
+	 * similar elements. There are (many) neighborhood tree in bottom up construction process.
+	 * Two trees are joined if they contain two most similar elements (i.e. terminal
+	 * nodes).
+	 */
+	
+	{
 		this.writer.println(" generateBinaryNeighborhoodTree Entry");
 		int listSize=list.size();
-		boolean active=true;
-		while(active) {
-				active=searchBestPairForTree_1(list,listSize,competition);			
+		while(searchBestPairForTree_1(list,listSize,competition)) {
+				// nothing to do here	
 		}
+		// containing morphological classes: add elements to list which
+		// are NOT containig (i.e. which are not morphologically ambiguous)
+		list=this.disambiguateMorphologically(list); 
 		// root of tree is last element added in list
 		this.writer.println(" generateBinaryNeighborhoodTree Exit");
 		return list.get(list.size()-1);//root, i.e last of list		
@@ -308,7 +371,7 @@ public class MatrixDynamicMorphClustering {
 		 ArrayList<MatrixBitWiseOperationTreeNodeElement> treeNodeList=
 		generateMatrixBitWiseOperationTreeNodeElementList(); 
 		 
-		 //----------------------------morphemize
+		 //----------------------------morphemize: analyse whether containing classes
 		 Morphemize m=new Morphemize();
 		 m.morphemize(treeNodeList, this.namedFieldMatrix, writer);
 		 
