@@ -148,26 +148,26 @@ public class MatrixDynamicMorphClustering {
 			for (int i=0;i<listSize-1;i++){
 				MatrixBitWiseOperationTreeNodeElement element_i=list.get(i);
 				
-				//TODO only not containing 
+				// only not containing 
+				if (element_i.containingList==null){
 				// 
-				for (int j=i+1;j<listSize;j++){
-					MatrixBitWiseOperationTreeNodeElement element_j=list.get(j);
-					//TODO only not containing 
-					
-					// different roots; no elements of identical tree 
-					if (element_i.root != element_j.root) {
-						int val= evaluate(element_i,element_j);
-						if (val> bestVal){							
-							bestVal=val;best_i=i;best_j=j;
+					for (int j=i+1;j<listSize;j++){
+						MatrixBitWiseOperationTreeNodeElement element_j=list.get(j);
+						//only not containing; different roots; no elements of identical tree 
+						if ((element_j.containingList==null) &&(element_i.root != element_j.root)) {
+							int val= evaluate(element_i,element_j);
+							if (val> bestVal){							
+								bestVal=val;best_i=i;best_j=j;
 							
 				
 								
-						}
+							}
 						
-					}
-				}
+						}
+					}//for (int j=i+1;j<listSize;j++)
+				}//if (element_i.containingList==null)
 				
-			}
+			}// for (int i=0;i<listSize-1;i++)
 			// generate new mother element which is added to list, ORING , mother, children
 			if (bestVal>Integer.MAX_VALUE*-1){
 				MatrixBitWiseOperationTreeNodeElement bestChild1=list.get(best_i);
@@ -176,15 +176,25 @@ public class MatrixDynamicMorphClustering {
 				MatrixBitWiseOperationTreeNodeElement partialroot2=bestChild2.root;
 				int y=0;
 				if ((partialroot1==null)||(partialroot2==null))  y=10/0;
+				// generate mother node and link bottom up with children
 				MatrixBitWiseOperationTreeNodeElement mother= 
 						new MatrixBitWiseOperationTreeNodeElement(LogOp.OR(bestChild1.contextBitSet, 
 							bestChild2.contextBitSet),0, // row TODO
 							partialroot1,partialroot2);
+							// link with children
 							partialroot1.mother=mother;
 							partialroot2.mother=mother;
 							// difference in mother, may be used for defining cut for class building TODO
-				
-							
+							//ORing
+							mother.or=LogOp.OR(partialroot1.or, partialroot2.or);
+							// ANDing
+							if(LogOp.containes(partialroot1.and,partialroot2.and)){
+								mother.and=(BitSet)partialroot1.and.clone();
+							} else if (LogOp.containes(partialroot2.and,partialroot1.and)){
+								mother.and=(BitSet)partialroot2.and.clone();
+							} else {
+								mother.and=LogOp.AND(partialroot1.and, partialroot2.and);
+							}
 							
 				checkConflictingElements(list,listSize,competition,partialroot1,partialroot2);			
 				// reset root in partial tree with root mother	
