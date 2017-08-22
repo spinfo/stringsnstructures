@@ -182,11 +182,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 
 				// rows should not end with delimiter
 				// subsequent modules recognize that as new (empty) column
-				if (types.hasNext()) {
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type+this.outputdelimiter);
-				} else {
-					this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type);
-				}
+				this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes(type+this.outputdelimiter);
 				Iterator<String> types2 = matrix.keySet().iterator();
 				while (types2.hasNext()) {
 					String type2 = types2.next();
