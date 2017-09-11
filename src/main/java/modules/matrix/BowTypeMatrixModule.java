@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.Gson;
@@ -21,7 +19,6 @@ import modules.InputPort;
 import modules.ModuleImpl;
 import modules.NotSupportedException;
 import modules.OutputPort;
-import modules.bag_of_words.BagOfWordsHelper;
 
 import base.workbench.ModuleRunner;
 
@@ -38,6 +35,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 	public static final String PROPERTYKEY_ZEROVALUE = "empty value";
 	public static final String PROPERTYKEY_OUTPUTFORMAT = "output format";
 	public static final String PROPERTYKEY_APPLYTFIDF = "apply TF-iDF";
+	public static final String PROPERTYKEY_IDFLIMIT = "min IDF value";
 
 	// Define I/O IDs (must be unique for every input or output)
 	private static final String ID_INPUT = "BoW";
@@ -48,6 +46,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 	private String emptyFieldValue;
 	private String outputformat;
 	private boolean applyTfidf;
+	private int idfLimit = 0;
 
 	// Local variables
 	private Map<String, ConcurrentHashMap<String, Double>> resultMatrix;
@@ -71,6 +70,8 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		this.getPropertyDescriptions().put(PROPERTYKEY_OUTPUTFORMAT, "Desired output format [csv|json].");
 		this.getPropertyDescriptions().put(PROPERTYKEY_APPLYTFIDF,
 				"Multiply the token values with their <i>Inverse Document Frequencies</i> before calculating the type sum [true|false].");
+		this.getPropertyDescriptions().put(PROPERTYKEY_IDFLIMIT,
+				"Ignores all vectorfeatures with values smaller than the entered value. If no Filtering is wished, please enter 0. Is only used, when TFIDF is 'true'.");
 
 		// Add property defaults (_should_ be provided for every property)
 		this.getPropertyDefaultValues().put(ModuleImpl.PROPERTYKEY_NAME, "BoW Type Matrix"); // Property
@@ -87,6 +88,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		this.getPropertyDefaultValues().put(PROPERTYKEY_ZEROVALUE, "0");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_OUTPUTFORMAT, "csv");
 		this.getPropertyDefaultValues().put(PROPERTYKEY_APPLYTFIDF, "false");
+		this.getPropertyDefaultValues().put(PROPERTYKEY_IDFLIMIT, "0");
 
 		// Define I/O
 		InputPort inputPort = new InputPort(ID_INPUT, "JSON BoW data input.", this);
@@ -99,7 +101,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		super.addOutputPort(outputPort);
 
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private void initLocalVariables() throws JsonSyntaxException, JsonIOException, NotSupportedException {
 		resultMatrix = new ConcurrentHashMap<String, ConcurrentHashMap<String, Double>>();
@@ -109,14 +111,13 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		inputSetenceBOWMap = gsonParser.fromJson(this.getInputPorts().get(ID_INPUT).getInputReader(),
 				inputSetenceBOWMap.getClass());
 	}
-	
 
 	@Override
 	public boolean process() throws Exception {
 		initLocalVariables();
 		generateResultMatrix();
 		generateOutput();
-		
+
 		this.closeAllOutputs();
 		return true;
 	}
@@ -132,7 +133,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 			});
 		});
 		if (applyTfidf) {
-			tfidfCalculator.calculateTfidf(resultMatrix);
+			tfidfCalculator.calculateTfidf(resultMatrix, idfLimit);
 		}
 	}
 
@@ -154,7 +155,8 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		HashMap<String, Double> neighbours = new HashMap<String, Double>();
 		sentence.forEach((word, wordFrequency) -> {
 			if (word.equals(token)) {
-				// Don't take word itself as neighbour. Add only as neighbour if word occurred
+				// Don't take word itself as neighbour. Add only as neighbour if
+				// word occurred
 				// several times
 				if (wordFrequency > 1) {
 					wordFrequency--;
@@ -166,9 +168,9 @@ public class BowTypeMatrixModule extends ModuleImpl {
 		});
 		return neighbours;
 	}
-	
+
 	private void generateOutput() throws Exception {
-		switch(outputformat) {
+		switch (outputformat) {
 		case "csv":
 			generateCSV();
 			break;
@@ -226,7 +228,7 @@ public class BowTypeMatrixModule extends ModuleImpl {
 			}
 			this.getOutputPorts().get(ID_OUTPUT).outputToAllCharPipes("\n");
 		}
-		
+
 	}
 
 	@Override
@@ -247,7 +249,10 @@ public class BowTypeMatrixModule extends ModuleImpl {
 				this.getPropertyDefaultValues().get(PROPERTYKEY_APPLYTFIDF));
 		if (value != null && !value.isEmpty())
 			this.applyTfidf = Boolean.parseBoolean(value);
-
+		String idfFilterValue = this.getProperties().getProperty(PROPERTYKEY_IDFLIMIT,
+				this.getPropertyDefaultValues().get(PROPERTYKEY_IDFLIMIT));
+		if(idfFilterValue != null && idfFilterValue.matches("\\d+"))
+			this.idfLimit = Integer.parseInt(idfFilterValue);
 		// Apply parent object's properties (just the name variable actually)
 		super.applyProperties();
 	}

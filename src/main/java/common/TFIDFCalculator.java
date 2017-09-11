@@ -34,15 +34,19 @@ public class TFIDFCalculator {
 		totalDocumentSetPerColumn.put(token, documentSetPerColumn);
 	}
 
-	public void calculateTfidf(Map<String, ConcurrentHashMap<String, Double>> resultMatrix) {
+	public void calculateTfidf(Map<String, ConcurrentHashMap<String, Double>> resultMatrix, int idfLimit) {
 		int totalDocs = resultMatrix.size();
 
 		resultMatrix.forEach((rowTerm, rowValues) -> {
 			rowValues.forEach((cellTerm, cellValue) -> {
 				double tf = cellValue / totalTermFrequencyPerRow.get(rowTerm);
-				double df = (double)totalDocs / (double)totalDocumentSetPerColumn.get(cellTerm).size();
+				double df = (double) totalDocs / (double) totalDocumentSetPerColumn.get(cellTerm).size();
 				double idf = Math.log(df);
-				rowValues.put(cellTerm, tf * idf);
+				if (idf > idfLimit) {
+					rowValues.put(cellTerm, tf * idf);
+				} else {
+					rowValues.remove(cellTerm);
+				}
 			});
 		});
 	}
