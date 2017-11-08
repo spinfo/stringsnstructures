@@ -25,7 +25,7 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.matrix.morph.Morphemize;
+import modules.matrix.morph.RestructMorphologicalClasses;
 /**
  * Module interprets either rows or columns of an input matrix as binary bitsets
  * and performs symmetrical operations (AND, OR, XOR) on these bitsets. Output
@@ -672,7 +672,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 					best.selectBest(resultBitSet,/*operand1,*/name1,name2);
 					//---------------JR--------------------------
 					
-					//----test jr
+					//----test only jr
 					if (competition!=null)
 						//System.out.println("competition !=null");
 						
@@ -687,7 +687,7 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 						
 					
 					
-				}//for (String name2 : names) 
+				} //for (String name2 : names) 
 				if(name1ForCompetition.equals(name1))writer.println();
 			}//for (String name1 : names)
 			
@@ -700,8 +700,16 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			
 			 MatrixDynamicMorphClustering matrixDynamicMorphClustering =
 					 new MatrixDynamicMorphClustering();
-			 NamedFieldMatrix restructMatrix=
-			 matrixDynamicMorphClustering.restruct(inMatrix,competition, writer);
+			 try {
+				 NamedFieldMatrix restructMatrix=
+						 matrixDynamicMorphClustering.restruct(inMatrix,competition, writer);
+			 }
+			 catch(Exception e){
+				 writer.close();
+				 System.out.println
+				 ("error after catch Exception in MatrixBitwiseOperationModule.process");
+				 throw e;
+			 }
 			//
 			 
 			

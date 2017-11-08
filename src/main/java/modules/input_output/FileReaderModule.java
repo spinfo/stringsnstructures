@@ -182,8 +182,10 @@ public class FileReaderModule extends ModuleImpl {
 		this.getOutputPorts().get(OUTPUTID).close();
 
 		if (!wroteToStream && !wroteToChars)
-			throw new Exception("Sorry, but I could not write to any output (please connect a module to my output, else I am of little use).");
-
+			{throw new Exception
+			("Sorry, but I could not write to any output (please connect a module to my output, else I am of little use).");
+			
+			};
 		// Success
 		return true;
 	}

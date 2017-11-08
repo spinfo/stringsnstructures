@@ -12,7 +12,8 @@ import modules.matrix.MatrixBitWiseOperationTreeNodeElement;
 
 public class ContainingElement {
 	public MatrixBitWiseOperationTreeNodeElement containing; 
-	public MatrixBitWiseOperationTreeNodeElement contained; BitSet containedBitSet;
+	public MatrixBitWiseOperationTreeNodeElement contained; 
+	BitSet containedBitSet;
 	boolean unDone;
 	
 	// cstr

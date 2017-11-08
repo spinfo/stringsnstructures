@@ -8,7 +8,7 @@ import java.util.HashMap;
 public class MatrixBitWiseOperationCompetition {
 	
 	HashMap<String, Integer> competitionHashMap;
-	ArrayList<MatrixBitwiseOperationHelpCompetingElementGroup> competitionList=
+	public static ArrayList<MatrixBitwiseOperationHelpCompetingElementGroup> competitionList=
 				new ArrayList<MatrixBitwiseOperationHelpCompetingElementGroup>();
 	
 	void readEvalHashMap(BufferedReader r,PrintWriter writer) throws Exception{
@@ -36,8 +36,8 @@ public class MatrixBitWiseOperationCompetition {
 						// binary separation of competing string(s)
 						// save (different) prefixes
 						String prefix[]=competionStr[i].split("\\|");
-						//System.out.println
-						//("readEvalHashMap prefix: "+prefix[0]);
+						writer.println
+						("readEvalHashMap prefix: "+prefix[0]);
 						competitionHashMap.put(prefix[0], new Integer(competitionIdent));
 						competitionElement.add(prefix[0]);
 					}

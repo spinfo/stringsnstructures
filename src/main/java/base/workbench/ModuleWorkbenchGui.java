@@ -64,6 +64,7 @@ import javax.swing.JTextField;
  * @author Marcel Boeing
  *
  */
+
 public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, TreeSelectionListener, MouseListener, DocumentListener {
 	
 	// Keywords used to identify actions
