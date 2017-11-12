@@ -40,7 +40,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * @throws NotSupportedException
 	 *             Thrown if the module ports' I/O is not compatible
 	 */
-	public static Pipe getCompatiblePipe(Port port1,
+	private static Pipe getCompatiblePipe(Port port1,
 			Port port2) throws NotSupportedException, IOException {
 		Pipe pipe = new BytePipe();
 		if (!(port2.supportsPipe(pipe) && port1
@@ -62,13 +62,6 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		super();
 		this.moduleList = new ArrayList<Module>();
 	}
-
-	/**
-	 * @return Returns a map of the running module threads
-	 */
-	public Map<Module,Thread> getStartedThreads() {
-		return startedThreads;
-	}
 	
 	/**
 	 * Adds a thread to the list of the ones started in a thread-safe manner.
@@ -76,7 +69,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * @param module Module that the thread is associated to
 	 * @param thread Thread to add
 	 */
-	public synchronized void addStartedThread(Module module, Thread thread){
+	private synchronized void addStartedThread(Module module, Thread thread){
 		
 		// Put thread in map and get the currently associated value
 		Thread replacedThread = this.startedThreads.put(module, thread);
@@ -91,7 +84,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	 * @param thread Thread to remove
 	 * @return True if successful
 	 */
-	public synchronized boolean removeStartedThread(Thread thread){
+	private synchronized boolean removeStartedThread(Thread thread){
 		thread.interrupt();
 		return (this.startedThreads.values().remove(thread));
 	}
@@ -99,7 +92,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	/**
 	 * Removes dead threads from the list of the ones started in a thread-safe manner.
 	 */
-	public synchronized void removeDeadThreads(){
+	private synchronized void removeDeadThreads(){
 		Iterator<Thread> threads = this.startedThreads.values().iterator();
 		while (threads.hasNext()) {
 			Thread thread = threads.next();
@@ -111,7 +104,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		}
 	}
 	
-	public synchronized void interruptAllThreads(){
+	private synchronized void interruptAllThreads(){
 		
 		Iterator<Thread> threads = this.startedThreads.values().iterator();
 		while (threads.hasNext()) {
@@ -306,26 +299,25 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 			this.runModule(modules.next());
 		}
 		
-		// Determine runtime environment
+		// Determine runtime environment for memory statistics
 		Runtime rt = Runtime.getRuntime();
-		long maxBelegterHauptspeicher = 0l;
+		long maxMemoryInUse = 0l;
 
 		// Wait for threads to finish, if requested
 		while (runUntilAllThreadsAreDone && !this.startedThreads.isEmpty()) {
 			try {
-				// Sleep for a quarter second
+				// Give the modules' threads some time to execute
 				Thread.sleep(interval);
 
 				// Print pretty overview
 				Logger.getLogger(this.getClass().getSimpleName()).log(
 						Level.INFO, this.prettyPrint());
 				
-				// Speicherverbrauch ausgeben
-				
-			    long belegterHauptspeicher = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
-			    if (belegterHauptspeicher>maxBelegterHauptspeicher)
-			    	maxBelegterHauptspeicher = belegterHauptspeicher;
-			    Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Hauptspeicher belegt (MB):" + belegterHauptspeicher + "; bisheriges Max.:"+maxBelegterHauptspeicher);
+				// echo current and maximum memory use since the start of this run
+			    long memoryInUse = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
+			    if (memoryInUse > maxMemoryInUse)
+			    	maxMemoryInUse = memoryInUse;
+			    Logger.getLogger(this.getClass().getSimpleName()).log(Level.INFO, "Hauptspeicher belegt (MB):" + memoryInUse + "; bisheriges Max.:"+maxMemoryInUse);
 
 				// Test which threads are still active and remove the rest from
 				// the list
@@ -403,7 +395,7 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 	}
 
 	/**
-	 * Resets the modules' I/O. Must be called prior re-running the module tree.
+	 * Resets the modules' I/O. Must be called prior to re-running the module tree.
 	 * 
 	 * @throws Exception Thrown if something goes wrong
 	 */
