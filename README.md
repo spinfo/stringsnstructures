@@ -18,7 +18,7 @@ java -jar target/release/modulebatchrunner.jar --help
 Additionally, the modules contained in the workbench may be exported as standalone applications by running:
 
 ```
-mvn clean package -Pstandalone
+mvn package -Pstandalone
 ```
 
 This produces a bunch of .jar files below `target/release`. Call with `--help` to get an overview of the options for each, e.g.:
