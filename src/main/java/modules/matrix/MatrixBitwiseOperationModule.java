@@ -2,15 +2,15 @@
 package modules.matrix;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+//import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+//import java.util.HashSet;
+//import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,7 @@ import modules.CharPipe;
 import modules.InputPort;
 import modules.ModuleImpl;
 import modules.OutputPort;
-import modules.matrix.morph.RestructMorphologicalClasses;
+//import modules.matrix.morph.RestructMorphologicalClasses;
 /**
  * Module interprets either rows or columns of an input matrix as binary bitsets
  * and performs symmetrical operations (AND, OR, XOR) on these bitsets. Output
@@ -625,12 +625,12 @@ public class MatrixBitwiseOperationModule extends ModuleImpl {
 			// in order to find best adjacent pair (name1, name2)
 			// comparision is done by selectBest
 		    
-			//evalMatrixProposals eval=null;
+			// evalMatrixProposals eval=null;
 			// write competition; write name1 (outer for loop) only once,
 			// so name1ForCompetition notes that name1 was already written
 			String name1ForCompetition="";
 			for (String name1 : names) {
-				writer.print("process name1: "+name1+ " ");
+				writer.println("MatrixBitWiseOperationModule.process name1: "+name1+ " ");
 				//eval=evalHashMap.get(name1);    //get(index);
 				//if(eval !=null) {
 				//	

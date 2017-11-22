@@ -11,7 +11,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 
 import models.NamedFieldMatrix;
-import modules.matrix.morph.ContainingElement;
+//import modules.matrix.morph.ContainingElement;
 import modules.matrix.morph.RestructMorphologicalClasses;
 import common.logicBits.LogOp;
 import modules.matrix.MatrixBitWiseOperationTreeNodeElement;
@@ -23,7 +23,7 @@ public class MatrixDynamicMorphClustering {
 	/* the basic idea of this class is: 
 	 * 	1. sort elements by (falling) number of contexts
 	 *  2. look whether context (element set) consists of (more than one) other context element sets
-	 *  (example: port+us, port+um, port+os, port+o, port+as has context element set consiting of
+	 *  (example: port+us, port+um, port+os, port+o, port+as has context element set consisting of
 	 *  us, um, os, o, as.
 	 *  us, um, os are found in the context (of a nominal form like) hort+us, hort+um, hort+os (and hort+o).
 	 *  as
@@ -76,7 +76,7 @@ public class MatrixDynamicMorphClustering {
 	{	ArrayList<MatrixBitWiseOperationTreeNodeElement> list= 
 		new ArrayList<MatrixBitWiseOperationTreeNodeElement>();
 	
-	this.writer.println("MatrixDynamicMorphClustering generateMatrixBitWiseOperationTreeNodeElementList Entry");
+	this.writer.println("MatrixDynamicMorphClustering.generateMatrixBitWiseOperationTreeNodeElementList Entry");
 	
 	for (int row=0;row<namedFieldMatrix.getRowAmount();row++){		
 		writer.println("generate...TreeNodeElementList row: "+row + " name: "+
@@ -93,6 +93,7 @@ public class MatrixDynamicMorphClustering {
 	// here elements are checked for which different types of segmentation
 	// were proposed 
 	//
+	
 	private void checkConflictingElements(ArrayList<MatrixBitWiseOperationTreeNodeElement>list,int listSize, 
 	MatrixBitWiseOperationCompetition competition,MatrixBitWiseOperationTreeNodeElement partialroot1,
 	MatrixBitWiseOperationTreeNodeElement partialroot2){
@@ -110,9 +111,7 @@ public class MatrixDynamicMorphClustering {
 							this.namedFieldMatrix.getRowName(element_i.fromNamedFieldMatrixRow);
 							String name2=
 							this.namedFieldMatrix.getRowName(element_j.fromNamedFieldMatrixRow);
-							if(competition.checkcompetition(name1,
-								name2,
-								this.writer)) {
+							if(competition.checkcompetition(name1, name2, this.writer)) {
 								
 								// two possible solutions:
 								// 1. compare context of element_i and element_j and 
@@ -130,22 +129,38 @@ public class MatrixDynamicMorphClustering {
 								// one of proposed solution to be implemented here
 								// very pragmatic solution in  pragmaticDeletionOfCompeting(treeNodeList);
 								
-								float val1=partialroot1.or.cardinality()/partialroot1.and.cardinality();
-								float val2=partialroot2.or.cardinality()/partialroot2.and.cardinality();
+								// no division by zero
+								float div1=partialroot1.and.cardinality();
+								if (div1==0)div1= 0.01F;
+								float div2=partialroot2.and.cardinality();
+								if (div2==0)div2= 0.01F;
+								float val1=partialroot1.or.cardinality()/div1;
+								float val2=partialroot2.or.cardinality()/div2;
 								if (val2>val1){
 									
 									// mark element for name1 as deselected
 									element_i.deselect=true;
+									this.writer.println("MatrixDynamicMorphClustering name1 deselected: "+name1+
+											" name2: "+name2);
+									;
 									
 								} else {
 									// mark element for name2 as deselected
 									element_j.deselect=true;
+									this.writer.println("MatrixDynamicMorphClustering name2 deselected: "+name1+
+											" name2: "+name2);
+									//int x=1/0;
 								}
 									
 							
 							}
 						}
-							catch(Exception e){System.out.println(" error checkConflictingElements" );};
+							catch(Exception e){
+								System.out.println(" error checkConflictingElements i : "+ i+" j: "+j+
+										" e: "+e);
+								e.printStackTrace();
+								System.exit(9);
+										};
 					}
 				}
 			}
@@ -157,21 +172,29 @@ public class MatrixDynamicMorphClustering {
 	
 	
 	private int evaluate(MatrixBitWiseOperationTreeNodeElement in1,MatrixBitWiseOperationTreeNodeElement in2){
-		BitSet common=LogOp.AND(in1.contextBitSet, in2.contextBitSet);
+		BitSet intersection=LogOp.AND(in1.contextBitSet, in2.contextBitSet);
 		
 		// 17-07-31 inclusion is better here
-		BitSet dif1=LogOp.XOR(common,in1.contextBitSet);
-		BitSet dif2=LogOp.XOR(common,in2.contextBitSet);
+		BitSet dif1=LogOp.XOR(intersection,in1.contextBitSet);
+		BitSet dif2=LogOp.XOR(intersection,in2.contextBitSet);
+		//BitSet dif1=LogOp.AND(intersection,in1.contextBitSet);
+		//BitSet dif2=LogOp.AND(intersection,in2.contextBitSet);
 		int minor=Integer.min(dif1.cardinality(), dif2.cardinality());
+		
+		// should be reflected
+		int val =intersection.cardinality()+intersection.cardinality()/(minor+1);
+		
+	
 		//BitSet dif = LogOp.XOR(in1.contextBitSet, in2.contextBitSet);
-		// result is difference of sun of common and sum of different bits
+		// result is difference of sum of intersection and sum of different bits
 		
 		// inclusion welcome
-		// return common.cardinality()-dif.cardinality();
-		return common.cardinality()-minor;
+		// return intersection.cardinality()-dif.cardinality();
+		//System.out.println(intersection.cardinality()+" result val: "+val);
+		return val; //intersection.cardinality() - minor;
 	}
 	
-	
+	/* see above checkConflictingElements
 	 private void pragmaticDeletionOfCompeting
 	 (ArrayList<MatrixBitWiseOperationTreeNodeElement>treenodelist){
 		 for (MatrixBitwiseOperationHelpCompetingElementGroup competitionElement:
@@ -181,7 +204,7 @@ public class MatrixDynamicMorphClustering {
 				 
 				 // get element prefix in treenodelist
 				 
-				 // search val in of element (number of morphmemes following
+				 // search val in of element (number of morphememes following
 				 // 
 				 int val=0;//dummy
 				 
@@ -199,11 +222,12 @@ public class MatrixDynamicMorphClustering {
 			 
 		 }
 	 };
+	*/
 	
-	
-	private boolean searchBestPaairForNeighborhoodTree_1(ArrayList<MatrixBitWiseOperationTreeNodeElement> list, 
+	private boolean searchBestPairForNeighborhoodTree_1(ArrayList<MatrixBitWiseOperationTreeNodeElement> list, 
 			int listSize,MatrixBitWiseOperationCompetition competition){
-			int bestVal=Integer.MAX_VALUE*-1;int best_i=0,best_j=0;
+			int bestVal=Integer.MAX_VALUE * -1;
+			int best_i=0,best_j=0;
 			
 			// two loops, all elements of list are compared
 			for (int i=0;i<listSize-1;i++){
@@ -216,15 +240,18 @@ public class MatrixDynamicMorphClustering {
 						MatrixBitWiseOperationTreeNodeElement element_j=list.get(j);
 						//only not containing; different roots; no elements of identical tree 
 						if ((element_j.containingList==null) &&(element_i.root != element_j.root)) {
+							
 							int val= evaluate(element_i,element_j);
+							
 							if (val> bestVal){							
 								bestVal=val;best_i=i;best_j=j;
-							
-				
+
+								
 								
 							}
 						
 						}
+						
 					}//for (int j=i+1;j<listSize;j++)
 				}//if (element_i.containingList==null)
 				
@@ -244,7 +271,7 @@ public class MatrixDynamicMorphClustering {
 				
 				MatrixBitWiseOperationTreeNodeElement partialroot2=bestChild2.root;
 				
-				//error chck, to do
+				//error check, to do
 				int dummy_y=0;				
 				if ((partialroot1==null)||(partialroot2==null))  dummy_y=10/0;
 				// generate mother node and link bottom up with children
@@ -291,7 +318,7 @@ public class MatrixDynamicMorphClustering {
 				
 				
 				// 
-				this.writer.println("searchBestPaairForNeighborhoodTree_1 bestChild1: "+
+				this.writer.println("searchBestPairForNeighborhoodTree_1 bestChild1: "+
 						this.namedFieldMatrix.getRowName(bestChild1.fromNamedFieldMatrixRow)+
 						" bestChild2: "+
 							this.namedFieldMatrix.getRowName(bestChild2.fromNamedFieldMatrixRow));
@@ -301,7 +328,7 @@ public class MatrixDynamicMorphClustering {
 				return true;
 			}
 			else return false;
-		}// searchBestPaairForNeighborhoodTree_1
+		}// searchBestPairForNeighborhoodTree_1
 	
 	
 	/*
@@ -407,7 +434,7 @@ public class MatrixDynamicMorphClustering {
 		// bottom up tree building by joining best pairs of list;
 		// mother(s) of best pairs are added to list and then included in treebuilding, too
 		//
-		while(searchBestPaairForNeighborhoodTree_1(list,listSize,competition)) {
+		while(searchBestPairForNeighborhoodTree_1(list,listSize,competition)) {
 				// nothing to do here	
 		}
 		 
@@ -422,7 +449,7 @@ public class MatrixDynamicMorphClustering {
 	
 	
 	
-	public NamedFieldMatrix restruct(NamedFieldMatrix nFieldMatrix,
+	public NamedFieldMatrix restruct(NamedFieldMatrix nFieldMatrix/*inMatrix*/,
 		MatrixBitWiseOperationCompetition competition,PrintWriter pwriter){
 		this.writer=pwriter;
 		this.writer.println("\n\n----------MatrixDynamicMorphClustering.restruct Entry");
@@ -456,7 +483,7 @@ public class MatrixDynamicMorphClustering {
 		generateMatrixBitWiseOperationTreeNodeElementList(); 
 		 this.writer.println("nach generateMatrixBitWiseOperationTreeNodeElementList");
 		 
-		 pragmaticDeletionOfCompeting(treeNodeList);
+		 //pragmaticDeletionOfCompeting(treeNodeList);
 		
 		 //-----restructMorphologically: analyze whether containing classes
 		 RestructMorphologicalClasses restructMorph=new RestructMorphologicalClasses();
@@ -465,7 +492,7 @@ public class MatrixDynamicMorphClustering {
 		 // enter morphologically disambiguated classes in treeNodeList
 		 restructMorph.enterDisambiguatedClasses(treeNodeList,writer,nFieldMatrix);
 		
-		 MatrixBitWiseOperationTreeNodeElement root1=
+		 MatrixBitWiseOperationTreeNodeElement root=
 		 this.generateMorphologicalNeighborhoodTree(treeNodeList,competition);
 		
 		
@@ -475,14 +502,14 @@ public class MatrixDynamicMorphClustering {
 				new ArrayList<MatrixBitwiseOperationTreeNodeCodeGenerationElement>();
 		
 		MatrixBitWiseOperationTreeNodeElement.walkForCodeGeneration
-		(root1,  '0',0,resultList,this.writer);
+		(root,  '0',0,resultList,this.writer,this.namedFieldMatrix);
 		
 		MatrixBitwiseOperationTreeNodeCodeGenerationElement.printList
-		(resultList, this.writer, this.namedFieldMatrix);
+		(resultList, this.writer, this.namedFieldMatrix," unsorted");
 		
 		MatrixBitwiseOperationTreeNodeCodeGenerationElement.sort(resultList);
 		MatrixBitwiseOperationTreeNodeCodeGenerationElement.printList
-		(resultList, this.writer, this.namedFieldMatrix);
+		(resultList, this.writer, this.namedFieldMatrix," sorted");
 			
 		writer.println("MatrixDynamicMorphClustering restruct Exit");
 		return this.namedFieldMatrix;

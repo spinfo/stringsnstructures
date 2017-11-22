@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.BitSet;
 
+import models.NamedFieldMatrix;
 import modules.matrix.morph.ContainingElement;
 
 
@@ -63,8 +64,10 @@ public class MatrixBitWiseOperationTreeNodeElement {
 			PrintWriter p){
 		
 		if (treeNode !=null){
-			p.println("walkForRootSetting: "+treeNode.fromNamedFieldMatrixRow+
-			" nodeAsRoot: "+nodeAsRoot.fromNamedFieldMatrixRow);
+			// only test, only for terminals, all other node are labeld by 0
+			//if (treeNode.fromNamedFieldMatrixRow!=0)
+			//p.println("walkForRootSetting: "+treeNode.fromNamedFieldMatrixRow);
+			//" nodeAsRoot: "+nodeAsRoot.fromNamedFieldMatrixRow);
 			//entryAction
 			//---------------
 			// too specialized !
@@ -83,40 +86,54 @@ public class MatrixBitWiseOperationTreeNodeElement {
 	public static void walkForCodeGeneration(MatrixBitWiseOperationTreeNodeElement treeNode,  
 			char codeChar, int codeIndex,
 			ArrayList<MatrixBitwiseOperationTreeNodeCodeGenerationElement> list,
-			PrintWriter p){
+			PrintWriter p,NamedFieldMatrix namedFieldMatrix){
 		
 		code[codeIndex]=codeChar;
+		StringBuffer codeStr=new StringBuffer();
+		MatrixBitwiseOperationTreeNodeCodeGenerationElement e=null;
 		
 		p.print(" Code: ");
 		for (int i=0;i<=codeIndex;i++){
 			p.print(code[i]);
+			codeStr.append(code[i]);
 		}
-		if (treeNode.child1==null)p.print("  Terminalknoten");
+		String out="";
+		if (treeNode.child1==null)out=out+"  Terminalknoten ";
+		if (treeNode.deselect)out=out+  " deselect ";
+		else {
+			e=new MatrixBitwiseOperationTreeNodeCodeGenerationElement();
+			e.code=codeStr.toString();
+			e.nodeElement=treeNode;
+			list.add(e);
+			
+		}
 		p.println();
 		// an existing root is supposed
 		
 		
-		if (treeNode.child1 !=null){
+		if (treeNode.child1 != null){
 			//entryAction
 			//---------------
 			// too specialized, see above walkForRootSetting!
 			
 			// depth first
-			walkForCodeGeneration(treeNode.child1,'0',codeIndex+1,list,p);
+			walkForCodeGeneration(treeNode.child1,'0',codeIndex+1,list,p,namedFieldMatrix);
 			// bredth second
 			
-			walkForCodeGeneration(treeNode.child2,'1',codeIndex+1,list,p);
+			walkForCodeGeneration(treeNode.child2,'1',codeIndex+1,list,p,namedFieldMatrix);
 			
 			// exitAction
 			//
 		}
 		else {
 			//terminal
+			if(treeNode.child1==null)
+				out=out+namedFieldMatrix.getRowName(treeNode.fromNamedFieldMatrixRow);
 			
-		}
-		
-	}
+		};
+		p.println(out);
 	
+	}
 	
 
 }
