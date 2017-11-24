@@ -140,15 +140,15 @@ public class MatrixDynamicMorphClustering {
 									
 									// mark element for name1 as deselected
 									element_i.deselect=true;
-									this.writer.println("MatrixDynamicMorphClustering name1 deselected: "+name1+
-											" name2: "+name2);
+									this.writer.println("MatrixDynamicMorphClustering name2 selected: "+name2+
+											" name1 deselected: "+name1);
 									;
 									
 								} else {
 									// mark element for name2 as deselected
 									element_j.deselect=true;
-									this.writer.println("MatrixDynamicMorphClustering name2 deselected: "+name1+
-											" name2: "+name2);
+									this.writer.println("MatrixDynamicMorphClustering name1 selected: "+name1+
+											" name2 deselected: "+name2);
 									//int x=1/0;
 								}
 									
@@ -486,19 +486,21 @@ public class MatrixDynamicMorphClustering {
 		 //pragmaticDeletionOfCompeting(treeNodeList);
 		
 		 //-----restructMorphologically: analyze whether containing classes
-		 RestructMorphologicalClasses restructMorph=new RestructMorphologicalClasses();
-		 restructMorph.restructMorphologically(treeNodeList, this.namedFieldMatrix, writer);
+		 /*
+		 *RestructMorphologicalClasses restructMorph=new RestructMorphologicalClasses();
+		 *restructMorph.restructMorphologically(treeNodeList, this.namedFieldMatrix, writer);
+		 *
+		 * enter morphologically disambiguated classes in treeNodeList
+		 *restructMorph.enterDisambiguatedClasses(treeNodeList,writer,nFieldMatrix);
+		*/
 		 
-		 // enter morphologically disambiguated classes in treeNodeList
-		 restructMorph.enterDisambiguatedClasses(treeNodeList,writer,nFieldMatrix);
-		
 		 MatrixBitWiseOperationTreeNodeElement root=
 		 this.generateMorphologicalNeighborhoodTree(treeNodeList,competition);
 		
 		
-		// 
+		 // 
 		
-		ArrayList<MatrixBitwiseOperationTreeNodeCodeGenerationElement> resultList=
+		 ArrayList<MatrixBitwiseOperationTreeNodeCodeGenerationElement> resultList=
 				new ArrayList<MatrixBitwiseOperationTreeNodeCodeGenerationElement>();
 		
 		MatrixBitWiseOperationTreeNodeElement.walkForCodeGeneration
