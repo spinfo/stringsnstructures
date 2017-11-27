@@ -64,6 +64,7 @@ import javax.swing.JTextField;
  * @author Marcel Boeing
  *
  */
+
 public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, TreeSelectionListener, MouseListener, DocumentListener {
 	
 	private static final Logger LOGGER = Logger.getLogger(ModuleWorkbenchGui.class.getCanonicalName());

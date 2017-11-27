@@ -12,7 +12,11 @@ public class LogOp {
 	
 
 	public static BitSet OR(BitSet in1,BitSet in2){		
-		BitSet res=new BitSet();res.or(in1);res.or(in2);
+		BitSet res=new BitSet();
+		if(in1==null) System.out.println("OR in1 == null");
+		if (in2==null) System.out.println("OR in2 == null");
+		res.or(in1);
+		res.or(in2);
 		return res;
 	}	
 	
