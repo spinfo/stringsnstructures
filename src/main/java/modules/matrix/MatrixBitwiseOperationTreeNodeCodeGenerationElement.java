@@ -8,6 +8,7 @@ import java.util.Comparator;
 import models.NamedFieldMatrix;
 
 
+
 public class MatrixBitwiseOperationTreeNodeCodeGenerationElement {
         String code;
         int count;
