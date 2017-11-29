@@ -119,9 +119,12 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	
 	public static final String LINEBREAKREGEX = "\\R+";
 	public static final String LINEBREAK = "\n";
-	public static String moduleNetWorkName="";
+	
 	protected Map<String,Module> availableModules = new TreeMap<String,Module>(); // Key: module name
+
+	public static String moduleNetWorkName="";
 	private ModuleNetwork moduleNetwork;
+
 	private ListLoggingHandler listLoggingHandler;
 	private Gson jsonConverter;
 

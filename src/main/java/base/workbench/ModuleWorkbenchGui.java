@@ -67,6 +67,8 @@ import javax.swing.JTextField;
 
 public class ModuleWorkbenchGui extends CallbackReceiverImpl implements InternalFrameListener, ActionListener, TreeSelectionListener, MouseListener, DocumentListener {
 	
+	private static final Logger LOGGER = Logger.getLogger(ModuleWorkbenchGui.class.getCanonicalName());
+	
 	// Keywords used to identify actions
 	protected static final String ACTION_CLEARMODULENETWORK = "ACTION_CLEARMODULENETWORK";
 	protected static final String ACTION_ADDMODULETONETWORK = "ACTION_ADDMODULETONETWORK";
@@ -95,6 +97,8 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 	public static final String WINDOWTITLE = "Module Workbench - ";
 	public static final String WINDOWTITLE_NEWTREESUFFIX = "(new module network)";
 	public static final String FILENAMESUFFIX = "exp";
+	public static final String FILENAMESUFFIX_TITLE = "Experiments";
+	public static final String MODULES_TITLE = "Modules";	
 	
 	/*
 	 *  Local variables
@@ -133,7 +137,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 					window.mainGuiFrame.setIconImage(ICON_APP.getImage());
 					window.mainGuiFrame.setVisible(true);
 					
-					Logger.getGlobal().log(Level.INFO, "Workbench GUI started.");
+					Logger.getGlobal().log(Level.INFO, UserMessages.WORKBENCH_GUI_STARTED);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -177,7 +181,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		
 		// Initialise available modules tree
 		//moduleTemplateList = new ToolTipJList<Module>(this.controller.getAvailableModules().values().toArray(new Module[this.controller.getAvailableModules().size()]));
-		DefaultMutableTreeNode moduleTemplateTreeRootNode = new DefaultMutableTreeNode("Modules");
+		DefaultMutableTreeNode moduleTemplateTreeRootNode = new DefaultMutableTreeNode(MODULES_TITLE);
 		DefaultTreeModel moduleTemplateTreeModel = new DefaultTreeModel(moduleTemplateTreeRootNode);
 		moduleTemplateTree = new JTree(moduleTemplateTreeModel);
 		moduleTemplateTree.setRowHeight(0);
@@ -250,7 +254,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		JButton btnClearsearchbutton = new JButton();
 		btnClearsearchbutton.setActionCommand(ACTION_CLEARSEARCH);
 		btnClearsearchbutton.addActionListener(this);
-		btnClearsearchbutton.setToolTipText("clears the search field, resetting the module list");
+		btnClearsearchbutton.setToolTipText(UserMessages.CLEAR_SEARCH_FIELD);
 		btnClearsearchbutton.setIcon(ICON_CLEARLEFT);
 		panel_1.add(btnClearsearchbutton);
 		
@@ -332,50 +336,50 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		startNewModuleTreeButton.setActionCommand(ACTION_CLEARMODULENETWORK);
 		startNewModuleTreeButton.setIcon(ICON_NEW_TREE);
 		startNewModuleTreeButton.addActionListener(this);
-		startNewModuleTreeButton.setToolTipText("Clears the current module tree and creates a new one based on the selected module type.");
+		startNewModuleTreeButton.setToolTipText(UserMessages.CLEAR_MODULE_TREE);
 		
 		JButton addModuleButton = new JButton();
 		addModuleButton.setActionCommand(ACTION_ADDMODULETONETWORK);
 		addModuleButton.setIcon(ICON_ADD_MODULE);
 		addModuleButton.addActionListener(this);
-		addModuleButton.setToolTipText("Adds a module as a child to the one currently selected in the tree.");
+		addModuleButton.setToolTipText(UserMessages.ADD_MODULE);
 		
 		JButton deleteModuleButton = new JButton();
 		deleteModuleButton.setActionCommand(ACTION_DELETEMODULEFROMNETWORK);
 		deleteModuleButton.setIcon(ICON_DELETE_MODULE);
 		deleteModuleButton.addActionListener(this);
 		deleteModuleButton.setEnabled(true);
-		deleteModuleButton.setToolTipText("Removes the selected module (and all its children) from the tree.");
+		deleteModuleButton.setToolTipText(UserMessages.REMOVE_MODULE);
 		
 		JButton runModulesButton = new JButton();
 		runModulesButton.setActionCommand(ACTION_RUNMODULES);
 		runModulesButton.setIcon(ICON_RUN);
 		runModulesButton.addActionListener(this);
-		runModulesButton.setToolTipText("Starts the processing of the module tree.");
+		runModulesButton.setToolTipText(UserMessages.RUN_MODULES);
 		
 		JButton stopModulesButton = new JButton();
 		stopModulesButton.setActionCommand(ACTION_STOPMODULES);
 		stopModulesButton.setIcon(ICON_STOP);
 		stopModulesButton.addActionListener(this);
-		stopModulesButton.setToolTipText("Stops the processing of the module tree.");
+		stopModulesButton.setToolTipText(UserMessages.STOP_MODULES);
 		
 		JButton editModuleButton = new JButton();
 		editModuleButton.setActionCommand(ACTION_EDITMODULE);
 		editModuleButton.setIcon(ICON_EDIT_MODULE);
 		editModuleButton.addActionListener(this);
-		editModuleButton.setToolTipText("Lets you edit or review the properties of the module that is currently chosen in the tree.");
+		editModuleButton.setToolTipText(UserMessages.EDIT_MODULE_PROPERTIES);
 		
 		JButton saveTreeButton = new JButton();
 		saveTreeButton.setActionCommand(ACTION_SAVENETWORK);
 		saveTreeButton.setIcon(ICON_SAVE);
 		saveTreeButton.addActionListener(this);
-		saveTreeButton.setToolTipText("Lets you choose a file to save the module tree to.");
+		saveTreeButton.setToolTipText(UserMessages.SAVE_TO_FILE);
 		
 		JButton loadTreeButton = new JButton();
 		loadTreeButton.setActionCommand(ACTION_LOADNETWORK);
 		loadTreeButton.setIcon(ICON_LOAD);
 		loadTreeButton.addActionListener(this);
-		loadTreeButton.setToolTipText("Lets you choose a file to load the module tree from.");
+		loadTreeButton.setToolTipText(UserMessages.LOAD_FROM_FILE);
 		
 		toolBar.add(startNewModuleTreeButton);
 		toolBar.add(addModuleButton);
@@ -404,7 +408,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		JList<PrettyLogRecord> messageList = new JList<PrettyLogRecord>(messageListModel);
 		messageList.setCellRenderer(renderer);
 		
-		// Attach the message log list to the conteoller's logging handler
+		// Attach the message log list to the controller's logging handler
 		this.controller.getListLoggingHandler().setListModel(messageListModel);
 		this.controller.getListLoggingHandler().getAutoScrollLists().add(messageList);
 		
@@ -463,7 +467,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 					moduleFrames.next().setClosed(true);
 				} catch (PropertyVetoException e1) {
 					e1.printStackTrace();
-					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I could not close this module frame.", e1);
+					LOGGER.log(Level.WARNING, UserMessages.COULD_NOT_CLOSE_MODULE_FRAME, e1);
 				}
 			}
 			
@@ -476,12 +480,12 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		} else if (e.getActionCommand().equals(ACTION_DELETEMODULEFROMNETWORK)){
 			
 			if (this.selectedModuleFrame == null){
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I'm afraid I don't know which module to delete -- there is none selected.");
+				LOGGER.log(Level.WARNING, UserMessages.UNKNOWN_MODULE_TO_DELETE);
 			} else {
 				try {
 					this.selectedModuleFrame.setClosed(true);
 				} catch (PropertyVetoException e1) {
-					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Bugger! Could not close the selected module frame.", e1);
+					LOGGER.log(Level.WARNING, UserMessages.COULD_NOT_CLOSE_MODULE_FRAME, e1);
 					e1.printStackTrace();
 				}
 			}
@@ -489,7 +493,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		} else if (e.getActionCommand().equals(ACTION_EDITMODULE)){
 			
 			if (this.selectedModuleFrame == null){
-				Logger.getLogger("").log(Level.WARNING, "Please select a module frame first.");
+				LOGGER.log(Level.WARNING, UserMessages.UNKNOWN_MODULE_TO_EDIT);
 			}
 			
 			try {
@@ -511,13 +515,13 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 							modulePropertyEditor.setVisible(true);
 							
 						} catch (Exception e) {
-							Logger.getLogger("").log(Level.WARNING, "Could not open editor for module "+selectedModuleFrame.getModule().getName()+".", e);
+							LOGGER.log(Level.WARNING, UserMessages.unableToOpenEditor(selectedModuleFrame.getModule().getName()), e);
 						}
 					}
 				});
 				
 			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Could not display editor dialogue.", e1);
+				LOGGER.log(Level.WARNING, UserMessages.UNABLE_TO_DISPLAY_EDITOR, e1);
 			}
 			
 		} else if (e.getActionCommand().equals(ACTION_RUNMODULES)){
@@ -531,7 +535,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				this.updateAllModuleFrameIcons();
 				
 			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to run the modules.", e1);
+				LOGGER.log(Level.WARNING, UserMessages.UNABLE_TO_RUN_MODULES, e1);
 			}
 			
 		} else if (e.getActionCommand().equals(ACTION_STOPMODULES)){
@@ -540,7 +544,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				this.controller.getModuleNetwork().stopModules();
 				this.updateAllModuleFrameIcons();
 			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to stop the modules.", e1);
+				LOGGER.log(Level.WARNING, UserMessages.UNABLE_TO_STOP_MODULES, e1);
 			}
 			
 		} else if (e.getActionCommand().equals(ACTION_LOADNETWORK)){
@@ -556,7 +560,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				
 				// Set file filter
 				FileNameExtensionFilter filter = new FileNameExtensionFilter(
-				        "Experiments", FILENAMESUFFIX);
+				        FILENAMESUFFIX_TITLE, FILENAMESUFFIX);
 				fileChooser.setFileFilter(filter);
 				
 				// Set last chosen directory
@@ -577,11 +581,11 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				}
 				
 			} catch (Exception e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to save the module tree.", e1);
+				LOGGER.log(Level.WARNING, UserMessages.UNABLE_TO_SAVE_MODULES, e1);
 			}
 			
 		} else {
-			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but this command is unknown to me: "+e.getActionCommand());
+			LOGGER.log(Level.WARNING, UserMessages.unknownCommand(e.getActionCommand()));
 		}
 	}
 	
@@ -593,7 +597,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 			// Set file filter
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
-			        "Experiments", FILENAMESUFFIX);
+			        FILENAMESUFFIX_TITLE, FILENAMESUFFIX);
 			fileChooser.setFileFilter(filter);
 			
 			// Set last chosen directory
@@ -695,14 +699,14 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				
 				// If no frame without input connection has been found, issue a warning
 				if (startingFrame == null){
-					Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I could not find a good start for arranging the frames -- did you construct a loop? If so, please don't.");
+					LOGGER.log(Level.WARNING, UserMessages.UNKNOWN_MODULES_ROOT);
 				}
 				
 				mainGuiFrame.setTitle(WINDOWTITLE+fileChooser.getSelectedFile().getName());
 			}
 			
 		} catch (Exception e1) {
-			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but I wasn't able to load the module tree.", e1);
+			LOGGER.log(Level.WARNING, UserMessages.UNABLE_TO_LOAD_MODULES, e1);
 		}
 	}
 	
@@ -773,10 +777,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 				this.activeModulePortButton = null;
 			} catch (NotSupportedException | OccupiedException
 					| ClassCastException | IOException e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(
-						Level.WARNING,
-						"Sorry, but I cannot connect those ports: "
-								+ e1.getMessage());
+				LOGGER.log(Level.WARNING, UserMessages.unableToConnectPorts(e1.getMessage()));
 				e1.printStackTrace();
 				// Reset the reference to the active port button
 				this.stopLinking();
@@ -813,7 +814,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "The module could not be added to the network.", e);
+			LOGGER.log(Level.WARNING, UserMessages.UNABLE_TO_ADD_MODULE, e);
 		}
 	}
 	
@@ -892,12 +893,12 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			
 			// Log message
 			if (removed)
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.INFO, "The module '"+module.getName()+"' has been removed from the network.");
+				LOGGER.log(Level.INFO, UserMessages.moduleHasBeenRemoved(module.getName()));
 			else
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but the selected module could not be removed from the network.");
+				LOGGER.log(Level.WARNING, UserMessages.UNABLE_TO_REMOVE_MODULE);
 			
 		} catch (Exception e1) {
-			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but due to an error the module could not be removed from the network.", e1);
+			LOGGER.log(Level.WARNING, UserMessages.UNABLE_TO_REMOVE_MODULE, e1);
 		}
 	}
 
@@ -939,7 +940,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 		// Remove port connection(s) when respective port button is right-clicked
 		Object source = e.getSource();
 		if (!AbstractModulePortButton.class.isAssignableFrom(source.getClass())){
-			Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "I just registered a mouse click for an object I do not know how to handle :-/ "+source.getClass().getCanonicalName());
+			LOGGER.log(Level.WARNING, UserMessages.unknownObjectClicked(source));
 			return;
 		} else if (ModuleInputPortButton.class.isAssignableFrom(source.getClass())){
 			ModuleInputPortButton button = (ModuleInputPortButton) source;
@@ -947,7 +948,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			try {
 				this.controller.getModuleNetwork().removeConnection((InputPort) button.getPort());
 			} catch (NotFoundException e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but there was an error removing the port connection.", e1);
+				LOGGER.log(Level.WARNING, UserMessages.ERROR_WHEN_REMOVING_PORT_CONNECTION, e1);
 			}
 		} else if (ModuleOutputPortButton.class.isAssignableFrom(source.getClass())){
 			ModuleOutputPortButton button = (ModuleOutputPortButton) source;
@@ -955,7 +956,7 @@ public class ModuleWorkbenchGui extends CallbackReceiverImpl implements Internal
 			try {
 				this.controller.getModuleNetwork().removeConnection((OutputPort) button.getPort());
 			} catch (NotFoundException e1) {
-				Logger.getLogger(this.getClass().getCanonicalName()).log(Level.WARNING, "Sorry, but there was an error removing the port connection.", e1);
+				LOGGER.log(Level.WARNING, UserMessages.ERROR_WHEN_REMOVING_PORT_CONNECTION, e1);
 			}
 		}
 	}
