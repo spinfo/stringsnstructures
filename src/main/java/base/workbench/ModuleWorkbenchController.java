@@ -363,43 +363,61 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 	 * @throws Exception Thrown if something goes wrong
 	 */
 	public ModuleNetwork loadModuleNetworkFromFile(File file, boolean replaceCurrent) throws Exception {
-				
+
 		// Read JSON representation of the current module tree from file
 		byte[] encoded = Files.readAllBytes(file.toPath());
 		String jsonString = new String(encoded);
+
+		ModuleNetwork result = loadModuleNetworkFromString(jsonString, replaceCurrent);
+
+		// If we get here, loading went ok, so log it and return
+		Logger.getLogger("").log(Level.INFO, "Successfully loaded the module network from the file " + file.getPath());
+		moduleNetWorkName = file.getPath();
+		return result;
+	}
+	
+	/**
+	 * Loads the module network from a json string.
+	 * @param jsonString A json representation of the ModuleNetwork, e.g. by <class>ModuleNetworkGsonSerializer</class>
+	 * @param replaceCurrent If true, replaces the current module network
+	 * @return Loaded module tree
+	 * @throws Exception Thrown if something goes wrong
+	 */
+	public ModuleNetwork loadModuleNetworkFromString(String jsonString, boolean replaceCurrent) throws Exception {
 		ModuleNetwork loadedModuleNetwork = null;
 		try {
 			loadedModuleNetwork = this.jsonConverter.fromJson(jsonString, ModuleNetwork.class);
-		} catch (Exception e){
-			Logger.getLogger("").log(Level.WARNING, "The specified module network seems to be invalid/out-of-date -- trying autoupdate.", e);
+		} catch (Exception e) {
+			Logger.getLogger("").log(Level.WARNING,
+					"The specified module network seems to be invalid/out-of-date -- trying autoupdate.", e);
 			try {
-				loadedModuleNetwork = this.jsonConverter.fromJson(this.updateExpDefinition(jsonString), ModuleNetwork.class);
-				Logger.getLogger("").log(Level.INFO, "Autoupdate successful -- please save the module network to make this change permanent.");
-			} catch (Exception e1){
-				Logger.getLogger("").log(Level.WARNING, "Autoupdate failed -- cannot load the specified module network.", e1);
+				loadedModuleNetwork = this.jsonConverter.fromJson(this.updateExpDefinition(jsonString),
+						ModuleNetwork.class);
+				Logger.getLogger("").log(Level.INFO,
+						"Autoupdate successful -- please save the module network to make this change permanent.");
+			} catch (Exception e1) {
+				Logger.getLogger("").log(Level.WARNING,
+						"Autoupdate failed -- cannot load the specified module network.", e1);
 				throw e1;
 			}
 		}
-		
+
 		// Apply properties to modules
 		Iterator<Module> modules = loadedModuleNetwork.getModuleList().iterator();
-		while (modules.hasNext()){
+		while (modules.hasNext()) {
 			Module module = modules.next();
 			module.applyProperties();
 			if (!replaceCurrent && this.getModuleNetwork() != null)
 				this.getModuleNetwork().addModule(module);
-			Logger.getLogger("").log(Level.INFO, "Loaded module "+module.getName()+" ["+module.getClass().getSimpleName()+"]");
+			Logger.getLogger("").log(Level.INFO,
+					"Loaded module " + module.getName() + " [" + module.getClass().getSimpleName() + "]");
 		}
-		
+
 		// Replace the current module network if specified to do so
 		if (replaceCurrent || this.getModuleNetwork() == null)
 			this.setModuleNetwork(loadedModuleNetwork);
-		
-        // Write log message
-        Logger.getLogger("").log(Level.INFO, "Successfully loaded the module network from the file "+file.getPath());
-        moduleNetWorkName=file.getPath();
-        
-        // Return the loaded network
+
+		// Return the loaded network
 		return loadedModuleNetwork;
 	}
 	

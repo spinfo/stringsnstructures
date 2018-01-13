@@ -126,6 +126,26 @@
 							</archive>
 						</configuration>
 					</execution>
+					<execution>
+						<id>build-modulewebserver</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>
+								${project.build.directory}/release
+							</outputDirectory>
+							<finalName>modulewebserver</finalName>
+							<archive>
+								<manifest>
+									<addClasspath>true</addClasspath>
+									<classpathPrefix>lib/</classpathPrefix>
+									<mainClass>base.web.Server</mainClass>
+								</manifest>
+							</archive>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -169,6 +189,12 @@
    </plugins></pluginManagement>
 	</build>
 	<dependencies>
+		<dependency>
+			<!-- Explicitly require a javax.servlet version, do not use the one required by jcifs -->
+		    <groupId>javax.servlet</groupId>
+		    <artifactId>javax.servlet-api</artifactId>
+		    <version>4.0.0</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -231,6 +257,39 @@
 		    <groupId>gov.nist.math</groupId>
 		    <artifactId>jama</artifactId>
 		    <version>1.0.3</version>
+		</dependency>
+		<!-- Web framework for the web server -->
+		<dependency>
+			<groupId>com.sparkjava</groupId>
+			<artifactId>spark-core</artifactId>
+			<version>2.6.0</version>
+		</dependency>
+		<!-- Logging for the web server -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+		<!-- sqlite databse libraries for the webserver -->
+		<dependency>
+			<groupId>com.j256.ormlite</groupId>
+			<artifactId>ormlite-core</artifactId>
+			<version>5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.j256.ormlite</groupId>
+			<artifactId>ormlite-jdbc</artifactId>
+			<version>5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.21.0.1</version>
 		</dependency>
 	</dependencies>
 	<url>http://www.spinfo.phil-fak.uni-koeln.de/sas.html</url>
