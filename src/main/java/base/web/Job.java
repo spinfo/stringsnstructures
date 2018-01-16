@@ -3,104 +3,167 @@ package base.web;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
+import com.google.gson.annotations.Expose;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
+import com.j256.ormlite.table.DatabaseTable;
 
+@DatabaseTable(tableName = "job")
 class Job {
-	
-	static final Timestamp ZERO_TIMESTAMP = new Timestamp(0L);
 
 	@DatabaseField(id = true)
+	@Expose
 	private long id;
-	
+
 	@DatabaseField(columnName = "maxMemory")
+	@Expose
 	private long maxMemory;
-	
+
 	@DatabaseField(columnName = "maxTime")
+	@Expose
 	private long maxTime;
-	
+
 	@DatabaseField(columnName = "maxResultSize")
+	@Expose
 	private long maxResultSize;
-	
+
+	@DatabaseField(columnName = "failed")
+	@Expose
+	private boolean failed;
+
 	@DatabaseField(columnName = "createdAt", index = true)
+	@Expose(deserialize = false)
 	private Timestamp createdAt;
-	
+
 	@DatabaseField(columnName = "startedAt", index = true)
-	private Timestamp startedAt = ZERO_TIMESTAMP;
-	
+	@Expose(deserialize = false)
+	private Timestamp startedAt;
+
 	@DatabaseField(columnName = "endedAt", index = true)
-	private Timestamp endedAt = ZERO_TIMESTAMP;
-	
+	@Expose(deserialize = false)
+	private Timestamp endedAt;
+
 	@DatabaseField(columnName = "workflowDefinition")
+	@Expose
 	private String workflowDefinition;
-	
+
+	@ForeignCollectionField(eager = true, orderColumnName = "recordedAt", orderAscending = false)
+	@Expose(deserialize = false)
+	private Collection<JobExecutionEvent> events;
+
 	protected Job() {
+		this.failed = false;
 		this.createdAt = currentTime();
+		this.events = new ArrayList<>();
 	}
-	
-	private Dao<Job, Long> dao() throws SQLException {
-		return DatabaseFacade.getInstance().jobDao();
-	}
-	
-	private Timestamp currentTime() {
-		return Timestamp.from(Instant.now());
-	}
-	
+
 	void save() throws SQLException {
 		dao().createOrUpdate(this);
 	}
-	
+
 	void setStarted() throws SQLException {
-		this.startedAt = currentTime();
-		this.save();
-	}
-	
-	void setEnded() throws SQLException {
-		this.endedAt = currentTime();
+		setStartTimeNow();
+		this.addEvent("Started processing.");
 		this.save();
 	}
 
-	public String getWorkflowDefinition() {
+	void setSucceeded() throws SQLException {
+		setEndTimeNow();
+		this.addEvent("Finished successfully.");
+		this.save();
+	}
+
+	void setFailed(String message) throws SQLException {
+		setEndTimeNow();
+		this.addEvent(message);
+		this.save();
+	}
+
+	void addEvent(String message) throws SQLException {
+		JobExecutionEvent event = new JobExecutionEvent(this, message);
+		this.events.add(event);
+	}
+
+	protected String getWorkflowDefinition() {
 		return workflowDefinition;
 	}
 
-	public void setWorkflowDefinition(String workflowDefinition) {
+	protected void setWorkflowDefinition(String workflowDefinition) {
 		this.workflowDefinition = workflowDefinition;
 	}
 
-	public static Timestamp getZeroTimestamp() {
-		return ZERO_TIMESTAMP;
-	}
-
-	public long getId() {
+	protected long getId() {
 		return id;
 	}
 
-	public long getMaxMemory() {
+	protected long getMaxMemory() {
 		return maxMemory;
 	}
 
-	public long getMaxTime() {
+	protected long getMaxTime() {
 		return maxTime;
 	}
 
-	public long getMaxResultSize() {
+	protected long getMaxResultSize() {
 		return maxResultSize;
 	}
 
-	public Timestamp getCreatedAt() {
+	protected Timestamp getCreatedAt() {
 		return createdAt;
 	}
 
-	public Timestamp getStartedAt() {
+	protected Timestamp getStartedAt() {
 		return startedAt;
 	}
 
-	public Timestamp getEndedAt() {
+	protected Timestamp getEndedAt() {
 		return endedAt;
 	}
+
+	/**
+	 * Events are exposed read-only. Modify a job's events by using the model's
+	 * methods.
+	 * 
+	 * @return An unmodifiable version of the events linked to this job.
+	 */
+	protected List<JobExecutionEvent> getEvents() {
+		return Collections.unmodifiableList(new ArrayList<>(events));
+	}
+
+	private void setStartTimeNow() {
+		// Never allow overwriting a recorded start time
+		if (this.startedAt == null) {
+			this.startedAt = currentTime();
+		} else {
+			throw new RuntimeException("Cannot set start time of an already started job.");
+		}
+	}
 	
-	
-	
+	protected static boolean exists(long id) throws SQLException {
+		return dao().idExists(id);
+	}
+
+	private void setEndTimeNow() {
+		// Never allow overwriting a recorded end time
+		if (this.endedAt == null) {
+			this.endedAt = currentTime();
+		} else {
+			throw new RuntimeException("Cannot set end time of an already ended job.");
+		}
+	}
+
+	private static Dao<Job, Long> dao() throws SQLException {
+		return DatabaseFacade.getInstance().jobDao();
+	}
+
+	private Timestamp currentTime() {
+		return Timestamp.from(Instant.now());
+	}
+
 }

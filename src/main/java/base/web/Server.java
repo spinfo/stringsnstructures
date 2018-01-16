@@ -3,6 +3,8 @@ package base.web;
 import static spark.Spark.*;
 
 import java.io.InputStream;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -14,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.annotations.Expose;
 
 import base.workbench.ModuleWorkbenchController;
 import modules.Module;
@@ -22,10 +25,21 @@ public class Server {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
-	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation()
+			.create();
+
+	@Target(ElementType.FIELD)
+	public @interface SkipJsonSerialisation {
+		// this defines an annotation to skip json serialization
+	}
+
+	@Target(ElementType.FIELD)
+	public @interface SkipJsonDeserialisation {
+		// this defines an annotation to skip json de-serialization
+	}
 
 	private static class Message {
-		@SuppressWarnings("unused")
+		@Expose
 		String message;
 
 		public Message(String message) {
@@ -34,11 +48,18 @@ public class Server {
 	}
 
 	private static class InvalidWorkflowDefiniton extends Exception {
-
 		private static final long serialVersionUID = 1246852381687652883L;
 
 		public InvalidWorkflowDefiniton(Throwable cause) {
 			super(cause);
+		}
+	}
+
+	private static class InvalidJobDefinition extends Exception {
+		private static final long serialVersionUID = -6641311071071946210L;
+
+		public InvalidJobDefinition(String message) {
+			super(message);
 		}
 	}
 
@@ -58,8 +79,17 @@ public class Server {
 		post("jobs", (request, response) -> {
 
 			Job job = (Job) GSON.fromJson(request.body(), Job.class);
+
+			LOGGER.debug("Got job to save: " + job);
+
+			if (Job.exists(job.getId())) {
+				throw new InvalidJobDefinition("A job for this id already exists: " + job.getId());
+			}
+
 			job.save();
 			job.setStarted();
+
+			LOGGER.debug("Job did not exist previously");
 
 			// test that the workflow definition is parseable
 			ModuleWorkbenchController controller = new ModuleWorkbenchController();
@@ -69,8 +99,15 @@ public class Server {
 				throw new InvalidWorkflowDefiniton(e);
 			}
 
+			LOGGER.debug("Job has a valid workflow.");
+
 			return job;
 
+		}, GSON::toJson);
+
+		get("jobs/:id", (request, response) -> {
+
+			return null;
 		}, GSON::toJson);
 
 		get("modules"/* , "application/json" */, (request, response) -> {
@@ -89,6 +126,12 @@ public class Server {
 				return profiles;
 			}
 		}, GSON::toJson);
+
+		exception(InvalidJobDefinition.class, (e, request, response) -> {
+			response.status(400);
+			Message msg = new Message("Invalid job definition: " + e.getMessage());
+			response.body(GSON.toJson(msg));
+		});
 
 		exception(JsonSyntaxException.class, (e, request, response) -> {
 			response.status(400);

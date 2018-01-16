@@ -50,6 +50,7 @@ public class DatabaseFacade {
 	
 	private void setupTables(final ConnectionSource connectionSource) throws SQLException {
 		TableUtils.createTableIfNotExists(connectionSource, Job.class);
+		TableUtils.createTableIfNotExists(connectionSource, JobExecutionEvent.class);
 	}
 	
 }
