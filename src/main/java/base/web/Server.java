@@ -28,16 +28,6 @@ public class Server {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation()
 			.create();
 
-	@Target(ElementType.FIELD)
-	public @interface SkipJsonSerialisation {
-		// this defines an annotation to skip json serialization
-	}
-
-	@Target(ElementType.FIELD)
-	public @interface SkipJsonDeserialisation {
-		// this defines an annotation to skip json de-serialization
-	}
-
 	private static class Message {
 		@Expose
 		String message;
