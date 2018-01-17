@@ -255,6 +255,14 @@ public class ModuleNetwork extends CallbackReceiverImpl {
 		this.removeDeadThreads();
 		
 	}
+	
+	/**
+	 * @return Whether any of the modules started by this network are still running.
+	 */
+	public boolean isRunning() {
+		this.removeDeadThreads();
+		return !this.startedThreads.isEmpty();
+	}
 
 	/**
 	 * Runs all modules. Note that this method does not wait for the threads to

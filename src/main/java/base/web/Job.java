@@ -19,7 +19,7 @@ class Job {
 
 	@DatabaseField(id = true)
 	@Expose
-	private long id;
+	private long id = -1;
 
 	@DatabaseField(columnName = "maxMemory")
 	@Expose
@@ -64,30 +64,42 @@ class Job {
 	}
 
 	void save() throws SQLException {
-		dao().createOrUpdate(this);
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			dao().createOrUpdate(this);
+		}
 	}
 
 	void setStarted() throws SQLException {
-		setStartTimeNow();
-		this.addEvent("Started processing.");
-		this.save();
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			setStartTimeNow();
+			this.addEvent("Started processing.");
+			this.save();
+		}
 	}
 
 	void setSucceeded() throws SQLException {
-		setEndTimeNow();
-		this.addEvent("Finished successfully.");
-		this.save();
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			setEndTimeNow();
+			this.failed = false;
+			this.addEvent("Finished successfully.");
+			this.save();
+		}
 	}
 
 	void setFailed(String message) throws SQLException {
-		setEndTimeNow();
-		this.addEvent(message);
-		this.save();
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			setEndTimeNow();
+			this.failed = true;
+			this.addEvent(message);
+			this.save();
+		}
 	}
 
 	void addEvent(String message) throws SQLException {
-		JobExecutionEvent event = new JobExecutionEvent(this, message);
-		this.events.add(event);
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			JobExecutionEvent event = new JobExecutionEvent(this, message);
+			eventDao().create(event);
+		}
 	}
 
 	protected String getWorkflowDefinition() {
@@ -126,6 +138,10 @@ class Job {
 		return endedAt;
 	}
 
+	protected boolean isFailed() {
+		return failed;
+	}
+
 	/**
 	 * Events are exposed read-only. Modify a job's events by using the model's
 	 * methods.
@@ -144,9 +160,23 @@ class Job {
 			throw new RuntimeException("Cannot set start time of an already started job.");
 		}
 	}
-	
+
 	protected static boolean exists(long id) throws SQLException {
-		return dao().idExists(id);
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			return dao().idExists(id);
+		}
+	}
+
+	protected static List<Job> fetchPending() throws SQLException {
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			return dao().queryBuilder().orderBy("createdAt", true).where().isNull("startedAt").query();
+		}
+	}
+
+	protected static Job fetch(long id) throws SQLException {
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			return dao().queryForId(id);
+		}
 	}
 
 	private void setEndTimeNow() {
@@ -160,6 +190,10 @@ class Job {
 
 	private static Dao<Job, Long> dao() throws SQLException {
 		return DatabaseFacade.getInstance().jobDao();
+	}
+
+	private Dao<JobExecutionEvent, Long> eventDao() throws SQLException {
+		return DatabaseFacade.getInstance().getJobExecutionEventDao();
 	}
 
 	private Timestamp currentTime() {

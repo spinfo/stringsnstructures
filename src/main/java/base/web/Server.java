@@ -3,8 +3,6 @@ package base.web;
 import static spark.Spark.*;
 
 import java.io.InputStream;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,7 +35,7 @@ public class Server {
 		}
 	}
 
-	private static class InvalidWorkflowDefiniton extends Exception {
+	static class InvalidWorkflowDefiniton extends Exception {
 		private static final long serialVersionUID = 1246852381687652883L;
 
 		public InvalidWorkflowDefiniton(Throwable cause) {
@@ -45,7 +43,7 @@ public class Server {
 		}
 	}
 
-	private static class InvalidJobDefinition extends Exception {
+	static class InvalidJobDefinition extends Exception {
 		private static final long serialVersionUID = -6641311071071946210L;
 
 		public InvalidJobDefinition(String message) {
@@ -64,22 +62,19 @@ public class Server {
 			PropertyConfigurator.configure(log4jProps);
 		}
 
+		// start the job scheduler alongside this server
+		Thread jobSchedulerThread = new Thread(JobScheduler.instance());
+		jobSchedulerThread.start();
+
 		port(4568);
 
 		post("jobs", (request, response) -> {
 
 			Job job = (Job) GSON.fromJson(request.body(), Job.class);
 
-			LOGGER.debug("Got job to save: " + job);
-
 			if (Job.exists(job.getId())) {
 				throw new InvalidJobDefinition("A job for this id already exists: " + job.getId());
 			}
-
-			job.save();
-			job.setStarted();
-
-			LOGGER.debug("Job did not exist previously");
 
 			// test that the workflow definition is parseable
 			ModuleWorkbenchController controller = new ModuleWorkbenchController();
@@ -89,14 +84,13 @@ public class Server {
 				throw new InvalidWorkflowDefiniton(e);
 			}
 
-			LOGGER.debug("Job has a valid workflow.");
-
+			job.save();
+			JobScheduler.instance().wakeup();
 			return job;
 
 		}, GSON::toJson);
 
 		get("jobs/:id", (request, response) -> {
-
 			return null;
 		}, GSON::toJson);
 
