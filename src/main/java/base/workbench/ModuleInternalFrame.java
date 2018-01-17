@@ -113,18 +113,24 @@ public class ModuleInternalFrame extends JInternalFrame {
     /**
      * Checks the status of the module and sets the appropriate icon.
      */
-    public void updateStatusIcon(){
-    	// Set icon depending on module status
-		if (this.module.getStatus() == Module.STATUSCODE_NOTYETRUN)
+	public void updateStatusIcon() {
+		// Set icon depending on module status
+		switch (this.module.getStatus()) {
+		case Module.STATUSCODE_NOTYETRUN:
 			this.setFrameIcon(ICON_MODULE_QUEUED);
-		else if (this.module.getStatus() == Module.STATUSCODE_RUNNING) {
+			break;
+		case Module.STATUSCODE_RUNNING:
 			this.setFrameIcon(ICON_MODULE_RUNNING);
 			ICON_MODULE_RUNNING.setImageObserver(this.getParent().getParent());
-		} else if (this.module.getStatus() == Module.STATUSCODE_SUCCESS)
+			break;
+		case Module.STATUSCODE_SUCCESS:
 			this.setFrameIcon(ICON_MODULE_SUCCESSFUL);
-		else if (this.module.getStatus() == Module.STATUSCODE_FAILURE)
+			break;
+		case Module.STATUSCODE_FAILURE:
 			this.setFrameIcon(ICON_MODULE_FAILED);
-    }
+			break;
+		}
+	}
 
 	/**
 	 * @return the module
