@@ -3,10 +3,13 @@ package base.web;
 import static spark.Spark.*;
 
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.LogManager;
 import java.util.stream.Collectors;
+
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
@@ -17,8 +20,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.Expose;
 
+import base.web.WebError.InvalidInputException;
+import base.web.WebError.ResourceNotFoundException;
 import base.workbench.ModuleWorkbenchController;
 import modules.Module;
+import spark.ExceptionHandler;
+import spark.Request;
 
 public class Server {
 
@@ -27,6 +34,10 @@ public class Server {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation()
 			.create();
 
+	/**
+	 * A simple message class to communicate strings (mostly errors) to the outside
+	 * world.
+	 */
 	private static class Message {
 		@Expose
 		String message;
@@ -35,6 +46,24 @@ public class Server {
 			this.message = message;
 		}
 	}
+
+	protected static ExceptionHandler<Exception> invalidInputHandler = (e, request, response) -> {
+		response.status(400);
+		Message msg = new Message("Invalid input: " + e.getMessage());
+		response.body(GSON.toJson(msg));
+	};
+
+	protected static ExceptionHandler<Exception> resourceNotFoundHandler = (e, request, response) -> {
+		response.status(404);
+		Message msg = new Message("Resource not found: " + e.getMessage());
+		response.body(GSON.toJson(msg));
+	};
+
+	protected static ExceptionHandler<Exception> internalServerErrorHandler = (e, request, response) -> {
+		response.status(500);
+		Message msg = new Message("Internal Server error: " + e.getMessage());
+		response.body(GSON.toJson(msg));
+	};
 
 	public static void main(String[] args) {
 
@@ -79,7 +108,19 @@ public class Server {
 		}, GSON::toJson);
 
 		get("jobs/:id", (request, response) -> {
-			return null;
+			return getJobByRequestIdParam(request, ":id");
+		}, GSON::toJson);
+
+		post("jobs/:id/cancel", (request, response) -> {
+			Job job = getJobByRequestIdParam(request, ":id");
+
+			if (job.hasEnded()) {
+				throw new InvalidInputException("Jobs has already ended.");
+			} else {
+				job.setFailed("Manually cancelled");
+				JobScheduler.instance().wakeup();
+			}
+			return "";
 		}, GSON::toJson);
 
 		get("health", (request, response) -> {
@@ -103,22 +144,27 @@ public class Server {
 			}
 		}, GSON::toJson);
 
-		exception(WebError.InvalidJobDefinition.class, (e, request, response) -> {
-			response.status(400);
-			Message msg = new Message("Invalid job definition: " + e.getMessage());
-			response.body(GSON.toJson(msg));
-		});
+		// map common exceptions in requests to our generic handlers
+		exception(SQLException.class, internalServerErrorHandler);
+		exception(JsonSyntaxException.class, invalidInputHandler);
+		exception(WebError.InvalidInputException.class, invalidInputHandler);
+		exception(WebError.InvalidJobDefinition.class, invalidInputHandler);
+		exception(WebError.InvalidWorkflowDefiniton.class, invalidInputHandler);
+		exception(WebError.ResourceNotFoundException.class, resourceNotFoundHandler);
+	}
 
-		exception(JsonSyntaxException.class, (e, request, response) -> {
-			response.status(400);
-			Message msg = new Message("Invalid input: " + e.getMessage());
-			response.body(GSON.toJson(msg));
-		});
-
-		exception(WebError.InvalidWorkflowDefiniton.class, (e, request, response) -> {
-			response.status(400);
-			Message msg = new Message("Invalid workflow definition: " + e.getMessage());
-			response.body(GSON.toJson(msg));
-		});
+	private static Job getJobByRequestIdParam(Request request, String param)
+			throws SQLException, InvalidInputException, ResourceNotFoundException {
+		long id = -1;
+		try {
+			id = Long.parseLong(request.params(param));
+			Job job = JobDao.fetch(id);
+			if (job == null) {
+				throw new ResourceNotFoundException("No job for id: " + id);
+			}
+			return job;
+		} catch (NumberFormatException e) {
+			throw new InvalidInputException("No parseable id param given.");
+		}
 	}
 }

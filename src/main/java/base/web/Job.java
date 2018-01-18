@@ -138,8 +138,25 @@ class Job {
 		return endedAt;
 	}
 
-	protected boolean isFailed() {
-		return failed;
+	/**
+	 * @return true if an end date was recorded for this job.
+	 */
+	protected boolean hasEnded() {
+		return getEndedAt() != null;
+	}
+
+	/**
+	 * @return true if the job has ended and was successful, false otherwise.
+	 */
+	protected boolean hasSucceeded() {
+		return hasEnded() && !failed;
+	}
+
+	/**
+	 * @return true if the job has ended and has failed, false otherwise.
+	 */
+	protected boolean hasFailed() {
+		return hasEnded() && failed;
 	}
 
 	/**

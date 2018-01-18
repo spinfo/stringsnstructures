@@ -1,7 +1,7 @@
 package base.web;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,16 +9,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import base.web.JobExecutionCallbackReceiver.JobFailureListener;
+import base.web.JobExecutionCallbackReceiver;
 import base.workbench.ModuleWorkbenchController;
 import modules.ModuleNetwork;
 
-class JobScheduler implements JobFailureListener, Runnable {
+class JobScheduler implements Runnable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobScheduler.class);
 
 	private static JobScheduler instance;
 
+	// the started jobs database ids along with the module network that is executing
+	// them
 	private Map<Long, ModuleNetwork> startedJobs;
 
 	// these regulate how often a wakeup will occur
@@ -28,51 +30,9 @@ class JobScheduler implements JobFailureListener, Runnable {
 
 	// private constructor for singleton instance
 	private JobScheduler() {
-		// this is needed concurrently as a job shutdown may be suggested from a started
-		// thread via callback
+		// this is needed concurrently as some values might be looked up from a route or
+		// a job execution callback
 		this.startedJobs = new ConcurrentHashMap<>();
-	}
-
-	// TODO: It's hard to reason about whether the reference to the job network will
-	// be removed if an error occurs at some point __during__ startup. This could be
-	// better
-	private void startJob(Job job) throws WebError.InvalidWorkflowDefiniton, SQLException {
-
-		// instantiate a new workbench controller (this should never fail
-		ModuleWorkbenchController controller;
-		try {
-			controller = new ModuleWorkbenchController();
-		} catch (Exception e) {
-			LOGGER.error("Unexpected fatal error: Cannot instantiate workbench controller.");
-			throw new RuntimeException(e);
-		}
-		try {
-			controller.loadModuleNetworkFromString(job.getWorkflowDefinition(), true);
-		} catch (Exception e) {
-			throw new WebError.InvalidWorkflowDefiniton(e);
-		}
-		// create a new listener for the job, that will contact us on failure
-		JobExecutionCallbackReceiver receiver = new JobExecutionCallbackReceiver(job, this);
-
-		// start everything
-		ModuleNetwork network = controller.getModuleNetwork();
-		try {
-			// this should never fail, but make sure
-			if (!network.addCallbackReceiver(receiver)) {
-				throw new RuntimeException("Could not add callback receiver.");
-			}
-			network.runModules();
-		} catch (Exception e) {
-			e.printStackTrace();
-			String msg = "Unexpected error on job start: " + e.getMessage();
-			LOGGER.error(msg);
-			job.setFailed(msg);
-			onJobFailure(job);
-		}
-
-		// save a reference to the network if we got this far
-		job.setStarted();
-		this.startedJobs.put(job.getId(), network);
 	}
 
 	public static JobScheduler instance() {
@@ -80,6 +40,15 @@ class JobScheduler implements JobFailureListener, Runnable {
 			instance = new JobScheduler();
 		}
 		return instance;
+	}
+
+	protected synchronized void wakeup() {
+		this.intervallsTillWakeup = 0;
+	}
+
+	protected boolean isRunningJob(long jobId) {
+		ModuleNetwork network = startedJobs.get(jobId);
+		return (network != null) && network.isRunning();
 	}
 
 	@Override
@@ -102,9 +71,8 @@ class JobScheduler implements JobFailureListener, Runnable {
 				// first look for old jobs to stop/handle
 				processExecutingJobs();
 
-				// then start new ones and save a health info capturing the started jobs
+				// then start new ones and save a health info capturing the started jobs no
 				processPendingJobs();
-
 				checkHealth();
 			}
 		}
@@ -130,40 +98,37 @@ class JobScheduler implements JobFailureListener, Runnable {
 	}
 
 	private void processExecutingJobs() {
-		List<Long> toEnd = new ArrayList<>();
+		// if this throws, it might do so on every iteration, so shutdown everything
+		List<Job> runningJobs = Collections.emptyList();
 		try {
-			for (Long jobId : startedJobs.keySet()) {
-				ModuleNetwork network = startedJobs.get(jobId);
+			runningJobs = JobDao.fetch(startedJobs.keySet());
+		} catch (SQLException e) {
+			LOGGER.error("Fatal: Unable to get running jobs: " + e.getMessage());
+			panicAndStopEverything();
+		}
+		for (Job job : runningJobs) {
+			try {
+				ModuleNetwork network = startedJobs.get(job.getId());
 
-				if (!network.isRunning()) {
-					// every job the module network of which is not running will be stopped
-					toEnd.add(jobId);
-					Job job = JobDao.fetch(jobId);
-
-					if (job.getEndedAt() == null) {
-						// the job has finished successfully by not having failed before
-						job.setSucceeded();
-					} else {
-						// this should never happen, but make sure
-						if (!job.isFailed()) {
-							throw new IllegalStateException(
-									"Found successfully ended Job, which was not harvested before.");
-						}
-					}
+				// a job is successful if it was not stopped externally and the network is no
+				// longer running
+				if (!job.hasEnded() && !network.isRunning()) {
+					job.setSucceeded();
+					shutdownModuleNetwork(job.getId());
 				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			LOGGER.error("Exception while processing started jobs: " + e.getMessage());
-		} finally {
-			// Make sure that any error producing jobs, do not do so in the next iteration
-			// of processing
-			for (Long jobId : toEnd) {
-				shutdownModuleNetwork(jobId);
+				// a job may have been cancelled
+				else if (job.hasFailed()) {
+					shutdownModuleNetwork(job.getId());
+				}
+				// a job may not have been set as succeeded anywhere else
+				else if (job.hasSucceeded()) {
+					throw new IllegalStateException("Found successfully ended Job, which was not harvested before.");
+				}
+			} catch (Exception e) {
+				shutdownModuleNetwork(job.getId());
+				LOGGER.error("Exception while processing started jobs: " + e.getMessage());
 			}
 		}
-		// TODO: Remove (Kept momentarily to test for memory leaks.)
-		// System.gc();
 	}
 
 	private void checkHealth() {
@@ -185,17 +150,59 @@ class JobScheduler implements JobFailureListener, Runnable {
 		}
 	}
 
-	protected synchronized void wakeup() {
-		this.intervallsTillWakeup = 0;
+	private void panicAndStopEverything() {
+		for (Long jobId : startedJobs.keySet()) {
+			try {
+				shutdownModuleNetwork(jobId);
+				Job job = JobDao.fetch(jobId);
+				if (!job.hasEnded()) {
+					job.setFailed("Cancelled in panic mode.");
+				}
+			} catch (Exception e) {
+				LOGGER.error("Error when stopping job in panic mode: " + e.getMessage());
+			}
+		}
 	}
 
-	@Override
-	public void onJobFailure(Job job) {
-		if (job == null) {
-			LOGGER.error("Got invalid call to handle failure for null job.");
-			return;
+	// TODO: It's hard to reason about whether the reference to the job network will
+	// be removed if an error occurs at some point __during__ startup. This could be
+	// better.
+	private void startJob(Job job) throws WebError.InvalidWorkflowDefiniton, SQLException {
+
+		// instantiate a new workbench controller (this should never fail
+		ModuleWorkbenchController controller;
+		try {
+			controller = new ModuleWorkbenchController();
+		} catch (Exception e) {
+			LOGGER.error("Unexpected fatal error: Cannot instantiate workbench controller.");
+			throw new RuntimeException(e);
 		}
-		shutdownModuleNetwork(job.getId());
+		try {
+			controller.loadModuleNetworkFromString(job.getWorkflowDefinition(), true);
+		} catch (Exception e) {
+			throw new WebError.InvalidWorkflowDefiniton(e);
+		}
+		// create a new listener for the job, that will contact us on failure
+		JobExecutionCallbackReceiver receiver = new JobExecutionCallbackReceiver(job);
+
+		// start everything
+		ModuleNetwork network = controller.getModuleNetwork();
+		try {
+			// this should never fail, but make sure
+			if (!network.addCallbackReceiver(receiver)) {
+				throw new RuntimeException("Could not add callback receiver.");
+			}
+			network.runModules();
+		} catch (Exception e) {
+			e.printStackTrace();
+			String msg = "Unexpected error on job start: " + e.getMessage();
+			LOGGER.error(msg);
+			network.stopModules();
+			job.setFailed(msg);
+		}
+		// save a reference to the network if we got this far
+		this.startedJobs.put(job.getId(), network);
+		job.setStarted();
 	}
 
 	// shutdown all references to the module network and

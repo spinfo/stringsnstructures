@@ -13,18 +13,8 @@ class JobExecutionCallbackReceiver extends CallbackReceiverImpl {
 
 	private final Job job;
 
-	// TODO: Check if this interface is really necessary as dead jobs are harvested
-	// periodically
-	// an interface to communicate failures to outside parties
-	protected interface JobFailureListener {
-		void onJobFailure(Job job);
-	};
-
-	private final JobFailureListener failureListener;
-
-	protected JobExecutionCallbackReceiver(Job job, JobFailureListener listener) {
+	protected JobExecutionCallbackReceiver(Job job) {
 		this.job = job;
-		this.failureListener = listener;
 	}
 
 	@Override
@@ -39,7 +29,6 @@ class JobExecutionCallbackReceiver extends CallbackReceiverImpl {
 				} else {
 					String msg = String.format("Failure: '%s'", process.getName());
 					job.setFailed(msg);
-					failureListener.onJobFailure(job);
 				}
 			} catch (SQLException e) {
 				failWithoutDbAccess("Unable to save event for job: " + job.getId());
@@ -55,7 +44,6 @@ class JobExecutionCallbackReceiver extends CallbackReceiverImpl {
 		String msg = String.format("Failure: '%s', message: %s", process.getName(), exception.getMessage());
 		try {
 			job.setFailed(msg);
-			failureListener.onJobFailure(job);
 		} catch (SQLException e) {
 			failWithoutDbAccess("Unable to save failure for job: " + msg);
 		}
@@ -66,9 +54,6 @@ class JobExecutionCallbackReceiver extends CallbackReceiverImpl {
 	// to cancel
 	private void failWithoutDbAccess(String message) {
 		LOGGER.error(message);
-		if (failureListener != null) {
-			failureListener.onJobFailure(job);
-		}
 	}
 
 	// check that we are receiving what we expected from the calling class

@@ -25,6 +25,12 @@ class JobDao {
 		}
 	}
 
+	protected static List<Job> fetch(Iterable<Long> ids) throws SQLException {
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			return dao().queryBuilder().where().in("id", ids).query();
+		}
+	}
+
 	protected static long countRunningJobs() throws SQLException {
 		synchronized (DatabaseFacade.GLOBAL_LOCK) {
 			return dao().queryBuilder().where().isNotNull("startedAt").and().isNull("endedAt").countOf();
