@@ -10,11 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import base.web.JobExecutionCallbackReceiver.JobFailureListener;
-import base.web.Server.InvalidWorkflowDefiniton;
 import base.workbench.ModuleWorkbenchController;
 import modules.ModuleNetwork;
 
-public class JobScheduler implements JobFailureListener, Runnable {
+class JobScheduler implements JobFailureListener, Runnable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobScheduler.class);
 
@@ -29,14 +28,15 @@ public class JobScheduler implements JobFailureListener, Runnable {
 
 	// private constructor for singleton instance
 	private JobScheduler() {
-		// todo: make sure we need this concurrently
+		// this is needed concurrently as a job shutdown may be suggested from a started
+		// thread via callback
 		this.startedJobs = new ConcurrentHashMap<>();
 	}
 
 	// TODO: It's hard to reason about whether the reference to the job network will
 	// be removed if an error occurs at some point __during__ startup. This could be
 	// better
-	private void startJob(Job job) throws InvalidWorkflowDefiniton, SQLException {
+	private void startJob(Job job) throws WebError.InvalidWorkflowDefiniton, SQLException {
 
 		// instantiate a new workbench controller (this should never fail
 		ModuleWorkbenchController controller;
@@ -49,7 +49,7 @@ public class JobScheduler implements JobFailureListener, Runnable {
 		try {
 			controller.loadModuleNetworkFromString(job.getWorkflowDefinition(), true);
 		} catch (Exception e) {
-			throw new InvalidWorkflowDefiniton(e);
+			throw new WebError.InvalidWorkflowDefiniton(e);
 		}
 		// create a new listener for the job, that will contact us on failure
 		JobExecutionCallbackReceiver receiver = new JobExecutionCallbackReceiver(job, this);
@@ -57,6 +57,7 @@ public class JobScheduler implements JobFailureListener, Runnable {
 		// start everything
 		ModuleNetwork network = controller.getModuleNetwork();
 		try {
+			// this should never fail, but make sure
 			if (!network.addCallbackReceiver(receiver)) {
 				throw new RuntimeException("Could not add callback receiver.");
 			}

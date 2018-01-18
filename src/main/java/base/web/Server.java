@@ -36,22 +36,6 @@ public class Server {
 		}
 	}
 
-	static class InvalidWorkflowDefiniton extends Exception {
-		private static final long serialVersionUID = 1246852381687652883L;
-
-		public InvalidWorkflowDefiniton(Throwable cause) {
-			super(cause);
-		}
-	}
-
-	static class InvalidJobDefinition extends Exception {
-		private static final long serialVersionUID = -6641311071071946210L;
-
-		public InvalidJobDefinition(String message) {
-			super(message);
-		}
-	}
-
 	public static void main(String[] args) {
 
 		// initialise the log4j properties for the web server manually
@@ -77,7 +61,7 @@ public class Server {
 			Job job = (Job) GSON.fromJson(request.body(), Job.class);
 
 			if (JobDao.exists(job.getId())) {
-				throw new InvalidJobDefinition("A job for this id already exists: " + job.getId());
+				throw new WebError.InvalidJobDefinition("A job for this id already exists: " + job.getId());
 			}
 
 			// test that the workflow definition is parseable
@@ -85,7 +69,7 @@ public class Server {
 			try {
 				controller.loadModuleNetworkFromString(job.getWorkflowDefinition(), false);
 			} catch (Exception e) {
-				throw new InvalidWorkflowDefiniton(e);
+				throw new WebError.InvalidWorkflowDefiniton(e);
 			}
 
 			job.save();
@@ -119,7 +103,7 @@ public class Server {
 			}
 		}, GSON::toJson);
 
-		exception(InvalidJobDefinition.class, (e, request, response) -> {
+		exception(WebError.InvalidJobDefinition.class, (e, request, response) -> {
 			response.status(400);
 			Message msg = new Message("Invalid job definition: " + e.getMessage());
 			response.body(GSON.toJson(msg));
@@ -131,7 +115,7 @@ public class Server {
 			response.body(GSON.toJson(msg));
 		});
 
-		exception(InvalidWorkflowDefiniton.class, (e, request, response) -> {
+		exception(WebError.InvalidWorkflowDefiniton.class, (e, request, response) -> {
 			response.status(400);
 			Message msg = new Message("Invalid workflow definition: " + e.getMessage());
 			response.body(GSON.toJson(msg));

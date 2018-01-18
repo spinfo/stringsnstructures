@@ -12,7 +12,7 @@ import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
-public class DatabaseFacade {
+class DatabaseFacade {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseFacade.class);
 
