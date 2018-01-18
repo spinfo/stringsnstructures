@@ -5,6 +5,7 @@ import static spark.Spark.*;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.LogManager;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -62,6 +63,9 @@ public class Server {
 			PropertyConfigurator.configure(log4jProps);
 		}
 
+		// Disable logging from the root logger used in the rest of the workbench
+		LogManager.getLogManager().reset();
+
 		// start the job scheduler alongside this server
 		Thread jobSchedulerThread = new Thread(JobScheduler.instance());
 		jobSchedulerThread.start();
@@ -72,7 +76,7 @@ public class Server {
 
 			Job job = (Job) GSON.fromJson(request.body(), Job.class);
 
-			if (Job.exists(job.getId())) {
+			if (JobDao.exists(job.getId())) {
 				throw new InvalidJobDefinition("A job for this id already exists: " + job.getId());
 			}
 
@@ -92,6 +96,10 @@ public class Server {
 
 		get("jobs/:id", (request, response) -> {
 			return null;
+		}, GSON::toJson);
+
+		get("health", (request, response) -> {
+			return HealthInformation.collect();
 		}, GSON::toJson);
 
 		get("modules"/* , "application/json" */, (request, response) -> {

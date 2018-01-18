@@ -26,6 +26,7 @@ public class DatabaseFacade {
 
 	private Dao<Job, Long> jobDao;
 	private Dao<JobExecutionEvent, Long> jobExecutionEventDao;
+	private Dao<HealthInformation, Long> healthInformationDao;
 
 	private DatabaseFacade(final String jdbcUrl) {
 		try {
@@ -59,9 +60,17 @@ public class DatabaseFacade {
 		return jobExecutionEventDao;
 	}
 
+	protected Dao<HealthInformation, Long> getHealthInformationDao() throws SQLException {
+		if (healthInformationDao == null) {
+			healthInformationDao = DaoManager.createDao(connectionSource, HealthInformation.class);
+		}
+		return healthInformationDao;
+	}
+
 	private void setupTables(final ConnectionSource connectionSource) throws SQLException {
 		TableUtils.createTableIfNotExists(connectionSource, Job.class);
 		TableUtils.createTableIfNotExists(connectionSource, JobExecutionEvent.class);
+		TableUtils.createTable(connectionSource, HealthInformation.class);
 	}
 
 }

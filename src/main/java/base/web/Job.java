@@ -161,24 +161,6 @@ class Job {
 		}
 	}
 
-	protected static boolean exists(long id) throws SQLException {
-		synchronized (DatabaseFacade.GLOBAL_LOCK) {
-			return dao().idExists(id);
-		}
-	}
-
-	protected static List<Job> fetchPending() throws SQLException {
-		synchronized (DatabaseFacade.GLOBAL_LOCK) {
-			return dao().queryBuilder().orderBy("createdAt", true).where().isNull("startedAt").query();
-		}
-	}
-
-	protected static Job fetch(long id) throws SQLException {
-		synchronized (DatabaseFacade.GLOBAL_LOCK) {
-			return dao().queryForId(id);
-		}
-	}
-
 	private void setEndTimeNow() {
 		// Never allow overwriting a recorded end time
 		if (this.endedAt == null) {

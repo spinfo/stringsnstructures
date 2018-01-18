@@ -97,15 +97,21 @@ public class JobScheduler implements JobFailureListener, Runnable {
 				}
 			} else {
 				intervallsTillWakeup = intervallsTillWakeupDefault;
-				processPendingJobs();
+
+				// first look for old jobs to stop/handle
 				processExecutingJobs();
+
+				// then start new ones and save a health info capturing the started jobs
+				processPendingJobs();
+
+				checkHealth();
 			}
 		}
 	}
 
 	private void processPendingJobs() {
 		try {
-			List<Job> pending = Job.fetchPending();
+			List<Job> pending = JobDao.fetchPending();
 			LOGGER.debug("Got " + pending.size() + " pending jobs, in execution: " + startedJobs.size());
 			for (Job job : pending) {
 				LOGGER.debug("Starting pending job: " + job.getId());
@@ -131,7 +137,7 @@ public class JobScheduler implements JobFailureListener, Runnable {
 				if (!network.isRunning()) {
 					// every job the module network of which is not running will be stopped
 					toEnd.add(jobId);
-					Job job = Job.fetch(jobId);
+					Job job = JobDao.fetch(jobId);
 
 					if (job.getEndedAt() == null) {
 						// the job has finished successfully by not having failed before
@@ -155,11 +161,30 @@ public class JobScheduler implements JobFailureListener, Runnable {
 				shutdownModuleNetwork(jobId);
 			}
 		}
-		// TODO: Remove (Kept in for testing for memory leaks.)
-		System.gc();
+		// TODO: Remove (Kept momentarily to test for memory leaks.)
+		// System.gc();
 	}
 
-	public synchronized void wakeup() {
+	private void checkHealth() {
+		try {
+			HealthInformation info = HealthInformation.collect();
+			HealthInformationDao.create(info);
+		} catch (Exception e) {
+			LOGGER.error("Error when saving health information: " + e.getMessage());
+		}
+	}
+
+	// if there are no running jobs, we may somewhat safely ask for garbage
+	// collection to
+	// allow for better health checks
+	private void maybeGarbageCollect() {
+		if (this.startedJobs.size() == 0) {
+			LOGGER.debug("Asking for garbage collection as there are no running jobs.");
+			System.gc();
+		}
+	}
+
+	protected synchronized void wakeup() {
 		this.intervallsTillWakeup = 0;
 	}
 
@@ -185,5 +210,7 @@ public class JobScheduler implements JobFailureListener, Runnable {
 		} else {
 			LOGGER.error("No moduleNetwork present to shut down, jobId: " + jobId);
 		}
+		// after a job is removed we may garbage collect something
+		maybeGarbageCollect();
 	}
 }
