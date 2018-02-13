@@ -1,7 +1,6 @@
 package base.web;
 
 import java.sql.SQLException;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +38,7 @@ class DatabaseFacade {
 
 	static DatabaseFacade getInstance() {
 		if (DatabaseFacade.instance == null) {
-			// TODO: Find a good place for the db
-			int i = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
-			instance = new DatabaseFacade("jdbc:sqlite:/tmp/jobs-" + i + ".db");
+			instance = new DatabaseFacade(String.format("jdbc:sqlite:%s", ServerConfig.get().getDatabaseFile()));
 		}
 		return instance;
 	}

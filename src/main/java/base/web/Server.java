@@ -9,8 +9,11 @@ import java.util.Map;
 import java.util.logging.LogManager;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.core.Response;
-
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.ParseException;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,14 +79,47 @@ public class Server {
 			PropertyConfigurator.configure(log4jProps);
 		}
 
+		// parse the command line arguments and the webserver properties file
+		CommandLineParser parser = new DefaultParser();
+		try {
+			CommandLine cl = parser.parse(ServerConfig.CLI_OPTIONS, args);
+			if (cl.hasOption("help")) {
+				(new HelpFormatter()).printHelp("java -jar modulewebserver.jar", ServerConfig.CLI_OPTIONS);
+				System.exit(0);
+			} else {
+				// hand both the properties file path and the command line options to the
+				// ServerConfig to let it decide on the final values
+				ServerConfig.initialize("web/webserver.properties", cl);
+			}
+		} catch (ParseException e) {
+			LOGGER.error("Error while parsing the server configuration: " + e.getMessage());
+			e.printStackTrace();
+		}
+
 		// Disable logging from the root logger used in the rest of the workbench
-		LogManager.getLogManager().reset();
+		// (Error messages will be persisted to the database and exposed to the client
+		// via the API)
+		if (ServerConfig.get().shouldShutdownWorkbenchLogger()) {
+			LOGGER.info("Shutting down the workbench root logger.");
+			LogManager.getLogManager().reset();
+		}
+
+		// Configure the port to run spark on
+		Integer port = ServerConfig.get().getPort();
+		if (port != null && port > 0) {
+			port(ServerConfig.get().getPort());
+		} else {
+			LOGGER.error("Shuttding down server. Invalid port number: " + port);
+			stop();
+		}
+
+		// output some status information as configuration is now complete
+		LOGGER.debug(String.format("Running instance '%s' on port '%d'", ServerConfig.get().getName(),
+				ServerConfig.get().getPort()));
 
 		// start the job scheduler alongside this server
 		Thread jobSchedulerThread = new Thread(JobScheduler.instance());
 		jobSchedulerThread.start();
-
-		port(4568);
 
 		post("jobs", (request, response) -> {
 

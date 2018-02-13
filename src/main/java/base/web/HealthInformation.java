@@ -11,10 +11,11 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "healthInformation")
 class HealthInformation {
 
-	private static long MEMORY_PRESUMABLY_USED_BY_SERVER = 1500000;
-
 	@DatabaseField(columnName = "id", generatedId = true)
 	private long id;
+
+	@Expose
+	private String name;
 
 	// the processors available to the jvm
 	@DatabaseField
@@ -67,6 +68,7 @@ class HealthInformation {
 		// these are probably always the same, but collect them each time anyway,
 		// because who knows
 		result.availableProcessors = runtime.availableProcessors();
+		result.name = ServerConfig.get().getName();
 
 		// get some memory values directly returned by the runtime
 		result.maxMemory = runtime.maxMemory();
