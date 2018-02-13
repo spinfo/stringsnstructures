@@ -109,7 +109,7 @@ public class Server {
 		if (port != null && port > 0) {
 			port(ServerConfig.get().getPort());
 		} else {
-			LOGGER.error("Shuttding down server. Invalid port number: " + port);
+			LOGGER.error("Shutting down server. Invalid port number: " + port);
 			stop();
 		}
 
