@@ -23,10 +23,12 @@ class JobScheduler implements Runnable {
 	// them
 	private Map<Long, ModuleNetwork> startedJobs;
 
-	// these regulate how often a wakeup will occur
-	private final int intervallsTillWakeupDefault = 10;
-	private int intervallsTillWakeup = 0;
+	// these regulate how often a wakeup will occur, e.g.: an intervallDuration of
+	// 1000 ms and and intervallsTillWakeup set to 10 means that 10 seconds will
+	// pass between wakeups (if no wakeup is induced from the outside).
+	private final int intervallsTillWakeup = 10;
 	private long intervallDuration = 1000L;
+	private int intervallsCount = 0;
 
 	// private constructor for singleton instance
 	private JobScheduler() {
@@ -43,7 +45,7 @@ class JobScheduler implements Runnable {
 	}
 
 	protected synchronized void wakeup() {
-		this.intervallsTillWakeup = 0;
+		this.intervallsCount = 0;
 	}
 
 	protected boolean isRunningJob(long jobId) {
@@ -54,9 +56,9 @@ class JobScheduler implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			if (intervallsTillWakeup > 0) {
+			if (intervallsCount > 0) {
 				try {
-					intervallsTillWakeup -= 1;
+					intervallsCount -= 1;
 					Thread.sleep(intervallDuration);
 				} catch (InterruptedException e) {
 					LOGGER.error(
@@ -66,7 +68,7 @@ class JobScheduler implements Runnable {
 					}
 				}
 			} else {
-				intervallsTillWakeup = intervallsTillWakeupDefault;
+				intervallsCount = intervallsTillWakeup;
 
 				// first look for old jobs to stop/handle
 				processExecutingJobs();
