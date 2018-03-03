@@ -3,6 +3,7 @@ package base.web;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.DeleteBuilder;
@@ -21,12 +22,12 @@ class HealthInformationDao {
 		}
 	}
 
-	protected static HealthInformation fetchLatest() throws SQLException {
+	protected static List<HealthInformation> fetchLatest(long limit, long offset) throws SQLException {
 		synchronized (DatabaseFacade.GLOBAL_LOCK) {
-			return dao().queryBuilder().orderBy("id", false).limit(1L).queryForFirst();
+			return dao().queryBuilder().orderBy("collectedAt", false).limit(limit).offset(offset).query();
 		}
 	}
-
+	
 	private static int deleteOldInfos() throws SQLException {
 		Timestamp thresholdTime = Timestamp.from(Instant.now().minusSeconds(SECONDS_UNTIL_DELETION));
 
