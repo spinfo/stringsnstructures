@@ -147,20 +147,25 @@ public class Server {
 			return getJobByRequestIdParam(request, ":id");
 		}, GSON::toJson);
 
-		post("jobs/:id/cancel", (request, response) -> {
+		delete("jobs/:id", (request, response) -> {
 			Job job = getJobByRequestIdParam(request, ":id");
-
-			if (job.hasEnded()) {
-				throw new InvalidInputException("Jobs has already ended.");
-			} else {
+			
+			if (!job.hasEnded()) {
+				// TODO: Make absolutely sure by asking the JobScheduler to check on remaining threads?
 				job.setFailed("Manually cancelled");
 				JobScheduler.instance().wakeup();
 			}
 			return "";
 		}, GSON::toJson);
 
-		get("health", (request, response) -> {
+		get("status/now", (request, response) -> {
 			return HealthInformation.collect();
+		}, GSON::toJson);
+		
+		get("status", (request, response) -> {
+			long limit = parseNumberedQueryParam(request, "limit", 100L);
+			long offset = parseNumberedQueryParam(request, "offset", 0L);
+			return HealthInformationDao.fetchLatest(limit, offset);
 		}, GSON::toJson);
 
 		get("modules"/* , "application/json" */, (request, response) -> {
@@ -201,6 +206,14 @@ public class Server {
 			return job;
 		} catch (NumberFormatException e) {
 			throw new InvalidInputException("No parseable id param given.");
+		}
+	}
+	
+	private static long parseNumberedQueryParam(Request request, String param, long defaultLong) {
+		try {
+			return Long.parseLong(request.queryParams(param));
+		} catch (NumberFormatException e) {
+			return defaultLong;
 		}
 	}
 }

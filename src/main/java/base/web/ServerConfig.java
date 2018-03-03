@@ -76,9 +76,11 @@ class ServerConfig {
 		
 		result.name = "";
 		try {
-			result.databaseFile = File.createTempFile("workbench-server-tmp-", ".db");
-		} catch (IOException e) {
-			LOG.warn("Unable to create temporary file for default config.");
+			File temp = File.createTempFile("workbench-server-tmp-", ".db");
+			temp.delete();
+			result.setDatabaseFile(temp.getPath());
+		} catch (IOException | SecurityException e) {
+			LOG.warn("Unable to create then delete temporary file for default config's name.");
 		}
 		result.port = 4568;
 		result.shutdownWorkbenchLogger = true;
