@@ -5,64 +5,50 @@ import java.sql.Timestamp;
 import java.time.Instant;
 
 import com.google.gson.annotations.Expose;
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "healthInformation")
-class HealthInformation {
+class StatusReport {
 
-	@DatabaseField(columnName = "id", generatedId = true)
-	private long id;
-
-	@Expose
+	@Expose(deserialize = false)
 	private String name;
 
 	// the processors available to the jvm
-	@DatabaseField
-	@Expose
+	@Expose(deserialize = false)
 	private int availableProcessors;
 
 	// the maximum amount of memory allocatable to the jvm by the os (in bytes)
-	@DatabaseField
-	@Expose
+	@Expose(deserialize = false)
 	private long maxMemory;
 
 	// the memory allocated to the jvm by the os (in bytes)
-	@DatabaseField
-	@Expose
+	@Expose(deserialize = false)
 	private long totalMemory;
 
 	// the free memory within the memory allocated to the jvm by the os (in bytes)
-	@DatabaseField
-	@Expose
+	@Expose(deserialize = false)
 	private long freeMemory;
 
 	// the memory actually used (totalMemory - freeMemory, in bytes)
-	@DatabaseField
-	@Expose
+	@Expose(deserialize = false)
 	private long usedMemory;
 
 	// the memory that can by maxiamlly allocated (maxMemory - usedMemory, in bytes)
-	@DatabaseField
-	@Expose
+	@Expose(deserialize = false)
 	private long presumablyFreeMemory;
 
 	// the amount of running jobs as reported by the db
-	@DatabaseField
-	@Expose
+	@Expose(deserialize = false)
 	private long runningJobs;
 
-	@DatabaseField(columnName = "collectedAt", index = true)
-	@Expose
+	@Expose(deserialize = false)
 	private Timestamp collectedAt;
 
-	public HealthInformation() {
+	public StatusReport() {
 		// empty constructor mainly for ormlite
 		this.collectedAt = Timestamp.from(Instant.now());
 	}
 
-	protected static HealthInformation collect() throws SQLException {
-		HealthInformation result = new HealthInformation();
+	protected static StatusReport collect() throws SQLException {
+		StatusReport result = new StatusReport();
 		Runtime runtime = Runtime.getRuntime();
 
 		// these are probably always the same, but collect them each time anyway,

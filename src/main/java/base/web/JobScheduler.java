@@ -75,7 +75,6 @@ class JobScheduler implements Runnable {
 
 				// then start new ones and save a health info capturing the started jobs no
 				processPendingJobs();
-				checkHealth();
 			}
 		}
 	}
@@ -133,18 +132,8 @@ class JobScheduler implements Runnable {
 		}
 	}
 
-	private void checkHealth() {
-		try {
-			HealthInformation info = HealthInformation.collect();
-			HealthInformationDao.create(info);
-		} catch (Exception e) {
-			LOGGER.error("Error when saving health information: " + e.getMessage());
-		}
-	}
-
 	// if there are no running jobs, we may somewhat safely ask for garbage
-	// collection to
-	// allow for better health checks
+	// collection to allow for better status checks
 	private void maybeGarbageCollect() {
 		if (this.startedJobs.size() == 0) {
 			LOGGER.debug("Asking for garbage collection as there are no running jobs.");
