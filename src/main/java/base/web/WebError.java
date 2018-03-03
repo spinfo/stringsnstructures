@@ -2,6 +2,14 @@ package base.web;
 
 class WebError {
 
+	protected static class ServerConfigurationException extends Exception {
+		private static final long serialVersionUID = 2213946802015534438L;
+
+		protected ServerConfigurationException(String message) {
+			super(message);
+		}
+	}
+	
 	protected static class InvalidWorkflowDefiniton extends Exception {
 		private static final long serialVersionUID = 1246852381687652883L;
 

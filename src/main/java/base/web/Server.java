@@ -14,6 +14,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import com.google.gson.annotations.Expose;
 
 import base.web.WebError.InvalidInputException;
 import base.web.WebError.ResourceNotFoundException;
+import base.web.WebError.ServerConfigurationException;
 import base.workbench.ModuleWorkbenchController;
 import modules.Module;
 import spark.ExceptionHandler;
@@ -36,6 +38,8 @@ public class Server {
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation()
 			.create();
+
+	private static final String SHARED_SECRET_ENV_NAME = "BENCHLY_SHARED_SECRET";
 
 	/**
 	 * A simple message class to communicate strings (mostly errors) to the outside
@@ -68,13 +72,15 @@ public class Server {
 		response.body(GSON.toJson(msg));
 	};
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ServerConfigurationException {
 
 		// initialise the log4j properties for the web server manually
-		InputStream log4jProps = Server.class.getClassLoader().getResourceAsStream("web/log4j.properties");
+		String loggingPropertiesPath = "web/log4j.properties";
+		InputStream log4jProps = Server.class.getClassLoader().getResourceAsStream(loggingPropertiesPath);
 		if (log4jProps == null) {
-			System.out.println("Refusing startup: Could not find logging properties.");
-			return;
+			String msg = "Refusing startup: Could not find logging properties: " + loggingPropertiesPath;
+			System.out.println(msg);
+			throw new ServerConfigurationException(msg);
 		} else {
 			PropertyConfigurator.configure(log4jProps);
 		}
@@ -96,6 +102,13 @@ public class Server {
 			e.printStackTrace();
 		}
 
+		// After we might have presented the help optin, check if the shared secret is
+		// available and hallt with an error otherwise
+		if (!sharedSecretIsAvailable()) {
+			throw new ServerConfigurationException(
+					"Unable to read the shared secret. Please set the environment variable $" + SHARED_SECRET_ENV_NAME);
+		}
+
 		// Disable logging from the root logger used in the rest of the workbench
 		// (Error messages will be persisted to the database and exposed to the client
 		// via the API)
@@ -109,8 +122,7 @@ public class Server {
 		if (port != null && port > 0) {
 			port(ServerConfig.get().getPort());
 		} else {
-			LOGGER.error("Shutting down server. Invalid port number: " + port);
-			stop();
+			throw new ServerConfigurationException("Refusing startup. Invalid port number: " + port);
 		}
 
 		// output some status information as configuration is now complete
@@ -202,5 +214,14 @@ public class Server {
 		} catch (NumberFormatException e) {
 			throw new InvalidInputException("No parseable id param given.");
 		}
+	}
+
+	public static boolean sharedSecretIsAvailable() {
+		return StringUtils.isNotEmpty(readSharedSecret());
+	}
+
+	public static String readSharedSecret() {
+		LOGGER.debug("Shared secret: " + System.getenv(SHARED_SECRET_ENV_NAME));
+		return System.getenv(SHARED_SECRET_ENV_NAME);
 	}
 }
