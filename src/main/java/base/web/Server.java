@@ -2,8 +2,10 @@ package base.web;
 
 import static spark.Spark.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.LogManager;
@@ -14,6 +16,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
@@ -22,7 +25,10 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.Expose;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
 import base.web.WebError.InvalidInputException;
 import base.web.WebError.ResourceNotFoundException;
@@ -36,8 +42,23 @@ public class Server {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
+	private static class TimestampTypeAdapter extends TypeAdapter<Timestamp> {
+		@Override
+		public void write(JsonWriter out, Timestamp value) throws IOException {
+			if (value == null)
+				out.nullValue();
+			else
+				out.value(value.getTime() / 1000);
+		}
+
+		@Override
+		public Timestamp read(JsonReader in) throws IOException {
+			throw new NotImplementedException("We do not need to read timestamp values.");
+		}
+	}
+
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation()
-			.create();
+			.registerTypeAdapter(Timestamp.class, new TimestampTypeAdapter()).create();
 
 	private static final String SHARED_SECRET_ENV_NAME = "BENCHLY_SHARED_SECRET";
 
