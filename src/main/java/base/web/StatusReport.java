@@ -31,9 +31,9 @@ class StatusReport {
 	@Expose(deserialize = false)
 	private long usedMemory;
 
-	// the memory that can by maxiamlly allocated (maxMemory - usedMemory, in bytes)
+	// the memory that can be newly allocated by us atm (maxMemory - usedMemory, in bytes)
 	@Expose(deserialize = false)
-	private long presumablyFreeMemory;
+	private long usableMemory;
 
 	// the amount of running jobs as reported by the db
 	@Expose(deserialize = false)
@@ -63,7 +63,7 @@ class StatusReport {
 
 		// calculate some values on our own
 		result.usedMemory = result.totalMemory - result.freeMemory;
-		result.presumablyFreeMemory = result.maxMemory - result.usedMemory;
+		result.usableMemory = result.maxMemory - result.usedMemory;
 
 		// get some information out of the db
 		result.runningJobs = JobDao.countRunningJobs();
