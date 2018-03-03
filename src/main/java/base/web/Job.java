@@ -191,7 +191,7 @@ class Job {
 		return DatabaseFacade.getInstance().jobDao();
 	}
 
-	private Dao<JobExecutionEvent, Long> eventDao() throws SQLException {
+	private Dao<JobExecutionEvent, String> eventDao() throws SQLException {
 		return DatabaseFacade.getInstance().getJobExecutionEventDao();
 	}
 

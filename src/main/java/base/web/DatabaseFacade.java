@@ -24,7 +24,7 @@ class DatabaseFacade {
 	private static DatabaseFacade instance = null;
 
 	private Dao<Job, Long> jobDao;
-	private Dao<JobExecutionEvent, Long> jobExecutionEventDao;
+	private Dao<JobExecutionEvent, String> jobExecutionEventDao;
 
 	private DatabaseFacade(final String jdbcUrl) {
 		try {
@@ -49,7 +49,7 @@ class DatabaseFacade {
 		return jobDao;
 	}
 
-	protected Dao<JobExecutionEvent, Long> getJobExecutionEventDao() throws SQLException {
+	protected Dao<JobExecutionEvent, String> getJobExecutionEventDao() throws SQLException {
 		if (jobExecutionEventDao == null) {
 			jobExecutionEventDao = DaoManager.createDao(connectionSource, JobExecutionEvent.class);
 		}
