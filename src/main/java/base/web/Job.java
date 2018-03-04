@@ -91,6 +91,18 @@ class Job {
 		}
 	}
 
+	// a job might be set to pending from the running state, when it did not
+	// finish normally
+	public void setPendingAgain(String message) throws SQLException {
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			this.endedAt = null;
+			this.startedAt = null;
+			this.failed = false;
+			this.addEvent(message);
+			this.save();
+		}
+	}
+
 	void addEvent(String message) throws SQLException {
 		synchronized (DatabaseFacade.GLOBAL_LOCK) {
 			JobExecutionEvent event = new JobExecutionEvent(this, message);

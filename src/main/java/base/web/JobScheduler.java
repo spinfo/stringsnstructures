@@ -4,12 +4,14 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import base.web.JobExecutionCallbackReceiver;
 import base.workbench.ModuleWorkbenchController;
 import modules.ModuleNetwork;
 
@@ -99,17 +101,26 @@ class JobScheduler implements Runnable {
 	}
 
 	private void processExecutingJobs() {
-		// if this throws, it might do so on every iteration, so shutdown everything
+		// if the query throws, it might do so on every iteration, so shutdown
+		// everything
 		List<Job> runningJobs = Collections.emptyList();
 		try {
-			runningJobs = JobDao.fetch(startedJobs.keySet());
+			runningJobs = JobDao.fetchRunning();
 		} catch (SQLException e) {
 			LOGGER.error("Fatal: Unable to get running jobs: " + e.getMessage());
 			panicAndStopEverything();
 		}
+
 		for (Job job : runningJobs) {
 			try {
 				ModuleNetwork network = startedJobs.get(job.getId());
+
+				// if the network is null, the job needs restarting after a failure
+				if (network == null) {
+					LOGGER.debug("Restarting job after shutdown: " + job.getId());
+					job.setPendingAgain("Job set to restart after unexpected shutdown.");
+					continue;
+				}
 
 				// a job is successful if it was not stopped externally and the network is no
 				// longer running
@@ -121,7 +132,7 @@ class JobScheduler implements Runnable {
 				else if (job.hasFailed()) {
 					shutdownModuleNetwork(job.getId());
 				}
-				// a job may not have been set as succeeded anywhere else
+				// a job must not have been set as succeeded anywhere else
 				else if (job.hasSucceeded()) {
 					throw new IllegalStateException("Found successfully ended Job, which was not harvested before.");
 				}
@@ -129,6 +140,22 @@ class JobScheduler implements Runnable {
 				shutdownModuleNetwork(job.getId());
 				LOGGER.error("Exception while processing started jobs: " + e.getMessage());
 			}
+		}
+		
+		// use the same version of running jobs to look for zombie jobs that have no
+		// equivalent in the database
+		checkForAndHandleZombies(runningJobs);
+	}
+
+	private void checkForAndHandleZombies(List<Job> runningJobs) {
+		Set<Long> maybeZombieIds = new TreeSet<>(startedJobs.keySet());
+		Set<Long> dbJobIds = runningJobs.stream().map(j -> j.getId()).collect(Collectors.toSet());
+
+		maybeZombieIds.removeAll(dbJobIds);
+
+		for (long id : maybeZombieIds) {
+			LOGGER.warn("Job did not shutdown correctly, cancelling it now, jobId: " + id);
+			this.shutdownModuleNetwork(id);
 		}
 	}
 
@@ -209,7 +236,7 @@ class JobScheduler implements Runnable {
 		} else {
 			LOGGER.error("No moduleNetwork present to shut down, jobId: " + jobId);
 		}
-		// after a job is removed we may garbage collect something
+		// after a job is removed we might be able to garbage collect
 		maybeGarbageCollect();
 	}
 }
