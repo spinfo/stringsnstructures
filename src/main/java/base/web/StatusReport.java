@@ -35,6 +35,10 @@ class StatusReport {
 	@Expose(deserialize = false)
 	private long usableMemory;
 
+	// the memory that can be newly allocated by us atm (maxMemory - usedMemory, in bytes)
+	@Expose(deserialize = false)
+	private long longTermUsableMemory;
+
 	// the amount of running jobs as reported by the db
 	@Expose(deserialize = false)
 	private long runningJobs;
@@ -64,6 +68,7 @@ class StatusReport {
 		// calculate some values on our own
 		result.usedMemory = result.totalMemory - result.freeMemory;
 		result.usableMemory = result.maxMemory - result.usedMemory;
+		result.longTermUsableMemory = result.usableMemory - JobDao.sumRunningJobsMemoryDemands();
 
 		// get some information out of the db
 		result.runningJobs = JobDao.countRunningJobs();

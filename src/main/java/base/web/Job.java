@@ -23,15 +23,11 @@ class Job {
 
 	@DatabaseField(columnName = "maxMemory")
 	@Expose
-	private long maxMemory;
+	private long maxMemory = 0;
 
 	@DatabaseField(columnName = "maxTime")
 	@Expose
-	private long maxTime;
-
-	@DatabaseField(columnName = "maxResultSize")
-	@Expose
-	private long maxResultSize;
+	private long maxTime = 0;
 
 	@DatabaseField(columnName = "failed")
 	@Expose
@@ -120,10 +116,6 @@ class Job {
 
 	protected long getMaxTime() {
 		return maxTime;
-	}
-
-	protected long getMaxResultSize() {
-		return maxResultSize;
 	}
 
 	protected Timestamp getCreatedAt() {

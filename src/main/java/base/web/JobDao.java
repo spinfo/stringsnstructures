@@ -37,6 +37,21 @@ class JobDao {
 		}
 	}
 
+	protected static long sumRunningJobsMemoryDemands() throws SQLException {
+		synchronized (DatabaseFacade.GLOBAL_LOCK) {
+			String[] result = dao().queryBuilder().selectRaw("SUM(maxMemory)").where().isNotNull("startedAt").and()
+					.isNull("endedAt").queryRawFirst();
+			if (result == null || result.length != 1 || result[0] == null) {
+				return 0L;
+			}
+			try {
+				return Long.parseLong(result[0]);
+			} catch (NumberFormatException e){
+				throw new SQLException("Unexpected result for sum query: '" + result[0] + "'.");
+			}
+		}
+	}
+
 	private static Dao<Job, Long> dao() throws SQLException {
 		return DatabaseFacade.getInstance().jobDao();
 	}
