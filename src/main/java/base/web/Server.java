@@ -180,16 +180,31 @@ public class Server {
 			return getJobByRequestIdParam(request, ":id");
 		}, GSON::toJson);
 
-		delete("jobs/:id", (request, response) -> {
+		post("jobs/:id/cancel", (request, response) -> {
 			Job job = getJobByRequestIdParam(request, ":id");
 
 			if (!job.hasEnded()) {
 				// TODO: Make absolutely sure by asking the JobScheduler to check on remaining
 				// threads?
-				job.setFailed("Manually cancelled");
+				job.setFailed("Received cancel request");
 				JobScheduler.instance().wakeup();
 			}
+
+			LOGGER.debug("Processed cancel for job: " + job.getId());
 			return "";
+		}, GSON::toJson);
+
+		delete("jobs/:id", (request, response) -> {
+			Job job = getJobByRequestIdParam(request, ":id");
+
+			if (!job.hasEnded()) {
+				job.setFailed("Received request to delete job with data.");
+				JobScheduler.instance().wakeup();
+			}
+			JobDao.deleteJob(job);
+
+			LOGGER.debug("Processed delete for job: " + job.getId());
+			return job;
 		}, GSON::toJson);
 
 		get("status", (request, response) -> {
