@@ -23,8 +23,8 @@ class StorageConfiguration implements AutoCloseable {
 	private static final String PKEY_FILE = "File";
 	private static final String PKEY_ENCODING = "Encoding";
 
-	private static String[] PROPERTY_KEYS = { PKEY_CONTEXT_IDENTIFIER, PKEY_ENDPOINT, PKEY_IDENTITY, PKEY_CREDENTIAL,
-			PKEY_SALT, PKEY_CONTAINER, PKEY_FILE, PKEY_ENCODING };
+	private static String[] PKEYS_WITH_EMPTY_DEFAULT = { PKEY_CONTEXT_IDENTIFIER, PKEY_ENDPOINT, PKEY_IDENTITY, PKEY_CREDENTIAL,
+			PKEY_SALT, PKEY_CONTAINER, PKEY_FILE };
 
 	private static String DEFAULT_VALUE = "";
 
@@ -59,9 +59,10 @@ class StorageConfiguration implements AutoCloseable {
 	}
 
 	static void setPropertyDefaultValuesOn(Map<String, String> propDefaults) {
-		for (String key : PROPERTY_KEYS) {
+		for (String key : PKEYS_WITH_EMPTY_DEFAULT) {
 			propDefaults.put(key, DEFAULT_VALUE);
 		}
+		propDefaults.put(PKEY_ENCODING, "UTF-8");
 	}
 
 	static void setPropertyDescriptionsOn(Map<String, String> props) {
