@@ -14,7 +14,7 @@ public class CharPipe implements Pipe {
 	}
 	
 	/**
-	 * Get input writer
+	 * Get input reader
 	 * @return the input
 	 */
 	public PipedReader getInput() {

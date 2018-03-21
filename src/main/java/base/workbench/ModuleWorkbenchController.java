@@ -44,6 +44,8 @@ import modules.examples.ExampleGsonDeserialization;
 import modules.examples.ExampleGsonSerialization;
 import modules.examples.ExampleModule;
 import modules.examples.ExampleRandString;
+import modules.experimental.CloudReaderModule;
+import modules.experimental.CloudWriterModule;
 import modules.experimental.suffixNetBuilder.SuffixNetBuilderModule;
 import modules.format_conversion.CSV2GEXFModule;
 import modules.format_conversion.ExtensibleTreeNode2CSVModule;
@@ -235,6 +237,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		createAndRegisterModule(MatrixOperations.class);
 		createAndRegisterModule(DistanceMatrixModule.class);
 		createAndRegisterModule(MatrixVectorSortModule.class);
+		createAndRegisterModule(CloudReaderModule.class);
+		createAndRegisterModule(CloudWriterModule.class);
 	}
 	
 	/**

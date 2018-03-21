@@ -133,6 +133,16 @@ public class InputPort extends AbstractPort {
 	public boolean isConnected() {
 		return this.connectedPort != null;
 	}
+
+	/**
+	 * Check whether the input port is connected and the pipe used is of the specified class.
+	 * 
+	 * @param pipeClass The pipe class to check for.
+	 * @return true if the input port is connected and the pipe used is of the specified class.
+	 */
+	public boolean isConnectedTo(Class<? extends Pipe> pipeClass) {
+		return isConnected() && this.pipe != null && this.pipe.getClass() == pipeClass;
+	}
 	
 
 }
