@@ -1,18 +1,25 @@
 package modules.experimental;
 
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
+import org.apache.shiro.codec.Hex;
+import org.apache.shiro.crypto.AesCipherService;
 import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.BlobStoreContext;
 
+import base.web.Server;
+
 // a test class for the cloud reader and writer classes
 // TODO: Actually setup properties for the two classes
 class StorageConfiguration implements AutoCloseable {
-
-	private static final Logger LOGGER = Logger.getLogger(StorageConfiguration.class.getName());
 
 	private static final String PKEY_CONTEXT_IDENTIFIER = "Context identifier";
 	private static final String PKEY_ENDPOINT = "Endpoint";
@@ -23,13 +30,13 @@ class StorageConfiguration implements AutoCloseable {
 	private static final String PKEY_FILE = "File";
 	private static final String PKEY_ENCODING = "Encoding";
 
-	private static String[] PKEYS_WITH_EMPTY_DEFAULT = { PKEY_CONTEXT_IDENTIFIER, PKEY_ENDPOINT, PKEY_IDENTITY, PKEY_CREDENTIAL,
-			PKEY_SALT, PKEY_CONTAINER, PKEY_FILE };
+	private static String[] PKEYS_WITH_EMPTY_DEFAULT = { PKEY_CONTEXT_IDENTIFIER, PKEY_ENDPOINT, PKEY_IDENTITY,
+			PKEY_CREDENTIAL, PKEY_SALT, PKEY_CONTAINER, PKEY_FILE };
 
 	private static String DEFAULT_VALUE = "";
 
 	String contextIdentifier;
-	String url;
+	String endpoint;
 	String identity;
 	String credential;
 	String salt;
@@ -48,9 +55,10 @@ class StorageConfiguration implements AutoCloseable {
 		StorageConfiguration result = new StorageConfiguration();
 
 		result.contextIdentifier = properties.getProperty(PKEY_CONTEXT_IDENTIFIER, DEFAULT_VALUE);
-		result.url = properties.getProperty(PKEY_ENDPOINT, DEFAULT_VALUE);
+		result.endpoint = properties.getProperty(PKEY_ENDPOINT, DEFAULT_VALUE);
 		result.identity = properties.getProperty(PKEY_IDENTITY, DEFAULT_VALUE);
 		result.credential = properties.getProperty(PKEY_CREDENTIAL, DEFAULT_VALUE);
+		result.salt = properties.getProperty(PKEY_SALT, DEFAULT_VALUE);
 		result.container = properties.getProperty(PKEY_CONTAINER, DEFAULT_VALUE);
 		result.file = properties.getProperty(PKEY_FILE, DEFAULT_VALUE);
 		result.encoding = properties.getProperty(PKEY_ENCODING, DEFAULT_VALUE);
@@ -78,9 +86,15 @@ class StorageConfiguration implements AutoCloseable {
 	}
 
 	protected BlobStore createBlobStore() {
-		ContextBuilder builder = ContextBuilder.newBuilder(contextIdentifier).credentials(identity, credential);
-		if (url != null && !url.isEmpty()) {
-			builder.endpoint(url);
+		// if a salt value is provided we assume the credential to be encrypted
+		String credentialToUse = credential;
+		if (!salt.isEmpty()) {
+			credentialToUse = decrypt(credential, salt);
+		}
+
+		ContextBuilder builder = ContextBuilder.newBuilder(contextIdentifier).credentials(identity, credentialToUse);
+		if (endpoint != null && !endpoint.isEmpty()) {
+			builder.endpoint(endpoint);
 		}
 		context = builder.buildView(BlobStoreContext.class);
 		return context.getBlobStore();
@@ -91,6 +105,28 @@ class StorageConfiguration implements AutoCloseable {
 		if (context != null) {
 			context.close();
 		}
+	}
+
+	private static String decrypt(String encrypted, String salt) {
+		if (!Server.sharedSecretIsAvailable()) {
+			throw new RuntimeException("No shared secret is available to decrypt the credential.");
+		}
+
+		// Generate a key using the credentials salt
+		byte[] saltBytes = Hex.decode(salt);
+		PBEKeySpec pbe = new PBEKeySpec(Server.readSharedSecret().toCharArray(), saltBytes, 60000, 256);
+		Key key;
+		try {
+			SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+			key = keyFactory.generateSecret(pbe);
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+			throw new RuntimeException("Unexpected error during key generation: " + e.getMessage());
+		}
+
+		// actually decrypt using the generated key
+		AesCipherService aes = new AesCipherService();
+		aes.setKeySize(256);
+		return new String(aes.decrypt(Hex.decode(encrypted), key.getEncoded()).getBytes());
 	}
 
 }
