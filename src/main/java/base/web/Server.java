@@ -257,7 +257,6 @@ public class Server {
 	}
 
 	public static String readSharedSecret() {
-		LOGGER.debug("Shared secret: " + System.getenv(SHARED_SECRET_ENV_NAME));
 		return System.getenv(SHARED_SECRET_ENV_NAME);
 	}
 }
