@@ -149,6 +149,38 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<!-- A single jar for the module-web-server can be built with "mvn compile assembly:single" -->
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<attach>false</attach>
+					<appendAssemblyId>false</appendAssemblyId>
+					<archive>
+						<manifest>
+							<mainClass>base.web.Server</mainClass>
+						</manifest>
+						<manifestEntries>
+							<Project-Version>${project.version}</Project-Version>
+							<Build-Date>${maven.build.timestamp}</Build-Date>
+							<Project-Name>${project.artifactId}_${project.version}</Project-Name>
+						</manifestEntries>
+					</archive>
+					<finalName>modulewebserver-standalone</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<!-- <phase>package</phase> -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.3</version>
