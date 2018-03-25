@@ -43,7 +43,7 @@ Configuration is done via the command line or a `webserver.properties` file in t
 java -jar target/modulewebserver-standalone.jar --help
 ```
 
-To allow the encryption of storage locations, the environment variable BENCHLY_SHARED_SECRET needs to be set to the same value that the [coordinator](https://github.com/spinfo/benchly) uses.
+To allow the encryption of storage locations, the environment variable `BENCHLY_SHARED_SECRET` needs to be set to the same value that the [coordinator](https://github.com/spinfo/benchly) uses.
 
 
 ![Alt text](http://www.spinfo.phil-fak.uni-koeln.de/sites/spinfo/_processed_/csm_UoC_Logo_mit_Excellent_Schriftzug_blau_19befdf80a.jpg)
