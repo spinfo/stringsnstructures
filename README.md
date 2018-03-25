@@ -29,7 +29,7 @@ java -jar target/release/SegmentMatrixModule.jar --help
 
 ## Web Server
 
-A basic web server is available as well. It is meant to work with the [Benchly Workbench Coordinator](https://github.com/spinfo/benchly) but can be used on it's own.
+A basic web server is available as well. It is meant to work with the [Benchly Workbench Coordinator](https://github.com/spinfo/benchly) but can be used as an API for other uses as well.
 
 A standalone jar of the server can be built with:
 
