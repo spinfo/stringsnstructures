@@ -116,6 +116,8 @@ import modules.vectorization.VectorMedianCalculatorModule;
 import modules.vectorization.suffixTreeVectorizationWrapper.SuffixTreeVectorizationWrapperController;
 import modules.visualization.ASCIIGraph;
 import modules.visualization.ColourGraph;
+import modules.word_2_vec.Word2VecGenerator;
+import modules.word_2_vec.Word2VecRequester;
 
 public class ModuleWorkbenchController{ // TODO anderer Listener
 	
@@ -239,6 +241,8 @@ public class ModuleWorkbenchController{ // TODO anderer Listener
 		createAndRegisterModule(MatrixVectorSortModule.class);
 		createAndRegisterModule(CloudReaderModule.class);
 		createAndRegisterModule(CloudWriterModule.class);
+		createAndRegisterModule(Word2VecGenerator.class);
+		createAndRegisterModule(Word2VecRequester.class);
 	}
 	
 	/**

@@ -5,8 +5,16 @@
 	<artifactId>strings</artifactId>
 	<version>0.1</version>
 	<properties>
-    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  	</properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<nd4j.version>1.0.0-beta</nd4j.version>
+		<dl4j.version>1.0.0-beta</dl4j.version>
+		<datavec.version>1.0.0-beta</datavec.version>
+		<arbiter.version>1.0.0-beta</arbiter.version>
+		<rl4j.version>1.0.0-beta</rl4j.version>
+		<jfreechart.version>1.0.13</jfreechart.version>
+		<jcommon.version>1.0.23</jcommon.version>
+		<logback.version>1.1.7</logback.version>
+	</properties>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
@@ -28,204 +36,223 @@
 				<filtering>true</filtering>
 			</resource>
 		</resources>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-			<!-- Builds one jar for each application and copies the dependencies and resources into a separate directory -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.10</version>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<includeScope>runtime</includeScope>
-							<outputDirectory>
-								${project.build.directory}/release/lib
-							</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.7</version>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/release</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/resources</directory>
-									<filtering>true</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
-				<executions>
-					<execution>
-						<id>build-moduleworkbenchgui</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>
-								${project.build.directory}/release
-							</outputDirectory>
-							<finalName>moduleworkbenchgui</finalName>
-							<archive>
-								<manifest>
-									<addClasspath>true</addClasspath>
-									<classpathPrefix>lib/</classpathPrefix>
-									<mainClass>base.workbench.ModuleWorkbenchGui</mainClass>
-								</manifest>
-							</archive>
-						</configuration>
-					</execution>
-					<execution>
-						<id>build-modulebatchrunner</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>
-								${project.build.directory}/release
-							</outputDirectory>
-							<finalName>modulebatchrunner</finalName>
-							<archive>
-								<manifest>
-									<addClasspath>true</addClasspath>
-									<classpathPrefix>lib/</classpathPrefix>
-									<mainClass>base.workbench.ModuleBatchRunner</mainClass>
-								</manifest>
-							</archive>
-						</configuration>
-					</execution>
-					<execution>
-						<id>build-modulewebserver</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>
-								${project.build.directory}/release
-							</outputDirectory>
-							<finalName>modulewebserver</finalName>
-							<archive>
-								<manifest>
-									<addClasspath>true</addClasspath>
-									<classpathPrefix>lib/</classpathPrefix>
-									<mainClass>base.web.Server</mainClass>
-								</manifest>
-							</archive>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<!-- A single jar for the module-web-server can be built with "mvn compile assembly:single" -->
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<attach>false</attach>
-					<appendAssemblyId>false</appendAssemblyId>
-					<archive>
-						<manifest>
-							<mainClass>base.web.Server</mainClass>
-						</manifest>
-						<manifestEntries>
-							<Project-Version>${project.version}</Project-Version>
-							<Build-Date>${maven.build.timestamp}</Build-Date>
-							<Project-Name>${project.artifactId}_${project.version}</Project-Name>
-						</manifestEntries>
-					</archive>
-					<finalName>modulewebserver-standalone</finalName>
-				</configuration>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<!-- <phase>package</phase> -->
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.3</version>
-				<configuration>
-					<show>public</show>
-				</configuration>
-			</plugin>
-		</plugins>
-		
+
+
 		<pluginManagement>
-<plugins>
-    <!-- Ignore/Execute plugin execution -->
-    <plugin>
-        <groupId>org.eclipse.m2e</groupId>
-        <artifactId>lifecycle-mapping</artifactId>
-        <version>1.0.0</version>
-        <configuration>
-            <lifecycleMappingMetadata>
-                <pluginExecutions>
-                    <!-- copy-dependency plugin -->
-                    <pluginExecution>
-                        <pluginExecutionFilter>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-dependency-plugin</artifactId>
-                            <versionRange>[1.0.0,)</versionRange>
-                            <goals>
-                                <goal>copy-dependencies</goal>
-                            </goals>
-                        </pluginExecutionFilter>
-                        <action>
-                            <ignore />
-                        </action>
-                    </pluginExecution>
-                </pluginExecutions>
-            </lifecycleMappingMetadata>
-        </configuration>
-    </plugin>
-   </plugins></pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.3</version>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
+					</configuration>
+				</plugin>
+				<!-- Builds one jar for each application and copies the dependencies 
+					and resources into a separate directory -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>2.10</version>
+					<executions>
+						<execution>
+							<id>copy-dependencies</id>
+							<phase>package</phase>
+							<goals>
+								<goal>copy-dependencies</goal>
+							</goals>
+							<configuration>
+								<includeScope>runtime</includeScope>
+								<outputDirectory>
+									${project.build.directory}/release/lib
+								</outputDirectory>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.7</version>
+					<executions>
+						<execution>
+							<id>copy-resources</id>
+							<phase>package</phase>
+							<goals>
+								<goal>copy-resources</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>${project.build.directory}/release</outputDirectory>
+								<resources>
+									<resource>
+										<directory>src/main/resources</directory>
+										<filtering>true</filtering>
+									</resource>
+								</resources>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.6</version>
+					<executions>
+						<execution>
+							<id>build-moduleworkbenchgui</id>
+							<phase>package</phase>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>
+									${project.build.directory}/release
+								</outputDirectory>
+								<finalName>moduleworkbenchgui</finalName>
+								<archive>
+									<manifest>
+										<addClasspath>true</addClasspath>
+										<classpathPrefix>lib/</classpathPrefix>
+										<mainClass>base.workbench.ModuleWorkbenchGui</mainClass>
+									</manifest>
+								</archive>
+							</configuration>
+						</execution>
+						<execution>
+							<id>build-modulebatchrunner</id>
+							<phase>package</phase>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>
+									${project.build.directory}/release
+								</outputDirectory>
+								<finalName>modulebatchrunner</finalName>
+								<archive>
+									<manifest>
+										<addClasspath>true</addClasspath>
+										<classpathPrefix>lib/</classpathPrefix>
+										<mainClass>base.workbench.ModuleBatchRunner</mainClass>
+									</manifest>
+								</archive>
+							</configuration>
+						</execution>
+						<execution>
+							<id>build-modulewebserver</id>
+							<phase>package</phase>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>
+									${project.build.directory}/release
+								</outputDirectory>
+								<finalName>modulewebserver</finalName>
+								<archive>
+									<manifest>
+										<addClasspath>true</addClasspath>
+										<classpathPrefix>lib/</classpathPrefix>
+										<mainClass>base.web.Server</mainClass>
+									</manifest>
+								</archive>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<!-- A single jar for the module-web-server can be built with "mvn compile 
+						assembly:single" -->
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.4</version>
+					<configuration>
+						<descriptorRefs>
+							<descriptorRef>jar-with-dependencies</descriptorRef>
+						</descriptorRefs>
+						<attach>false</attach>
+						<appendAssemblyId>false</appendAssemblyId>
+						<archive>
+							<manifest>
+								<mainClass>base.web.Server</mainClass>
+							</manifest>
+							<manifestEntries>
+								<Project-Version>${project.version}</Project-Version>
+								<Build-Date>${maven.build.timestamp}</Build-Date>
+								<Project-Name>${project.artifactId}_${project.version}</Project-Name>
+							</manifestEntries>
+						</archive>
+						<finalName>modulewebserver-standalone</finalName>
+					</configuration>
+					<executions>
+						<execution>
+							<id>make-assembly</id>
+							<!-- <phase>package</phase> -->
+							<goals>
+								<goal>single</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.10.3</version>
+					<configuration>
+						<show>public</show>
+					</configuration>
+				</plugin>
+				<!-- Ignore/Execute plugin execution -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<!-- copy-dependency plugin -->
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>copy-dependencies</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<!-- <dependency> <groupId>org.nd4j</groupId> <artifactId>nd4j-native-platform</artifactId> 
+				<version>${nd4j.version}</version> </dependency> <dependency> <groupId>org.nd4j</groupId> 
+				<artifactId>nd4j-cuda-7.5-platform</artifactId> <version>${nd4j.version}</version> 
+				</dependency> -->
+			<dependency>
+				<groupId>org.nd4j</groupId>
+				<artifactId>nd4j-cuda-9.1-platform</artifactId>
+				<version>${nd4j.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
-			<!-- Explicitly require a javax.servlet version, do not use the one required by jcifs -->
-		    <groupId>javax.servlet</groupId>
-		    <artifactId>javax.servlet-api</artifactId>
-		    <version>4.0.0</version>
+			<!-- Explicitly require a javax.servlet version, do not use the one required 
+				by jcifs -->
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>4.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -240,7 +267,7 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>1.3.2</version>
+			<version>2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -276,9 +303,9 @@
 		</dependency>
 		<!-- Samba-Client-Libs -->
 		<dependency>
-		    <groupId>jcifs</groupId>
-		    <artifactId>jcifs</artifactId>
-		    <version>1.3.17</version>
+			<groupId>jcifs</groupId>
+			<artifactId>jcifs</artifactId>
+			<version>1.3.17</version>
 		</dependency>
 		<dependency>
 			<groupId>it.uniroma1.dis.wsngroup.gexf4j</groupId>
@@ -286,9 +313,9 @@
 			<version>1.0.0</version>
 		</dependency>
 		<dependency>
-		    <groupId>gov.nist.math</groupId>
-		    <artifactId>jama</artifactId>
-		    <version>1.0.3</version>
+			<groupId>gov.nist.math</groupId>
+			<artifactId>jama</artifactId>
+			<version>1.0.3</version>
 		</dependency>
 		<!-- Web framework for the web server -->
 		<dependency>
@@ -329,7 +356,7 @@
 			<artifactId>jclouds-all</artifactId>
 			<version>2.0.3</version>
 		</dependency>
-			<dependency>
+		<dependency>
 			<groupId>org.apache.jclouds.labs</groupId>
 			<artifactId>b2</artifactId>
 			<version>2.0.3</version>
@@ -339,6 +366,84 @@
 			<artifactId>shiro-core</artifactId>
 			<version>1.3.2</version>
 		</dependency>
+
+		<!-- depenedencies for dl4j and nd4j (such as word2vec) -->
+		<!-- ND4J backend. You need one in every DL4J project. Normally define 
+			artifactId as either "nd4j-native-platform" or "nd4j-cuda-7.5-platform" -->
+
+		<!-- <dependency> <groupId>org.nd4j</groupId> <artifactId>nd4j-native-platform</artifactId> 
+			</dependency> -->
+		<dependency>
+			<groupId>org.nd4j</groupId>
+			<artifactId>nd4j-cuda-9.1-platform</artifactId>
+		</dependency>
+		<!-- Core DL4J functionality -->
+		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>deeplearning4j-core</artifactId>
+			<version>${dl4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>deeplearning4j-nlp</artifactId>
+			<version>${dl4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>deeplearning4j-zoo</artifactId>
+			<version>${dl4j.version}</version>
+		</dependency>
+
+		<!-- deeplearning4j-ui is used for HistogramIterationListener + visualization: 
+			see http://deeplearning4j.org/visualization -->
+
+		<!-- Arbiter - used for hyperparameter optimization (grid/random search) -->
+		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>arbiter-deeplearning4j</artifactId>
+			<version>${arbiter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>arbiter-ui_2.11</artifactId>
+			<version>${arbiter.version}</version>
+		</dependency>
+
+		<!-- datavec-data-codec: used only in video example for loading video data -->
+		<dependency>
+			<artifactId>datavec-data-codec</artifactId>
+			<groupId>org.datavec</groupId>
+			<version>${datavec.version}</version>
+		</dependency>
+
+		<!-- Used in the feedforward/classification/MLP* and feedforward/regression/RegressionMathFunctions 
+			example -->
+		<dependency>
+			<groupId>jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>${jfreechart.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jcommon</artifactId>
+			<version>${jcommon.version}</version>
+		</dependency>
+
+		<!-- Used for downloading data in some of the examples -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+		</dependency>
+
 	</dependencies>
 	<url>http://www.spinfo.phil-fak.uni-koeln.de/sas.html</url>
 	<name>Strings &amp; Structures: Codes of Sense and Function in Genomics and Linguistics</name>
@@ -357,7 +462,8 @@
 						<artifactId>maven-jar-plugin</artifactId>
 						<version>2.6</version>
 						<executions>
-						<!-- For stand-alone module builds, add execution elements below this line -->
+							<!-- For stand-alone module builds, add execution elements below this 
+								line -->
 							<execution>
 								<id>ExampleModule</id>
 								<phase>package</phase>
